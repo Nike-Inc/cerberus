@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) 2016 Nike, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
+apply plugin: "jacoco"
+apply plugin: 'com.github.kt3k.coveralls'
+
+findbugs {
+    ignoreFailures = false
+    sourceSets = [ project.sourceSets.main ]
+}
+
+pmd {
+    sourceSets = [ project.sourceSets.main ]
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.withMessages = true
+    }
+}
+
+jacoco {
+    toolVersion = "0.7.7.201606060606"
+    reportsDir = file("$buildDir/reports/jacoco")
+}
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+    }
+}
+test.finalizedBy(project.tasks.jacocoTestReport)
+
+task findbugsHtml {
+    group = "Verification"
+    description = "Creates a human readable Findbugs report"
+    doLast {
+        ant.xslt(in: file("$buildDir/reports/findbugs/main.xml"),
+                style: file('codequality/findbugs_default.xsl'),
+                out: new File("$buildDir/reports/findbugs/main.html"))
+    }
+}
+findbugsMain.finalizedBy findbugsHtml
+
+tasks.coveralls.dependsOn check

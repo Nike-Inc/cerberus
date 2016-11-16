@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2016 Nike, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+repositories {
+    jcenter()
+}
+
+def riposteVersion = '0.8.1'
+def logbackVersion = '1.1.7'
+// Request version 4 for full java 8 support
+def guiceVersion = '4.0'
+def awsSdkVersion = '1.10.54'
+def groovyVersion = '2.3.9'
+
+dependencies {
+    compile (
+            "com.nike:vault-client:1.0.0",
+
+            "com.nike.riposte:riposte-spi:$riposteVersion",
+            "com.nike.riposte:riposte-core:$riposteVersion",
+            "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
+            "com.nike.riposte:riposte-guice:$riposteVersion",
+            "com.nike.riposte:riposte-guice-typesafe-config:$riposteVersion",
+            "com.nike.riposte:riposte-async-http-client:$riposteVersion",
+            "com.nike.riposte:riposte-metrics-codahale:$riposteVersion",
+
+            "javax:javaee-api:7.0",
+            "org.codehaus.groovy:groovy-all:$groovyVersion", // For logback groovy config processing
+            "ch.qos.logback:logback-classic:$logbackVersion",
+            "ch.qos.logback:logback-core:$logbackVersion",
+            "javax.validation:validation-api:1.1.0.Final",
+            "org.hibernate:hibernate-validator:5.1.2.Final",
+            "javax.el:el-api:2.2.1-b04", // The el-api and el-impl are needed for the JSR 303 validation
+            "org.glassfish.web:el-impl:2.2.1-b05",
+            "org.ow2.asm:asm-all:5.0.4", // Required for full java 8 support (since we're excluding the old ASM 3 pulled in by various other libraries in the main build.gradle)
+            "com.google.inject:guice:$guiceVersion",
+            "com.google.inject.extensions:guice-multibindings:$guiceVersion",
+            "com.amazonaws:aws-java-sdk-core:$awsSdkVersion",
+            "com.amazonaws:aws-java-sdk-kms:$awsSdkVersion",
+            "com.amazonaws:aws-java-sdk-s3:$awsSdkVersion",
+            "org.mybatis:mybatis:3.4.1",
+            "org.mybatis:mybatis-typehandlers-jsr310:1.0.1",
+            "org.mybatis:mybatis-guice:3.7.1",
+            "com.mchange:c3p0:0.9.5.2",
+            "mysql:mysql-connector-java:5.1.38",
+            "org.flywaydb:flyway-core:4.0",
+            "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.2",
+            "com.squareup.okhttp3:okhttp:3.3.1",
+            "commons-io:commons-io:2.5"
+    )
+
+    testCompile (
+            "junit:junit:4.12",
+            "org.assertj:assertj-core:3.0.0",
+            "org.mockito:mockito-all:1.10.8",
+            "com.nike.backstopper:backstopper-reusable-tests:0.9.1.1"
+    )
+}
+
+//noinspection GroovyAssignabilityCheck
+configurations.all {
+    // Ditto on groovy
+    resolutionStrategy.force "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    // Don't accidentally transitively pull in SLF4J implementations we don't want to use from other libraries.
+    exclude group: 'org.slf4j', module: 'slf4j-simple'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'log4j'
+    exclude group: 'commons-logging', module: 'commons-logging'
+
+    // Exclude Zuul - we're not using it and it pulls in an incompatible version of hystrix core
+    exclude group: 'com.netflix.zuul'
+
+    // No powermock
+    exclude group: 'org.powermock'
+
+    // This conflicts with the io.dropwizard metrics stuff we're using
+    exclude group: 'com.codahale.metrics'
+
+    // Required for full java 8 support (Guice, among other libraries).
+    // The following exclusions combined with explicitly asking for org.ow2.asm:asm-all at version 5 or greater and com.google.inject:guice at version 4 or greater will fix a bunch of stuff.
+    exclude group: 'asm', module: 'asm-all'
+    exclude group: 'asm', module: 'asm'
+}
