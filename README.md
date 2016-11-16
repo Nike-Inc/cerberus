@@ -1,6 +1,5 @@
 # Cerberus Management Service
 
-[![Github Releases](https://img.shields.io/github/downloads/atom/atom/latest/total.svg)]()
 [![][travis img]][travis]
 [![][license img]][license]
 
@@ -113,9 +112,9 @@ Note that if the VAULT_ADDR and VAULT_TOKEN environment variables are set, you d
 
 Import the build.gradle file.
 
-## Initial Endpoints
+## API documentation
 
-See API.md
+See [API.md](API.md)
 
 ## License
 
