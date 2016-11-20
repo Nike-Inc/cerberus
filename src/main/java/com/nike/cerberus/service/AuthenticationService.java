@@ -310,6 +310,8 @@ public class AuthenticationService {
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
+                    .withExceptionMessage(String.format("The IAM Role: %s for Acct id: %s was not configured for any SDB",
+                            credentials.getRoleName(), credentials.getAccountId()))
                     .build();
         }
 
