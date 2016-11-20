@@ -16,7 +16,9 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
+import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
@@ -61,6 +63,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.typesafe.config.Config;
 
+import com.typesafe.config.ConfigValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -79,9 +83,19 @@ import javax.validation.Validator;
 
 public class CmsGuiceModule extends AbstractModule {
 
+    private static final String KMS_KEY_ID_KEY = "CONFIG_KEY_ID";
+
+    private static final String REGION_KEY = "EC2_REGION";
+
+    private static final String BUCKET_NAME_KEY = "CONFIG_S3_BUCKET";
+
+    private static final String CMS_DISABLE_ENV_LOAD_FLAG = "cms.env.load.disable";
+
+    private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Config appConfig;
+    private Config appConfig;
 
     public CmsGuiceModule(Config appConfig) {
         if (appConfig == null)
@@ -92,6 +106,8 @@ public class CmsGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        loadEnvProperties();
+
         bind(UrlResolver.class).to(CmsVaultUrlResolver.class);
         bind(VaultCredentialsProvider.class).to(CmsVaultCredentialsProvider.class);
 
@@ -106,6 +122,27 @@ public class CmsGuiceModule extends AbstractModule {
             throw new IllegalArgumentException("invalid class: " + className, nfe);
         } catch(ClassCastException cce) {
             throw new IllegalArgumentException("class: " + className + " is the wrong type", cce);
+        }
+    }
+
+    private void loadEnvProperties() {
+        if (appConfig.hasPath(CMS_DISABLE_ENV_LOAD_FLAG) && appConfig.getBoolean(CMS_DISABLE_ENV_LOAD_FLAG)) {
+            logger.warn("CMS environment property loading disabled.");
+        } else {
+            final CmsEnvPropertiesLoader cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
+                    System.getenv(BUCKET_NAME_KEY),
+                    System.getenv(REGION_KEY),
+                    System.getenv(KMS_KEY_ID_KEY)
+            );
+            Properties properties = cmsEnvPropertiesLoader.getProperties();
+
+            // bind the props to named props for guice
+            Names.bindProperties(binder(), properties);
+
+            for (String propertyName : properties.stringPropertyNames()) {
+                logger.info("Successfully loaded: {} from the env data stored in S3", propertyName);
+                appConfig = appConfig.withValue(propertyName, ConfigValueFactory.fromAnyRef(properties.getProperty(propertyName)));
+            }
         }
     }
 
