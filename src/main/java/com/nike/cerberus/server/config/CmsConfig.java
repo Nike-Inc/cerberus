@@ -17,7 +17,6 @@
 package com.nike.cerberus.server.config;
 
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
-import com.nike.cerberus.server.config.guice.CmsEnvPropertiesModule;
 import com.nike.cerberus.server.config.guice.CmsGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsMyBatisModule;
 import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
@@ -107,7 +106,6 @@ public class CmsConfig implements ServerConfig {
 
     protected List<Module> getAppGuiceModules(Config appConfig) {
         return Arrays.asList(
-                new CmsEnvPropertiesModule(appConfig),
                 new CmsGuiceModule(appConfig),
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
