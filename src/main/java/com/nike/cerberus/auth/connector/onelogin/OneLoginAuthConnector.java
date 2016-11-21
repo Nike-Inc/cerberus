@@ -239,15 +239,18 @@ public class OneLoginAuthConnector implements AuthConnector {
                 VerifyFactorResponse.class);
 
         if (verifyFactorResponse.getStatus().isError()) {
+            String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
+                    stateToken, verifyFactorResponse.getStatus().getMessage());
+
             if (verifyFactorResponse.getStatus().getCode() == 400L) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                        .withExceptionMessage(verifyFactorResponse.getStatus().getMessage())
+                        .withExceptionMessage(msg)
                         .build();
             } else {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
-                        .withExceptionMessage(verifyFactorResponse.getStatus().getMessage())
+                        .withExceptionMessage(msg)
                         .build();
             }
         }
@@ -274,22 +277,23 @@ public class OneLoginAuthConnector implements AuthConnector {
                 CreateSessionLoginTokenResponse.class);
 
         if (createSessionLoginTokenResponse.getStatus().isError()) {
+            String msg = String.format("The user %s failed to authenticate for reason: %s", username, createSessionLoginTokenResponse.getStatus().getMessage());
             if (createSessionLoginTokenResponse.getStatus().getCode() == 400L) {
                 if (StringUtils.startsWithIgnoreCase(createSessionLoginTokenResponse.getStatus().getMessage(), "MFA")) {
                     throw ApiException.newBuilder()
                             .withApiErrors(DefaultApiError.MFA_SETUP_REQUIRED)
-                            .withExceptionMessage(createSessionLoginTokenResponse.getStatus().getMessage())
+                            .withExceptionMessage(msg)
                             .build();
                 } else {
                     throw ApiException.newBuilder()
                             .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                            .withExceptionMessage(createSessionLoginTokenResponse.getStatus().getMessage())
+                            .withExceptionMessage(msg)
                             .build();
                 }
             } else {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
-                        .withExceptionMessage(createSessionLoginTokenResponse.getStatus().getMessage())
+                        .withExceptionMessage(msg)
                         .build();
             }
         }
