@@ -192,9 +192,11 @@ logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArra
 
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
 
+logger("VALID_WINGTIPS_SPANS", OFF, allAsyncAppendersArray, false)
+
 // ACCESS LOG SETTINGS
 def disableAccessLog = booleanSystemPropertyExtractionHelper("disableAccessLog", false)
-def accessLogLevel = (disableAccessLog) ? OFF : INFO
+def accessLogLevel = OFF
 addInfo("******Access logs disabled: " + disableAccessLog)
 println("******Access logs disabled: " + disableAccessLog)
 logger("ACCESS_LOG", accessLogLevel, allAsyncAccessLogAppendersArray, false)
