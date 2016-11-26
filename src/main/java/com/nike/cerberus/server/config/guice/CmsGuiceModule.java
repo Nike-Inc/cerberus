@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
@@ -96,12 +97,14 @@ public class CmsGuiceModule extends AbstractModule {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Config appConfig;
+    private final ObjectMapper objectMapper;
 
-    public CmsGuiceModule(Config appConfig) {
+    public CmsGuiceModule(Config appConfig, ObjectMapper objectMapper) {
         if (appConfig == null)
             throw new IllegalArgumentException("appConfig cannot be null");
 
         this.appConfig = appConfig;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -110,8 +113,9 @@ public class CmsGuiceModule extends AbstractModule {
 
         bind(UrlResolver.class).to(CmsVaultUrlResolver.class);
         bind(VaultCredentialsProvider.class).to(CmsVaultCredentialsProvider.class);
+        bind(ObjectMapper.class).toInstance(objectMapper);
 
-        String className = this.appConfig.getString("cms.auth.connector");
+        String className = this.appConfig.getString(AUTH_CONNECTOR_IMPL_KEY);
         try
         {
             Class<?> clazz = Class.forName(className);

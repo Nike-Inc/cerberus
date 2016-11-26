@@ -106,7 +106,7 @@ public class CmsConfig implements ServerConfig {
 
     protected List<Module> getAppGuiceModules(Config appConfig) {
         return Arrays.asList(
-                new CmsGuiceModule(appConfig),
+                new CmsGuiceModule(appConfig, objectMapper),
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule()
