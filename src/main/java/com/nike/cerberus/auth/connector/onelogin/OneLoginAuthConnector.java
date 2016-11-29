@@ -47,8 +47,6 @@ import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -84,10 +82,6 @@ public class OneLoginAuthConnector implements AuthConnector {
     private final String clientSecret;
 
     private final String subdomain;
-
-    private GenerateTokenResponseData tokenData;
-
-    private OffsetDateTime tokenExpireTime;
 
     @Inject
     public OneLoginAuthConnector(@Named("auth.connector.onelogin.api_region") final String oneloginApiRegion,
@@ -302,31 +296,6 @@ public class OneLoginAuthConnector implements AuthConnector {
     }
 
     /**
-     * Determines where to get an access token from.  If one is present and still active, it simply returns that,
-     * otherwise it determines if it needs to request an access token or simply refresh with a refresh token.
-     *
-     * @return Access token
-     */
-    protected String getAccessToken() {
-        final OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
-        OffsetDateTime refreshTokenExpireTime = null;
-
-        if (tokenData != null) {
-            refreshTokenExpireTime = tokenData.getCreatedAt().plusDays(45).minusMinutes(5);
-        }
-
-        if (tokenData == null || now.isAfter(refreshTokenExpireTime)) {
-            tokenData = requestAccessToken();
-            tokenExpireTime = tokenData.getCreatedAt().plusSeconds(tokenData.getExpiresIn()).minusMinutes(5);
-        } else if (now.isAfter(tokenExpireTime)) {
-            tokenData = refreshAccessToken();
-            tokenExpireTime = tokenData.getCreatedAt().plusSeconds(tokenData.getExpiresIn()).minusMinutes(5);
-        }
-
-        return tokenData.getAccessToken();
-    }
-
-    /**
      * Requests an access token using the configured client id and secret.
      *
      * @return Access token
@@ -350,39 +319,13 @@ public class OneLoginAuthConnector implements AuthConnector {
     }
 
     /**
-     * Refreshes the access token using the current refresh token.
-     *
-     * @return  Access token
-     */
-    protected GenerateTokenResponseData refreshAccessToken() {
-        final RefreshTokenRequest request = new RefreshTokenRequest()
-                .setAccessToken(tokenData.getAccessToken())
-                .setRefreshToken(tokenData.getRefreshToken());
-
-        final Response response = execute(buildUrl("auth/oauth2/token"), "POST", null, request);
-        final RefreshTokenResponse refreshTokenResponse = parseResponseBody(response, RefreshTokenResponse.class);
-
-        if (refreshTokenResponse.getStatus().isError()) {
-            tokenData = null;
-            tokenExpireTime = null;
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
-                    .withExceptionMessage("Failed to refresh token with OneLogin!")
-                    .build();
-        }
-
-        return refreshTokenResponse.getData().get(0);
-    }
-
-    /**
      * Builds a map containing the Authorization header with a valid bearer token.
      *
      * @return Map containing the Authorization header and value.
      */
     protected Map<String, String> buildAuthorizationBearerHeader() {
         final Map<String, String> headers = Maps.newHashMap();
-        headers.put("Authorization", String.format("bearer:%s", getAccessToken()));
+        headers.put("Authorization", String.format("bearer:%s", requestAccessToken().getAccessToken()));
         return headers;
     }
 

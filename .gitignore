@@ -176,3 +176,5 @@ local.properties
 
 # Project specific
 cms-local-overrides.conf
+/one_login_mfa_api_tester.sh
+/cms_login_tester.sh
