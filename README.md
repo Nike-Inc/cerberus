@@ -3,8 +3,10 @@
 [![][travis img]][travis]
 [![][license img]][license]
 
-Cerberus Management Service (i.e. CMS) is a central component of Cerberus that facilities user and AWS IAM role authentication and 
-the management of safe deposit boxes, an abstraction on top of Hashicorp's Vault.
+The Cerberus Management Service (CMS) is a core component of the Cerberus [REST API](http://engineering.nike.com/cerberus/docs/architecture/rest-api) 
+that facilities user and AWS IAM role authentication and the management of Safe Deposit Boxes (SDBs), an abstraction on top of Hashicorp's Vault.
+
+To learn more about Cerberus, please visit the [Cerberus website](http://engineering.nike.com/cerberus/).
 
 ## Getting Started
 
