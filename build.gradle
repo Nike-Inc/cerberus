@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import com.typesafe.config.ConfigFactory
+
 buildscript {
     apply from: file('gradle/buildscript.gradle'), to: buildscript
 }
@@ -107,4 +109,17 @@ jar {
                 'Main-Class': 'com.nike.cerberus.Main'
         )
     }
+}
+
+def config = ConfigFactory.parseFile(new File("${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}cms-local-overrides.conf"))
+
+project.ext {
+    flyway.user = config.getString('JDBC.username')
+    flyway.password = config.getString('JDBC.password')
+    flyway.url = config.getString('JDBC.url')
+}
+
+flyway {
+    schemas = ["cms"]
+    locations = ["classpath:com/nike/cerberus/migration"]
 }
