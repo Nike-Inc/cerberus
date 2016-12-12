@@ -170,8 +170,8 @@ public class UserGroupPermissionService {
         record.setSdboxId(safeDepositBoxId);
         record.setUserGroupId(possibleUserGroupRecord.get().getId());
         record.setRoleId(userGroupPermission.getRoleId());
-        record.setLastUpdatedBy(userGroupPermission.getLastUpdatedBy());
-        record.setLastUpdatedTs(userGroupPermission.getLastUpdatedTs());
+        record.setLastUpdatedBy(user);
+        record.setLastUpdatedTs(dateTime);
         userGroupDao.updateUserGroupPermission(record);
     }
 
