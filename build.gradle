@@ -114,9 +114,9 @@ jar {
 def config = ConfigFactory.parseFile(new File("${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}cms-local-overrides.conf"))
 
 project.ext {
-    flyway.user = config.getString('JDBC.username')
-    flyway.password = config.getString('JDBC.password')
-    flyway.url = config.getString('JDBC.url')
+    flyway.user = config.hasPath('JDBC.username') ? config.getString('JDBC.username') : 'NOT_SET'
+    flyway.password = config.hasPath('JDBC.password') ? config.getString('JDBC.password') : 'NOT_SET'
+    flyway.url = config.hasPath('JDBC.url') ? config.getString('JDBC.url') : 'NOT_SET'
 }
 
 flyway {
