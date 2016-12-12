@@ -142,11 +142,6 @@ public enum DefaultApiError implements ApiError {
     SDB_OWNER_TOO_LONG(99214, "Owner may not exceed 255 characters.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
-     * SDB has too many owners
-     */
-    SDB_TOO_MANY_OWNERS(99221, "The SDB has more than one owners!", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
-
-    /**
      * The AWS region specified is invalid.
      */
     AUTH_IAM_ROLE_AWS_REGION_INVALID(99215, "Invalid AWS region.", HttpServletResponse.SC_BAD_REQUEST),
@@ -177,9 +172,20 @@ public enum DefaultApiError implements ApiError {
     SDB_OWNER_IN_USER_GROUP_PERMS(99220, "The owner can not be included in the user group permissions.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
+     * SDB has too many owners
+     */
+    SDB_TOO_MANY_OWNERS(99221, "The SDB has more than one owners!", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+
+    /**
      * Authentication error for when a user attempts to login and MFA is required but not setup on their account.
      */
     MFA_SETUP_REQUIRED(99222, "MFA is required but the user has not set up any factors.", HttpServletResponse.SC_BAD_REQUEST),
+
+
+    /**
+     * The IAM Role + Region don't have a KMS key provisioned to encrypt the auth response.
+     */
+    AUTH_IAM_ROLE_REJECTED(99223, "KMS rejected the IAM Role ARN with an InvalidArnException.", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
 
     /**
      * Generic not found error.

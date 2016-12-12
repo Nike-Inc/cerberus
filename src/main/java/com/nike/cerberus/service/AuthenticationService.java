@@ -22,6 +22,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
+import com.amazonaws.services.kms.model.InvalidArnException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
@@ -167,7 +168,16 @@ public class AuthenticationService {
      * @return Encrypted auth response
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentials credentials) {
-        final String keyId = getKeyId(credentials);
+        final String keyId;
+        try {
+            keyId = getKeyId(credentials);
+        } catch (InvalidArnException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
+                    .withExceptionCause(e)
+                    .withExceptionMessage("Failed to lazily provision KMS key for arn:aws:iam::%s:role/%s in region: %s")
+                    .build();
+        }
 
         final Set<String> policies = buildPolicySet(credentials.getAccountId(), credentials.getRoleName());
 
