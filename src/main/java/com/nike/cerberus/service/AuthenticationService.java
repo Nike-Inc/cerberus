@@ -26,6 +26,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
@@ -52,9 +55,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -72,6 +72,10 @@ public class AuthenticationService {
 
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
 
+    public static final String USER_TOKEN_TTL_OVERRIDE = "cms.user.token.ttl.override";
+
+    public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
+
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
 
     public static final String DEFAULT_TOKEN_TTL = "1h";
@@ -86,6 +90,14 @@ public class AuthenticationService {
     private final ObjectMapper objectMapper;
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
+
+    @Inject(optional=true)
+    @Named(USER_TOKEN_TTL_OVERRIDE)
+    String userTokenTTL = DEFAULT_TOKEN_TTL;
+
+    @Inject(optional=true)
+    @Named(IAM_TOKEN_TTL_OVERRIDE)
+    String iamTokenTTL = DEFAULT_TOKEN_TTL;
 
     @Inject
     public AuthenticationService(final SafeDepositBoxDao safeDepositBoxDao,
@@ -167,7 +179,7 @@ public class AuthenticationService {
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
                 .setMeta(meta)
-                .setTtl(DEFAULT_TOKEN_TTL)
+                .setTtl(iamTokenTTL)
                 .setNoDefaultPolicy(true);
 
         final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
@@ -252,7 +264,7 @@ public class AuthenticationService {
                 .setDisplayName(username)
                 .setPolicies(policies)
                 .setMeta(meta)
-                .setTtl(DEFAULT_TOKEN_TTL)
+                .setTtl(userTokenTTL)
                 .setNoDefaultPolicy(true);
 
         return vaultAdminClient.createOrphanToken(tokenAuthRequest);
