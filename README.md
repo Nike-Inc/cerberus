@@ -99,7 +99,16 @@ auth.connector.onelogin.client_secret | Yes      | The OneLogin API client secre
 auth.connector.onelogin.subdomain     | Yes      | Your orgs OneLogin subdomain [xxxxx].onelogin.com
     
 **Assumption: The current implementation looks up group membership for a user via the member_of field on the getUserById API response.**
-    
+
+##### Okta Auth Connector
+
+property                              | required | notes
+------------------------------------- | -------- | ----------
+auth.connector.okta.api_key           | Yes      | The Okta API key
+auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `https://nike.okta.com` or `https://nike.oktapreview.com`)
+
+
+
 ## Running CMS Locally
 
 First, a few properties must be configured in `cms-core-code/src/main/resources/cms-local-overrides.conf`
