@@ -188,6 +188,11 @@ public enum DefaultApiError implements ApiError {
     AUTH_IAM_ROLE_REJECTED(99223, "KMS rejected the IAM Role ARN with an InvalidArnException.", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
 
     /**
+     * The IAM Role + Region don't have a KMS key provisioned to encrypt the auth response.
+     */
+    INVALID_QUERY_PARAMS(99224, "Invalid query params", HttpServletResponse.SC_BAD_REQUEST),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", HttpServletResponse.SC_NOT_FOUND),

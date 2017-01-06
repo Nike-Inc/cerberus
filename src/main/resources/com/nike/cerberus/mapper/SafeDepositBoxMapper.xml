@@ -71,6 +71,9 @@
       LAST_UPDATED_TS
     FROM
       SAFE_DEPOSIT_BOX
+    ORDER BY CREATED_TS ASC
+    LIMIT #{limit}
+    OFFSET #{offset}
   </select>
 
   <select id="getUserAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
@@ -116,6 +119,10 @@
       SAFE_DEPOSIT_BOX
     WHERE
       ID = #{id}
+  </select>
+
+  <select id="count" resultType="java.lang.Integer">
+    SELECT COUNT(ID) FROM SAFE_DEPOSIT_BOX
   </select>
 
   <select id="countByPath" resultType="java.lang.Integer">
