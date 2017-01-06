@@ -83,23 +83,8 @@ artifacts {
 }
 
 jar {
-    def releaseVersion = version
+    dependsOn 'antReplace'
     doFirst {
-        // Add version information to the app's main properties file
-        ant.replace(file: "$buildDir/resources/main/" + rootProject.name + ".conf", token: "@@RELEASE@@", value: releaseVersion)
-
-        // Replace version and appname info in logback.groovy so that log messages will be tagged with the correct values.
-        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@RELEASE@@", value: releaseVersion)
-        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@APPNAME@@", value: artifactId)
-
-        // Placeholder substitution in packer and puppet files.
-        def packerFilesForAntReplace = [
-                "$buildDir/resources/main/packer/app-specific-jvm-args.sh"
-        ]
-        for (String fileName : packerFilesForAntReplace) {
-            ant.replace(file: fileName, token: "@@SERVICE_NAME@@", value: rootProject.name)
-            ant.replace(file: fileName, token: "@@ARCHIVE_NAME@@", value: "${rootProject.name}.jar")
-        }
         archiveName 'cms.jar'
     }
 
@@ -122,4 +107,38 @@ project.ext {
 flyway {
     schemas = ["cms"]
     locations = ["classpath:com/nike/cerberus/migration"]
+}
+
+task antReplace() {
+    dependsOn 'processResources'
+    doLast {
+        def releaseVersion = version
+        // Add version information to the app's main properties file
+        ant.replace(file: "$buildDir/resources/main/" + rootProject.name + ".conf", token: "@@RELEASE@@", value: releaseVersion)
+
+        // Replace version and appname info in logback.groovy so that log messages will be tagged with the correct values.
+        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@RELEASE@@", value: releaseVersion)
+        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@APPNAME@@", value: artifactId)
+
+        // Placeholder substitution in packer and puppet files.
+        def packerFilesForAntReplace = [
+                "$buildDir/resources/main/packer/app-specific-jvm-args.sh"
+        ]
+        for (String fileName : packerFilesForAntReplace) {
+            ant.replace(file: fileName, token: "@@SERVICE_NAME@@", value: rootProject.name)
+            ant.replace(file: fileName, token: "@@ARCHIVE_NAME@@", value: "${rootProject.name}.jar")
+        }
+    }
+}
+
+task runCMS(type: JavaExec) {
+    dependsOn 'antReplace'
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.nike.cerberus.Main'
+    systemProperties = [
+            'vault.addr': 'http://127.0.0.1:8200',
+            'vault.token': System.getenv('VAULT_TOKEN'),
+            '@appId': 'cms',
+            '@environment': 'local'
+    ]
 }
