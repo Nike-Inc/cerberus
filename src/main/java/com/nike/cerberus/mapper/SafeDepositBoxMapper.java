@@ -45,5 +45,7 @@ public interface SafeDepositBoxMapper {
 
     int deleteSafeDepositBox(@Param("id") String id);
 
-    List<SafeDepositBoxRecord> getSafeDepositBoxes();
+    List<SafeDepositBoxRecord> getSafeDepositBoxes(@Param("limit") int limit, @Param("offset") int offset);
+
+    int count();
 }

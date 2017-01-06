@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.endpoints.stats;
+package com.nike.cerberus.endpoints.admin;
 
 import com.google.common.collect.Sets;
 import com.nike.cerberus.domain.Stats;
-import com.nike.cerberus.service.StatsService;
+import com.nike.cerberus.endpoints.admin.GetStats;
+import com.nike.cerberus.service.MetaDataService;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.Before;
@@ -43,14 +44,14 @@ public class GetStatsTest {
 
     private Executor executor = Executors.newSingleThreadExecutor();
 
-    private StatsService statsService;
+    private MetaDataService metaDataService;
 
     private GetStats subject;
 
     @Before
     public void setUp() throws Exception {
-        statsService = mock(StatsService.class);
-        subject = new GetStats(statsService);
+        metaDataService = mock(MetaDataService.class);
+        subject = new GetStats(metaDataService);
     }
 
     @Test
@@ -62,7 +63,7 @@ public class GetStatsTest {
 
     @Test
     public void doExecute_returns_stats() {
-        when(statsService.getStats()).thenReturn(stats);
+        when(metaDataService.getStats()).thenReturn(stats);
 
         final CompletableFuture<ResponseInfo<Stats>> completableFuture =
                 subject.doExecute(null, executor, null, null);

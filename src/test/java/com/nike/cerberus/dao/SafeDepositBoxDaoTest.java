@@ -130,10 +130,10 @@ public class SafeDepositBoxDaoTest {
 
     @Test
     public void getSafeDepositBoxes_returns_list_of_role_records() {
-        when(safeDepositBoxMapper.getSafeDepositBoxes())
+        when(safeDepositBoxMapper.getSafeDepositBoxes(1000, 0))
                 .thenReturn(safeDepositBoxRecordList);
 
-        List<SafeDepositBoxRecord> actual = subject.getSafeDepositBoxes();
+        List<SafeDepositBoxRecord> actual = subject.getSafeDepositBoxes(1000, 0);
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).hasSameElementsAs(safeDepositBoxRecordList);

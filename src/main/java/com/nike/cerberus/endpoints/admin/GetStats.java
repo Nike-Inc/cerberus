@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.endpoints.stats;
+package com.nike.cerberus.endpoints.admin;
 
-import com.nike.cerberus.domain.Stats;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.service.StatsService;
+import com.nike.cerberus.domain.Stats;
+import com.nike.cerberus.service.MetaDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
@@ -33,13 +33,14 @@ import java.util.concurrent.Executor;
 /**
  * Returns basic stats about the safe deposit boxes in Cerberus.
  */
+@Deprecated
 public class GetStats extends AdminStandardEndpoint<Void, Stats> {
 
-    private final StatsService statsService;
+    private final MetaDataService metaDataService;
 
     @Inject
-    public GetStats(final StatsService statsService) {
-        this.statsService = statsService;
+    public GetStats(final MetaDataService metaDataService) {
+        this.metaDataService = metaDataService;
     }
 
     @Override
@@ -48,7 +49,7 @@ public class GetStats extends AdminStandardEndpoint<Void, Stats> {
                                                             final ChannelHandlerContext ctx,
                                                             final SecurityContext securityContext) {
         return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(statsService.getStats()).build(),
+                () -> ResponseInfo.newBuilder(metaDataService.getStats()).build(),
                 longRunningTaskExecutor
         );
     }
