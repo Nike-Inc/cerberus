@@ -160,7 +160,7 @@ public class OktaAuthHelper {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
                     .withExceptionCause(e)
-                    .withExceptionMessage("Error parsing the response body from OneLogin.")
+                    .withExceptionMessage("Error parsing the embedded auth data from Okta.")
                     .build();
         }
     }
