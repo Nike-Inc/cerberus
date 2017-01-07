@@ -105,7 +105,7 @@ auth.connector.onelogin.subdomain     | Yes      | Your orgs OneLogin subdomain 
 property                              | required | notes
 ------------------------------------- | -------- | ----------
 auth.connector.okta.api_key           | Yes      | The Okta API key
-auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `https://nike.okta.com` or `https://nike.oktapreview.com`)
+auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `"https://example.okta.com"` or `"https://example.oktapreview.com"`)
 
 
 

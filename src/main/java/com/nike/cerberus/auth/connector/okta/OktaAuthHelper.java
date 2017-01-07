@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
@@ -29,7 +30,7 @@ import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,6 +44,10 @@ public class OktaAuthHelper {
     public static final String AUTHENTICATION_MFA_REQUIRED_STATUS = "MFA_REQUIRED";
 
     public static final String AUTHENTICATION_SUCCESS_STATUS = "SUCCESS";
+
+    private static final ImmutableMap<String, String> MFA_FACTOR_NAMES = ImmutableMap.of(
+            "google", "Google Authenticator",
+            "okta"  , "Okta Verify");
 
     private final ObjectMapper objectMapper;
 
@@ -128,7 +133,7 @@ public class OktaAuthHelper {
         try {
             return this.authClient.authenticate(username, password, relayState);
         } catch (IOException ioe) {
-            final String msg = String.format("failed to get user groups for reason: %s", ioe.getMessage());
+            final String msg = String.format("failed to authenticate user for reason: %s", ioe.getMessage());
 
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
@@ -169,11 +174,11 @@ public class OktaAuthHelper {
 
         Preconditions.checkArgument(factor != null, "factor cannot be null.");
 
-        final String factorProvider = factor.getProvider();
-        if (StringUtils.equalsIgnoreCase(factorProvider, "Google")) {
-            return "Google Authenticator";
+        final String factorProvider = factor.getProvider().toLowerCase();
+        if (MFA_FACTOR_NAMES.containsKey(factorProvider)) {
+            return MFA_FACTOR_NAMES.get(factorProvider);
         }
 
-        return StringUtils.capitalize(factorProvider.toLowerCase());
+        return WordUtils.capitalizeFully(factorProvider);
     }
 }
