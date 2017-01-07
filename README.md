@@ -10,6 +10,16 @@ To learn more about Cerberus, please visit the [Cerberus website](http://enginee
 
 ## Getting Started
 
+### Running with embedded Vault, Mysql
+
+If you do not wish to install and run MySQL and Vault locally you can run these embedded using gradlew see the `Running CMS Locally` section
+
+    gradlew runVaultAndMySQL
+
+### Running with persistent data,
+
+If you wish to persist data permanently you can install Vault and MySQL locally
+
 **MySQL** is required to run the application locally.
 
 To get MySQL setup on OS X:
@@ -102,7 +112,7 @@ auth.connector.onelogin.subdomain     | Yes      | Your orgs OneLogin subdomain 
     
 ## Running CMS Locally
 
-First, a few properties must be configured in `cms-core-code/src/main/resources/cms-local-overrides.conf`
+First, a few properties must be configured in `src/main/resources/cms-local-overrides.conf`
 
 You'll need a few pieces of information before you can run the application:
  
@@ -130,21 +140,44 @@ You'll need a few pieces of information before you can run the application:
     cms.auth.connector=<YOUR AUTH CONNECTOR CLASS>
 ```
 
+### Using Gradle and embedded dependencies (Vault, MySql and the reverse proxy and Dashboard)
+
+If you wish to use embedded Vault, MySQL and run the Dashboard with reverse proxy run each of the following tasks in new command line terminals as they each are blocking tasks
+
+ - `gradlew runVaultAndMySQL`
+    - Works on Windows, Mac, Unix
+    - Downloads and configures embedded MySQL.
+    - Downloads configures and runs Vault, 
+    - You can control Vault version with `vaultVersion` in `gradle/develop.gradle`
+    - This task needs to be run as Admin in Windows, ensure that you start the IDE or Terminals as Admin
+ - `gradlew runCMS`
+    - Works on Windows, Mac, Unix
+    - Auto-sets the Vault system props and starts CMS
+    - To debug attach remote debugger to port 5005
+    - If you wish to do IAM auth in dev mode you will need to make sure you set your env as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
+ - `gradlew runDashboardAndReverseProxy`
+    - OPTIONAL TASK, Works on Windows, Mac, Unix
+    - Runs the dashboard and reverse into interact with CMS, sometimes better than curling or using postman.
+    - Downloads the dashboard from GitHub releases and runs an express server and reverse proxy to expose `http://localhost:9000/dashboard/`
+    - You can change dashboard version with `dashboardRelease` in `gradle/develop.gradle`
+ - `gradlew bootstrapData`
+    - OPTIONAL TASK, Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
+
 ### From the IDE
- 
+
+With Vault and MySQL running 
 Simply run `com.nike.cerberus.Main`.  The following VM arguments should be set:
 
     -D@appId=cms -D@environment=local -Dvault.addr=http://localhost:8200 -Dvault.token=<token>
 
-Note that if the VAULT_ADDR and VAULT_TOKEN environment variables are set, you don't need vault.addr or vault.token VM arguments.
-
 ### From the CLI
+
+With Vault and MySQL running
 
     ./gradlew clean build
     
     ./debugShadowJar.sh -Dvault.addr=http://localhost:8200 -Dvault.token=<token>
     
-Note that if the VAULT_ADDR and VAULT_TOKEN environment variables are set, you don't need vault.addr or vault.token VM arguments.
 
 ## Setting up your IDE
 

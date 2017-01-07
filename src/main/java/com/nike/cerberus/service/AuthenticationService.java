@@ -17,6 +17,7 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
@@ -58,6 +59,8 @@ import org.apache.http.HttpStatus;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,15 +73,11 @@ import java.util.Set;
 public class AuthenticationService {
 
     public static final String SYSTEM_USER = "system";
-
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
-
+    public static final String ADMIN_IAM_ROLES_PROPERTY = "cms.admin.roles";
     public static final String USER_TOKEN_TTL_OVERRIDE = "cms.user.token.ttl.override";
-
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
-
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
-
     public static final String DEFAULT_TOKEN_TTL = "1h";
 
     private final SafeDepositBoxDao safeDepositBoxDao;
@@ -91,6 +90,12 @@ public class AuthenticationService {
     private final ObjectMapper objectMapper;
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
+
+    @Inject(optional=true)
+    @Named(ADMIN_IAM_ROLES_PROPERTY)
+    String adminRoleArns;
+
+    private Set<String> adminRoleArnSet;
 
     @Inject(optional=true)
     @Named(USER_TOKEN_TTL_OVERRIDE)
@@ -111,6 +116,7 @@ public class AuthenticationService {
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
                                  final DateTimeSupplier dateTimeSupplier) {
+
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
         this.authServiceConnector = authConnector;
@@ -171,20 +177,31 @@ public class AuthenticationService {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
-        } catch (InvalidArnException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("Failed to lazily provision KMS key for arn:aws:iam::%s:role/%s in region: %s")
-                    .build();
+        } catch (AmazonServiceException e) {
+            if (("InvalidArnException").equals(e.getErrorCode())) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
+                        .withExceptionCause(e)
+                        .withExceptionMessage(String.format(
+                                "Failed to lazily provision KMS key for arn:aws:iam::%s:role/%s in region: %s",
+                                credentials.getAccountId(), credentials.getRoleName(), credentials.getRegion()))
+                        .build();
+            }
+            throw e;
         }
 
         final Set<String> policies = buildPolicySet(credentials.getAccountId(), credentials.getRoleName());
+        String arn = String.format("arn:aws:iam::%s:role/%s", credentials.getAccountId(), credentials.getRoleName());
 
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
+
+        // We will allow specific ARNs access to the user portions of the API
+        if (getAdminRoleArnSet().contains(arn)) {
+            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+        }
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
@@ -386,5 +403,18 @@ public class AuthenticationService {
                             String.format("Unexpected error communicating with AWS KMS for region %s.", regionName))
                     .build();
         }
+    }
+
+    private Set<String> getAdminRoleArnSet() {
+        if (adminRoleArnSet == null) {
+            adminRoleArnSet = new HashSet<>();
+            if (StringUtils.isNotBlank(adminRoleArns)) {
+                String[] roles = adminRoleArns.split(",");
+                if (roles.length > 0) {
+                    Arrays.stream(roles).forEach(adminRoleArnSet::add);
+                }
+            }
+        }
+        return adminRoleArnSet;
     }
 }

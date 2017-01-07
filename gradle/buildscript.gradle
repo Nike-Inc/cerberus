@@ -24,4 +24,6 @@ dependencies {
     classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3'
     classpath 'com.github.ksoichiro:gradle-console-reporter:0.4.0'
     classpath group: 'com.typesafe', name: 'config', version: '1.3.1'
+    classpath group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.7.1'
+    classpath 'com.github.michaelruocco:embedded-mysql-plugin:2.1.4'
 }

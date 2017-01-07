@@ -66,11 +66,7 @@ public class VaultAuthPrincipal implements Principal {
         final ImmutableSet.Builder<String> roleSetBuilder = ImmutableSet.builder();
         final Map<String, String> meta = clientToken.getMeta();
 
-        if (meta == null || meta.isEmpty()) {
-            throw new IllegalArgumentException("client token does not contain expected metadata!");
-        }
-
-        if (Boolean.valueOf(meta.get(METADATA_KEY_IS_ADMIN))) {
+        if (meta != null && Boolean.valueOf(meta.get(METADATA_KEY_IS_ADMIN))) {
             roleSetBuilder.add(ROLE_ADMIN);
         }
 
@@ -81,7 +77,7 @@ public class VaultAuthPrincipal implements Principal {
 
     private Set<String> extractUserGroups(final VaultClientTokenResponse clientToken) {
         final Map<String, String> meta = clientToken.getMeta();
-        final String groupString = meta.get(METADATA_KEY_GROUPS);
+        final String groupString = meta == null ? "" : meta.get(METADATA_KEY_GROUPS);
         if (StringUtils.isBlank(groupString)) {
             return Collections.emptySet();
         } else {
@@ -91,7 +87,7 @@ public class VaultAuthPrincipal implements Principal {
 
     private String extractUsername(final VaultClientTokenResponse clientToken) {
         final Map<String, String> meta = clientToken.getMeta();
-        return meta.get(METADATA_KEY_USERNAME);
+        return meta == null ? "not-set-possibly-root-token" : meta.get(METADATA_KEY_USERNAME);
     }
 
     @Override

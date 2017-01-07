@@ -178,3 +178,9 @@ local.properties
 cms-local-overrides.conf
 /one_login_mfa_api_tester.sh
 /cms_login_tester.sh
+
+# node plugin stuffs
+/reverse_proxy/node_modules/
+
+# embedded mysql stuff
+/target/
