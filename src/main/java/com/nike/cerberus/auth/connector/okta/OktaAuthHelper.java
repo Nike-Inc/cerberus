@@ -28,11 +28,13 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.sdk.clients.AuthApiClient;
 import com.okta.sdk.clients.UserApiClient;
+import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
 import org.apache.commons.lang3.text.WordUtils;
 
+import javax.inject.Named;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -56,20 +58,27 @@ public class OktaAuthHelper {
 
     private final UserApiClient userApiClient;
 
-    @Inject
-    public OktaAuthHelper(final AuthApiClient authApiClient, final UserApiClient userApiClient) {
+    public OktaAuthHelper(AuthApiClient authClient,
+                          UserApiClient userApiClient,
+                          ObjectMapper objectMapper) {
 
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.findAndRegisterModules();
-        this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        this.objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        this.objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        this.objectMapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-        this.authClient = authApiClient;
+        this.authClient = authClient;
         this.userApiClient = userApiClient;
+        this.objectMapper = objectMapper;
+    }
+
+    @Inject
+    public OktaAuthHelper(@Named("auth.connector.okta.api_key") final String oktaApiKey,
+                          @Named("auth.connector.okta.base_url") final String baseUrl,
+                          final ObjectMapper objectMapper) {
+
+        Preconditions.checkArgument(oktaApiKey != null, "okta api key cannot be null");
+        Preconditions.checkArgument(baseUrl != null, "okta base url cannot be null");
+
+        this.objectMapper = objectMapper;
+
+        this.authClient = new AuthApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
+        this.userApiClient = new UserApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
     }
 
     /**

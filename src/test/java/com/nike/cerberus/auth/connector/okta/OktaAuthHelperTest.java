@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
@@ -28,6 +29,8 @@ import com.okta.sdk.models.usergroups.UserGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * Tests the OktaAuthHelper class
@@ -50,18 +54,20 @@ public class OktaAuthHelperTest {
     private OktaAuthHelper oktaAuthHelper;
 
     // dependencies
+    @Mock
     private AuthApiClient authApiClient;
+
+    @Mock
     private UserApiClient userApiClient;
 
     @Before
     public void setup() {
+        initMocks(this);
 
-        // mock dependencies
-        authApiClient = mock(AuthApiClient.class);
-        userApiClient = mock(UserApiClient.class);
+        ObjectMapper mapper = new ObjectMapper();
 
         // create test object
-        oktaAuthHelper = new OktaAuthHelper(authApiClient, userApiClient);
+        oktaAuthHelper = new OktaAuthHelper(authApiClient, userApiClient, mapper);
     }
 
     /////////////////////////
