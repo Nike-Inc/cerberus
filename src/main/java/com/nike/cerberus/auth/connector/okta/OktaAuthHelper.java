@@ -82,7 +82,8 @@ public class OktaAuthHelper {
         try {
             return this.userApiClient.getUserGroups(userId);
         } catch (IOException ioe) {
-            final String msg = String.format("failed to get user groups for reason: %s", ioe.getMessage());
+            final String msg = String.format("failed to get user groups for user (%s) for reason: %s", userId,
+                    ioe.getMessage());
 
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
@@ -133,10 +134,11 @@ public class OktaAuthHelper {
         try {
             return this.authClient.authenticate(username, password, relayState);
         } catch (IOException ioe) {
-            final String msg = String.format("failed to authenticate user for reason: %s", ioe.getMessage());
+            final String msg = String.format("failed to authenticate user (%s) for reason: %s", username,
+                    ioe.getMessage());
 
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+                    .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
                     .withExceptionMessage(msg)
                     .build();        }
     }
@@ -158,7 +160,7 @@ public class OktaAuthHelper {
             return objectMapper.readValue(embeddedJson, EmbeddedAuthResponseDataV1.class);
         } catch (IOException e) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
                     .withExceptionCause(e)
                     .withExceptionMessage("Error parsing the embedded auth data from Okta.")
                     .build();

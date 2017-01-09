@@ -58,9 +58,9 @@ public class OktaAuthConnector implements AuthConnector {
             authResponse.setStatus(AuthStatus.MFA_REQUIRED);
             authData.setStateToken(authResult.getStateToken());
 
-            embeddedData.getFactors().forEach(f -> authData.getDevices().add(new AuthMfaDevice()
-                    .setId(f.getId())
-                    .setName(oktaAuthHelper.getDeviceName(f))));
+            embeddedData.getFactors().forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
+                    .setId(factor.getId())
+                    .setName(oktaAuthHelper.getDeviceName(factor))));
         } else {
             authResponse.setStatus(AuthStatus.SUCCESS);
         }
@@ -99,7 +99,7 @@ public class OktaAuthConnector implements AuthConnector {
             return groups;
         }
 
-        userGroups.forEach(g -> groups.add(g.getProfile().getName()));
+        userGroups.forEach(group -> groups.add(group.getProfile().getName()));
 
         return groups;
     }
