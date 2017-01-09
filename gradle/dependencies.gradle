@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 repositories {
@@ -28,7 +29,6 @@ def groovyVersion = '2.3.9'
 dependencies {
     compile (
             "com.nike:vault-client:1.0.0",
-
             "com.nike.riposte:riposte-spi:$riposteVersion",
             "com.nike.riposte:riposte-core:$riposteVersion",
             "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
@@ -59,7 +59,8 @@ dependencies {
             "org.flywaydb:flyway-core:4.0",
             "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.2",
             "com.squareup.okhttp3:okhttp:3.3.1",
-            "commons-io:commons-io:2.5"
+            "commons-io:commons-io:2.5",
+            "com.okta:okta-sdk:0.0.4"
     )
 
     testCompile (
