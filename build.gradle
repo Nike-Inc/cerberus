@@ -22,11 +22,13 @@ buildscript {
 
 plugins {
     id "org.flywaydb.flyway" version "4.0.3"
+    id "com.moowork.node" version "1.0.1"
 }
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'embedded-mysql'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -131,14 +133,4 @@ task antReplace() {
     }
 }
 
-task runCMS(type: JavaExec) {
-    dependsOn 'antReplace'
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'com.nike.cerberus.Main'
-    systemProperties = [
-            'vault.addr': 'http://127.0.0.1:8200',
-            'vault.token': System.getenv('VAULT_TOKEN'),
-            '@appId': 'cms',
-            '@environment': 'local'
-    ]
-}
+apply from: file('gradle/develop.gradle')
