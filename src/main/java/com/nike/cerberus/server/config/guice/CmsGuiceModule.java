@@ -18,7 +18,6 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
@@ -65,9 +64,6 @@ import com.nike.riposte.util.AwsUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.okta.sdk.clients.AuthApiClient;
-import com.okta.sdk.clients.UserApiClient;
-import com.okta.sdk.framework.ApiClientConfiguration;
 import com.typesafe.config.Config;
 
 import com.typesafe.config.ConfigValueFactory;
@@ -298,27 +294,5 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appInfoFuture")
     public CompletableFuture<AppInfo> appInfoFuture(AsyncHttpClientHelper asyncHttpClientHelper) {
         return AwsUtil.getAppInfoFutureWithAwsInfo(asyncHttpClientHelper);
-    }
-
-    @Singleton
-    @Provides
-    public AuthApiClient authApiClient(@Named("auth.connector.okta.api_key") final String oktaApiKey,
-                                       @Named("auth.connector.okta.base_url") final String baseUrl) {
-
-        Preconditions.checkArgument(oktaApiKey != null, "okta api key cannot be null");
-        Preconditions.checkArgument(baseUrl != null, "okta base url cannot be null");
-
-        return new AuthApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
-    }
-
-    @Singleton
-    @Provides
-    public UserApiClient userApiClient(@Named("auth.connector.okta.api_key") final String oktaApiKey,
-                                       @Named("auth.connector.okta.base_url") final String baseUrl) {
-
-        Preconditions.checkArgument(oktaApiKey != null, "okta api key cannot be null");
-        Preconditions.checkArgument(baseUrl != null, "okta base url cannot be null");
-
-        return new UserApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
     }
 }
