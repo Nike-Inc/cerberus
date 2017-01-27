@@ -17,21 +17,21 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.sdk.clients.AuthApiClient;
+import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.inject.Named;
@@ -46,7 +46,13 @@ public class OktaAuthHelper {
 
     public static final String AUTHENTICATION_MFA_REQUIRED_STATUS = "MFA_REQUIRED";
 
+    public static final String AUTHENTICATION_MFA_ENROLL_STATUS = "MFA_ENROLL";
+
     public static final String AUTHENTICATION_SUCCESS_STATUS = "SUCCESS";
+
+    public static final String MFA_FACTOR_NOT_SETUP_STATUS = "NOT_SETUP";
+
+    public static final String MFA_FACTOR_ACTIVE_STATUS = "ACTIVE";
 
     private static final ImmutableMap<String, String> MFA_FACTOR_NAMES = ImmutableMap.of(
             "google", "Google Authenticator",
@@ -58,13 +64,21 @@ public class OktaAuthHelper {
 
     private final UserApiClient userApiClient;
 
-    public OktaAuthHelper(AuthApiClient authClient,
-                          UserApiClient userApiClient,
-                          ObjectMapper objectMapper) {
+    private final FactorsApiClient factorsApiClient;
+
+    private final String baseUrl;
+
+    public OktaAuthHelper(final AuthApiClient authClient,
+                          final UserApiClient userApiClient,
+                          final FactorsApiClient factorsApiClient,
+                          final ObjectMapper objectMapper,
+                          final String baseUrl) {
 
         this.authClient = authClient;
         this.userApiClient = userApiClient;
         this.objectMapper = objectMapper;
+        this.factorsApiClient = factorsApiClient;
+        this.baseUrl = baseUrl;
     }
 
     @Inject
@@ -76,9 +90,12 @@ public class OktaAuthHelper {
         Preconditions.checkArgument(baseUrl != null, "okta base url cannot be null");
 
         this.objectMapper = objectMapper;
+        this.baseUrl = baseUrl;
 
-        this.authClient = new AuthApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
-        this.userApiClient = new UserApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
+        final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(baseUrl, oktaApiKey);
+        this.authClient = new AuthApiClient(clientConfiguration);
+        this.userApiClient = new UserApiClient(clientConfiguration);
+        this.factorsApiClient = new FactorsApiClient(clientConfiguration);
     }
 
     /**
@@ -154,12 +171,130 @@ public class OktaAuthHelper {
     }
 
     /**
+     * Print a user-friendly name for a MFA device
+     * @param factor  Okta MFA factor
+     * @return Device name
+     */
+    protected String getDeviceName(final Factor factor) {
+
+        Preconditions.checkArgument(factor != null, "factor cannot be null.");
+
+        final String factorProvider = factor.getProvider().toLowerCase();
+        if (MFA_FACTOR_NAMES.containsKey(factorProvider)) {
+            return MFA_FACTOR_NAMES.get(factorProvider);
+        }
+
+        return WordUtils.capitalizeFully(factorProvider);
+    }
+
+    /**
+     * Get list of enrolled MFA factors for a user
+     * @param userId  Okta user ID
+     * @return List of factors
+     */
+    protected List<Factor> getFactorsByUserId(final String userId) {
+
+        Preconditions.checkArgument(userId != null, "user id cannot be null.");
+
+        try {
+            return this.factorsApiClient.getUserLifecycleFactors(userId);
+        } catch (IOException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionCause(e)
+                    .withExceptionMessage("Error parsing the embedded auth data from Okta.")
+                    .build();
+        }
+    }
+
+    /**
+     * Get list of enrolled MFA factors for a user from their authentication result
+     * @param authResult  Okta response object after successful authentication
+     * @return List of factors
+     */
+    protected List<Factor> getUserFactorsFromAuthResult(final AuthResult authResult) {
+
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+
+        if (embeddedAuthData != null && embeddedAuthData.getFactors() != null) {
+            return embeddedAuthData.getFactors();
+        } else {
+
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionMessage("Could not parse user factors from Okta response.")
+                    .build();
+        }
+    }
+
+    /**
+     * Get user id from authentication result
+     * @param authResult Okta response object after successful authentication
+     * @return The u
+     * ser ID
+     */
+    protected String getUserIdFromAuthResult(final AuthResult authResult) {
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+
+        if (embeddedAuthData.getUser() != null) {
+            return embeddedAuthData.getUser().getId();
+        } else {
+
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionMessage("Could not parse user data from Okta response.")
+                    .build();
+        }
+    }
+
+    /**
+     * Get username from authentication result
+     * @param authResult Okta response object after successful authentication
+     * @return The username
+     */
+    String getUserLoginFromAuthResult(final AuthResult authResult) {
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+
+        try {
+            return embeddedAuthData.getUser().getProfile().getLogin();
+        } catch(NullPointerException npe) {
+
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionMessage("Could not parse user data from Okta response.")
+                    .build();
+        }
+    }
+
+    /**
+     * Ensure the user has at least one active MFA device set up.
+     * @param factors - List of user factors
+     */
+    protected void validateUserFactors(final List<Factor> factors) {
+
+       if(factors == null || factors.isEmpty() || factors.stream()
+               .allMatch(factor -> StringUtils.equals(factor.getStatus(), MFA_FACTOR_NOT_SETUP_STATUS)))
+       {
+
+           throw ApiException.newBuilder()
+                   .withApiErrors(new ApiErrorBase(
+                           DefaultApiError.MFA_SETUP_REQUIRED.getName(),
+                           DefaultApiError.MFA_SETUP_REQUIRED.getErrorCode(),
+                           "MFA is required, but user has not set up any devices in Okta.\n" +
+                                   "Please set up a MFA device in Okta: " + this.baseUrl,
+                           DefaultApiError.MFA_SETUP_REQUIRED.getHttpStatusCode()))
+                   .withExceptionMessage("MFA is required, but user has not set up any devices in Okta.")
+                   .build();
+       }
+    }
+
+    /**
      * Convenience method for parsing the Okta response and mapping it to a class.
      *
      * @param authResult  The Okta authentication result object
      * @return Deserialized object from the response body
      */
-    protected EmbeddedAuthResponseDataV1 getEmbeddedAuthData(final AuthResult authResult) {
+    private EmbeddedAuthResponseDataV1 getEmbeddedAuthData(final AuthResult authResult) {
 
         Preconditions.checkArgument(authResult != null, "auth result cannot be null.");
 
@@ -177,20 +312,4 @@ public class OktaAuthHelper {
         }
     }
 
-    /**
-     * Print a user-friendly name for a MFA device
-     * @param factor - Okta MFA factor
-     * @return Device name
-     */
-    protected String getDeviceName(final Factor factor) {
-
-        Preconditions.checkArgument(factor != null, "factor cannot be null.");
-
-        final String factorProvider = factor.getProvider().toLowerCase();
-        if (MFA_FACTOR_NAMES.containsKey(factorProvider)) {
-            return MFA_FACTOR_NAMES.get(factorProvider);
-        }
-
-        return WordUtils.capitalizeFully(factorProvider);
-    }
 }

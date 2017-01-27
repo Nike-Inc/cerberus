@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.okta.sdk.clients.AuthApiClient;
+import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
@@ -29,7 +30,6 @@ import com.okta.sdk.models.usergroups.UserGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -38,7 +38,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -60,19 +59,22 @@ public class OktaAuthHelperTest {
     @Mock
     private UserApiClient userApiClient;
 
+    @Mock
+    private FactorsApiClient factorsApiClient;
+
+    private String baseUrl;
+
     @Before
     public void setup() {
+
         initMocks(this);
 
+        this.baseUrl = "baseUrl";
         ObjectMapper mapper = new ObjectMapper();
 
         // create test object
-        oktaAuthHelper = new OktaAuthHelper(authApiClient, userApiClient, mapper);
+        this.oktaAuthHelper = new OktaAuthHelper(authApiClient, userApiClient, factorsApiClient, mapper, baseUrl);
     }
-
-    /////////////////////////
-    // Helper Methods
-    /////////////////////////
 
 
     /////////////////////////
@@ -151,31 +153,6 @@ public class OktaAuthHelperTest {
     }
 
     @Test
-    public void getEmbbeddedAuthDataHappy() {
-
-        Map<String, String> user = Maps.newHashMap();
-        List<Map<String, Object>> factors = Lists.newArrayList(Maps.newHashMap());
-        Map<String, Object> embedded = Maps.newHashMap();
-        embedded.put("user", user);
-        embedded.put("factors", factors);
-
-        AuthResult authResult = mock(AuthResult.class);
-        when(authResult.getEmbedded()).thenReturn(embedded);
-
-        EmbeddedAuthResponseDataV1 result = this.oktaAuthHelper.getEmbeddedAuthData(authResult);
-
-        assertNotNull(result.getUser());
-        assertNotNull(result.getFactors());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getEmbbeddedAuthDataFailsNullResult() {
-
-        this.oktaAuthHelper.getEmbeddedAuthData(null);
-
-    }
-
-    @Test
     public void getDeviceName() {
 
         String provider = "provider";
@@ -204,5 +181,73 @@ public class OktaAuthHelperTest {
 
         this.oktaAuthHelper.getDeviceName(null);
 
+    }
+
+    @Test
+    public void getUserFactorsFromAuthResultHappy() throws Exception {
+
+        String factorId = "factor id";
+        String provider = "GOOGLE";
+
+        Factor factor = new Factor();
+        factor.setProvider(provider);
+        factor.setId(factorId);
+
+        Map<String, Object> embedded = Maps.newHashMap();
+        embedded.put("factors", Lists.newArrayList(factor));
+
+        AuthResult authResult = new AuthResult();
+        authResult.setEmbedded(embedded);
+
+        List<Factor> result = this.oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
+
+        assertEquals(1, result.size());
+        assertEquals(provider, result.get(0).getProvider());
+        assertEquals(factorId, result.get(0).getId());
+    }
+
+    @Test(expected = ApiException.class)
+    public void getUserFactorsFromAuthResultEmbeddedNull() throws Exception {
+
+        AuthResult authResult = new AuthResult();
+        authResult.setEmbedded(null);
+
+        // do the call
+        this.oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
+    }
+
+    @Test
+    public void validateUserFactorsSuccess() {
+
+        Factor factor1 = new Factor();
+        factor1.setStatus(OktaAuthHelper.MFA_FACTOR_NOT_SETUP_STATUS);
+
+        Factor factor2 = new Factor();
+
+        this.oktaAuthHelper.validateUserFactors(Lists.newArrayList(factor1, factor2));
+    }
+
+    @Test(expected = ApiException.class)
+    public void validateUserFactorsFailsNull() {
+
+        this.oktaAuthHelper.validateUserFactors(null);
+    }
+
+    @Test(expected = ApiException.class)
+    public void validateUserFactorsFailsEmpty() {
+
+        this.oktaAuthHelper.validateUserFactors(Lists.newArrayList());
+    }
+
+    @Test(expected = ApiException.class)
+    public void validateUserFactorsFailsAllFactorsNotSetUp() {
+
+        Factor factor1 = new Factor();
+        factor1.setStatus(OktaAuthHelper.MFA_FACTOR_NOT_SETUP_STATUS);
+
+        Factor factor2 = new Factor();
+        factor2.setStatus(OktaAuthHelper.MFA_FACTOR_NOT_SETUP_STATUS);
+
+        this.oktaAuthHelper.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }
 }
