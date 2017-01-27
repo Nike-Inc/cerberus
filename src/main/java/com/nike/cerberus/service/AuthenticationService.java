@@ -178,7 +178,7 @@ public class AuthenticationService {
         try {
             keyId = getKeyId(credentials);
         } catch (AmazonServiceException e) {
-            if (("InvalidArnException").equals(e.getErrorCode())) {
+            if ("InvalidArnException".equals(e.getErrorCode())) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
                         .withExceptionCause(e)
