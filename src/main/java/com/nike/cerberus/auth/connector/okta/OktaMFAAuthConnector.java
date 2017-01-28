@@ -50,8 +50,8 @@ public class OktaMFAAuthConnector implements AuthConnector {
     public AuthResponse authenticate(String username, String password) {
 
         final AuthResult authResult = oktaAuthHelper.authenticateUser(username, password, null);
-        final String userId = this.oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = this.oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
         final AuthResponse authResponse = new AuthResponse().setData(authData).setStatus(AuthStatus.MFA_REQUIRED);
@@ -60,13 +60,13 @@ public class OktaMFAAuthConnector implements AuthConnector {
 
         if (StringUtils.equals(authResult.getStatus(), OktaAuthHelper.AUTHENTICATION_MFA_REQUIRED_STATUS)
                 || StringUtils.equals(authResult.getStatus(), OktaAuthHelper.AUTHENTICATION_MFA_ENROLL_STATUS)) {
-            factors = this.oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
+            factors = oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
             authData.setStateToken(authResult.getStateToken());
         } else {
-            factors = this.oktaAuthHelper.getFactorsByUserId(userId);
+            factors = oktaAuthHelper.getFactorsByUserId(userId);
         }
 
-        this.oktaAuthHelper.validateUserFactors(factors);
+        oktaAuthHelper.validateUserFactors(factors);
 
         factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
                 .setId(factor.getId())
@@ -79,8 +79,8 @@ public class OktaMFAAuthConnector implements AuthConnector {
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
 
         final AuthResult authResult = oktaAuthHelper.verifyFactor(deviceId, stateToken, otpToken);
-        final String userId = this.oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = this.oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData()
                 .setUserId(userId)

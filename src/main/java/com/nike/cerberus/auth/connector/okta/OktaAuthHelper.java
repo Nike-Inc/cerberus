@@ -52,8 +52,6 @@ public class OktaAuthHelper {
 
     public static final String MFA_FACTOR_NOT_SETUP_STATUS = "NOT_SETUP";
 
-    public static final String MFA_FACTOR_ACTIVE_STATUS = "ACTIVE";
-
     private static final ImmutableMap<String, String> MFA_FACTOR_NAMES = ImmutableMap.of(
             "google", "Google Authenticator",
             "okta"  , "Okta Verify");
@@ -93,9 +91,9 @@ public class OktaAuthHelper {
         this.baseUrl = baseUrl;
 
         final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(baseUrl, oktaApiKey);
-        this.authClient = new AuthApiClient(clientConfiguration);
-        this.userApiClient = new UserApiClient(clientConfiguration);
-        this.factorsApiClient = new FactorsApiClient(clientConfiguration);
+        authClient = new AuthApiClient(clientConfiguration);
+        userApiClient = new UserApiClient(clientConfiguration);
+        factorsApiClient = new FactorsApiClient(clientConfiguration);
     }
 
     /**
@@ -107,7 +105,7 @@ public class OktaAuthHelper {
     protected List<UserGroup> getUserGroups(final String userId) {
 
         try {
-            return this.userApiClient.getUserGroups(userId);
+            return userApiClient.getUserGroups(userId);
         } catch (IOException ioe) {
             final String msg = String.format("failed to get user groups for user (%s) for reason: %s", userId,
                     ioe.getMessage());
@@ -133,7 +131,7 @@ public class OktaAuthHelper {
 
         final AuthResult authResult;
         try {
-            authResult = this.authClient.authenticateWithFactor(stateToken, factorId, passCode);
+            authResult = authClient.authenticateWithFactor(stateToken, factorId, passCode);
         } catch (IOException ioe) {
             final String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
                     stateToken, ioe.getMessage());
@@ -159,7 +157,7 @@ public class OktaAuthHelper {
                                           final String relayState) {
 
         try {
-            return this.authClient.authenticate(username, password, relayState);
+            return authClient.authenticate(username, password, relayState);
         } catch (IOException ioe) {
             final String msg = String.format("failed to authenticate user (%s) for reason: %s", username,
                     ioe.getMessage());
@@ -197,7 +195,7 @@ public class OktaAuthHelper {
         Preconditions.checkArgument(userId != null, "user id cannot be null.");
 
         try {
-            return this.factorsApiClient.getUserLifecycleFactors(userId);
+            return factorsApiClient.getUserLifecycleFactors(userId);
         } catch (IOException e) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
@@ -214,7 +212,7 @@ public class OktaAuthHelper {
      */
     protected List<Factor> getUserFactorsFromAuthResult(final AuthResult authResult) {
 
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
 
         if (embeddedAuthData != null && embeddedAuthData.getFactors() != null) {
             return embeddedAuthData.getFactors();
@@ -234,7 +232,7 @@ public class OktaAuthHelper {
      * ser ID
      */
     protected String getUserIdFromAuthResult(final AuthResult authResult) {
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
 
         if (embeddedAuthData.getUser() != null) {
             return embeddedAuthData.getUser().getId();
@@ -253,7 +251,7 @@ public class OktaAuthHelper {
      * @return The username
      */
     String getUserLoginFromAuthResult(final AuthResult authResult) {
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = this.getEmbeddedAuthData(authResult);
+        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
 
         try {
             return embeddedAuthData.getUser().getProfile().getLogin();
@@ -281,7 +279,7 @@ public class OktaAuthHelper {
                            DefaultApiError.MFA_SETUP_REQUIRED.getName(),
                            DefaultApiError.MFA_SETUP_REQUIRED.getErrorCode(),
                            "MFA is required, but user has not set up any devices in Okta.\n" +
-                                   "Please set up a MFA device in Okta: " + this.baseUrl,
+                                   "Please set up a MFA device in Okta: " + baseUrl,
                            DefaultApiError.MFA_SETUP_REQUIRED.getHttpStatusCode()))
                    .withExceptionMessage("MFA is required, but user has not set up any devices in Okta.")
                    .build();

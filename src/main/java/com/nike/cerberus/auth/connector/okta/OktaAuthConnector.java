@@ -50,8 +50,8 @@ public class OktaAuthConnector implements AuthConnector {
     public AuthResponse authenticate(String username, String password) {
 
         final AuthResult authResult = oktaAuthHelper.authenticateUser(username, password, null);
-        final String userId = this.oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = this.oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData()
                 .setUserId(userId)
@@ -65,8 +65,8 @@ public class OktaAuthConnector implements AuthConnector {
             authData.setStateToken(authResult.getStateToken());
             authResponse.setStatus(AuthStatus.MFA_REQUIRED);
 
-            factors = this.oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
-            this.oktaAuthHelper.validateUserFactors(factors);
+            factors = oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
+            oktaAuthHelper.validateUserFactors(factors);
 
             factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
                     .setId(factor.getId())
@@ -83,8 +83,8 @@ public class OktaAuthConnector implements AuthConnector {
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
 
         final AuthResult authResult = oktaAuthHelper.verifyFactor(deviceId, stateToken, otpToken);
-        final String userId = this.oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = this.oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData()
                 .setUserId(userId)
