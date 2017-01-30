@@ -34,20 +34,19 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
- * Tests the OktaAuthConnector class
+ * Tests the OktaMFAAuthConnector class
  */
-public class OktaAuthConnectorTest {
+public class OktaMFAAuthConnectorTest {
 
     // class under test
-    private OktaAuthConnector oktaAuthConnector;
+    private OktaMFAAuthConnector oktaMFAAuthConnector;
 
     // dependencies
     @Mock
@@ -59,17 +58,11 @@ public class OktaAuthConnectorTest {
     @Before
     public void setup() {
 
-    initMocks(this);
+        initMocks(this);
 
         // create test object
-        oktaAuthConnector = new OktaAuthConnector(oktaApiClientHelper, oktaClientResponseUtils);
-
-        reset(oktaApiClientHelper);
+        oktaMFAAuthConnector = new OktaMFAAuthConnector(oktaApiClientHelper, oktaClientResponseUtils);
     }
-
-    /////////////////////////
-    // Helper Methods
-    /////////////////////////
 
     private Factor mockFactor(String provider, String id, boolean enrolled) {
 
@@ -87,13 +80,12 @@ public class OktaAuthConnectorTest {
         return factor;
     }
 
-
     /////////////////////////
     // Test Methods
     /////////////////////////
 
-    @Test
-    public void authenticateHappySuccess() throws Exception {
+    @Test(expected = ApiException.class)
+    public void authenticateFailsNoFactors() {
 
         String username = "username";
         String password = "password";
@@ -107,9 +99,10 @@ public class OktaAuthConnectorTest {
         when(oktaApiClientHelper.authenticateUser(username, password, null)).thenReturn(authResult);
         when(oktaClientResponseUtils.getUserIdFromAuthResult(authResult)).thenReturn(id);
         when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
+        doCallRealMethod().when(oktaClientResponseUtils).validateUserFactors(anyObject());
 
         // do the call
-        AuthResponse result = this.oktaAuthConnector.authenticate(username, password);
+        AuthResponse result = this.oktaMFAAuthConnector.authenticate(username, password);
 
         // verify results
         assertEquals(id, result.getData().getUserId());
@@ -117,7 +110,7 @@ public class OktaAuthConnectorTest {
     }
 
     @Test
-    public void authenticateHappyMfaSuccess() throws Exception {
+    public void authenticateHappyMfaRequiredSuccess() {
 
         String username = "username";
         String password = "password";
@@ -138,7 +131,7 @@ public class OktaAuthConnectorTest {
         when(oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult)).thenReturn(Lists.newArrayList(factor));
 
         // do the call
-        AuthResponse result = this.oktaAuthConnector.authenticate(username, password);
+        AuthResponse result = this.oktaMFAAuthConnector.authenticate(username, password);
 
         // verify results
         assertEquals(id, result.getData().getUserId());
@@ -164,14 +157,48 @@ public class OktaAuthConnectorTest {
         when(authResult.getStatus()).thenReturn(OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS);
         when(oktaClientResponseUtils.getUserIdFromAuthResult(authResult)).thenReturn(id);
         when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
-        doCallRealMethod().when(oktaClientResponseUtils).validateUserFactors(anyList());
+        when(oktaApiClientHelper.getFactorsByUserId(id)).thenReturn(Lists.newArrayList());
+        doCallRealMethod().when(oktaClientResponseUtils).validateUserFactors(anyObject());
 
         // do the call
-        AuthResponse result = this.oktaAuthConnector.authenticate(username, password);
+        AuthResponse result = this.oktaMFAAuthConnector.authenticate(username, password);
 
         // verify results
         assertEquals(id, result.getData().getUserId());
         assertEquals(email, result.getData().getUsername());
+        assertEquals(0, result.getData().getDevices().size());
+    }
+
+    @Test
+    public void authenticateHappyMfaNotRequiredSuccess() throws Exception {
+
+        String username = "username";
+        String password = "password";
+
+        String email = "email";
+        String id = "id";
+        String provider = "provider";
+        String deviceId = "device id";
+        Factor factor = mockFactor(provider, deviceId, true);
+
+        AuthResult authResult = mock(AuthResult.class);
+        when(authResult.getStateToken()).thenReturn("state token");
+
+        when(oktaApiClientHelper.authenticateUser(username, password, null)).thenReturn(authResult);
+        when(authResult.getStatus()).thenReturn(OktaClientResponseUtils.AUTHENTICATION_SUCCESS_STATUS);
+        when(oktaClientResponseUtils.getUserIdFromAuthResult(authResult)).thenReturn(id);
+        when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
+        when(oktaApiClientHelper.getFactorsByUserId(id)).thenReturn(Lists.newArrayList(factor));
+
+        // do the call
+        AuthResponse result = this.oktaMFAAuthConnector.authenticate(username, password);
+
+        // verify results
+        assertEquals(id, result.getData().getUserId());
+        assertEquals(email, result.getData().getUsername());
+        assertEquals(1, result.getData().getDevices().size());
+        assertEquals(deviceId, result.getData().getDevices().get(0).getId());
+        assertEquals(StringUtils.capitalize(provider), result.getData().getDevices().get(0).getName());
     }
 
     @Test
@@ -190,7 +217,7 @@ public class OktaAuthConnectorTest {
         when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
 
         // do the call
-        AuthResponse result = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
+        AuthResponse result = this.oktaMFAAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
 
         // verify results
         assertEquals(id, result.getData().getUserId());
@@ -219,7 +246,7 @@ public class OktaAuthConnectorTest {
         when(oktaApiClientHelper.getUserGroups(id)).thenReturn(Lists.newArrayList(group1, group2));
 
         // do the call
-        Set<String> result = this.oktaAuthConnector.getGroups(authData);
+        Set<String> result = this.oktaMFAAuthConnector.getGroups(authData);
 
         // verify results
         assertTrue(result.contains(name1));

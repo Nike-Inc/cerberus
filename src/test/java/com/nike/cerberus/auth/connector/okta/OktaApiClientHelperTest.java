@@ -17,28 +17,22 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.okta.sdk.clients.AuthApiClient;
+import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.models.auth.AuthResult;
-import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -46,12 +40,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
- * Tests the OktaAuthHelper class
+ * Tests the OktaApiClientHelper class
  */
-public class OktaAuthHelperTest {
+public class OktaApiClientHelperTest {
 
     // class under test
-    private OktaAuthHelper oktaAuthHelper;
+    private OktaApiClientHelper oktaApiClientHelper;
 
     // dependencies
     @Mock
@@ -60,19 +54,17 @@ public class OktaAuthHelperTest {
     @Mock
     private UserApiClient userApiClient;
 
+    @Mock
+    private FactorsApiClient factorsApiClient;
+
     @Before
     public void setup() {
+
         initMocks(this);
 
-        ObjectMapper mapper = new ObjectMapper();
-
         // create test object
-        oktaAuthHelper = new OktaAuthHelper(authApiClient, userApiClient, mapper);
+        this.oktaApiClientHelper = new OktaApiClientHelper(authApiClient, userApiClient, factorsApiClient);
     }
-
-    /////////////////////////
-    // Helper Methods
-    /////////////////////////
 
 
     /////////////////////////
@@ -87,7 +79,7 @@ public class OktaAuthHelperTest {
         when(userApiClient.getUserGroups(id)).thenReturn(Lists.newArrayList(group));
 
         // do the call
-        List<UserGroup> result = this.oktaAuthHelper.getUserGroups(id);
+        List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id);
 
         // verify results
         assertTrue(result.contains(group));
@@ -99,7 +91,7 @@ public class OktaAuthHelperTest {
         when(userApiClient.getUserGroups(anyString())).thenThrow(IOException.class);
 
         // do the call
-        this.oktaAuthHelper.getUserGroups("id");
+        this.oktaApiClientHelper.getUserGroups("id");
     }
 
     @Test
@@ -112,7 +104,7 @@ public class OktaAuthHelperTest {
         AuthResult authResult = mock(AuthResult.class);
         when(authApiClient.authenticateWithFactor(stateToken, factorId, passCode)).thenReturn(authResult);
 
-        AuthResult result = this.oktaAuthHelper.verifyFactor(factorId, stateToken, passCode);
+        AuthResult result = this.oktaApiClientHelper.verifyFactor(factorId, stateToken, passCode);
 
         assertEquals(authResult, result);
     }
@@ -123,7 +115,7 @@ public class OktaAuthHelperTest {
         when(authApiClient.authenticateWithFactor(anyString(), anyString(), anyString())).thenThrow(IOException.class);
 
         // do the call
-        this.oktaAuthHelper.verifyFactor("factor id", "state token", "pass code");
+        this.oktaApiClientHelper.verifyFactor("factor id", "state token", "pass code");
     }
 
     @Test
@@ -136,7 +128,7 @@ public class OktaAuthHelperTest {
         AuthResult authResult = mock(AuthResult.class);
         when(this.authApiClient.authenticate(username, password, relayState)).thenReturn(authResult);
 
-        AuthResult result = this.oktaAuthHelper.authenticateUser(username, password, relayState);
+        AuthResult result = this.oktaApiClientHelper.authenticateUser(username, password, relayState);
 
         assertEquals(result, authResult);
     }
@@ -147,62 +139,7 @@ public class OktaAuthHelperTest {
         when(authApiClient.authenticate(anyString(), anyString(), anyString())).thenThrow(IOException.class);
 
         // do the call
-        this.oktaAuthHelper.authenticateUser("username", "password", "relay state");
+        this.oktaApiClientHelper.authenticateUser("username", "password", "relay state");
     }
 
-    @Test
-    public void getEmbbeddedAuthDataHappy() {
-
-        Map<String, String> user = Maps.newHashMap();
-        List<Map<String, Object>> factors = Lists.newArrayList(Maps.newHashMap());
-        Map<String, Object> embedded = Maps.newHashMap();
-        embedded.put("user", user);
-        embedded.put("factors", factors);
-
-        AuthResult authResult = mock(AuthResult.class);
-        when(authResult.getEmbedded()).thenReturn(embedded);
-
-        EmbeddedAuthResponseDataV1 result = this.oktaAuthHelper.getEmbeddedAuthData(authResult);
-
-        assertNotNull(result.getUser());
-        assertNotNull(result.getFactors());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getEmbbeddedAuthDataFailsNullResult() {
-
-        this.oktaAuthHelper.getEmbeddedAuthData(null);
-
-    }
-
-    @Test
-    public void getDeviceName() {
-
-        String provider = "provider";
-        Factor factor = mock(Factor.class);
-        when(factor.getProvider()).thenReturn(provider);
-
-        String result = this.oktaAuthHelper.getDeviceName(factor);
-
-        assertEquals(StringUtils.capitalize(provider), result);
-    }
-
-    @Test
-    public void getDeviceNameGoogle() {
-
-        String provider = "GOOGLE";
-        Factor factor = mock(Factor.class);
-        when(factor.getProvider()).thenReturn(provider);
-
-        String result = this.oktaAuthHelper.getDeviceName(factor);
-
-        assertEquals("Google Authenticator", result);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getDeviceNameFailsNullFactor() {
-
-        this.oktaAuthHelper.getDeviceName(null);
-
-    }
 }

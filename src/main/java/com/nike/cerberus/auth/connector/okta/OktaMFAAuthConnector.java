@@ -34,17 +34,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Okta version 1 API implementation of the AuthConnector interface.
+ * Okta Version 1 API implementation of the AuthConnector interface, requires MFA login for all users.
  */
-public class OktaAuthConnector implements AuthConnector {
+public class OktaMFAAuthConnector implements AuthConnector {
 
     private final OktaApiClientHelper oktaApiClientHelper;
 
     private final OktaClientResponseUtils oktaClientResponseUtils;
 
     @Inject
-    public OktaAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
-                             final OktaClientResponseUtils oktaClientResponseUtils) {
+    public OktaMFAAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
+                                final OktaClientResponseUtils oktaClientResponseUtils) {
 
         this.oktaApiClientHelper = oktaApiClientHelper;
         this.oktaClientResponseUtils = oktaClientResponseUtils;
@@ -57,28 +57,24 @@ public class OktaAuthConnector implements AuthConnector {
         final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
         final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
 
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse().setData(authData);
+        final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
+        final AuthResponse authResponse = new AuthResponse().setData(authData).setStatus(AuthStatus.MFA_REQUIRED);
 
         final List<Factor> factors;
-        if (StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_REQUIRED_STATUS) ||
-                StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS)) {
 
-            authData.setStateToken(authResult.getStateToken());
-            authResponse.setStatus(AuthStatus.MFA_REQUIRED);
-
+        if (StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_REQUIRED_STATUS)
+                || StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS)) {
             factors = oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult);
-            oktaClientResponseUtils.validateUserFactors(factors);
+            authData.setStateToken(authResult.getStateToken());
+        } else {
+            factors = oktaApiClientHelper.getFactorsByUserId(userId);
+        }
 
-            factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
-                    .setId(factor.getId())
-                    .setName(oktaClientResponseUtils.getDeviceName(factor))));
-        }
-        else {
-            authResponse.setStatus(AuthStatus.SUCCESS);
-        }
+        oktaClientResponseUtils.validateUserFactors(factors);
+
+        factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
+                .setId(factor.getId())
+                .setName(oktaClientResponseUtils.getDeviceName(factor))));
 
         return authResponse;
     }

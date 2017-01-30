@@ -17,68 +17,53 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.sdk.clients.AuthApiClient;
+import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
-import org.apache.commons.lang3.text.WordUtils;
 
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Helper methods to authenticate with Okta.
  */
-public class OktaAuthHelper {
-
-    public static final String AUTHENTICATION_MFA_REQUIRED_STATUS = "MFA_REQUIRED";
-
-    public static final String AUTHENTICATION_SUCCESS_STATUS = "SUCCESS";
-
-    private static final ImmutableMap<String, String> MFA_FACTOR_NAMES = ImmutableMap.of(
-            "google", "Google Authenticator",
-            "okta"  , "Okta Verify");
-
-    private final ObjectMapper objectMapper;
+public class OktaApiClientHelper {
 
     private final AuthApiClient authClient;
 
     private final UserApiClient userApiClient;
 
-    public OktaAuthHelper(AuthApiClient authClient,
-                          UserApiClient userApiClient,
-                          ObjectMapper objectMapper) {
+    private final FactorsApiClient factorsApiClient;
+
+    protected OktaApiClientHelper(final AuthApiClient authClient,
+                                  final UserApiClient userApiClient,
+                                  final FactorsApiClient factorsApiClient) {
 
         this.authClient = authClient;
         this.userApiClient = userApiClient;
-        this.objectMapper = objectMapper;
+        this.factorsApiClient = factorsApiClient;
     }
 
     @Inject
-    public OktaAuthHelper(@Named("auth.connector.okta.api_key") final String oktaApiKey,
-                          @Named("auth.connector.okta.base_url") final String baseUrl,
-                          final ObjectMapper objectMapper) {
+    public OktaApiClientHelper(@Named("auth.connector.okta.api_key") final String oktaApiKey,
+                               @Named("auth.connector.okta.base_url") final String baseUrl) {
 
         Preconditions.checkArgument(oktaApiKey != null, "okta api key cannot be null");
         Preconditions.checkArgument(baseUrl != null, "okta base url cannot be null");
 
-        this.objectMapper = objectMapper;
-
-        this.authClient = new AuthApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
-        this.userApiClient = new UserApiClient(new ApiClientConfiguration(baseUrl, oktaApiKey));
+        final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(baseUrl, oktaApiKey);
+        authClient = new AuthApiClient(clientConfiguration);
+        userApiClient = new UserApiClient(clientConfiguration);
+        factorsApiClient = new FactorsApiClient(clientConfiguration);
     }
 
     /**
@@ -90,7 +75,7 @@ public class OktaAuthHelper {
     protected List<UserGroup> getUserGroups(final String userId) {
 
         try {
-            return this.userApiClient.getUserGroups(userId);
+            return userApiClient.getUserGroups(userId);
         } catch (IOException ioe) {
             final String msg = String.format("failed to get user groups for user (%s) for reason: %s", userId,
                     ioe.getMessage());
@@ -116,7 +101,7 @@ public class OktaAuthHelper {
 
         final AuthResult authResult;
         try {
-            authResult = this.authClient.authenticateWithFactor(stateToken, factorId, passCode);
+            authResult = authClient.authenticateWithFactor(stateToken, factorId, passCode);
         } catch (IOException ioe) {
             final String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
                     stateToken, ioe.getMessage());
@@ -142,7 +127,7 @@ public class OktaAuthHelper {
                                           final String relayState) {
 
         try {
-            return this.authClient.authenticate(username, password, relayState);
+            return authClient.authenticate(username, password, relayState);
         } catch (IOException ioe) {
             final String msg = String.format("failed to authenticate user (%s) for reason: %s", username,
                     ioe.getMessage());
@@ -154,20 +139,16 @@ public class OktaAuthHelper {
     }
 
     /**
-     * Convenience method for parsing the Okta response and mapping it to a class.
-     *
-     * @param authResult  The Okta authentication result object
-     * @return Deserialized object from the response body
+     * Get list of enrolled MFA factors for a user
+     * @param userId  Okta user ID
+     * @return List of factors
      */
-    protected EmbeddedAuthResponseDataV1 getEmbeddedAuthData(final AuthResult authResult) {
+    protected List<Factor> getFactorsByUserId(final String userId) {
 
-        Preconditions.checkArgument(authResult != null, "auth result cannot be null.");
-
-        final Map<String, Object> embedded = authResult.getEmbedded();
+        Preconditions.checkArgument(userId != null, "user id cannot be null.");
 
         try {
-            final String embeddedJson = objectMapper.writeValueAsString(embedded);
-            return objectMapper.readValue(embeddedJson, EmbeddedAuthResponseDataV1.class);
+            return factorsApiClient.getUserLifecycleFactors(userId);
         } catch (IOException e) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
@@ -177,20 +158,4 @@ public class OktaAuthHelper {
         }
     }
 
-    /**
-     * Print a user-friendly name for a MFA device
-     * @param factor - Okta MFA factor
-     * @return Device name
-     */
-    protected String getDeviceName(final Factor factor) {
-
-        Preconditions.checkArgument(factor != null, "factor cannot be null.");
-
-        final String factorProvider = factor.getProvider().toLowerCase();
-        if (MFA_FACTOR_NAMES.containsKey(factorProvider)) {
-            return MFA_FACTOR_NAMES.get(factorProvider);
-        }
-
-        return WordUtils.capitalizeFully(factorProvider);
-    }
 }
