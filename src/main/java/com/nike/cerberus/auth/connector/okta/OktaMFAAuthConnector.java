@@ -38,39 +38,43 @@ import java.util.Set;
  */
 public class OktaMFAAuthConnector implements AuthConnector {
 
-    private final OktaAuthHelper oktaAuthHelper;
+    private final OktaApiClientHelper oktaApiClientHelper;
+
+    private final OktaClientResponseUtils oktaClientResponseUtils;
 
     @Inject
-    public OktaMFAAuthConnector(final OktaAuthHelper oktaAuthHelper) {
+    public OktaMFAAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
+                                final OktaClientResponseUtils oktaClientResponseUtils) {
 
-        this.oktaAuthHelper = oktaAuthHelper;
+        this.oktaApiClientHelper = oktaApiClientHelper;
+        this.oktaClientResponseUtils = oktaClientResponseUtils;
     }
 
     @Override
     public AuthResponse authenticate(String username, String password) {
 
-        final AuthResult authResult = oktaAuthHelper.authenticateUser(username, password, null);
-        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final AuthResult authResult = oktaApiClientHelper.authenticateUser(username, password, null);
+        final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
         final AuthResponse authResponse = new AuthResponse().setData(authData).setStatus(AuthStatus.MFA_REQUIRED);
 
         final List<Factor> factors;
 
-        if (StringUtils.equals(authResult.getStatus(), OktaAuthHelper.AUTHENTICATION_MFA_REQUIRED_STATUS)
-                || StringUtils.equals(authResult.getStatus(), OktaAuthHelper.AUTHENTICATION_MFA_ENROLL_STATUS)) {
-            factors = oktaAuthHelper.getUserFactorsFromAuthResult(authResult);
+        if (StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_REQUIRED_STATUS)
+                || StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS)) {
+            factors = oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult);
             authData.setStateToken(authResult.getStateToken());
         } else {
-            factors = oktaAuthHelper.getFactorsByUserId(userId);
+            factors = oktaApiClientHelper.getFactorsByUserId(userId);
         }
 
-        oktaAuthHelper.validateUserFactors(factors);
+        oktaClientResponseUtils.validateUserFactors(factors);
 
         factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
                 .setId(factor.getId())
-                .setName(oktaAuthHelper.getDeviceName(factor))));
+                .setName(oktaClientResponseUtils.getDeviceName(factor))));
 
         return authResponse;
     }
@@ -78,9 +82,9 @@ public class OktaMFAAuthConnector implements AuthConnector {
     @Override
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
 
-        final AuthResult authResult = oktaAuthHelper.verifyFactor(deviceId, stateToken, otpToken);
-        final String userId = oktaAuthHelper.getUserIdFromAuthResult(authResult);
-        final String userLogin = oktaAuthHelper.getUserLoginFromAuthResult(authResult);
+        final AuthResult authResult = oktaApiClientHelper.verifyFactor(deviceId, stateToken, otpToken);
+        final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
+        final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
 
         final AuthData authData = new AuthData()
                 .setUserId(userId)
@@ -97,7 +101,7 @@ public class OktaMFAAuthConnector implements AuthConnector {
 
         Preconditions.checkNotNull(authData, "auth data cannot be null.");
 
-        final List<UserGroup> userGroups = oktaAuthHelper.getUserGroups(authData.getUserId());
+        final List<UserGroup> userGroups = oktaApiClientHelper.getUserGroups(authData.getUserId());
 
         final Set<String> groups = new HashSet<>();
         if (userGroups == null) {
