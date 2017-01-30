@@ -128,16 +128,19 @@ public class OktaClientResponseUtils {
     String getUserLoginFromAuthResult(final AuthResult authResult) {
         final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
 
-        try {
-            return embeddedAuthData.getUser().getProfile().getLogin();
-        } catch(NullPointerException npe) {
+        if (embeddedAuthData == null ||
+                embeddedAuthData.getUser() == null ||
+                embeddedAuthData.getUser().getProfile() == null ||
+                embeddedAuthData.getUser().getProfile().getLogin() == null) {
 
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
                     .withExceptionMessage("Could not parse user data from Okta response.")
                     .build();
         }
-    }
+
+        return embeddedAuthData.getUser().getProfile().getLogin();
+}
 
     /**
      * Ensure the user has at least one active MFA device set up.
