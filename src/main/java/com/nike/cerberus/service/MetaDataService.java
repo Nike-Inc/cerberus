@@ -16,38 +16,28 @@
 
 package com.nike.cerberus.service;
 
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.CategoryDao;
 import com.nike.cerberus.dao.RoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.UserGroupDao;
-import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetaData;
 import com.nike.cerberus.domain.SDBMetaDataResult;
-import com.nike.cerberus.domain.SafeDepositBoxStats;
-import com.nike.cerberus.domain.Stats;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.CategoryRecord;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupPermissionRecord;
-import com.nike.cerberus.record.UserGroupRecord;
-import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Provides general stats about safe deposit boxes.
@@ -56,65 +46,24 @@ public class MetaDataService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final RoleService roleService;
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final UserGroupDao userGroupDao;
-    private final DateTimeSupplier dateTimeSupplier;
     private final CategoryDao categoryDao;
     private final RoleDao roleDao;
     private final AwsIamRoleDao awsIamRoleDao;
 
     @Inject
-    public MetaDataService(RoleService roleService,
-                           SafeDepositBoxDao safeDepositBoxDao,
+    public MetaDataService(SafeDepositBoxDao safeDepositBoxDao,
                            UserGroupDao userGroupDao,
-                           DateTimeSupplier dateTimeSupplier,
                            CategoryDao categoryDao,
                            RoleDao roleDao,
                            AwsIamRoleDao awsIamRoleDao) {
 
-        this.roleService = roleService;
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
-        this.dateTimeSupplier = dateTimeSupplier;
         this.categoryDao = categoryDao;
         this.roleDao = roleDao;
         this.awsIamRoleDao = awsIamRoleDao;
-    }
-
-    @Deprecated // Use getSDBMetaData
-    public Stats getStats() {
-        final Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
-
-        if (!ownerRole.isPresent()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.MISCONFIGURED_APP)
-                    .withExceptionMessage("Owner role doesn't exist!")
-                    .build();
-        }
-
-        final Set<SafeDepositBoxStats> safeDepositBoxStats = new HashSet<>();
-        final List<SafeDepositBoxRecord> safeDepositBoxRecords = safeDepositBoxDao.getSafeDepositBoxes(1000, 0);
-
-        safeDepositBoxRecords.forEach(r -> {
-            final List<UserGroupRecord> userGroupOwnerRecords =
-                    userGroupDao.getUserGroupsByRole(r.getId(), ownerRole.get().getId());
-
-            if (userGroupOwnerRecords.size() != 1) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.SDB_TOO_MANY_OWNERS)
-                        .withExceptionMessage("SDB has more than one owner!")
-                        .build();
-            }
-
-            final SafeDepositBoxStats sdbStats = new SafeDepositBoxStats();
-            sdbStats.setName(r.getName());
-            sdbStats.setOwner(userGroupOwnerRecords.get(0).getName());
-            sdbStats.setLastUpdatedTs(r.getLastUpdatedTs());
-            safeDepositBoxStats.add(sdbStats);
-        });
-
-        return new Stats().setSafeDepositBoxStats(safeDepositBoxStats).setGeneratedTs(dateTimeSupplier.get());
     }
 
     /**
