@@ -444,38 +444,7 @@ Lists all the possible categories that a safe deposit box can belong to.
                 }
             ]
 
-# Group Stats
 
-## Basic Stats [/v1/stats]
-
-### Get stats [GET]
-
-Returns basic stats about each safe deposit box (name, owner, last updated ts). Requester must be an admin.
-
-+ Response 200 (application/json)
-
-    + Headers
-    
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
-        
-    + Body
-    
-            {
-              "safe_deposit_box_stats": [
-                {
-                  "name": "Web",
-                  "owner": "Lst-CDT.CloudPlatformEngine.FTE",
-                  "last_updated_ts": "2016-05-18T06:51:08Z"
-                },
-                {
-                  "name": "OneLogin",
-                  "owner": "Lst-CDT.CloudPlatformEngine.FTE",
-                  "last_updated_ts": "2016-05-18T06:35:55Z"
-                }
-              ],
-              "safe_deposit_box_total": 2
-            }
-            
 # Group Metadata
 
 ## SDB Metadata [/v1/metadata?limit={limit}&offset={offset}]

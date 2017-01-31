@@ -21,7 +21,6 @@ import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SDBMetaDataResult;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.domain.Stats;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.MetaDataService;
 import com.nike.riposte.server.http.RequestInfo;
