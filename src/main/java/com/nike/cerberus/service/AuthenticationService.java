@@ -412,7 +412,9 @@ public class AuthenticationService {
             if (StringUtils.isNotBlank(adminRoleArns)) {
                 String[] roles = adminRoleArns.split(",");
                 if (roles.length > 0) {
-                    Arrays.stream(roles).forEach(adminRoleArnSet::add);
+                    Arrays.stream(roles).forEach(role -> {
+                        adminRoleArnSet.add(role.trim());
+                    });
                 }
             }
         }

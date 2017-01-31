@@ -87,7 +87,9 @@ public class VaultAuthPrincipal implements Principal {
 
     private String extractUsername(final VaultClientTokenResponse clientToken) {
         final Map<String, String> meta = clientToken.getMeta();
-        return meta == null ? "not-set-possibly-root-token" : meta.get(METADATA_KEY_USERNAME);
+        // if a Token that is the root token or created outside of CMS,
+        // then meta might be null and there will be no username set
+        return meta == null ? "unknown-user-manually-created-token" : meta.get(METADATA_KEY_USERNAME);
     }
 
     @Override
