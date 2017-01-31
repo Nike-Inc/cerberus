@@ -67,6 +67,7 @@ root.user.arn               | Yes | The arn for the root AWS user, needed to mak
 admin.role.arn              | Yes | The arn for an AWS user, needed to make the KMS keys deletable.
 cms.role.arn                | Yes | The arn for the Instance profile for CMS instances, so they can admin KMS keys that they create.
 cms.admin.group             | Yes | Group that user can be identified by to get admin privileges, currently this just enables users to access `/v1/metadata` see API.md
+cms.admin.roles             | No  | Comma seperated list of ARNs that can auth and access admin endpoints.
 cms.auth.connector          | Yes | The user authentication connector implementation to use for user auth.
 cms.user.token.ttl.override | No  | By default user tokens are created with a TTL of 1h, you can override that with this param
 cms.iam.token.ttl.override  | No  | By default IAM tokens are created with a TTL of 1h, you can override that with this param
