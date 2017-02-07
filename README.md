@@ -104,6 +104,7 @@ OneLogin.  We expect to implement more connectors in the near future.
 
 property                              | required | notes
 ------------------------------------- | -------- | ----------
+cms.auth.connector                    | Yes      | com.nike.cerberus.auth.connector.onelogin.OneLoginAuthConnector
 auth.connector.onelogin.api_region    | Yes      | `us` or `eu`
 auth.connector.onelogin.client_id     | Yes      | The OneLogin API client id
 auth.connector.onelogin.client_secret | Yes      | The OneLogin API client secret
@@ -113,12 +114,23 @@ auth.connector.onelogin.subdomain     | Yes      | Your orgs OneLogin subdomain 
 
 ##### Okta Auth Connector
 
+Multi-factor authentication is only enabled if it is required in Okta for the authenticating user.
+
 property                              | required | notes
 ------------------------------------- | -------- | ----------
+cms.auth.connector                    | Yes      | com.nike.cerberus.auth.connector.okta.OktaAuthConnector
 auth.connector.okta.api_key           | Yes      | The Okta API key
 auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `"https://example.okta.com"` or `"https://example.oktapreview.com"`)
 
+##### Okta MFA Auth Connector
 
+Multi-factor authentication is enabled for all users, even if it is not required in Okta.
+
+property                              | required | notes
+------------------------------------- | -------- | ----------
+cms.auth.connector                    | Yes      | com.nike.cerberus.auth.connector.okta.OktaMFAAuthConnector
+auth.connector.okta.api_key           | Yes      | The Okta API key
+auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `"https://example.okta.com"` or `"https://example.oktapreview.com"`)
 
 ## Running CMS Locally
 
