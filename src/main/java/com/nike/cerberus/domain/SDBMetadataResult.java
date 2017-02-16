@@ -18,7 +18,7 @@ package com.nike.cerberus.domain;
 
 import java.util.List;
 
-public class SDBMetaDataResult {
+public class SDBMetadataResult {
 
     private boolean hasNext = false;
     private int nextOffset = 0;
@@ -26,7 +26,7 @@ public class SDBMetaDataResult {
     private int offset = 0;
     private int sdbCountInResult;
     private int totalSDBCount;
-    private List<SDBMetaData> safeDepositBoxMetaData;
+    private List<SdbMetadata> safeDepositBoxMetadata;
 
     public boolean isHasNext() {
         return hasNext;
@@ -76,11 +76,11 @@ public class SDBMetaDataResult {
         this.totalSDBCount = totalSDBCount;
     }
 
-    public List<SDBMetaData> getSafeDepositBoxMetaData() {
-        return safeDepositBoxMetaData;
+    public List<SdbMetadata> getSafeDepositBoxMetadata() {
+        return safeDepositBoxMetadata;
     }
 
-    public void setSafeDepositBoxMetaData(List<SDBMetaData> safeDepositBoxMetaData) {
-        this.safeDepositBoxMetaData = safeDepositBoxMetaData;
+    public void setSafeDepositBoxMetadata(List<SdbMetadata> safeDepositBoxMetadata) {
+        this.safeDepositBoxMetadata = safeDepositBoxMetadata;
     }
 }

@@ -21,8 +21,8 @@ import com.nike.cerberus.dao.CategoryDao;
 import com.nike.cerberus.dao.RoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.UserGroupDao;
-import com.nike.cerberus.domain.SDBMetaData;
-import com.nike.cerberus.domain.SDBMetaDataResult;
+import com.nike.cerberus.domain.SdbMetadata;
+import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.CategoryRecord;
@@ -42,7 +42,7 @@ import java.util.Map;
 /**
  * Provides general stats about safe deposit boxes.
  */
-public class MetaDataService {
+public class MetadataService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -53,7 +53,7 @@ public class MetaDataService {
     private final AwsIamRoleDao awsIamRoleDao;
 
     @Inject
-    public MetaDataService(SafeDepositBoxDao safeDepositBoxDao,
+    public MetadataService(SafeDepositBoxDao safeDepositBoxDao,
                            UserGroupDao userGroupDao,
                            CategoryDao categoryDao,
                            RoleDao roleDao,
@@ -71,10 +71,10 @@ public class MetaDataService {
      *
      * @param limit  The int limit for paginating.
      * @param offset The int offset for paginating.
-     * @return SDBMetaDataResult of meta data.
+     * @return SDBMetadataResult of meta data.
      */
-    public SDBMetaDataResult getSDBMetaData(int limit, int offset) {
-        SDBMetaDataResult result = new SDBMetaDataResult();
+    public SDBMetadataResult getSDBMetadata(int limit, int offset) {
+        SDBMetadataResult result = new SDBMetadataResult();
         result.setLimit(limit);
         result.setOffset(offset);
         result.setTotalSDBCount(safeDepositBoxDao.getSafeDepositBoxCount());
@@ -82,9 +82,9 @@ public class MetaDataService {
         if (result.isHasNext()) {
             result.setNextOffset(offset + limit);
         }
-        List<SDBMetaData> sdbMetaDataList = getSDBMetaDataList(limit, offset);
-        result.setSafeDepositBoxMetaData(sdbMetaDataList);
-        result.setSdbCountInResult(sdbMetaDataList.size());
+        List<SdbMetadata> sdbMetadataList = getSDBMetadataList(limit, offset);
+        result.setSafeDepositBoxMetadata(sdbMetadataList);
+        result.setSdbCountInResult(sdbMetadataList.size());
 
         return result;
     }
@@ -105,8 +105,8 @@ public class MetaDataService {
         return roleIdToStringMap;
     }
 
-    protected List<SDBMetaData> getSDBMetaDataList(int limit, int offset) {
-        List<SDBMetaData> sdbs = new LinkedList<>();
+    protected List<SdbMetadata> getSDBMetadataList(int limit, int offset) {
+        List<SdbMetadata> sdbs = new LinkedList<>();
 
         // Collect the categories.
         Map<String, String> catIdToStringMap = getCategoryIdToStringMap();
@@ -117,7 +117,7 @@ public class MetaDataService {
 
         // for each SDB collect the user and iam permissions and add to result
         safeDepositBoxRecords.forEach(sdb -> {
-            SDBMetaData data = new SDBMetaData();
+            SdbMetadata data = new SdbMetadata();
             data.setName(sdb.getName());
             data.setPath(sdb.getPath());
             data.setDescription(sdb.getDescription());
@@ -138,7 +138,7 @@ public class MetaDataService {
         return sdbs;
     }
 
-    protected void processGroupData(Map<String, String> roleIdToStringMap, SDBMetaData data, String sdbId) {
+    protected void processGroupData(Map<String, String> roleIdToStringMap, SdbMetadata data, String sdbId) {
         List<UserGroupPermissionRecord> userPerms = userGroupDao.getUserGroupPermissions(sdbId);
         Map<String, String> groupRoleMap = new HashMap<>(userPerms.size() - 1);
         userPerms.forEach(record -> {

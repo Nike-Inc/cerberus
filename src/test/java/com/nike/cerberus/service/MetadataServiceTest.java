@@ -21,8 +21,8 @@ import com.nike.cerberus.dao.CategoryDao;
 import com.nike.cerberus.dao.RoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.UserGroupDao;
-import com.nike.cerberus.domain.SDBMetaData;
-import com.nike.cerberus.domain.SDBMetaDataResult;
+import com.nike.cerberus.domain.SdbMetadata;
+import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.record.CategoryRecord;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
@@ -52,12 +52,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class MetaDataServiceTest {
+public class MetadataServiceTest {
 
     @InjectMocks
-    private MetaDataService metaDataService;
+    private MetadataService metadataService;
 
-    private MetaDataService metaDataServiceSpy;
+    private MetadataService metadataServiceSpy;
 
     @Mock
     private RoleService roleService;
@@ -84,21 +84,21 @@ public class MetaDataServiceTest {
     public void before() {
         initMocks(this);
 
-        metaDataServiceSpy = spy(metaDataService);
+        metadataServiceSpy = spy(metadataService);
     }
 
     @Test
-    public void test_that_getSdbMetaData_properly_sets_result_meta_data() {
+    public void test_that_getSdbMetadata_properly_sets_result_meta_data() {
         int limit = 5;
         int offset = 0;
         int totalSDBs = 20;
 
         when(safeDepositBoxDao.getSafeDepositBoxCount()).thenReturn(totalSDBs);
 
-        SDBMetaData sdbMD = new SDBMetaData();
-        doReturn(Arrays.asList(sdbMD)).when(metaDataServiceSpy).getSDBMetaDataList(limit, offset);
+        SdbMetadata sdbMD = new SdbMetadata();
+        doReturn(Arrays.asList(sdbMD)).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
 
-        SDBMetaDataResult actual = metaDataServiceSpy.getSDBMetaData(limit, offset);
+        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
 
         assertEquals("expected actual limit to be passed in limit", limit, actual.getLimit());
         assertEquals("expected actual offset to be passed in offset", offset, actual.getOffset());
@@ -109,15 +109,15 @@ public class MetaDataServiceTest {
     }
 
     @Test
-    public void test_that_getSdbMetaData_set_has_next_to_non_when_done_paging() {
+    public void test_that_getSdbMetadata_set_has_next_to_non_when_done_paging() {
         int limit = 5;
         int offset = 15;
         int totalSDBs = 20;
 
         when(safeDepositBoxDao.getSafeDepositBoxCount()).thenReturn(totalSDBs);
-        doReturn(Arrays.asList(new SDBMetaData())).when(metaDataServiceSpy).getSDBMetaDataList(limit, offset);
+        doReturn(Arrays.asList(new SdbMetadata())).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
 
-        SDBMetaDataResult actual = metaDataServiceSpy.getSDBMetaData(limit, offset);
+        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
 
         assertEquals("expected actual limit to be passed in limit", limit, actual.getLimit());
         assertEquals("expected actual offset to be passed in offset", offset, actual.getOffset());
@@ -135,7 +135,7 @@ public class MetaDataServiceTest {
         when(categoryDao.getAllCategories())
                 .thenReturn(Arrays.asList(new CategoryRecord().setId("abc").setDisplayName("foo")));
 
-        Map<String, String> actual = metaDataService.getCategoryIdToStringMap();
+        Map<String, String> actual = metadataService.getCategoryIdToStringMap();
         assertEquals(expected, actual);
     }
 
@@ -147,12 +147,12 @@ public class MetaDataServiceTest {
         when(roleDao.getAllRoles())
                 .thenReturn(Arrays.asList(new RoleRecord().setId("abc").setName("foo")));
 
-        Map<String, String> actual = metaDataService.getRoleIdToStringMap();
+        Map<String, String> actual = metadataService.getRoleIdToStringMap();
         assertEquals(expected, actual);
     }
 
     @Test
-    public void test_that_getSDBMetaDataList_returns_valid_list() {
+    public void test_that_getSDBMetadataList_returns_valid_list() {
         String sdbId = "123";
         String categoryName = "foo";
         String categoryId = "321";
@@ -166,8 +166,8 @@ public class MetaDataServiceTest {
         catMap.put(categoryId, categoryName);
         Map<String, String> roleMap = new HashMap<>();
 
-        doReturn(catMap).when(metaDataServiceSpy).getCategoryIdToStringMap();
-        doReturn(roleMap).when(metaDataServiceSpy).getRoleIdToStringMap();
+        doReturn(catMap).when(metadataServiceSpy).getCategoryIdToStringMap();
+        doReturn(roleMap).when(metadataServiceSpy).getRoleIdToStringMap();
 
         when(safeDepositBoxDao.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(new SafeDepositBoxRecord()
                 .setId(sdbId)
@@ -180,15 +180,15 @@ public class MetaDataServiceTest {
                 .setCreatedTs(offsetDateTime)
                 .setLastUpdatedTs(offsetDateTime)));
 
-        doNothing().when(metaDataServiceSpy)
-                .processGroupData(anyMap(), isA(SDBMetaData.class), anyString());
+        doNothing().when(metadataServiceSpy)
+                .processGroupData(anyMap(), isA(SdbMetadata.class), anyString());
 
         HashMap<String, String> rPermMap = new HashMap<>();
-        doReturn(rPermMap).when(metaDataServiceSpy).getIamRolePermissionMap(roleMap, sdbId);
+        doReturn(rPermMap).when(metadataServiceSpy).getIamRolePermissionMap(roleMap, sdbId);
 
-        List<SDBMetaData> actual = metaDataServiceSpy.getSDBMetaDataList(1,0);
+        List<SdbMetadata> actual = metadataServiceSpy.getSDBMetadataList(1,0);
         assertEquals("List should have 1 entry", 1, actual.size());
-        SDBMetaData data = actual.get(0);
+        SdbMetadata data = actual.get(0);
         assertEquals("Name should match record", name, data.getName());
         assertEquals("path  should match record", path, data.getPath());
         assertEquals("", categoryName, data.getCategory());
@@ -215,7 +215,7 @@ public class MetaDataServiceTest {
         roleIdToStringMap.put(ownerId, RoleRecord.ROLE_OWNER);
         roleIdToStringMap.put(readId, RoleRecord.ROLE_READ);
 
-        SDBMetaData metaData = new SDBMetaData();
+        SdbMetadata metadata = new SdbMetadata();
 
         when(userGroupDao.getUserGroupPermissions(sdbId)).thenReturn(Arrays.asList(
                 new UserGroupPermissionRecord().setRoleId(ownerId).setUserGroupId(careBearsId),
@@ -227,14 +227,14 @@ public class MetaDataServiceTest {
         when(userGroupDao.getUserGroup(grumpyBearsId))
                 .thenReturn(Optional.of(new UserGroupRecord().setName(grumpyBearsGroup)));
 
-        metaDataService.processGroupData(roleIdToStringMap, metaData, sdbId);
+        metadataService.processGroupData(roleIdToStringMap, metadata, sdbId);
 
         Map<String, String> expectedMap = new HashMap<>();
         expectedMap.put(grumpyBearsGroup, RoleRecord.ROLE_READ);
 
-        assertEquals("Owner group should be care-bears", careBearsGroup, metaData.getOwner());
+        assertEquals("Owner group should be care-bears", careBearsGroup, metadata.getOwner());
         assertEquals("The user group perms should match the expected map",
-                expectedMap, metaData.getUserGroupPermissions());
+                expectedMap, metadata.getUserGroupPermissions());
     }
 
     @Test

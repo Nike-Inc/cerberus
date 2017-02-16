@@ -17,7 +17,7 @@
 package com.nike.cerberus.endpoints.admin;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.service.MetaDataService;
+import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,15 +29,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class GetSDBMetaDataTest {
+public class GetSdbmetadataTest {
 
     @InjectMocks
-    private GetSDBMetaData endpoint;
+    private GetSDBMetadata endpoint;
 
-    private GetSDBMetaData endpointSpy;
+    private GetSDBMetadata endpointSpy;
 
     @Mock
-    MetaDataService metaDataService;
+    MetadataService metadataService;
 
     @Mock
     RequestInfo<Void> request;
@@ -50,23 +50,23 @@ public class GetSDBMetaDataTest {
 
     @Test
     public void test_that_get_limit_returns_default_value_when_no_limit_is_supplied() {
-        assertEquals(GetSDBMetaData.DEFAULT_LIMIT, endpointSpy.getLimit(request));
+        assertEquals(GetSDBMetadata.DEFAULT_LIMIT, endpointSpy.getLimit(request));
     }
 
     @Test
     public void test_that_get_offset_returns_default_value_when_no_limit_is_supplied() {
-        assertEquals(GetSDBMetaData.DEFAULT_OFFSET, endpointSpy.getOffset(request));
+        assertEquals(GetSDBMetadata.DEFAULT_OFFSET, endpointSpy.getOffset(request));
     }
 
     @Test
     public void test_that_get_limit_returns_supplied_value_when_limit_is_supplied() {
-        when(request.getQueryParamSingle(GetSDBMetaData.LIMIT_QUERY_KEY)).thenReturn("7");
+        when(request.getQueryParamSingle(GetSDBMetadata.LIMIT_QUERY_KEY)).thenReturn("7");
         assertEquals(7, endpointSpy.getLimit(request));
     }
 
     @Test
     public void test_that_get_offset_returns_supplied_value_when_limit_is_supplied() {
-        when(request.getQueryParamSingle(GetSDBMetaData.OFFSET_QUERY_KEY)).thenReturn("6");
+        when(request.getQueryParamSingle(GetSDBMetadata.OFFSET_QUERY_KEY)).thenReturn("6");
         assertEquals(6, endpointSpy.getOffset(request));
     }
 
