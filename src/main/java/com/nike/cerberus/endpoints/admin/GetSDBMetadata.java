@@ -19,10 +19,10 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SDBMetaDataResult;
+import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.service.MetaDataService;
+import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
@@ -37,29 +37,29 @@ import java.util.concurrent.Executor;
 /**
  * Returns meta data for all SDBs in CMS
  */
-public class GetSDBMetaData extends AdminStandardEndpoint<Void, SDBMetaDataResult> {
+public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResult> {
 
     protected static final String OFFSET_QUERY_KEY = "offset";
     protected static final String LIMIT_QUERY_KEY = "limit";
     protected static final int DEFAULT_OFFSET = 0;
     protected static final int DEFAULT_LIMIT = 100;
 
-    private final MetaDataService metaDataService;
+    private final MetadataService metadataService;
 
     @Inject
-    public GetSDBMetaData(MetaDataService metaDataService) {
-        this.metaDataService = metaDataService;
+    public GetSDBMetadata(MetadataService metadataService) {
+        this.metadataService = metadataService;
     }
 
     @SuppressWarnings("ConstantConditions") // it lies
     @Override
-    public CompletableFuture<ResponseInfo<SDBMetaDataResult>> doExecute(final RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<SDBMetadataResult>> doExecute(final RequestInfo<Void> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx,
                                                                         final SecurityContext securityContext) {
 
         return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(metaDataService.getSDBMetaData(getLimit(request), getOffset(request)))
+                () -> ResponseInfo.newBuilder(metadataService.getSDBMetadata(getLimit(request), getOffset(request)))
                         .build(), longRunningTaskExecutor
         );
     }
