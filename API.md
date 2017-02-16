@@ -473,7 +473,7 @@ You can use has_next and next_offset from the response to paginate through all r
                 "offset": 0,
                 "sdb_count_in_result": 3,
                 "total_sdbcount": 3,
-                "safe_deposit_box_meta_data": [
+                "safe_deposit_box_metadata": [
                     {
                         "name": "dev demo",
                         "path": "app/dev-demo/",
