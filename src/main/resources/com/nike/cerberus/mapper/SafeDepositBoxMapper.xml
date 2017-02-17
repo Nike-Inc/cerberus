@@ -71,7 +71,7 @@
       LAST_UPDATED_TS
     FROM
       SAFE_DEPOSIT_BOX
-    ORDER BY CREATED_TS ASC
+    ORDER BY CREATED_TS DESC
     LIMIT #{limit}
     OFFSET #{offset}
   </select>
@@ -170,11 +170,29 @@
       ID = #{record.id}
   </update>
 
+  <update id="fullUpdateSafeDepositBox" parameterType="SafeDepositBoxRecord">
+    UPDATE
+      SAFE_DEPOSIT_BOX
+    SET
+      CATEGORY_ID = #{record.categoryId},
+      DESCRIPTION = #{record.description},
+      CREATED_BY = #{record.createdBy},
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      CREATED_TS = #{record.createdTs},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs}
+    WHERE
+      ID = #{record.id}
+  </update>
+
   <delete id="deleteSafeDepositBox">
     DELETE FROM
       SAFE_DEPOSIT_BOX
     WHERE
       ID = #{id}
   </delete>
+
+  <select id="getSafeDepositBoxIdByName"  resultType="java.lang.String">
+    SELECT id FROM SAFE_DEPOSIT_BOX WHERE NAME = #{name}
+  </select>
 
 </mapper>

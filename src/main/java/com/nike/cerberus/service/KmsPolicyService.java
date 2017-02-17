@@ -83,7 +83,7 @@ public class KmsPolicyService {
         Statement iamRoleUsageStatement = new Statement(Statement.Effect.Allow);
         iamRoleUsageStatement.withId("Target IAM Role Has Decrypt Action");
         iamRoleUsageStatement.withPrincipals(
-                new Principal(AWS_PROVIDER, String.format("arn:aws:iam::%s:role/%s", iamRoleAccountId, iamRoleName), false));
+                new Principal(AWS_PROVIDER, String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE, iamRoleAccountId, iamRoleName), false));
         iamRoleUsageStatement.withActions(KmsActions.DecryptAction);
         iamRoleUsageStatement.withResources(new Resource("*"));
 

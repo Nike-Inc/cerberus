@@ -20,7 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Map;
 
-public class SdbMetadata {
+public class SDBMetadata {
 
     private String name;
     private String path;

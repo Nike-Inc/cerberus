@@ -18,15 +18,50 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
+def dashboardRelease = 'v0.9.0'
+def vaultVersion = "0.6.4"
+
 buildscript {
     apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+task start() {
+    doLast {
+        logger.lifecycle("Starting reverse proxy, dashboard, Vault and MySQL followed by CMS")
+    }
+
+    finalizedBy 'startProxyAndDashboardInBackground'
+}
+
+task startProxyAndDashboardInBackground(type: SpawnProcessTask) {
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew runDashboardAndReverseProxy --stacktrace"
+    ready 'express server listing on port 8000'
+    pidLockFileName '.proxy-dash.pid.lock'
+
+    finalizedBy 'startVaultAndMySQLInBackground'
+}
+
+task startVaultAndMySQLInBackground(type: SpawnProcessTask) {
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew runVaultAndMySQL --stacktrace"
+    ready 'core: post-unseal setup complete'
+    pidLockFileName '.vault-sql.pid.lock'
+}
+
+task stop () {
+    finalizedBy 'stopProxyAndDashboardBackgroundThread', 'stopVaultAndMySQLBackgroundThread'
+}
+
+task stopProxyAndDashboardBackgroundThread(type: KillProcessTask) {
+    pidLockFileName '.proxy-dash.pid.lock'
+}
+
+task stopVaultAndMySQLBackgroundThread(type: KillProcessTask) {
+    pidLockFileName '.vault-sql.pid.lock'
 }
 
 task downloadDashboard() {
     group 'local development'
     description 'Downloads the dashboard artifact from github releases'
-
-    def dashboardRelease = 'v0.8.0'
 
     doFirst {
         project.buildDir.mkdirs()
@@ -76,7 +111,6 @@ node {
 /**
  * Determine which dist of Vault to use
  */
-def vaultVersion = "0.6.4"
 def vaultBinMap = [
         "${Os.FAMILY_WINDOWS}": "https://releases.hashicorp.com/vault/${vaultVersion}/vault_${vaultVersion}_windows_amd64.zip",
         "${Os.FAMILY_MAC}"    : "https://releases.hashicorp.com/vault/${vaultVersion}/vault_${vaultVersion}_darwin_amd64.zip",
@@ -176,7 +210,7 @@ def getTokenFromVaultLog() {
 /**
  * Runs the CMS web server
  */
-task runCMS(dependsOn: [antReplace, assemble]) {
+task runCMS(dependsOn: [antReplace, assemble], ) {
     group 'local development'
     description 'Runs CMS assuming that the runVaultAndMySQL task has been executed and is running in a seperate ' +
             'thread, configuring CMS automatically to integrate with the local in mem Vault'

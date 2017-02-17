@@ -162,7 +162,7 @@ public class UserGroupPermissionService {
         if (!possibleUserGroupRecord.isPresent()) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                    .withExceptionMessage("Unable to update permissions for user group name that doesn't exist.")
+                    .withExceptionMessage("Unable to update /9permissions for user group name that doesn't exist.")
                     .build();
         }
 

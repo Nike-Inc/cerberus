@@ -66,6 +66,11 @@ public class IamRolePermission {
         this.accountId = accountId;
     }
 
+    public IamRolePermission withAccountId(String accountId) {
+        this.accountId = accountId;
+        return this;
+    }
+
     public String getIamRoleName() {
         return iamRoleName;
     }
@@ -74,12 +79,22 @@ public class IamRolePermission {
         this.iamRoleName = iamRoleName;
     }
 
+    public IamRolePermission withIamRoleName(String iamRoleName) {
+        this.iamRoleName = iamRoleName;
+        return this;
+    }
+
     public String getRoleId() {
         return roleId;
     }
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
+    }
+
+    public IamRolePermission withRoleId(String roleId) {
+        this.roleId = roleId;
+        return this;
     }
 
     public OffsetDateTime getCreatedTs() {

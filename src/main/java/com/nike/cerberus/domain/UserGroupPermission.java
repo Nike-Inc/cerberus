@@ -59,12 +59,22 @@ public class UserGroupPermission {
         this.name = name;
     }
 
+    public UserGroupPermission withName(String name) {
+        this.name = name;
+        return this;
+    }
+
     public String getRoleId() {
         return roleId;
     }
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
+    }
+
+    public UserGroupPermission withRoleId(String roleId) {
+        this.roleId = roleId;
+        return this;
     }
 
     public OffsetDateTime getCreatedTs() {

@@ -113,7 +113,7 @@ public class CmsConfig implements ServerConfig {
         );
     }
 
-    protected ObjectMapper configureObjectMapper() {
+    public static ObjectMapper configureObjectMapper() {
         final ObjectMapper om = new ObjectMapper();
         om.findAndRegisterModules();
         om.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);

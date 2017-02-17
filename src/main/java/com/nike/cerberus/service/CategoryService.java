@@ -28,7 +28,9 @@ import org.mybatis.guice.transactional.Transactional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -135,5 +137,23 @@ public class CategoryService {
     public boolean deleteCategory(final String id) {
         final Integer count = categoryDao.deleteCategory(id);
         return count != null && count > 0;
+    }
+
+    /**
+     * Collects all the categories and creates an id to name map
+     * @return map of category ids to category name
+     */
+    public Map<String,String> getCategoryIdToCategoryNameMap() {
+        List<CategoryRecord> categoryRecords = categoryDao.getAllCategories();
+        Map<String, String> catIdToStringMap = new HashMap<>(categoryRecords.size());
+        categoryRecords.forEach(categoryRecord ->
+                catIdToStringMap.put(categoryRecord.getId(), categoryRecord.getDisplayName())
+        );
+        return catIdToStringMap;
+    }
+
+
+    public Optional<String> getCategoryIdByName(String categoryName) {
+        return Optional.ofNullable(categoryDao.getCategoryIdByName(categoryName));
     }
 }

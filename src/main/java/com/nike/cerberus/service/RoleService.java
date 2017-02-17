@@ -23,7 +23,9 @@ import com.nike.cerberus.record.RoleRecord;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -101,5 +103,12 @@ public class RoleService {
         }
 
         return Optional.empty();
+    }
+
+    public Map<String,String> getRoleIdToStringMap() {
+        List<RoleRecord> roleRecords = roleDao.getAllRoles();
+        Map<String, String> roleIdToStringMap = new HashMap<>(roleRecords.size());
+        roleRecords.forEach(roleRecord -> roleIdToStringMap.put(roleRecord.getId(), roleRecord.getName()));
+        return roleIdToStringMap;
     }
 }

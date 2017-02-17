@@ -79,6 +79,7 @@ public class AuthenticationService {
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final String DEFAULT_TOKEN_TTL = "1h";
+    public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
@@ -191,7 +192,7 @@ public class AuthenticationService {
         }
 
         final Set<String> policies = buildPolicySet(credentials.getAccountId(), credentials.getRoleName());
-        String arn = String.format("arn:aws:iam::%s:role/%s", credentials.getAccountId(), credentials.getRoleName());
+        String arn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(), credentials.getRoleName());
 
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
