@@ -184,3 +184,5 @@ cms-local-overrides.conf
 
 # embedded mysql stuff
 /target/
+/.proxy-dash.pid.lock
+/.vault-sql.pid.lock

@@ -29,6 +29,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'embedded-mysql'
+apply plugin: 'com.wiredforcode.spawn'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
