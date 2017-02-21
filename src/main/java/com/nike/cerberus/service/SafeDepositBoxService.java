@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -136,50 +137,62 @@ public class SafeDepositBoxService {
      * @return The safe deposit box, if found
      */
     public Optional<SafeDepositBox> getAssociatedSafeDepositBox(final Set<String> groups, final String id) {
-        SafeDepositBox safeDepositBox = null;
-        final Optional<SafeDepositBoxRecord> safeDepositBoxRecord =
-                safeDepositBoxDao.getSafeDepositBox(id);
+        final Optional<SafeDepositBoxRecord> safeDepositBoxRecord = safeDepositBoxDao.getSafeDepositBox(id);
 
         if (safeDepositBoxRecord.isPresent()) {
             final Set<UserGroupPermission> userGroupPermissions = userGroupPermissionService.getUserGroupPermissions(id);
 
             final long count = userGroupPermissions.stream().filter(perm -> groups.contains(perm.getName())).count();
-
             if (count == 0) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.ACCESS_DENIED)
                         .build();
             }
 
-            String owner = null;
-            final Optional<String> possibleOwner = extractOwner(userGroupPermissions);
-
-            if (!possibleOwner.isPresent()) {
-                logger.error("Detected Safe Deposit Box without owner! ID={}", id);
-            } else {
-                owner = possibleOwner.get();
-            }
-
-            final Set<IamRolePermission> iamRolePermissions = iamRolePermissionService.getIamRolePermissions(id);
-
-            safeDepositBox = new SafeDepositBox();
-            safeDepositBox.setId(safeDepositBoxRecord.get().getId());
-            safeDepositBox.setName(safeDepositBoxRecord.get().getName());
-            safeDepositBox.setDescription(safeDepositBoxRecord.get().getDescription());
-            safeDepositBox.setPath(safeDepositBoxRecord.get().getPath());
-            safeDepositBox.setCategoryId(safeDepositBoxRecord.get().getCategoryId());
-            safeDepositBox.setCreatedBy(safeDepositBoxRecord.get().getCreatedBy());
-            safeDepositBox.setLastUpdatedBy(safeDepositBoxRecord.get().getLastUpdatedBy());
-            safeDepositBox.setCreatedTs(safeDepositBoxRecord.get().getCreatedTs());
-            safeDepositBox.setLastUpdatedTs(safeDepositBoxRecord.get().getLastUpdatedTs());
-            safeDepositBox.setOwner(owner);
-            safeDepositBox.setUserGroupPermissions(userGroupPermissions);
-            safeDepositBox.setIamRolePermissions(iamRolePermissions);
+            return Optional.of(getSDBFromRecord(safeDepositBoxRecord.get()));
         }
 
-        return Optional.ofNullable(safeDepositBox);
+        return Optional.empty();
     }
 
+    protected SafeDepositBox getSDBFromRecord(SafeDepositBoxRecord safeDepositBoxRecord) {
+        if (safeDepositBoxRecord == null) {
+            throw new IllegalArgumentException("Safe Deposit Box Record must not be null");
+        }
+
+        String id = safeDepositBoxRecord.getId();
+        
+        final Set<UserGroupPermission> userGroupPermissions = 
+                userGroupPermissionService.getUserGroupPermissions(id);
+
+        String owner = null;
+        final Optional<String> possibleOwner = extractOwner(userGroupPermissions);
+
+        if (!possibleOwner.isPresent()) {
+            logger.error("Detected Safe Deposit Box without owner! ID={}", id);
+        } else {
+            owner = possibleOwner.get();
+        }
+
+        final Set<IamRolePermission> iamRolePermissions = iamRolePermissionService.getIamRolePermissions(id);
+
+        SafeDepositBox safeDepositBox = new SafeDepositBox();
+        safeDepositBox.setId(safeDepositBoxRecord.getId());
+        safeDepositBox.setName(safeDepositBoxRecord.getName());
+        safeDepositBox.setDescription(safeDepositBoxRecord.getDescription());
+        safeDepositBox.setPath(safeDepositBoxRecord.getPath());
+        safeDepositBox.setCategoryId(safeDepositBoxRecord.getCategoryId());
+        safeDepositBox.setCreatedBy(safeDepositBoxRecord.getCreatedBy());
+        safeDepositBox.setLastUpdatedBy(safeDepositBoxRecord.getLastUpdatedBy());
+        safeDepositBox.setCreatedTs(safeDepositBoxRecord.getCreatedTs());
+        safeDepositBox.setLastUpdatedTs(safeDepositBoxRecord.getLastUpdatedTs());
+        safeDepositBox.setOwner(owner);
+        safeDepositBox.setUserGroupPermissions(userGroupPermissions);
+        safeDepositBox.setIamRolePermissions(iamRolePermissions);
+
+        return safeDepositBox;
+    }
+    
     /**
      * Creates a safe deposit box and all the appropriate permissions.  Policies for each role are also
      * created within Vault.
@@ -320,7 +333,7 @@ public class SafeDepositBoxService {
      * @param userGroupPermissionSet Set to add the owner to
      * @param owner Owner to be added
      */
-    private void addOwnerPermission(final Set<UserGroupPermission> userGroupPermissionSet, final String owner) {
+    protected void addOwnerPermission(final Set<UserGroupPermission> userGroupPermissionSet, final String owner) {
         UserGroupPermission ownerPermission = new UserGroupPermission();
         ownerPermission.setId(uuidSupplier.get());
         ownerPermission.setName(owner);
@@ -407,7 +420,7 @@ public class SafeDepositBoxService {
     /**
      * Updates the owner if its changed.
      */
-    private void updateOwner(final String safeDepositBoxId,
+    protected void updateOwner(final String safeDepositBoxId,
                              final String newOwner,
                              final String user,
                              final OffsetDateTime dateTime) {
@@ -447,7 +460,7 @@ public class SafeDepositBoxService {
     /**
      * Sorts out the set of permissions into, grant, update and revoke sets.  After that it applies those changes.
      */
-    private void modifyUserGroupPermissions(final SafeDepositBox currentBox,
+    protected void modifyUserGroupPermissions(final SafeDepositBox currentBox,
                                             final Set<UserGroupPermission> userGroupPermissionSet,
                                             final String user,
                                             final OffsetDateTime dateTime) {
@@ -476,7 +489,7 @@ public class SafeDepositBoxService {
     /**
      * Sorts out the set of permissions into, grant, update and revoke sets.  After that it applies those changes.
      */
-    private void modifyIamRolePermissions(final SafeDepositBox currentBox,
+    protected void modifyIamRolePermissions(final SafeDepositBox currentBox,
                                           final Set<IamRolePermission> iamRolePermissionSet,
                                           final String user,
                                           final OffsetDateTime dateTime) {
@@ -536,6 +549,83 @@ public class SafeDepositBoxService {
                     .withExceptionCause(vce)
                     .withExceptionMessage("Failed to delete secrets from Vault.")
                     .build();
+        }
+    }
+
+    /**
+     * @return The total number of safe deposit boxes.
+     */
+    public int getTotalNumberOfSafeDepositBoxes() {
+        return safeDepositBoxDao.getSafeDepositBoxCount();
+    }
+
+    /**
+     * 
+     * A paginatable method for iterating retrieving all SDBs
+     * 
+     * @param limit The maximum number of SDBs to fetch
+     * @param offset The offset to paginate with
+     */
+    public List<SafeDepositBox> getSafeDepositBoxes(int limit, int offset) {
+        List<SafeDepositBoxRecord> records = safeDepositBoxDao.getSafeDepositBoxes(limit, offset);
+        List<SafeDepositBox> result = new LinkedList<>();
+        records.forEach(safeDepositBoxRecord -> {
+            result.add(getSDBFromRecord(safeDepositBoxRecord));
+        });
+        return result;
+    }
+
+    /**
+     * @param name Safe Deposit Box name
+     * @return The id for the box
+     */
+    public Optional<String> getSafeDepositBoxIdByName(String name) {
+        return Optional.ofNullable(safeDepositBoxDao.getSafeDepositBoxIdByName(name));
+    }
+
+    /**
+     * Admin method for restoring sdb
+     * @param safeDepositBox Safe Deposit Box to restore
+     */
+    @Transactional
+    public void restoreSafeDepositBox(SafeDepositBox safeDepositBox,
+                                      String adminUser) {
+
+        SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
+        boxToStore.setId(safeDepositBox.getId());
+        boxToStore.setPath(safeDepositBox.getPath());
+        boxToStore.setCategoryId(safeDepositBox.getCategoryId());
+        boxToStore.setName(safeDepositBox.getName());
+        boxToStore.setDescription(safeDepositBox.getDescription());
+        boxToStore.setCreatedTs(safeDepositBox.getCreatedTs());
+        boxToStore.setLastUpdatedTs(safeDepositBox.getLastUpdatedTs());
+        boxToStore.setCreatedBy(safeDepositBox.getCreatedBy());
+        boxToStore.setLastUpdatedBy(safeDepositBox.getLastUpdatedBy());
+
+        OffsetDateTime now = dateTimeSupplier.get();
+        Optional<SafeDepositBoxRecord> existingBoxRecord = safeDepositBoxDao.getSafeDepositBox(safeDepositBox.getId());
+        if (existingBoxRecord.isPresent()) {
+            safeDepositBoxDao.fullUpdateSafeDepositBox(boxToStore);
+            SafeDepositBox existingBox = getSDBFromRecord(existingBoxRecord.get());
+            updateOwner(safeDepositBox.getId(), safeDepositBox.getOwner(), adminUser, now);
+            modifyUserGroupPermissions(existingBox, safeDepositBox.getUserGroupPermissions(), adminUser, now);
+            modifyIamRolePermissions(existingBox, safeDepositBox.getIamRolePermissions(), adminUser, now);
+        } else {
+            safeDepositBoxDao.createSafeDepositBox(boxToStore);
+            addOwnerPermission(safeDepositBox.getUserGroupPermissions(), safeDepositBox.getOwner());
+            userGroupPermissionService.grantUserGroupPermissions(
+                    safeDepositBox.getId(),
+                    safeDepositBox.getUserGroupPermissions(),
+                    adminUser,
+                    now);
+
+            iamRolePermissionService.grantIamRolePermissions(
+                    safeDepositBox.getId(),
+                    safeDepositBox.getIamRolePermissions(),
+                    adminUser,
+                    now);
+
+            vaultPolicyService.createStandardPolicies(safeDepositBox.getName(), safeDepositBox.getPath());
         }
     }
 }

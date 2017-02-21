@@ -74,9 +74,16 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.updateSafeDepositBox(safeDepositBox);
     }
 
+    public int fullUpdateSafeDepositBox(final SafeDepositBoxRecord safeDepositBox) {
+        return safeDepositBoxMapper.fullUpdateSafeDepositBox(safeDepositBox);
+    }
+
     public int deleteSafeDepositBox(final String id) {
         return safeDepositBoxMapper.deleteSafeDepositBox(id);
     }
 
+    public String getSafeDepositBoxIdByName(String name) {
+        return safeDepositBoxMapper.getSafeDepositBoxIdByName(name);
+    }
 
 }

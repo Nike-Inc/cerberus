@@ -48,6 +48,15 @@
         ID = #{id}
     </select>
 
+  <select id="getCategoryIdByName" resultType="java.lang.String">
+    SELECT
+    ID
+    FROM
+    CATEGORY
+    WHERE
+    DISPLAY_NAME = #{categoryName}
+  </select>
+
     <insert id="createCategory" parameterType="CategoryRecord">
       INSERT INTO
         CATEGORY

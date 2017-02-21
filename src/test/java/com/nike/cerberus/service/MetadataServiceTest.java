@@ -16,39 +16,37 @@
 
 package com.nike.cerberus.service;
 
-import com.nike.cerberus.dao.AwsIamRoleDao;
-import com.nike.cerberus.dao.CategoryDao;
-import com.nike.cerberus.dao.RoleDao;
-import com.nike.cerberus.dao.SafeDepositBoxDao;
-import com.nike.cerberus.dao.UserGroupDao;
-import com.nike.cerberus.domain.SdbMetadata;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.Role;
+import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
-import com.nike.cerberus.record.CategoryRecord;
+import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.record.RoleRecord;
-import com.nike.cerberus.record.SafeDepositBoxRecord;
-import com.nike.cerberus.record.UserGroupPermissionRecord;
-import com.nike.cerberus.record.UserGroupRecord;
-import com.nike.cerberus.util.DateTimeSupplier;
+import com.nike.cerberus.server.config.CmsConfig;
+import com.nike.cerberus.util.UuidSupplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -60,25 +58,16 @@ public class MetadataServiceTest {
     private MetadataService metadataServiceSpy;
 
     @Mock
+    private SafeDepositBoxService safeDepositBoxService;
+
+    @Mock
+    private CategoryService categoryService;
+
+    @Mock
     private RoleService roleService;
 
     @Mock
-    private SafeDepositBoxDao safeDepositBoxDao;
-
-    @Mock
-    private UserGroupDao userGroupDao;
-
-    @Mock
-    private DateTimeSupplier dateTimeSupplier;
-
-    @Mock
-    private CategoryDao categoryDao;
-
-    @Mock
-    private RoleDao roleDao;
-
-    @Mock
-    private AwsIamRoleDao awsIamRoleDao;
+    private UuidSupplier uuidSupplier;
 
     @Before
     public void before() {
@@ -88,14 +77,14 @@ public class MetadataServiceTest {
     }
 
     @Test
-    public void test_that_getSdbMetadata_properly_sets_result_meta_data() {
+    public void test_that_get_sdb_metadata_properly_sets_result_metadata() {
         int limit = 5;
         int offset = 0;
         int totalSDBs = 20;
 
-        when(safeDepositBoxDao.getSafeDepositBoxCount()).thenReturn(totalSDBs);
+        when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
 
-        SdbMetadata sdbMD = new SdbMetadata();
+        SDBMetadata sdbMD = new SDBMetadata();
         doReturn(Arrays.asList(sdbMD)).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
 
         SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
@@ -109,13 +98,13 @@ public class MetadataServiceTest {
     }
 
     @Test
-    public void test_that_getSdbMetadata_set_has_next_to_non_when_done_paging() {
+    public void test_that_get_sdb_metadata_set_has_next_to_no_when_done_paging() {
         int limit = 5;
         int offset = 15;
         int totalSDBs = 20;
 
-        when(safeDepositBoxDao.getSafeDepositBoxCount()).thenReturn(totalSDBs);
-        doReturn(Arrays.asList(new SdbMetadata())).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
+        when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
+        doReturn(Arrays.asList(new SDBMetadata())).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
 
         SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
 
@@ -128,31 +117,7 @@ public class MetadataServiceTest {
     }
 
     @Test
-    public void test_that_getCategoryIdToStringMap_returns_valid_map() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("abc", "foo");
-
-        when(categoryDao.getAllCategories())
-                .thenReturn(Arrays.asList(new CategoryRecord().setId("abc").setDisplayName("foo")));
-
-        Map<String, String> actual = metadataService.getCategoryIdToStringMap();
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void test_that_getRoleIdToStringMap_returns_valid_map() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("abc", "foo");
-
-        when(roleDao.getAllRoles())
-                .thenReturn(Arrays.asList(new RoleRecord().setId("abc").setName("foo")));
-
-        Map<String, String> actual = metadataService.getRoleIdToStringMap();
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void test_that_getSDBMetadataList_returns_valid_list() {
+    public void test_that_get_sdb_metadata_list_returns_valid_list() {
         String sdbId = "123";
         String categoryName = "foo";
         String categoryId = "321";
@@ -160,35 +125,52 @@ public class MetadataServiceTest {
         String path = "app/test-name";
         String desc = "blah blah blah";
         String by = "justin.field@nike.com";
+        String careBearsGroup = "care-bears";
+        String careBearsId = "000-abc";
+        String grumpyBearsGroup = "grumpy-bears";
+        String grumpyBearsId = "111-def";
+        String ownerId = "000";
+        String readId = "111";
+        String acctId = "12345";
+        String roleName = "foo-role";
+
         OffsetDateTime offsetDateTime = OffsetDateTime.now();
 
         Map<String, String> catMap = new HashMap<>();
         catMap.put(categoryId, categoryName);
-        Map<String, String> roleMap = new HashMap<>();
 
-        doReturn(catMap).when(metadataServiceSpy).getCategoryIdToStringMap();
-        doReturn(roleMap).when(metadataServiceSpy).getRoleIdToStringMap();
+        Map<String, String> roleIdToStringMap = new HashMap<>();
+        roleIdToStringMap.put(ownerId, RoleRecord.ROLE_OWNER);
+        roleIdToStringMap.put(readId, RoleRecord.ROLE_READ);
 
-        when(safeDepositBoxDao.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(new SafeDepositBoxRecord()
-                .setId(sdbId)
-                .setName(name)
-                .setPath(path)
-                .setDescription(desc)
-                .setCategoryId(categoryId)
-                .setCreatedBy(by)
-                .setLastUpdatedBy(by)
-                .setCreatedTs(offsetDateTime)
-                .setLastUpdatedTs(offsetDateTime)));
+        when(roleService.getRoleIdToStringMap()).thenReturn(roleIdToStringMap);
+        when(categoryService.getCategoryIdToCategoryNameMap()).thenReturn(catMap);
 
-        doNothing().when(metadataServiceSpy)
-                .processGroupData(anyMap(), isA(SdbMetadata.class), anyString());
+        SafeDepositBox box = new SafeDepositBox();
+        box.setId(sdbId);
+        box.setName(name);
+        box.setPath(path);
+        box.setDescription(desc);
+        box.setCategoryId(categoryId);
+        box.setCreatedBy(by);
+        box.setLastUpdatedBy(by);
+        box.setCreatedTs(offsetDateTime);
+        box.setLastUpdatedTs(offsetDateTime);
+        box.setOwner(careBearsGroup);
 
-        HashMap<String, String> rPermMap = new HashMap<>();
-        doReturn(rPermMap).when(metadataServiceSpy).getIamRolePermissionMap(roleMap, sdbId);
+        Set<UserGroupPermission> userPerms = new HashSet<>();
+        userPerms.add(new UserGroupPermission().withName(grumpyBearsGroup).withRoleId(readId));
+        box.setUserGroupPermissions(userPerms);
 
-        List<SdbMetadata> actual = metadataServiceSpy.getSDBMetadataList(1,0);
+        Set<IamRolePermission> iamPerms = new HashSet<>();
+        iamPerms.add(new IamRolePermission().withAccountId(acctId).withIamRoleName(roleName).withRoleId(readId));
+        box.setIamRolePermissions(iamPerms);
+
+        when(safeDepositBoxService.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(box));
+
+        List<SDBMetadata> actual = metadataService.getSDBMetadataList(1,0);
         assertEquals("List should have 1 entry", 1, actual.size());
-        SdbMetadata data = actual.get(0);
+        SDBMetadata data = actual.get(0);
         assertEquals("Name should match record", name, data.getName());
         assertEquals("path  should match record", path, data.getPath());
         assertEquals("", categoryName, data.getCategory());
@@ -197,50 +179,66 @@ public class MetadataServiceTest {
         assertEquals("last updated by should match record", by, data.getLastUpdatedBy());
         assertEquals("created ts should match record", offsetDateTime, data.getCreatedTs());
         assertEquals("updated ts should match record", offsetDateTime, data.getLastUpdatedTs());
+
+        Map<String, String> expectedIamPermMap = new HashMap<>();
+        expectedIamPermMap.put(String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE, acctId, roleName), RoleRecord.ROLE_READ);
         assertEquals("iam role perm map should match what is returned by getIamRolePermissionMap",
-                rPermMap, data.getIamRolePermissions());
-    }
+                expectedIamPermMap, data.getIamRolePermissions());
 
-    @Test
-    public void test_that_processGroupData_sets_owner_and_adds_user_perms_map() {
-        String careBearsGroup = "care-bears";
-        String careBearsId = "000-abc";
-        String grumpyBearsGroup = "grumpy-bears";
-        String grumpyBearsId = "111-def";
-        String ownerId = "000";
-        String readId = "111";
-        String sdbId = "abc-123-cdf";
-
-        Map<String, String> roleIdToStringMap = new HashMap<>();
-        roleIdToStringMap.put(ownerId, RoleRecord.ROLE_OWNER);
-        roleIdToStringMap.put(readId, RoleRecord.ROLE_READ);
-
-        SdbMetadata metadata = new SdbMetadata();
-
-        when(userGroupDao.getUserGroupPermissions(sdbId)).thenReturn(Arrays.asList(
-                new UserGroupPermissionRecord().setRoleId(ownerId).setUserGroupId(careBearsId),
-                new UserGroupPermissionRecord().setRoleId(readId).setUserGroupId(grumpyBearsId)
-        ));
-
-        when(userGroupDao.getUserGroup(careBearsId))
-                .thenReturn(Optional.of(new UserGroupRecord().setName(careBearsGroup)));
-        when(userGroupDao.getUserGroup(grumpyBearsId))
-                .thenReturn(Optional.of(new UserGroupRecord().setName(grumpyBearsGroup)));
-
-        metadataService.processGroupData(roleIdToStringMap, metadata, sdbId);
-
-        Map<String, String> expectedMap = new HashMap<>();
-        expectedMap.put(grumpyBearsGroup, RoleRecord.ROLE_READ);
-
-        assertEquals("Owner group should be care-bears", careBearsGroup, metadata.getOwner());
+        Map<String, String> expectedGroupPermMap = new HashMap<>();
+        expectedGroupPermMap.put(grumpyBearsGroup, RoleRecord.ROLE_READ);
+        assertEquals("Owner group should be care-bears", careBearsGroup, data.getOwner());
         assertEquals("The user group perms should match the expected map",
-                expectedMap, metadata.getUserGroupPermissions());
+                expectedGroupPermMap, data.getUserGroupPermissions());
     }
 
     @Test
-    public void test_that_getIamRolePermissionMap_returns_valid_map() {
-        Map<String, String> roleMap = new HashMap<>();
-        roleMap.put("123", "read");
-    }
+    public void test_that_restore_metadata_calls_the_sdb_service_with_expected_sdb_box() throws IOException {
+        String user = "unit-test-user";
+        String id = "111";
+        String categoryId = "222";
+        String categoryName = "Applications";
+        String readId = "333";
+        String sdbName = "HEALTH CHECK BUCKET";
 
+        ObjectMapper mapper = CmsConfig.configureObjectMapper();
+        InputStream metadataStream = getClass().getClassLoader()
+                .getResourceAsStream("com/nike/cerberus/service/sdb_metadata_backup.json");
+        SDBMetadata sdbMetadata = mapper.readValue(metadataStream, SDBMetadata.class);
+
+        when(safeDepositBoxService.getSafeDepositBoxIdByName(sdbName)).thenReturn(Optional.ofNullable(null));
+        when(uuidSupplier.get()).thenReturn(id);
+        when(categoryService.getCategoryIdByName(categoryName)).thenReturn(Optional.of(categoryId));
+        Role readRole = new Role();
+        readRole.setId(readId);
+        when(roleService.getRoleByName(RoleRecord.ROLE_READ)).thenReturn(Optional.of(readRole));
+
+        metadataService.restoreMetadata(sdbMetadata, user);
+
+        SafeDepositBox expectedSdb = new SafeDepositBox();
+        expectedSdb.setId(id);
+        expectedSdb.setPath("app/health-check-bucket/");
+        expectedSdb.setCategoryId(categoryId);
+        expectedSdb.setName(sdbName);
+        expectedSdb.setOwner("Lst-Squad.Carebears");
+        expectedSdb.setDescription("This SDB is read by the Health Check Lambda...");
+        expectedSdb.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+        expectedSdb.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+        expectedSdb.setCreatedBy("justin.field@nike.com");
+        expectedSdb.setLastUpdatedBy("todd.lisonbee@nike.com");
+
+        Set<UserGroupPermission> userPerms = new HashSet<>();
+        userPerms.add(new UserGroupPermission().withName("Foundation.Prod.Support").withRoleId(readId));
+        userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
+        expectedSdb.setUserGroupPermissions(userPerms);
+
+        Set<IamRolePermission> iamPerms = new HashSet<>();
+        iamPerms.add(new IamRolePermission().withAccountId("1111111111").withIamRoleName("lambda_prod_healthcheck").withRoleId(readId));
+        expectedSdb.setIamRolePermissions(iamPerms);
+
+        expectedSdb.setUserGroupPermissions(userPerms);
+        expectedSdb.setIamRolePermissions(iamPerms);
+
+        verify(safeDepositBoxService, times(1)).restoreSafeDepositBox(expectedSdb, user);
+    }
 }

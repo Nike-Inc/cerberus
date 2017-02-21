@@ -33,4 +33,6 @@ public interface CategoryMapper {
     int createCategory(@Param("record") final CategoryRecord record);
 
     int deleteCategory(@Param("id") final String id);
+
+    String getCategoryIdByName(@Param("categoryName") String categoryName);
 }
