@@ -50,4 +50,8 @@ public class CategoryDao {
     public int deleteCategory(final String id) {
         return categoryMapper.deleteCategory(id);
     }
+
+    public String getCategoryIdByName(String categoryName) {
+        return categoryMapper.getCategoryIdByName(categoryName);
+    }
 }

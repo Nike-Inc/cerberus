@@ -26,7 +26,7 @@ public class SDBMetadataResult {
     private int offset = 0;
     private int sdbCountInResult;
     private int totalSDBCount;
-    private List<SdbMetadata> safeDepositBoxMetadata;
+    private List<SDBMetadata> safeDepositBoxMetadata;
 
     public boolean isHasNext() {
         return hasNext;
@@ -76,11 +76,11 @@ public class SDBMetadataResult {
         this.totalSDBCount = totalSDBCount;
     }
 
-    public List<SdbMetadata> getSafeDepositBoxMetadata() {
+    public List<SDBMetadata> getSafeDepositBoxMetadata() {
         return safeDepositBoxMetadata;
     }
 
-    public void setSafeDepositBoxMetadata(List<SdbMetadata> safeDepositBoxMetadata) {
+    public void setSafeDepositBoxMetadata(List<SDBMetadata> safeDepositBoxMetadata) {
         this.safeDepositBoxMetadata = safeDepositBoxMetadata;
     }
 }

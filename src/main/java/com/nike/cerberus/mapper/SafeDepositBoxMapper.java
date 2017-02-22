@@ -43,9 +43,13 @@ public interface SafeDepositBoxMapper {
 
     int updateSafeDepositBox(@Param("record") SafeDepositBoxRecord record);
 
+    int fullUpdateSafeDepositBox(@Param("record") SafeDepositBoxRecord record);
+
     int deleteSafeDepositBox(@Param("id") String id);
 
     List<SafeDepositBoxRecord> getSafeDepositBoxes(@Param("limit") int limit, @Param("offset") int offset);
 
     int count();
+
+    String getSafeDepositBoxIdByName(@Param("name") String name);
 }

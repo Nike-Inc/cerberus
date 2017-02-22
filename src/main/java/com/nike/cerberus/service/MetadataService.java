@@ -16,58 +16,146 @@
 
 package com.nike.cerberus.service;
 
-import com.nike.cerberus.dao.AwsIamRoleDao;
-import com.nike.cerberus.dao.CategoryDao;
-import com.nike.cerberus.dao.RoleDao;
-import com.nike.cerberus.dao.SafeDepositBoxDao;
-import com.nike.cerberus.dao.UserGroupDao;
-import com.nike.cerberus.domain.SdbMetadata;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.Role;
+import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
-import com.nike.cerberus.record.AwsIamRolePermissionRecord;
-import com.nike.cerberus.record.AwsIamRoleRecord;
-import com.nike.cerberus.record.CategoryRecord;
-import com.nike.cerberus.record.RoleRecord;
-import com.nike.cerberus.record.SafeDepositBoxRecord;
-import com.nike.cerberus.record.UserGroupPermissionRecord;
-import org.apache.commons.lang3.StringUtils;
+import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.UserGroupPermission;
+import com.nike.cerberus.error.InvalidCategoryNameApiError;
+import com.nike.cerberus.error.InvalidIamRoleArnApiError;
+import com.nike.cerberus.error.InvalidRoleNameApiError;
+import com.nike.cerberus.util.UuidSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Provides general stats about safe deposit boxes.
+ * A service that can perform admin tasks around SDB metadata
  */
 public class MetadataService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final SafeDepositBoxDao safeDepositBoxDao;
-    private final UserGroupDao userGroupDao;
-    private final CategoryDao categoryDao;
-    private final RoleDao roleDao;
-    private final AwsIamRoleDao awsIamRoleDao;
+    private final SafeDepositBoxService safeDepositBoxService;
+    private final CategoryService categoryService;
+    private final RoleService roleService;
+    private final UuidSupplier uuidSupplier;
 
     @Inject
-    public MetadataService(SafeDepositBoxDao safeDepositBoxDao,
-                           UserGroupDao userGroupDao,
-                           CategoryDao categoryDao,
-                           RoleDao roleDao,
-                           AwsIamRoleDao awsIamRoleDao) {
+    public MetadataService(SafeDepositBoxService safeDepositBoxService,
+                           CategoryService categoryService,
+                           RoleService roleService,
+                           UuidSupplier uuidSupplier) {
 
-        this.safeDepositBoxDao = safeDepositBoxDao;
-        this.userGroupDao = userGroupDao;
-        this.categoryDao = categoryDao;
-        this.roleDao = roleDao;
-        this.awsIamRoleDao = awsIamRoleDao;
+        this.safeDepositBoxService = safeDepositBoxService;
+        this.categoryService = categoryService;
+        this.roleService = roleService;
+        this.uuidSupplier = uuidSupplier;
     }
 
     /**
-     * Method for retrieving meta data about SDBs sorted by created date.
+     * Creates or Updates an SDB using saved off metadata.
+     * This method differs from SafeDepositBoxService::createSafeDepositBox and SafeDepositBoxService::updateSafeDepositBox
+     * only in that this method sets the created by and last updated fields which are normally sourced automatically.
+     *
+     * This is an admin function so that backed up SDB metadata can easily be restored.
+     * An example would be a cross region recovery event where you are restoring backed up data from a different
+     * region / cerberus environment
+     *
+     * @param sdbMetadata SDB Payload to restore
+     */
+    public void restoreMetadata(SDBMetadata sdbMetadata, String adminUser) {
+        logger.info("Restoring metadata for SDB: {}", sdbMetadata.getName());
+
+        Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByName(sdbMetadata.getName());
+        String id;
+        if (sdbId.isPresent()) {
+            id = sdbId.get();
+
+            logger.info("Found existing SDB for {} with id {}, forcing restore", sdbMetadata.getName(), id);
+        } else {
+            // create
+            id = uuidSupplier.get();
+            logger.info("No SDB found for {}, creating new SDB", sdbMetadata.getName());
+        }
+
+        // Map the string category name to a category id
+        Optional<String> categoryOpt = categoryService.getCategoryIdByName(sdbMetadata.getCategory());
+        if (! categoryOpt.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(new InvalidCategoryNameApiError(sdbMetadata.getCategory()))
+                    .build();
+        }
+        String categoryId = categoryOpt.get();
+
+        Set<UserGroupPermission> userGroupPermissionSet = new HashSet<>();
+        sdbMetadata.getUserGroupPermissions().forEach((groupName, roleName) -> {
+            userGroupPermissionSet.add(new UserGroupPermission()
+                    .withName(groupName)
+                    .withRoleId(getRoleIdFromName(roleName))
+            );
+        });
+
+        Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
+        sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
+            Pattern iamRoleArnParserPattern = Pattern.compile("arn:aws:iam::(?<accountId>.*?):role/(?<roleName>.*)");
+            Matcher iamRoleArnParserMatcher = iamRoleArnParserPattern.matcher(iamRoleArn);
+            if (! iamRoleArnParserMatcher.find()) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(new InvalidIamRoleArnApiError(sdbMetadata.getCategory()))
+                        .build();
+            }
+
+            iamRolePermissionSet.add(new IamRolePermission()
+                    .withAccountId(iamRoleArnParserMatcher.group("accountId"))
+                    .withIamRoleName(iamRoleArnParserMatcher.group("roleName"))
+                    .withRoleId(getRoleIdFromName(roleName))
+            );
+        });
+
+
+        SafeDepositBox sdb = new SafeDepositBox();
+        sdb.setId(id);
+        sdb.setPath(sdbMetadata.getPath());
+        sdb.setCategoryId(categoryId);
+        sdb.setName(sdbMetadata.getName());
+        sdb.setOwner(sdbMetadata.getOwner());
+        sdb.setDescription(sdbMetadata.getDescription());
+        sdb.setCreatedTs(sdbMetadata.getCreatedTs());
+        sdb.setLastUpdatedTs(sdbMetadata.getLastUpdatedTs());
+        sdb.setCreatedBy(sdbMetadata.getCreatedBy());
+        sdb.setLastUpdatedBy(sdbMetadata.getLastUpdatedBy());
+        sdb.setUserGroupPermissions(userGroupPermissionSet);
+        sdb.setIamRolePermissions(iamRolePermissionSet);
+
+        safeDepositBoxService.restoreSafeDepositBox(sdb, adminUser);
+    }
+
+    private String getRoleIdFromName(String roleName) {
+        // map the string role name to a role id
+        Optional<Role> role = roleService.getRoleByName(roleName);
+        if (! role.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(new InvalidRoleNameApiError(roleName))
+                    .build();
+        }
+        return role.get().getId();
+    }
+
+    /**
+     * Method for retrieving metadata about SDBs sorted by created date.
      *
      * @param limit  The int limit for paginating.
      * @param offset The int offset for paginating.
@@ -77,47 +165,31 @@ public class MetadataService {
         SDBMetadataResult result = new SDBMetadataResult();
         result.setLimit(limit);
         result.setOffset(offset);
-        result.setTotalSDBCount(safeDepositBoxDao.getSafeDepositBoxCount());
+        result.setTotalSDBCount(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes());
         result.setHasNext(result.getTotalSDBCount() > (offset + limit));
         if (result.isHasNext()) {
             result.setNextOffset(offset + limit);
         }
-        List<SdbMetadata> sdbMetadataList = getSDBMetadataList(limit, offset);
+        List<SDBMetadata> sdbMetadataList = getSDBMetadataList(limit, offset);
         result.setSafeDepositBoxMetadata(sdbMetadataList);
         result.setSdbCountInResult(sdbMetadataList.size());
 
         return result;
     }
 
-    protected Map<String,String> getCategoryIdToStringMap() {
-        List<CategoryRecord> categoryRecords = categoryDao.getAllCategories();
-        Map<String, String> catIdToStringMap = new HashMap<>(categoryRecords.size());
-        categoryRecords.forEach(categoryRecord ->
-                catIdToStringMap.put(categoryRecord.getId(), categoryRecord.getDisplayName())
-        );
-        return catIdToStringMap;
-    }
-
-    protected Map<String,String> getRoleIdToStringMap() {
-        List<RoleRecord> roleRecords = roleDao.getAllRoles();
-        Map<String, String> roleIdToStringMap = new HashMap<>(roleRecords.size());
-        roleRecords.forEach(roleRecord -> roleIdToStringMap.put(roleRecord.getId(), roleRecord.getName()));
-        return roleIdToStringMap;
-    }
-
-    protected List<SdbMetadata> getSDBMetadataList(int limit, int offset) {
-        List<SdbMetadata> sdbs = new LinkedList<>();
+    protected List<SDBMetadata> getSDBMetadataList(int limit, int offset) {
+        List<SDBMetadata> sdbs = new LinkedList<>();
 
         // Collect the categories.
-        Map<String, String> catIdToStringMap = getCategoryIdToStringMap();
+        Map<String, String> catIdToStringMap = categoryService.getCategoryIdToCategoryNameMap();
         // Collect the roles
-        Map<String, String> roleIdToStringMap = getRoleIdToStringMap();
+        Map<String, String> roleIdToStringMap = roleService.getRoleIdToStringMap();
         // Collect The SDB Records
-        final List<SafeDepositBoxRecord> safeDepositBoxRecords = safeDepositBoxDao.getSafeDepositBoxes(limit, offset);
+        List<SafeDepositBox> safeDepositBoxes = safeDepositBoxService.getSafeDepositBoxes(limit, offset);
 
         // for each SDB collect the user and iam permissions and add to result
-        safeDepositBoxRecords.forEach(sdb -> {
-            SdbMetadata data = new SdbMetadata();
+        safeDepositBoxes.forEach(sdb -> {
+            SDBMetadata data = new SDBMetadata();
             data.setName(sdb.getName());
             data.setPath(sdb.getPath());
             data.setDescription(sdb.getDescription());
@@ -126,44 +198,34 @@ public class MetadataService {
             data.setCreatedTs(sdb.getCreatedTs());
             data.setLastUpdatedBy(sdb.getLastUpdatedBy());
             data.setLastUpdatedTs(sdb.getLastUpdatedTs());
-
-            // set the owner and map group to roles
-            processGroupData(roleIdToStringMap, data, sdb.getId());
-
-            data.setIamRolePermissions(getIamRolePermissionMap(roleIdToStringMap, sdb.getId()));
-
+            data.setOwner(sdb.getOwner());
+            data.setUserGroupPermissions(getUserGroupPermissionsMap(roleIdToStringMap, sdb.getUserGroupPermissions()));
+            data.setIamRolePermissions(getIamRolePermissionMap(roleIdToStringMap, sdb.getIamRolePermissions()));
             sdbs.add(data);
         });
 
         return sdbs;
     }
 
-    protected void processGroupData(Map<String, String> roleIdToStringMap, SdbMetadata data, String sdbId) {
-        List<UserGroupPermissionRecord> userPerms = userGroupDao.getUserGroupPermissions(sdbId);
-        Map<String, String> groupRoleMap = new HashMap<>(userPerms.size() - 1);
-        userPerms.forEach(record -> {
-            String group = userGroupDao.getUserGroup(record.getUserGroupId()).get().getName();
-            String role = roleIdToStringMap.get(record.getRoleId());
+    protected Map<String, String> getUserGroupPermissionsMap(Map<String, String> roleIdToStringMap,
+                                                             Set<UserGroupPermission> permissions) {
 
-            if (StringUtils.equals(role, RoleRecord.ROLE_OWNER)) {
-                data.setOwner(group);
-            } else {
-                groupRoleMap.put(group, role);
-            }
-        });
+        Map<String, String> permissionsMap = new HashMap<>();
+        permissions.forEach(permission ->
+                permissionsMap.put(permission.getName(), roleIdToStringMap.get(permission.getRoleId())));
 
-        data.setUserGroupPermissions(groupRoleMap);
+        return permissionsMap;
     }
 
-    protected Map<String,String> getIamRolePermissionMap(Map<String, String> roleIdToStringMap, String sdbId) {
-        List<AwsIamRolePermissionRecord> iamPerms = awsIamRoleDao.getIamRolePermissions(sdbId);
-        Map<String, String> iamRoleMap = new HashMap<>(iamPerms.size());
-        iamPerms.forEach(record -> {
-            AwsIamRoleRecord iam = awsIamRoleDao.getIamRole(record.getAwsIamRoleId()).get();
-            String role = roleIdToStringMap.get(record.getRoleId());
+    protected Map<String,String> getIamRolePermissionMap(Map<String, String> roleIdToStringMap,
+                                                         Set<IamRolePermission> iamPerms) {
 
-            iamRoleMap.put(String.format("arn:aws:iam::%s:role/%s",
-                    iam.getAwsAccountId(), iam.getAwsIamRoleName()), role);
+        Map<String, String> iamRoleMap = new HashMap<>(iamPerms.size());
+        iamPerms.forEach(perm -> {
+            String role = roleIdToStringMap.get(perm.getRoleId());
+
+            iamRoleMap.put(String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
+                    perm.getAccountId(), perm.getIamRoleName()), role);
         });
         return iamRoleMap;
     }

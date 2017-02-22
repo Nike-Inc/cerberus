@@ -164,4 +164,46 @@ public class SafeDepositBox {
     public void setIamRolePermissions(Set<IamRolePermission> iamRolePermissions) {
         this.iamRolePermissions = iamRolePermissions;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SafeDepositBox that = (SafeDepositBox) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
+        if (createdTs != null ? !createdTs.equals(that.createdTs) : that.createdTs != null) return false;
+        if (lastUpdatedTs != null ? !lastUpdatedTs.equals(that.lastUpdatedTs) : that.lastUpdatedTs != null)
+            return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(that.lastUpdatedBy) : that.lastUpdatedBy != null)
+            return false;
+        if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
+        if (userGroupPermissions != null ? !userGroupPermissions.equals(that.userGroupPermissions) : that.userGroupPermissions != null)
+            return false;
+        return iamRolePermissions != null ? iamRolePermissions.equals(that.iamRolePermissions) : that.iamRolePermissions == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (path != null ? path.hashCode() : 0);
+        result = 31 * result + (createdTs != null ? createdTs.hashCode() : 0);
+        result = 31 * result + (lastUpdatedTs != null ? lastUpdatedTs.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
+        result = 31 * result + (owner != null ? owner.hashCode() : 0);
+        result = 31 * result + (userGroupPermissions != null ? userGroupPermissions.hashCode() : 0);
+        result = 31 * result + (iamRolePermissions != null ? iamRolePermissions.hashCode() : 0);
+        return result;
+    }
 }

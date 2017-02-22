@@ -121,4 +121,38 @@ public class SafeDepositBoxRecord {
         this.lastUpdatedTs = lastUpdatedTs;
         return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SafeDepositBoxRecord record = (SafeDepositBoxRecord) o;
+
+        if (id != null ? !id.equals(record.id) : record.id != null) return false;
+        if (categoryId != null ? !categoryId.equals(record.categoryId) : record.categoryId != null) return false;
+        if (name != null ? !name.equals(record.name) : record.name != null) return false;
+        if (description != null ? !description.equals(record.description) : record.description != null) return false;
+        if (path != null ? !path.equals(record.path) : record.path != null) return false;
+        if (createdBy != null ? !createdBy.equals(record.createdBy) : record.createdBy != null) return false;
+        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(record.lastUpdatedBy) : record.lastUpdatedBy != null)
+            return false;
+        if (createdTs != null ? !createdTs.equals(record.createdTs) : record.createdTs != null) return false;
+        return lastUpdatedTs != null ? lastUpdatedTs.equals(record.lastUpdatedTs) : record.lastUpdatedTs == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (path != null ? path.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
+        result = 31 * result + (createdTs != null ? createdTs.hashCode() : 0);
+        result = 31 * result + (lastUpdatedTs != null ? lastUpdatedTs.hashCode() : 0);
+        return result;
+    }
 }
