@@ -52,6 +52,7 @@ public class MetadataService {
     private final CategoryService categoryService;
     private final RoleService roleService;
     private final UuidSupplier uuidSupplier;
+    private String categoryId;
 
     @Inject
     public MetadataService(SafeDepositBoxService safeDepositBoxService,
@@ -69,7 +70,7 @@ public class MetadataService {
      * Creates or Updates an SDB using saved off metadata.
      * This method differs from SafeDepositBoxService::createSafeDepositBox and SafeDepositBoxService::updateSafeDepositBox
      * only in that this method sets the created by and last updated fields which are normally sourced automatically.
-     *
+     * <p>
      * This is an admin function so that backed up SDB metadata can easily be restored.
      * An example would be a cross region recovery event where you are restoring backed up data from a different
      * region / cerberus environment
@@ -79,52 +80,10 @@ public class MetadataService {
     public void restoreMetadata(SDBMetadata sdbMetadata, String adminUser) {
         logger.info("Restoring metadata for SDB: {}", sdbMetadata.getName());
 
-        Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByName(sdbMetadata.getName());
-        String id;
-        if (sdbId.isPresent()) {
-            id = sdbId.get();
-
-            logger.info("Found existing SDB for {} with id {}, forcing restore", sdbMetadata.getName(), id);
-        } else {
-            // create
-            id = uuidSupplier.get();
-            logger.info("No SDB found for {}, creating new SDB", sdbMetadata.getName());
-        }
-
-        // Map the string category name to a category id
-        Optional<String> categoryOpt = categoryService.getCategoryIdByName(sdbMetadata.getCategory());
-        if (! categoryOpt.isPresent()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(new InvalidCategoryNameApiError(sdbMetadata.getCategory()))
-                    .build();
-        }
-        String categoryId = categoryOpt.get();
-
-        Set<UserGroupPermission> userGroupPermissionSet = new HashSet<>();
-        sdbMetadata.getUserGroupPermissions().forEach((groupName, roleName) -> {
-            userGroupPermissionSet.add(new UserGroupPermission()
-                    .withName(groupName)
-                    .withRoleId(getRoleIdFromName(roleName))
-            );
-        });
-
-        Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
-        sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
-            Pattern iamRoleArnParserPattern = Pattern.compile("arn:aws:iam::(?<accountId>.*?):role/(?<roleName>.*)");
-            Matcher iamRoleArnParserMatcher = iamRoleArnParserPattern.matcher(iamRoleArn);
-            if (! iamRoleArnParserMatcher.find()) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(new InvalidIamRoleArnApiError(sdbMetadata.getCategory()))
-                        .build();
-            }
-
-            iamRolePermissionSet.add(new IamRolePermission()
-                    .withAccountId(iamRoleArnParserMatcher.group("accountId"))
-                    .withIamRoleName(iamRoleArnParserMatcher.group("roleName"))
-                    .withRoleId(getRoleIdFromName(roleName))
-            );
-        });
-
+        String id = getSdbId(sdbMetadata);
+        String categoryId = getCategoryId(sdbMetadata);
+        Set<UserGroupPermission> userGroupPermissionSet = getUserGroupPermissionSet(sdbMetadata);
+        Set<IamRolePermission> iamRolePermissionSet = getIamRolePermissionSet(sdbMetadata);
 
         SafeDepositBox sdb = new SafeDepositBox();
         sdb.setId(id);
@@ -143,6 +102,72 @@ public class MetadataService {
         safeDepositBoxService.restoreSafeDepositBox(sdb, adminUser);
     }
 
+    /**
+     * Retrieves the IAM Role Permission Set for SDB Metadata Object.
+     * @param sdbMetadata the sdb metadata
+     * @return IAM Role Permission Set
+     */
+    private Set<IamRolePermission> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
+        Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
+        sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
+            Pattern iamRoleArnParserPattern = Pattern.compile("arn:aws:iam::(?<accountId>.*?):role/(?<roleName>.*)");
+            Matcher iamRoleArnParserMatcher = iamRoleArnParserPattern.matcher(iamRoleArn);
+            if (!iamRoleArnParserMatcher.find()) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(new InvalidIamRoleArnApiError(sdbMetadata.getCategory()))
+                        .build();
+            }
+
+            iamRolePermissionSet.add(new IamRolePermission()
+                    .withAccountId(iamRoleArnParserMatcher.group("accountId"))
+                    .withIamRoleName(iamRoleArnParserMatcher.group("roleName"))
+                    .withRoleId(getRoleIdFromName(roleName))
+            );
+        });
+        return iamRolePermissionSet;
+    }
+
+    /**
+     * Retrieves the User Group Permission Set for SDB Metadata Object.
+     * @param sdbMetadata the sdb metadata
+     * @return User Group Permission Set
+     */
+    private Set<UserGroupPermission> getUserGroupPermissionSet(SDBMetadata sdbMetadata) {
+        Set<UserGroupPermission> userGroupPermissionSet = new HashSet<>();
+        sdbMetadata.getUserGroupPermissions().forEach((groupName, roleName) -> {
+            userGroupPermissionSet.add(new UserGroupPermission()
+                    .withName(groupName)
+                    .withRoleId(getRoleIdFromName(roleName))
+            );
+        });
+        return userGroupPermissionSet;
+    }
+
+    /**
+     * Retrieves or generates an ID for the safe deposit box.
+     * @param sdbMetadata the sdb metadata
+     * @return id for the sdb
+     */
+    private String getSdbId(SDBMetadata sdbMetadata) {
+        Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByName(sdbMetadata.getName());
+        String id;
+        if (sdbId.isPresent()) {
+            id = sdbId.get();
+
+            logger.info("Found existing SDB for {} with id {}, forcing restore", sdbMetadata.getName(), id);
+        } else {
+            // create
+            id = uuidSupplier.get();
+            logger.info("No SDB found for {}, creating new SDB", sdbMetadata.getName());
+        }
+        return id;
+    }
+
+    /**
+     * Gets the role id for a role by its name
+     * @param roleName the name that you need an id for
+     * @return the role id
+     */
     private String getRoleIdFromName(String roleName) {
         // map the string role name to a role id
         Optional<Role> role = roleService.getRoleByName(roleName);
@@ -177,6 +202,12 @@ public class MetadataService {
         return result;
     }
 
+    /**
+     * Gets a list of SBD Metadata's
+     * @param limit The limit for the results
+     * @param offset The offset for pagination
+     * @return A list of SDB Metadata
+     */
     protected List<SDBMetadata> getSDBMetadataList(int limit, int offset) {
         List<SDBMetadata> sdbs = new LinkedList<>();
 
@@ -207,6 +238,9 @@ public class MetadataService {
         return sdbs;
     }
 
+    /**
+     * Retrieves a simplified user group permission map that is only strings so it can be transported across Cerberus environments
+     */
     protected Map<String, String> getUserGroupPermissionsMap(Map<String, String> roleIdToStringMap,
                                                              Set<UserGroupPermission> permissions) {
 
@@ -217,6 +251,9 @@ public class MetadataService {
         return permissionsMap;
     }
 
+    /**
+     * Retrieves a simplified iam permission map that is only strings so it can be transported across Cerberus environments
+     */
     protected Map<String,String> getIamRolePermissionMap(Map<String, String> roleIdToStringMap,
                                                          Set<IamRolePermission> iamPerms) {
 
@@ -228,5 +265,19 @@ public class MetadataService {
                     perm.getAccountId(), perm.getIamRoleName()), role);
         });
         return iamRoleMap;
+    }
+
+    /**
+     * Gets the category id for a sdb
+     */
+    public String getCategoryId(SDBMetadata sdbMetadata) {
+        // Map the string category name to a category id
+        Optional<String> categoryOpt = categoryService.getCategoryIdByName(sdbMetadata.getCategory());
+        if (! categoryOpt.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(new InvalidCategoryNameApiError(sdbMetadata.getCategory()))
+                    .build();
+        }
+        return categoryOpt.get();
     }
 }
