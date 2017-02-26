@@ -52,7 +52,6 @@ public class MetadataService {
     private final CategoryService categoryService;
     private final RoleService roleService;
     private final UuidSupplier uuidSupplier;
-    private String categoryId;
 
     @Inject
     public MetadataService(SafeDepositBoxService safeDepositBoxService,
