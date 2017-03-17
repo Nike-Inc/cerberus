@@ -156,20 +156,19 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
 
     + Body
 
-            {
-                "auth": {
-                    "client_token": "9a8b5f0e-b41f-3fc7-1c94-3ed4a8057396",
-                    "policies": [
-                        "web"
-                    ],
-                    "metadata": {
-                        "account_id": "123",
-                        "iam_role_name": "web"
-                    },
-                    "lease_duration": 3600,
-                    "renewable": true
-                }
-            }
+            "{
+              "client_token" : "234808f1-ede3-2177-aa9d-45f507391310",
+              "policies" : [ "health-check-bucket-read", "lookup-self" ],
+              "metadata" : {
+                "aws_account_id" : "111111111",
+                "aws_iam_role_name" : "cerberus-api-tester",
+                "aws_region" : "us-west-2",
+                "username" : "arn:aws:iam::111111111:role/cerberus-api-tester"
+              },
+              "lease_duration" : 3600,
+              "renewable" : true
+            }"
+
 
 ## Auth [/v1/auth]
 
