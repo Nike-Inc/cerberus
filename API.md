@@ -45,17 +45,23 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
     + Body
 
             {
-                "status": "mfa_req",
-                "client_token": "null",
-                "data": {
-                    "state_token": "jskljdklaj",
-                    "devices": [
-                        {
-                            "id": "123456",
-                            "name": "Google Authenticator"
-                        }
-                    ]
-                }
+              "status" : "mfa_req",
+              "data" : {
+                "user_id" : "13427265",
+                "username" : "john.doe@nike.com",
+                "state_token" : "5c7d1fd1914ffff5bcc2253b3c38ef85a3125bc1",
+                "devices" : [ {
+                  "id" : "111111",
+                  "name" : "Google Authenticator"
+                }, {
+                  "id" : "22222",
+                  "name" : "Google Authenticator"
+                }, {
+                  "id" : "33333",
+                  "name" : "Google Authenticator"
+                } ],
+                "client_token" : null
+              }
             }
 
 
