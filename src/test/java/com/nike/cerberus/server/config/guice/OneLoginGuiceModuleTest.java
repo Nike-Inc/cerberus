@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 public class OneLoginGuiceModuleTest {
 
     @Test
-    public void sanityTest() {
+    public void sanity_test_module() {
         Injector injector = Guice.createInjector(new OneLoginGuiceModule(), new AbstractModule() {
             @Override
             protected void configure() {

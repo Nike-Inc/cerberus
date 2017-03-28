@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 public class KmsPolicyServiceTest {
 
     @Test
-    public void testGenerateStandardKmsPolicy() {
+    public void test_generateStandardKmsPolicy() {
 
         String rootUserArn = "root-arn";
         String adminRoleArn = "admin-role-arn";

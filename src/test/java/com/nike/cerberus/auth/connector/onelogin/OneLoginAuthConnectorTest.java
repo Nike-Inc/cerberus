@@ -42,7 +42,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testAuthenticateNoMfa() {
+    public void test_authenticate_with_no_mfa() {
         ResponseStatus status = new ResponseStatus();
         status.setError(false);
 
@@ -69,7 +69,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testAuthenticateWithMfa() {
+    public void test_authenticate_with_mfa_required() {
         ResponseStatus status = new ResponseStatus();
         status.setError(false);
 
@@ -104,7 +104,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testAuthenticateMfaError() {
+    public void test_authenticate_when_mfa_is_not_setup() {
 
         setupMockWhereLoginGivesError(400L, "mfa something error message");
 
@@ -121,7 +121,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testAuthenticateBadCreds() {
+    public void test_authenticate_with_bad_creds() {
         setupMockWhereLoginGivesError(400L, "any other error message");
 
         try {
@@ -138,7 +138,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testAuthenticateBadRequest() {
+    public void test_authenticate_with_500_response() {
         setupMockWhereLoginGivesError(500L, "any error message");
 
         try {
@@ -165,7 +165,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testMfaCheck() {
+    public void test_mfaCheck() {
         SessionUser user = new SessionUser();
         user.setId(USER_ID);
         user.setUsername(USERNAME);
@@ -186,22 +186,25 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testParseLdapGroups() {
+    public void test_parseLdapGroups() {
         String ldapGroups = "CN=Application.foo.users,OU=Application,OU=Groups,DC=ad,DC=acme,DC=com;CN=Application.bar.users,OU=Application,OU=Groups,DC=ad,DC=acme,DC=com";
+
+        // invoke method under test
         Set<String> actualResults = oneLoginAuthConnector.parseLdapGroups(ldapGroups);
+
         Set<String> expectedResults = Sets.newHashSet("Application.bar.users", "Application.foo.users");
         assertEquals(expectedResults, actualResults);
     }
 
     @Test
-    public void testParseLdapGroupsNull() {
+    public void test_parseLdapGroups_handles_null() {
         Set<String> actualResults = oneLoginAuthConnector.parseLdapGroups(null);
         Set<String> expectedResults = Sets.newHashSet();
         assertEquals(expectedResults, actualResults);
     }
 
     @Test
-    public void testGetUserById() {
+    public void test_getUserById() {
         ResponseStatus status = new ResponseStatus();
         status.setError(false);
 
@@ -222,7 +225,7 @@ public class OneLoginAuthConnectorTest {
 
 
     @Test
-    public void testGetUserByIdError() {
+    public void test_getUserById_gives_error() {
         ResponseStatus status = new ResponseStatus();
         status.setError(true);
         GetUserResponse getUserResponse = new GetUserResponse();
@@ -242,7 +245,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testVerifyFactor400Error() {
+    public void test_verifyFactor_with_400_error() {
 
         setupMockWhereVerifyGivesError(400L, "any error message");
 
@@ -258,7 +261,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testVerifyFactor500Error() {
+    public void test_verifyFactor_with_500_error() {
 
         setupMockWhereVerifyGivesError(500L, "any error message");
 
@@ -286,7 +289,7 @@ public class OneLoginAuthConnectorTest {
     }
 
     @Test
-    public void testCreateSessionLoginToken() {
+    public void test_createSessionLoginToken() {
         ResponseStatus status = new ResponseStatus();
         status.setError(false);
 
