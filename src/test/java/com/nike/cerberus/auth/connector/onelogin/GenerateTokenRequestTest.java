@@ -3,6 +3,7 @@ package com.nike.cerberus.auth.connector.onelogin;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GenerateTokenRequestTest {
 
@@ -21,4 +22,9 @@ public class GenerateTokenRequestTest {
         assertEquals(new GenerateTokenRequest(), new GenerateTokenRequest());
     }
 
+    @Test
+    public void test_hashCode() {
+        assertEquals(new GenerateTokenRequest().hashCode(), new GenerateTokenRequest().hashCode());
+        assertTrue(new GenerateTokenRequest().hashCode() != new GenerateTokenRequest().setGrantType("foo").hashCode());
+    }
 }
