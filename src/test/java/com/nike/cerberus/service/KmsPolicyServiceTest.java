@@ -1,5 +1,7 @@
 package com.nike.cerberus.service;
 
+import com.amazonaws.auth.policy.Policy;
+import com.amazonaws.auth.policy.Statement;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
@@ -69,6 +71,11 @@ public class KmsPolicyServiceTest {
         String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
 
         assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+    }
+
+    @Test
+    public void test_that_generateStandardKmsPolicy_returns_false_when_a_non_standard_policy_is_supplied() {
+        assertFalse(kmsPolicyService.isPolicyValid(null, CERBERUS_CONSUMER_IAM_ROLE_ARN));
     }
 
 }
