@@ -366,6 +366,9 @@ public class AuthenticationService {
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();
+            String iamRoleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(), credentials.getRoleName());
+            String keyRegion = credentials.getRegion();
+            kmsService.validatePolicy(kmsKeyId, iamRoleArn, keyRegion);
         }
 
         return kmsKeyId;

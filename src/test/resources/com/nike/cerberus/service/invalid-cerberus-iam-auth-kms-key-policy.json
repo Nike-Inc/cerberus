@@ -1,0 +1,61 @@
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"Root User Has All Actions",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:root"
+      },
+      "Action":[
+        "kms:*"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"Admin Role Has All Actions",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:role/admin"
+      },
+      "Action":[
+        "kms:*"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"CMS Role Key Access",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:role/cms-iam-role"
+      },
+      "Action":[
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"Target IAM Role Has Decrypt Action",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"AROAIXRUWWN44IQRY7KYM"
+      },
+      "Action":[
+        "kms:Decrypt"
+      ],
+      "Resource":[
+        "*"
+      ]
+    }
+  ]
+}

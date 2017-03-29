@@ -193,6 +193,11 @@ public enum DefaultApiError implements ApiError {
     INVALID_QUERY_PARAMS(99224, "Invalid query params", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
+     * Failed to validate that the KMS key policy was valid
+     */
+    FAILED_TO_VALIDATE_KMS_KEY_POLICY(99225, "Failed to validate KMS key policy", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", HttpServletResponse.SC_NOT_FOUND),

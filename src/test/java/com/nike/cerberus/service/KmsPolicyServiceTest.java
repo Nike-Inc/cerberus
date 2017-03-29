@@ -1,28 +1,74 @@
 package com.nike.cerberus.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.io.IOException;
+import java.io.InputStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Tests for the KMS Policy Service
+ *
+ *
+ */
 public class KmsPolicyServiceTest {
 
+    private static final String CERBERUS_CONSUMER_ACCOUNT_ID = "1234567890";
+    private static final String CERBERUS_CONSUMER_ROLE_NAME = "cerberus-consumer";
+    private static final String CERBERUS_CONSUMER_IAM_ROLE_ARN =
+            String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
+                    CERBERUS_CONSUMER_ACCOUNT_ID, CERBERUS_CONSUMER_ROLE_NAME);
+
+    private KmsPolicyService kmsPolicyService;
+    private ObjectMapper objectMapper;
+
+    @Before
+    public void before() {
+        String rootUserArn = "arn:aws:iam::1111111111:root";
+        String adminRoleArn = "arn:aws:iam::1111111111:role/admin";
+        String cmsRoleArn = "arn:aws:iam::1111111111:role/cms-iam-role";
+        kmsPolicyService = new KmsPolicyService(rootUserArn, adminRoleArn, cmsRoleArn);
+        objectMapper = new ObjectMapper();
+    }
+
     @Test
-    public void test_generateStandardKmsPolicy() {
-
-        String rootUserArn = "root-arn";
-        String adminRoleArn = "admin-role-arn";
-        String cmsRoleArn = "cms-role-arn";
-        String iamAccountId = "1234567890";
-        String iamRoleName = "my-role-name";
-
-        KmsPolicyService kmsPolicyService = new KmsPolicyService(rootUserArn, adminRoleArn, cmsRoleArn);
+    public void test_generateStandardKmsPolicy() throws IOException {
+        InputStream expectedPolicyStream = getClass().getClassLoader()
+                .getResourceAsStream("com/nike/cerberus/service/valid-cerberus-iam-auth-kms-key-policy.json");
+        String expectedPolicyJsonAsString = IOUtils.toString(expectedPolicyStream, "UTF-8");
+        JsonNode expectedPolicy = objectMapper.readTree(expectedPolicyJsonAsString);
+        String minifiedPolicyJsonAsString = expectedPolicy.toString();
 
         // invoke method under test
-        String actualResult = kmsPolicyService.generateStandardKmsPolicy(iamAccountId, iamRoleName);
+        String actualPolicyJsonAsString = kmsPolicyService.generateStandardKmsPolicy(CERBERUS_CONSUMER_ACCOUNT_ID,
+                CERBERUS_CONSUMER_ROLE_NAME);
 
-        String expectedResult = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"Root User Has All Actions\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"root-arn\"},\"Action\":[\"kms:*\"],\"Resource\":[\"*\"]},{\"Sid\":\"Admin Role Has All Actions\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"admin-role-arn\"},\"Action\":[\"kms:*\"],\"Resource\":[\"*\"]},{\"Sid\":\"CMS Role Key Access\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"cms-role-arn\"},\"Action\":[\"kms:Encrypt\",\"kms:Decrypt\",\"kms:ReEncrypt*\",\"kms:GenerateDataKey*\",\"kms:DescribeKey\"],\"Resource\":[\"*\"]},{\"Sid\":\"Target IAM Role Has Decrypt Action\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::1234567890:role/my-role-name\"},\"Action\":[\"kms:Decrypt\"],\"Resource\":[\"*\"]}]}";
+        assertEquals(minifiedPolicyJsonAsString, actualPolicyJsonAsString);
+    }
 
-        assertEquals(expectedResult, actualResult);
+    @Test
+    public void test_that_generateStandardKmsPolicy_returns_true_with_a_valid_policy() throws IOException {
+        InputStream policy = getClass().getClassLoader()
+                .getResourceAsStream("com/nike/cerberus/service/valid-cerberus-iam-auth-kms-key-policy.json");
+        String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
+
+        assertTrue(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+    }
+
+    @Test
+    public void test_that_generateStandardKmsPolicy_returns_false_with_an_invalid_policy() throws IOException {
+        InputStream policy = getClass().getClassLoader()
+                .getResourceAsStream("com/nike/cerberus/service/invalid-cerberus-iam-auth-kms-key-policy.json");
+        String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
+
+        assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
     }
 
 }
