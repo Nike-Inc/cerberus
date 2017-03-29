@@ -53,4 +53,25 @@ class VerifyFactorRequest {
         this.otpToken = otpToken;
         return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VerifyFactorRequest that = (VerifyFactorRequest) o;
+
+        if (deviceId != null ? !deviceId.equals(that.deviceId) : that.deviceId != null) return false;
+        if (stateToken != null ? !stateToken.equals(that.stateToken) : that.stateToken != null) return false;
+        return otpToken != null ? otpToken.equals(that.otpToken) : that.otpToken == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = deviceId != null ? deviceId.hashCode() : 0;
+        result = 31 * result + (stateToken != null ? stateToken.hashCode() : 0);
+        result = 31 * result + (otpToken != null ? otpToken.hashCode() : 0);
+        return result;
+    }
 }

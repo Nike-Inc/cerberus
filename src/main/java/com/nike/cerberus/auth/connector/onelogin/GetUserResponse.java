@@ -44,4 +44,5 @@ class GetUserResponse {
         this.data = data;
         return this;
     }
+
 }
