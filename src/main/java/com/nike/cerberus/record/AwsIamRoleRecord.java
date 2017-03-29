@@ -26,8 +26,10 @@ public class AwsIamRoleRecord {
 
     private String id;
 
+    // TODO: remove
     private String awsAccountId;
 
+    // TODO: remove
     private String awsIamRoleName;
 
     private String createdBy;
@@ -37,6 +39,8 @@ public class AwsIamRoleRecord {
     private OffsetDateTime createdTs;
 
     private OffsetDateTime lastUpdatedTs;
+
+    private String awsIamRoleArn;
 
     public String getId() {
         return id;
@@ -99,6 +103,14 @@ public class AwsIamRoleRecord {
     public AwsIamRoleRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
         this.lastUpdatedTs = lastUpdatedTs;
         return this;
+    }
+
+    public String getAwsIamRoleArn() {
+        return awsIamRoleArn;
+    }
+
+    public void setAwsIamRoleArn(String awsIamRoleArn) {
+        this.awsIamRoleArn = awsIamRoleArn;
     }
 
     @Override

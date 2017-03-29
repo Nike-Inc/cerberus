@@ -18,7 +18,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v0.9.0'
+def dashboardRelease = 'v0.11.0'
 def vaultVersion = "0.6.4"
 
 buildscript {

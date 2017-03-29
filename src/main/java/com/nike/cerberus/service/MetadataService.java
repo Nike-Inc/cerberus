@@ -26,6 +26,7 @@ import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.InvalidCategoryNameApiError;
 import com.nike.cerberus.error.InvalidIamRoleArnApiError;
 import com.nike.cerberus.error.InvalidRoleNameApiError;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +53,20 @@ public class MetadataService {
     private final CategoryService categoryService;
     private final RoleService roleService;
     private final UuidSupplier uuidSupplier;
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Inject
     public MetadataService(SafeDepositBoxService safeDepositBoxService,
                            CategoryService categoryService,
                            RoleService roleService,
-                           UuidSupplier uuidSupplier) {
+                           UuidSupplier uuidSupplier,
+                           AwsIamRoleArnParser awsIamRoleArnParser) {
 
         this.safeDepositBoxService = safeDepositBoxService;
         this.categoryService = categoryService;
         this.roleService = roleService;
         this.uuidSupplier = uuidSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
@@ -109,17 +113,22 @@ public class MetadataService {
     private Set<IamRolePermission> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
         Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
         sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
-            Pattern iamRoleArnParserPattern = Pattern.compile("arn:aws:iam::(?<accountId>.*?):role/(?<roleName>.*)");
-            Matcher iamRoleArnParserMatcher = iamRoleArnParserPattern.matcher(iamRoleArn);
-            if (!iamRoleArnParserMatcher.find()) {
+            String awsAccountId;
+            String awsIamRoleName;
+            try {
+                awsAccountId = awsIamRoleArnParser.getAccountId(iamRoleArn);
+                awsIamRoleName = awsIamRoleArnParser.getRoleName(iamRoleArn);
+            }
+            catch(RuntimeException rte) {
                 throw ApiException.newBuilder()
                         .withApiErrors(new InvalidIamRoleArnApiError(sdbMetadata.getCategory()))
                         .build();
             }
 
             iamRolePermissionSet.add(new IamRolePermission()
-                    .withAccountId(iamRoleArnParserMatcher.group("accountId"))
-                    .withIamRoleName(iamRoleArnParserMatcher.group("roleName"))
+                    .withAccountId(awsAccountId)
+                    .withIamRoleName(awsIamRoleName)
+                    .withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName))
                     .withRoleId(getRoleIdFromName(roleName))
             );
         });
@@ -260,8 +269,7 @@ public class MetadataService {
         iamPerms.forEach(perm -> {
             String role = roleIdToStringMap.get(perm.getRoleId());
 
-            iamRoleMap.put(String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
-                    perm.getAccountId(), perm.getIamRoleName()), role);
+            iamRoleMap.put(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, perm.getAccountId(), perm.getIamRoleName()), role);
         });
         return iamRoleMap;
     }

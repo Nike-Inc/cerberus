@@ -107,7 +107,7 @@ public class AwsIamRoleDaoTest {
     public void getIamRole_by_id_returns_record_when_found() {
         when(awsIamRoleMapper.getIamRoleById(iamRoleId)).thenReturn(awsIamRoleRecord);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(iamRoleId);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRoleById(iamRoleId);
 
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(awsIamRoleRecord);
@@ -117,7 +117,7 @@ public class AwsIamRoleDaoTest {
     public void getIamRole_by_id_returns_empty_when_record_not_found() {
         when(awsIamRoleMapper.getIamRoleById(iamRoleId)).thenReturn(null);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(iamRoleId);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRoleById(iamRoleId);
 
         assertThat(actual.isPresent()).isFalse();
     }

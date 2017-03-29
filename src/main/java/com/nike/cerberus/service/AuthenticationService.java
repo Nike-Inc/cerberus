@@ -23,7 +23,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
-import com.amazonaws.services.kms.model.InvalidArnException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
@@ -48,6 +47,7 @@ import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
 import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultServerException;
@@ -79,7 +79,6 @@ public class AuthenticationService {
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final String DEFAULT_TOKEN_TTL = "1h";
-    public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
@@ -192,7 +191,8 @@ public class AuthenticationService {
         }
 
         final Set<String> policies = buildPolicySet(credentials.getAccountId(), credentials.getRoleName());
-        String arn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(), credentials.getRoleName());
+        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
+                credentials.getRoleName());
 
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());

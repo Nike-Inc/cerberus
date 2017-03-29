@@ -36,11 +36,15 @@ public class IamRolePermission {
     @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID", groups = {Default.class, Updatable.class})
     private String accountId;
 
+    // TODO: remove
     @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "IAM_ROLE_NAME_INVALID", groups = {Default.class, Updatable.class})
     private String iamRoleName;
 
+    // TODO: remove
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
+
+    private String iamRoleArn;
 
     private OffsetDateTime createdTs;
 
@@ -97,6 +101,19 @@ public class IamRolePermission {
         return this;
     }
 
+    public String getIamRoleArn() {
+        return iamRoleArn;
+    }
+
+    public void setIamRoleArn(String iamRoleArn) {
+        this.iamRoleArn = iamRoleArn;
+    }
+
+    public IamRolePermission withIamRoleArn(String iamRoleArn) {
+        this.iamRoleArn = iamRoleArn;
+        return this;
+    }
+
     public OffsetDateTime getCreatedTs() {
         return createdTs;
     }
@@ -137,7 +154,8 @@ public class IamRolePermission {
         IamRolePermission that = (IamRolePermission) o;
 
         if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
-        return iamRoleName != null ? iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null;
+        if (iamRoleName != null ? !iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null) return false;
+        return iamRoleArn != null ? iamRoleArn.equals(that.iamRoleArn) : that.iamRoleArn == null;
 
     }
 
@@ -145,6 +163,7 @@ public class IamRolePermission {
     public int hashCode() {
         int result = accountId != null ? accountId.hashCode() : 0;
         result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
+        result = 31 * result + (iamRoleArn != null ? iamRoleArn.hashCode() : 0);
         return result;
     }
 }

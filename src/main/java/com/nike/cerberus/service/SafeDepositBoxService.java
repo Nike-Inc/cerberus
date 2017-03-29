@@ -31,6 +31,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
@@ -206,8 +207,9 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
         addOwnerPermission(userGroupPermissionSet, safeDepositBox.getOwner());
+
+        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
 
         final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
 
@@ -261,7 +263,8 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
+
+        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
 
         if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -550,6 +553,16 @@ public class SafeDepositBoxService {
                     .withExceptionMessage("Failed to delete secrets from Vault.")
                     .build();
         }
+    }
+
+    private Set<IamRolePermission> addIamRoleArnToPermissions(Set<IamRolePermission> iamRolePermissions) {
+
+        return iamRolePermissions.stream()
+                .map(iamRolePermission ->
+                        iamRolePermission.withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                                iamRolePermission.getAccountId(),
+                                iamRolePermission.getIamRoleName())))
+                .collect(Collectors.toSet());
     }
 
     /**
