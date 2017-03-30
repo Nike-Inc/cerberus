@@ -24,7 +24,6 @@ import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.InvalidCategoryNameApiError;
-import com.nike.cerberus.error.InvalidIamRoleArnApiError;
 import com.nike.cerberus.error.InvalidRoleNameApiError;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
@@ -39,8 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A service that can perform admin tasks around SDB metadata
