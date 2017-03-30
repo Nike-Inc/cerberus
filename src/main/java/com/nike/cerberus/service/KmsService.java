@@ -18,7 +18,13 @@ package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.*;
+import com.amazonaws.services.kms.model.CreateAliasRequest;
+import com.amazonaws.services.kms.model.CreateKeyRequest;
+import com.amazonaws.services.kms.model.CreateKeyResult;
+import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
+import com.amazonaws.services.kms.model.GetKeyPolicyResult;
+import com.amazonaws.services.kms.model.KeyUsageType;
+import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
