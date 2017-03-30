@@ -32,6 +32,8 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.util.UuidSupplier;
 import org.mybatis.guice.transactional.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -42,6 +44,8 @@ import java.time.OffsetDateTime;
  */
 @Singleton
 public class KmsService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String KMS_ALIAS_FORMAT = "alias/cerberus/%s";
 
@@ -145,6 +149,8 @@ public class KmsService {
         }
 
         if (! kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
+            logger.info("The KMS key: {} generated for IAM Role: {} contained an invalid policy, regenerating",
+                    keyId, iamRoleArn);
             String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamRoleArn);
             kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
                     .withKeyId(keyId)
