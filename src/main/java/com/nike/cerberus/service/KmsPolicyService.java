@@ -21,16 +21,23 @@ import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.auth.policy.Principal;
 import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 
 /**
  * Helpful service for putting together the KMS policy documents to be associated with provisioned KMS keys.
  */
 @Singleton
 public class KmsPolicyService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String ROOT_USER_ARN_PROPERTY = "root.user.arn";
 
@@ -39,12 +46,15 @@ public class KmsPolicyService {
     private static final String CMS_ROLE_ARN_PROPERTY = "cms.role.arn";
 
     private static final String AWS_PROVIDER = "AWS";
+    public static final String CERBERUS_CONSUMER_SID = "Target IAM Role Has Decrypt Action";
 
     private final String rootUserArn;
 
     private final String adminRoleArn;
 
     private final String cmsRoleArn;
+
+    private final ObjectMapper objectMapper;
 
     @Inject
     public KmsPolicyService(@Named(ROOT_USER_ARN_PROPERTY) String rootUserArn,
@@ -53,9 +63,50 @@ public class KmsPolicyService {
         this.rootUserArn = rootUserArn;
         this.adminRoleArn = adminRoleArn;
         this.cmsRoleArn = cmsRoleArn;
+
+        objectMapper = new ObjectMapper();
     }
 
     public String generateStandardKmsPolicy(final String iamRoleAccountId, final String iamRoleName) {
+        return generateStandardKmsPolicy(String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
+                iamRoleAccountId, iamRoleName));
+    }
+
+    /***
+     * Please note that currently in the AWS Core SDK 1.11.108 that Policy.fromJson strips hyphens from AWS ARN Principals
+     * and Hyphens are valid in IAM role names. We will need to manually use JsonNodes and not rely on fromJson
+     *
+     * When you manually instantiate a Principal you can specify true/false for striping hyphens,
+     * when deserializing with fromJson this seems to always get set to true.
+     *
+     * @param policyString - The KMS key policy as a String
+     * @param iamRoleArn - The IAM Role that is supposed to have decrypt permissions
+     * @return true if the policy is valid, false if the policy contains an ID because the ARN had been deleted and recreated
+     */
+    public boolean isPolicyValid(String policyString, String iamRoleArn) {
+        // The below json node stuff is lame, should be able to use Objects created from Policy.fromJson(string)
+        // todo file Github issue and or PR with AWS SDK project
+        try {
+            JsonNode policy = null;
+            policy = objectMapper.readTree(policyString);
+            JsonNode statements = policy.get("Statement");
+            for (JsonNode statement : statements) {
+                if (CERBERUS_CONSUMER_SID.equals(statement.get("Sid").textValue())) {
+                    String statementAWSPrincipal = statement.get("Principal").get("AWS").textValue();
+                    if (iamRoleArn.equals(statementAWSPrincipal)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // if we can't deserialize we will assume policy has been corrupted manually and regenerate it
+            logger.error("Failed to validate policy, did someone manually edit the kms policy?", e);
+        }
+
+        return false;
+    }
+
+    public String generateStandardKmsPolicy(String iamRoleArn) {
         Policy kmsPolicy = new Policy();
 
         Statement rootUserStatement = new Statement(Statement.Effect.Allow);
@@ -81,9 +132,9 @@ public class KmsPolicyService {
         instanceUsageStatement.withResources(new Resource("*"));
 
         Statement iamRoleUsageStatement = new Statement(Statement.Effect.Allow);
-        iamRoleUsageStatement.withId("Target IAM Role Has Decrypt Action");
+        iamRoleUsageStatement.withId(CERBERUS_CONSUMER_SID);
         iamRoleUsageStatement.withPrincipals(
-                new Principal(AWS_PROVIDER, String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE, iamRoleAccountId, iamRoleName), false));
+                new Principal(AWS_PROVIDER, iamRoleArn, false));
         iamRoleUsageStatement.withActions(KmsActions.DecryptAction);
         iamRoleUsageStatement.withResources(new Resource("*"));
 
