@@ -24,7 +24,8 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
+import com.nike.cerberus.endpoints.authentication.AuthenticateIamRoleV1;
+import com.nike.cerberus.endpoints.authentication.AuthenticateIamRoleV2;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
 import com.nike.cerberus.endpoints.authentication.MfaCheck;
 import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
@@ -165,7 +166,8 @@ public class CmsGuiceModule extends AbstractModule {
             AuthenticateUser authenticateUser,
             MfaCheck mfaCheck,
             RefreshUserToken refreshUserToken,
-            AuthenticateIamRole authenticateIamRole,
+            AuthenticateIamRoleV1 authenticateIamRole,
+            AuthenticateIamRoleV2 authenticateIamRoleV2,
             RevokeToken revokeToken,
             GetAllRoles getAllRoles,
             GetRole getRole,
@@ -181,7 +183,7 @@ public class CmsGuiceModule extends AbstractModule {
                 healthCheckEndpoint,
                 // Cerberus endpoints
                 getAllCategories, getCategory, createCategory, deleteCategory,
-                authenticateUser, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
+                authenticateUser, authenticateIamRoleV2, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBox,
                 deleteSafeDepositBox, updateSafeDepositBox, createSafeDepositBox,
@@ -278,7 +280,8 @@ public class CmsGuiceModule extends AbstractModule {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
                 || i instanceof AuthenticateUser
                 || i instanceof MfaCheck
-                || i instanceof AuthenticateIamRole)).collect(Collectors.toList());
+                || i instanceof AuthenticateIamRoleV1
+                || i instanceof AuthenticateIamRoleV2)).collect(Collectors.toList());
     }
 
     @Provides

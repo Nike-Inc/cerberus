@@ -21,6 +21,7 @@ import com.nike.cerberus.mapper.AwsIamRoleMapper;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -127,9 +128,10 @@ public class AwsIamRoleDaoTest {
 
     @Test
     public void getIamRole_returns_record_when_found() {
-        when(awsIamRoleMapper.getIamRole(awsAccountId, awsIamRoleName)).thenReturn(awsIamRoleRecord);
+        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName);
+        when(awsIamRoleMapper.getIamRole(arn)).thenReturn(awsIamRoleRecord);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(awsAccountId, awsIamRoleName);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(arn);
 
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(awsIamRoleRecord);
@@ -156,9 +158,10 @@ public class AwsIamRoleDaoTest {
 
     @Test
     public void getIamRole_with_arn_returns_empty_when_record_not_found() {
-        when(awsIamRoleMapper.getIamRole(awsAccountId, awsIamRoleName)).thenReturn(null);
+        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName);
+        when(awsIamRoleMapper.getIamRole(arn)).thenReturn(null);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(awsAccountId, awsIamRoleName);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(arn);
 
         assertThat(actual.isPresent()).isFalse();
     }

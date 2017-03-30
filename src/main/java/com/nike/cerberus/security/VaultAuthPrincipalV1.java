@@ -29,7 +29,7 @@ import java.util.Set;
  * Represents the authenticated principal.  This contains the vault client token entity and any assigned roles based
  * on that.
  */
-public class VaultAuthPrincipal implements Principal {
+public class VaultAuthPrincipalV1 implements Principal {
 
     public static final String ROLE_ADMIN = "admin";
 
@@ -55,7 +55,7 @@ public class VaultAuthPrincipal implements Principal {
 
     private final Set<String> roles;
 
-    public VaultAuthPrincipal(VaultClientTokenResponse clientToken) {
+    public VaultAuthPrincipalV1(VaultClientTokenResponse clientToken) {
         this.clientToken = clientToken;
         this.roles = buildRoles(clientToken);
         this.userGroupSet = extractUserGroups(clientToken);

@@ -63,7 +63,7 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
         try {
             final VaultClientTokenResponse clientTokenResponse = vaultAdminClient.lookupToken(vaultToken);
 
-            final VaultAuthPrincipal principal = new VaultAuthPrincipal(clientTokenResponse);
+            final VaultAuthPrincipalV1 principal = new VaultAuthPrincipalV1(clientTokenResponse);
             final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
                     URI.create(requestInfo.getUri()).getScheme());
             requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);

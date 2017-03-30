@@ -16,8 +16,8 @@
 
 package com.nike.cerberus.endpoints.authentication;
 
-import com.nike.cerberus.auth.connector.AuthResponse;
-import com.nike.cerberus.domain.MfaCheckRequest;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
+import com.nike.cerberus.domain.IamRoleCredentialsV1;
 import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -31,29 +31,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**
- * Endpoint for verifying the token from the user's MFA device.  Returns the full auth response if verified.
+ * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
+ * IAM role will be the only role capable of decrypting the client token via KMS.
  */
-public class MfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
+public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1, IamRoleAuthResponse> {
 
     private final AuthenticationServiceV1 authenticationService;
 
     @Inject
-    public MfaCheck(final AuthenticationServiceV1 authenticationService) {
+    public AuthenticateIamRoleV1(final AuthenticationServiceV1 authenticationService) {
         this.authenticationService = authenticationService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<AuthResponse>> execute(final RequestInfo<MfaCheckRequest> request,
-                                                                 final Executor longRunningTaskExecutor,
-                                                                 final ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(authenticationService.mfaCheck(request.getContent())).build(),
-                longRunningTaskExecutor
-        );
+    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentialsV1> request,
+                                                                        final Executor longRunningTaskExecutor,
+                                                                        final ChannelHandlerContext ctx) {
+        return CompletableFuture.supplyAsync(() ->
+                ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build(),
+                longRunningTaskExecutor);
     }
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v2/auth/mfa_check", HttpMethod.POST);
+        return Matcher.match("/v1/auth/iam-role", HttpMethod.POST);
     }
 }

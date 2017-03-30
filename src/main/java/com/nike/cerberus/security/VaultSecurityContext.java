@@ -27,11 +27,11 @@ public class VaultSecurityContext implements SecurityContext {
 
     public static final String AUTH_SCHEME = "VAULT_TOKEN";
 
-    private final VaultAuthPrincipal authPrincipal;
+    private final VaultAuthPrincipalV1 authPrincipal;
 
     private final String scheme;
 
-    public VaultSecurityContext(VaultAuthPrincipal authPrincipal, String scheme) {
+    public VaultSecurityContext(VaultAuthPrincipalV1 authPrincipal, String scheme) {
         this.authPrincipal = authPrincipal;
         this.scheme = scheme;
     }

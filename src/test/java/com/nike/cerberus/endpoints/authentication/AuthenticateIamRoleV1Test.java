@@ -17,8 +17,8 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentials;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.domain.IamRoleCredentialsV1;
+import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
@@ -34,18 +34,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AuthenticateIamRoleTest {
+public class AuthenticateIamRoleV1Test {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationService authenticationService;
+    private AuthenticationServiceV1 authenticationService;
 
-    private AuthenticateIamRole subject;
+    private AuthenticateIamRoleV1 subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationService.class);
-        subject = new AuthenticateIamRole(authenticationService);
+        authenticationService = mock(AuthenticationServiceV1.class);
+        subject = new AuthenticateIamRoleV1(authenticationService);
     }
 
     @Test
@@ -60,8 +60,8 @@ public class AuthenticateIamRoleTest {
     public void execute_returns_iam_role_auth_response() {
         final IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData("AUTH_DATA");
-        final IamRoleCredentials credentials = new IamRoleCredentials();
-        final RequestInfo<IamRoleCredentials> requestInfo = mock(RequestInfo.class);
+        final IamRoleCredentialsV1 credentials = new IamRoleCredentialsV1();
+        final RequestInfo<IamRoleCredentialsV1> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getContent()).thenReturn(credentials);
         when(authenticationService.authenticate(credentials)).thenReturn(iamRoleAuthResponse);
 

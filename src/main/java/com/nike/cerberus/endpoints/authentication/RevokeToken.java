@@ -19,8 +19,8 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -40,10 +40,10 @@ import java.util.concurrent.Executor;
  */
 public class RevokeToken extends StandardEndpoint<Void, Void> {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationServiceV1 authenticationService;
 
     @Inject
-    public RevokeToken(final AuthenticationService authenticationService) {
+    public RevokeToken(final AuthenticationServiceV1 authenticationService) {
         this.authenticationService = authenticationService;
     }
 
@@ -59,8 +59,8 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal =
-                    (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final VaultAuthPrincipalV1 vaultAuthPrincipal =
+                    (VaultAuthPrincipalV1) securityContext.get().getUserPrincipal();
             authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
         }

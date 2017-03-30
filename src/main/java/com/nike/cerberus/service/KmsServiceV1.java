@@ -43,7 +43,7 @@ import java.time.OffsetDateTime;
  * Abstracts interactions with the AWS KMS service.
  */
 @Singleton
-public class KmsService {
+public class KmsServiceV1 {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -55,13 +55,13 @@ public class KmsService {
 
     private final KmsClientFactory kmsClientFactory;
 
-    private final KmsPolicyService kmsPolicyService;
+    private final KmsPolicyServiceV1 kmsPolicyService;
 
     @Inject
-    public KmsService(final AwsIamRoleDao awsIamRoleDao,
-                      final UuidSupplier uuidSupplier,
-                      final KmsClientFactory kmsClientFactory,
-                      final KmsPolicyService kmsPolicyService) {
+    public KmsServiceV1(final AwsIamRoleDao awsIamRoleDao,
+                        final UuidSupplier uuidSupplier,
+                        final KmsClientFactory kmsClientFactory,
+                        final KmsPolicyServiceV1 kmsPolicyService) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;

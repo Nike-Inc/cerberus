@@ -20,7 +20,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -41,10 +41,10 @@ import java.util.concurrent.Executor;
  */
 public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationServiceV1 authenticationService;
 
     @Inject
-    public AuthenticateUser(final AuthenticationService authenticationService) {
+    public AuthenticateUser(final AuthenticationServiceV1 authenticationService) {
         this.authenticationService = authenticationService;
     }
 

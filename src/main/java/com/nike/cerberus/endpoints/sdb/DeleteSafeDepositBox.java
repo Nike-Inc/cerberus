@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.sdb;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.VaultAuthPrincipalV1;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -60,7 +60,7 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final VaultAuthPrincipalV1 vaultAuthPrincipal = (VaultAuthPrincipalV1) securityContext.get().getUserPrincipal();
             safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), request.getPathParam("id"));
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
