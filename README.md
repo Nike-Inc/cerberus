@@ -1,6 +1,7 @@
 # Cerberus Management Service
 
 [![][travis img]][travis]
+[![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-management-service/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus-management-service)
 [![][license img]][license]
 
 The Cerberus Management Service (CMS) is a core component of the Cerberus [REST API](http://engineering.nike.com/cerberus/docs/architecture/rest-api) 
