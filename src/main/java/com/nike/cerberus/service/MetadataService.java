@@ -113,21 +113,13 @@ public class MetadataService {
     private Set<IamRolePermission> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
         Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
         sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
-            String awsAccountId;
-            String awsIamRoleName;
-            try {
-                awsAccountId = awsIamRoleArnParser.getAccountId(iamRoleArn);
-                awsIamRoleName = awsIamRoleArnParser.getRoleName(iamRoleArn);
-            }
-            catch(RuntimeException rte) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(new InvalidIamRoleArnApiError(sdbMetadata.getCategory()))
-                        .build();
-            }
+
+            String awsAccountId = awsIamRoleArnParser.getAccountId(iamRoleArn);
+            String awsIamRoleName = awsIamRoleArnParser.getRoleName(iamRoleArn);
 
             iamRolePermissionSet.add(new IamRolePermission()
-                    .withAccountId(awsAccountId)
-                    .withIamRoleName(awsIamRoleName)
+                    .withAccountId(awsIamRoleArnParser.getAccountId(iamRoleArn))
+                    .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleArn))
                     .withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName))
                     .withRoleId(getRoleIdFromName(roleName))
             );
