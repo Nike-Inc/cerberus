@@ -135,8 +135,8 @@ public class CategoryService {
      */
     @Transactional
     public boolean deleteCategory(final String id) {
-        final Integer count = categoryDao.deleteCategory(id);
-        return count != null && count > 0;
+        final int count = categoryDao.deleteCategory(id);
+        return count > 0;
     }
 
     /**

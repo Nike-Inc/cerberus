@@ -1,22 +1,19 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.error.DefaultApiError;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class OneLoginAuthConnectorTest {
 
@@ -63,8 +60,8 @@ public class OneLoginAuthConnectorTest {
         // invoke method under test
         AuthResponse response = oneLoginAuthConnector.authenticate(USERNAME, PASSWORD);
 
-        assertEquals(Long.toString(user.getId()),  response.getData().getUserId());
-        assertEquals(user.getUsername(),  response.getData().getUsername());
+        assertEquals(Long.toString(user.getId()), response.getData().getUserId());
+        assertEquals(user.getUsername(), response.getData().getUsername());
         assertEquals(AuthStatus.SUCCESS, response.getStatus());
     }
 
@@ -96,8 +93,8 @@ public class OneLoginAuthConnectorTest {
         // invoke method under test
         AuthResponse response = oneLoginAuthConnector.authenticate(USERNAME, PASSWORD);
 
-        assertEquals(Long.toString(user.getId()),  response.getData().getUserId());
-        assertEquals(user.getUsername(),  response.getData().getUsername());
+        assertEquals(Long.toString(user.getId()), response.getData().getUserId());
+        assertEquals(user.getUsername(), response.getData().getUsername());
         assertEquals(AuthStatus.MFA_REQUIRED, response.getStatus());
         assertEquals(DEVICE_ID.toString(), response.getData().getDevices().get(0).getId());
         assertEquals(DEVICE_TYPE, response.getData().getDevices().get(0).getName());
@@ -113,8 +110,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.authenticate(USERNAME, PASSWORD);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.MFA_SETUP_REQUIRED));
             assertFalse(e.getApiErrors().contains(DefaultApiError.AUTH_BAD_CREDENTIALS));
         }
@@ -129,8 +125,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.authenticate(USERNAME, PASSWORD);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.AUTH_BAD_CREDENTIALS));
             assertFalse(e.getApiErrors().contains(DefaultApiError.MFA_SETUP_REQUIRED));
 
@@ -146,8 +141,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.authenticate(USERNAME, PASSWORD);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.GENERIC_BAD_REQUEST));
         }
     }
@@ -180,8 +174,8 @@ public class OneLoginAuthConnectorTest {
 
         // invoke method under test
         AuthResponse response = oneLoginAuthConnector.mfaCheck(STATE_TOKEN, DEVICE_ID.toString(), OTP_TOKEN);
-        assertEquals(Long.toString(user.getId()),  response.getData().getUserId());
-        assertEquals(user.getUsername(),  response.getData().getUsername());
+        assertEquals(Long.toString(user.getId()), response.getData().getUserId());
+        assertEquals(user.getUsername(), response.getData().getUsername());
         assertEquals(AuthStatus.SUCCESS, response.getStatus());
     }
 
@@ -238,8 +232,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.getUserById(USER_ID);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.SERVICE_UNAVAILABLE));
         }
     }
@@ -254,8 +247,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.verifyFactor(DEVICE_ID.toString(), STATE_TOKEN, OTP_TOKEN);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.AUTH_BAD_CREDENTIALS));
         }
     }
@@ -270,8 +262,7 @@ public class OneLoginAuthConnectorTest {
             oneLoginAuthConnector.verifyFactor(DEVICE_ID.toString(), STATE_TOKEN, OTP_TOKEN);
 
             fail("expected exception not thrown");
-        }
-        catch (ApiException e) {
+        } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.GENERIC_BAD_REQUEST));
         }
     }
@@ -302,9 +293,9 @@ public class OneLoginAuthConnectorTest {
         when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
 
         // invoke method under test
-        SessionLoginTokenData  actualData = oneLoginAuthConnector.createSessionLoginToken(USERNAME, PASSWORD);
+        SessionLoginTokenData actualData = oneLoginAuthConnector.createSessionLoginToken(USERNAME, PASSWORD);
 
-        assertEquals(expectedData,  actualData);
+        assertEquals(expectedData, actualData);
     }
 
 }

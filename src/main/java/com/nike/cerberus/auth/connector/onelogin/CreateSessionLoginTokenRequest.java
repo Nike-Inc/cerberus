@@ -53,4 +53,26 @@ class CreateSessionLoginTokenRequest {
         this.subdomain = subdomain;
         return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CreateSessionLoginTokenRequest that = (CreateSessionLoginTokenRequest) o;
+
+        if (usernameOrEmail != null ? !usernameOrEmail.equals(that.usernameOrEmail) : that.usernameOrEmail != null)
+            return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
+        return subdomain != null ? subdomain.equals(that.subdomain) : that.subdomain == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = usernameOrEmail != null ? usernameOrEmail.hashCode() : 0;
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (subdomain != null ? subdomain.hashCode() : 0);
+        return result;
+    }
 }
