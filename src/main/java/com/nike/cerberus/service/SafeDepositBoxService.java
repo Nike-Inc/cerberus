@@ -559,7 +559,12 @@ public class SafeDepositBoxService {
         }
     }
 
-    private Set<IamRolePermission> addIamRoleArnToPermissions(Set<IamRolePermission> iamRolePermissions) {
+    /**
+     * Populates the ARN field for new Iam Role Permission objects
+     * @param iamRolePermissions - IAM role permissions to be modified
+     * @return - Modified IAM role permissions
+     */
+    protected Set<IamRolePermission> addIamRoleArnToPermissions(Set<IamRolePermission> iamRolePermissions) {
 
         return iamRolePermissions.stream()
                 .map(iamRolePermission ->
