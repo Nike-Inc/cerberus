@@ -17,6 +17,9 @@
 
 package com.nike.cerberus.util;
 
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.error.InvalidIamRoleArnApiError;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +37,11 @@ public class AwsIamRoleArnParser {
 
         Matcher iamRoleArnMatcher = IAM_ROLE_ARN_PATTERN.matcher(roleArn);
 
-        if (! iamRoleArnMatcher.find()) {throw new RuntimeException("Invalid role ARN");}
+        if (! iamRoleArnMatcher.find()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(new InvalidIamRoleArnApiError(roleArn))
+                    .build();
+        }
 
         return iamRoleArnMatcher.group("accountId");
     }
@@ -43,7 +50,11 @@ public class AwsIamRoleArnParser {
 
         Matcher iamRoleArnMatcher = IAM_ROLE_ARN_PATTERN.matcher(roleArn);
 
-        if (! iamRoleArnMatcher.find()) {throw new RuntimeException("Invalid role ARN");}
+        if (! iamRoleArnMatcher.find()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(new InvalidIamRoleArnApiError(roleArn))
+                    .build();
+        }
 
         return iamRoleArnMatcher.group("roleName");
     }

@@ -41,32 +41,26 @@ public class AwsIamRoleArnParserTest {
         awsIamRoleArnParser = new AwsIamRoleArnParser();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void getArnFailsNullRoleName() {
-
-        awsIamRoleArnParser.getAccountId("hullabaloo");
-    }
-
     @Test
-    public void getAccountIdHappy() {
+    public void getAccountId_returns_an_account_id_given_a_valid_arn() {
 
         assertEquals("1111111111", awsIamRoleArnParser.getAccountId("arn:aws:iam::1111111111:role/lamb_dev_health"));
     }
 
     @Test(expected = RuntimeException.class)
-    public void getAccountIdFailsInvalidArn() {
+    public void getAccountId_fails_on_invalid_arn() {
 
         awsIamRoleArnParser.getAccountId("hullabaloo");
     }
 
     @Test
-    public void getRoleNameHappy() {
+    public void getRoleNameHappy_returns_the_role_name_given_a_valid_arn() {
 
         assertEquals("my_roleName", awsIamRoleArnParser.getRoleName("arn:aws:iam::222222:role/my_roleName"));
     }
 
     @Test(expected = RuntimeException.class)
-    public void getRoleNameFailsInvalidArn() {
+    public void getRoleName_fails_on_invalid_arn() {
 
         awsIamRoleArnParser.getRoleName("brouhaha");
     }

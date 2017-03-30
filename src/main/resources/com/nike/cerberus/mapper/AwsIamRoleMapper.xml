@@ -36,14 +36,14 @@
 
   <select id="getIamRole" resultType="AwsIamRoleRecord">
     SELECT
-    ID,
-    AWS_IAM_ROLE_ARN,
-    CREATED_BY,
-    LAST_UPDATED_BY,
-    CREATED_TS,
-    LAST_UPDATED_TS
+      ID,
+      AWS_IAM_ROLE_ARN,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
     FROM
-    AWS_IAM_ROLE
+      AWS_IAM_ROLE
     WHERE
     AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
   </select>

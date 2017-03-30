@@ -109,8 +109,9 @@ public class AwsIamRoleRecord {
         return awsIamRoleArn;
     }
 
-    public void setAwsIamRoleArn(String awsIamRoleArn) {
+    public AwsIamRoleRecord setAwsIamRoleArn(String awsIamRoleArn) {
         this.awsIamRoleArn = awsIamRoleArn;
+        return this;
     }
 
     @Override
