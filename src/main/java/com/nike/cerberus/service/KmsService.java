@@ -18,13 +18,7 @@ package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.CreateAliasRequest;
-import com.amazonaws.services.kms.model.CreateKeyRequest;
-import com.amazonaws.services.kms.model.CreateKeyResult;
-import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
-import com.amazonaws.services.kms.model.GetKeyPolicyResult;
-import com.amazonaws.services.kms.model.KeyUsageType;
-import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import com.amazonaws.services.kms.model.*;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
@@ -97,7 +91,7 @@ public class KmsService {
         final CreateKeyResult result = kmsClient.createKey(request);
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId));
+        aliasRequest.setAliasName(getAliasName(awsIamRoleKmsKeyId));
         aliasRequest.setTargetKeyId(result.getKeyMetadata().getArn());
         kmsClient.createAlias(aliasRequest);
 
@@ -114,6 +108,10 @@ public class KmsService {
         awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
         return result.getKeyMetadata().getArn();
+    }
+
+    protected String getAliasName(String awsIamRoleKmsKeyId) {
+        return String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId);
     }
 
     /**
@@ -148,7 +146,7 @@ public class KmsService {
                     .build();
         }
 
-        if (! kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
+        if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
             logger.info("The KMS key: {} generated for IAM Role: {} contained an invalid policy, regenerating",
                     keyId, iamRoleArn);
             String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamRoleArn);
