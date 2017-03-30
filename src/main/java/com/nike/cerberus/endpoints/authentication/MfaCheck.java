@@ -18,7 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.MfaCheckRequest;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -35,10 +35,10 @@ import java.util.concurrent.Executor;
  */
 public class MfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationServiceV1 authenticationService;
 
     @Inject
-    public MfaCheck(final AuthenticationService authenticationService) {
+    public MfaCheck(final AuthenticationServiceV1 authenticationService) {
         this.authenticationService = authenticationService;
     }
 

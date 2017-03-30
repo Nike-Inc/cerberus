@@ -18,7 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentialsV1;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.AuthenticationServiceV1;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
@@ -38,13 +38,13 @@ public class AuthenticateIamRoleV1Test {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationService authenticationService;
+    private AuthenticationServiceV1 authenticationService;
 
     private AuthenticateIamRoleV1 subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationService.class);
+        authenticationService = mock(AuthenticationServiceV1.class);
         subject = new AuthenticateIamRoleV1(authenticationService);
     }
 
