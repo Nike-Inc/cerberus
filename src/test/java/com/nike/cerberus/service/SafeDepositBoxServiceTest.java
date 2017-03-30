@@ -22,10 +22,12 @@ import com.nike.cerberus.domain.IamRolePermission;
 import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.vault.client.VaultAdminClient;
+import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -36,6 +38,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -196,6 +199,22 @@ public class SafeDepositBoxServiceTest {
         safeDepositBoxServiceSpy.restoreSafeDepositBox(sdbObject, "admin-user");
 
         verify(safeDepositBoxDao, times(1)).fullUpdateSafeDepositBox(boxToStore);
+    }
+
+    @Test
+    public void test_that_addIamRoleArnToPermissions_adds_arn_to_role_permissions() {
+
+        String accountId = "account id";
+        String roleName = "role name";
+        IamRolePermission iamRolePermission = new IamRolePermission().withAccountId(accountId).withIamRoleName(roleName);
+
+        String expectedArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+        IamRolePermission expectedPerm = new IamRolePermission().withAccountId(accountId).withIamRoleName(roleName).withIamRoleArn(expectedArn);
+        Set<IamRolePermission> permissions = Sets.newHashSet();
+        permissions.add(iamRolePermission);
+
+        Set<IamRolePermission> result = safeDepositBoxServiceSpy.addIamRoleArnToPermissions(permissions);
+        assertEquals(expectedPerm, result.toArray()[0]);
     }
 
 }

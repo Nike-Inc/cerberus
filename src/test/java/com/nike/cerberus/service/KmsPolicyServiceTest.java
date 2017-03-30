@@ -4,6 +4,7 @@ import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.auth.policy.Statement;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class KmsPolicyServiceTest {
     private static final String CERBERUS_CONSUMER_ACCOUNT_ID = "1234567890";
     private static final String CERBERUS_CONSUMER_ROLE_NAME = "cerberus-consumer";
     private static final String CERBERUS_CONSUMER_IAM_ROLE_ARN =
-            String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
+            String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                     CERBERUS_CONSUMER_ACCOUNT_ID, CERBERUS_CONSUMER_ROLE_NAME);
 
     private KmsPolicyService kmsPolicyService;

@@ -39,6 +39,8 @@ public class AwsIamRoleDaoTest {
 
     private final String awsIamRoleName = "IAM_ROLE";
 
+    private final String awsIamRoleArn = "IAM_ROLE_ARN";
+
     private final String awsRegion = "us-west-2";
 
     private final String safeDepositBoxId = "SDB_ID";
@@ -65,6 +67,7 @@ public class AwsIamRoleDaoTest {
             .setId(iamRoleId)
             .setAwsAccountId(awsAccountId)
             .setAwsIamRoleName(awsIamRoleName)
+            .setAwsIamRoleArn(awsIamRoleArn)
             .setCreatedBy(createdBy)
             .setLastUpdatedBy(lastUpdatedBy)
             .setCreatedTs(createdTs)
@@ -107,7 +110,7 @@ public class AwsIamRoleDaoTest {
     public void getIamRole_by_id_returns_record_when_found() {
         when(awsIamRoleMapper.getIamRoleById(iamRoleId)).thenReturn(awsIamRoleRecord);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(iamRoleId);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRoleById(iamRoleId);
 
         assertThat(actual.isPresent()).isTrue();
         assertThat(actual.get()).isEqualTo(awsIamRoleRecord);
@@ -117,7 +120,7 @@ public class AwsIamRoleDaoTest {
     public void getIamRole_by_id_returns_empty_when_record_not_found() {
         when(awsIamRoleMapper.getIamRoleById(iamRoleId)).thenReturn(null);
 
-        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(iamRoleId);
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRoleById(iamRoleId);
 
         assertThat(actual.isPresent()).isFalse();
     }
@@ -134,6 +137,25 @@ public class AwsIamRoleDaoTest {
 
     @Test
     public void getIamRole_returns_empty_when_record_not_found() {
+        when(awsIamRoleMapper.getIamRole(awsIamRoleArn)).thenReturn(null);
+
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(awsIamRoleArn);
+
+        assertThat(actual.isPresent()).isFalse();
+    }
+
+    @Test
+    public void getIamRole_with_arn_returns_record_when_found() {
+        when(awsIamRoleMapper.getIamRole(awsIamRoleArn)).thenReturn(awsIamRoleRecord);
+
+        final Optional<AwsIamRoleRecord> actual = subject.getIamRole(awsIamRoleArn);
+
+        assertThat(actual.isPresent()).isTrue();
+        assertThat(actual.get()).isEqualTo(awsIamRoleRecord);
+    }
+
+    @Test
+    public void getIamRole_with_arn_returns_empty_when_record_not_found() {
         when(awsIamRoleMapper.getIamRole(awsAccountId, awsIamRoleName)).thenReturn(null);
 
         final Optional<AwsIamRoleRecord> actual = subject.getIamRole(awsAccountId, awsIamRoleName);

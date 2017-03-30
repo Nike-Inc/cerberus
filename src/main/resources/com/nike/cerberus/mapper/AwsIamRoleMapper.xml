@@ -23,8 +23,7 @@
   <select id="getIamRoleById" resultType="AwsIamRoleRecord">
     SELECT
       ID,
-      AWS_ACCOUNT_ID,
-      AWS_IAM_ROLE_NAME,
+      AWS_IAM_ROLE_ARN,
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
@@ -38,8 +37,7 @@
   <select id="getIamRole" resultType="AwsIamRoleRecord">
     SELECT
       ID,
-      AWS_ACCOUNT_ID,
-      AWS_IAM_ROLE_NAME,
+      AWS_IAM_ROLE_ARN,
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
@@ -47,9 +45,7 @@
     FROM
       AWS_IAM_ROLE
     WHERE
-        AWS_ACCOUNT_ID = #{awsAccountId}
-      AND
-        AWS_IAM_ROLE_NAME = #{awsIamRoleName}
+    AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
   </select>
 
   <select id="getKmsKey" resultType="AwsIamRoleKmsKeyRecord">
@@ -98,6 +94,7 @@
       ID,
       AWS_ACCOUNT_ID,
       AWS_IAM_ROLE_NAME,
+      AWS_IAM_ROLE_ARN,
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
@@ -107,6 +104,7 @@
       #{record.id},
       #{record.awsAccountId},
       #{record.awsIamRoleName},
+      #{record.awsIamRoleArn},
       #{record.createdBy},
       #{record.lastUpdatedBy},
       #{record.createdTs},

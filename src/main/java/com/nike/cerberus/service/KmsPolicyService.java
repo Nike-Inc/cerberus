@@ -21,6 +21,7 @@ import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.auth.policy.Principal;
 import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class KmsPolicyService {
     }
 
     public String generateStandardKmsPolicy(final String iamRoleAccountId, final String iamRoleName) {
-        return generateStandardKmsPolicy(String.format(AuthenticationService.AWS_IAM_ROLE_ARN_TEMPLATE,
+        return generateStandardKmsPolicy(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                 iamRoleAccountId, iamRoleName));
     }
 

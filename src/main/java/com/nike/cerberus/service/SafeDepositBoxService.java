@@ -31,6 +31,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
@@ -206,8 +207,9 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
         addOwnerPermission(userGroupPermissionSet, safeDepositBox.getOwner());
+
+        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
 
         final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
 
@@ -510,8 +512,13 @@ public class SafeDepositBoxService {
                 .collect(Collectors.toList()));
 
         final String safeDepositBoxId = currentBox.getId();
-        iamRolePermissionService.grantIamRolePermissions(safeDepositBoxId, toAddSet, user, dateTime);
-        iamRolePermissionService.updateIamRolePermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
+
+        final Set<IamRolePermission> updatedToAddSet = addIamRoleArnToPermissions(toAddSet);
+        iamRolePermissionService.grantIamRolePermissions(safeDepositBoxId, updatedToAddSet, user, dateTime);
+
+        final Set<IamRolePermission> updatedToUpdateSet = addIamRoleArnToPermissions(toUpdateSet);
+        iamRolePermissionService.updateIamRolePermissions(safeDepositBoxId, updatedToUpdateSet, user, dateTime);
+
         iamRolePermissionService.revokeIamRolePermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
     }
 
@@ -550,6 +557,21 @@ public class SafeDepositBoxService {
                     .withExceptionMessage("Failed to delete secrets from Vault.")
                     .build();
         }
+    }
+
+    /**
+     * Populates the ARN field for new Iam Role Permission objects
+     * @param iamRolePermissions - IAM role permissions to be modified
+     * @return - Modified IAM role permissions
+     */
+    protected Set<IamRolePermission> addIamRoleArnToPermissions(Set<IamRolePermission> iamRolePermissions) {
+
+        return iamRolePermissions.stream()
+                .map(iamRolePermission ->
+                        iamRolePermission.withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                                iamRolePermission.getAccountId(),
+                                iamRolePermission.getIamRoleName())))
+                .collect(Collectors.toSet());
     }
 
     /**

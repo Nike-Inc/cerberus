@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import org.mybatis.guice.transactional.Transactional;
 
@@ -46,13 +47,17 @@ public class IamRolePermissionService {
 
     private final AwsIamRoleDao awsIamRoleDao;
 
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
+
     @Inject
     public IamRolePermissionService(final UuidSupplier uuidSupplier,
                                     final RoleService roleService,
-                                    final AwsIamRoleDao awsIamRoleDao) {
+                                    final AwsIamRoleDao awsIamRoleDao,
+                                    final AwsIamRoleArnParser awsIamRoleArnParser) {
         this.uuidSupplier = uuidSupplier;
         this.roleService = roleService;
         this.awsIamRoleDao = awsIamRoleDao;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
@@ -87,7 +92,7 @@ public class IamRolePermissionService {
                                        final String user,
                                        final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> possibleIamRoleRecord =
-                awsIamRoleDao.getIamRole(iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
 
         final Optional<Role> role = roleService.getRoleById(iamRolePermission.getRoleId());
 
@@ -104,8 +109,9 @@ public class IamRolePermissionService {
             iamRoleId = uuidSupplier.get();
             AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
             awsIamRoleRecord.setId(iamRoleId);
-            awsIamRoleRecord.setAwsAccountId(iamRolePermission.getAccountId());
-            awsIamRoleRecord.setAwsIamRoleName(iamRolePermission.getIamRoleName());
+            awsIamRoleRecord.setAwsAccountId(iamRolePermission.getAccountId());  // TODO: remove
+            awsIamRoleRecord.setAwsIamRoleName(iamRolePermission.getIamRoleName());  // TODO: remove
+            awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamRoleArn());
             awsIamRoleRecord.setCreatedBy(user);
             awsIamRoleRecord.setLastUpdatedBy(user);
             awsIamRoleRecord.setCreatedTs(dateTime);
@@ -157,7 +163,7 @@ public class IamRolePermissionService {
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -207,7 +213,7 @@ public class IamRolePermissionService {
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -224,13 +230,14 @@ public class IamRolePermissionService {
         final List<AwsIamRolePermissionRecord> permissionRecords = awsIamRoleDao.getIamRolePermissions(safeDepositBoxId);
 
         permissionRecords.forEach(r -> {
-            final Optional<AwsIamRoleRecord> iamRoleRecord = awsIamRoleDao.getIamRole(r.getAwsIamRoleId());
+            final Optional<AwsIamRoleRecord> iamRoleRecord = awsIamRoleDao.getIamRoleById(r.getAwsIamRoleId());
 
             if (iamRoleRecord.isPresent()) {
                 final IamRolePermission permission = new IamRolePermission();
                 permission.setId(r.getId());
-                permission.setAccountId(iamRoleRecord.get().getAwsAccountId());
-                permission.setIamRoleName(iamRoleRecord.get().getAwsIamRoleName());
+                permission.setAccountId(awsIamRoleArnParser.getAccountId(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
+                permission.setIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
+                permission.setIamRoleArn(iamRoleRecord.get().getAwsIamRoleArn());
                 permission.setRoleId(r.getRoleId());
                 permission.setCreatedBy(r.getCreatedBy());
                 permission.setLastUpdatedBy(r.getLastUpdatedBy());
