@@ -97,7 +97,7 @@ public class KmsService {
         final CreateKeyResult result = kmsClient.createKey(request);
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId));
+        aliasRequest.setAliasName(getAliasName(awsIamRoleKmsKeyId));
         aliasRequest.setTargetKeyId(result.getKeyMetadata().getArn());
         kmsClient.createAlias(aliasRequest);
 
@@ -114,6 +114,10 @@ public class KmsService {
         awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
         return result.getKeyMetadata().getArn();
+    }
+
+    protected String getAliasName(String awsIamRoleKmsKeyId) {
+        return String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId);
     }
 
     /**
@@ -148,7 +152,7 @@ public class KmsService {
                     .build();
         }
 
-        if (! kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
+        if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
             logger.info("The KMS key: {} generated for IAM Role: {} contained an invalid policy, regenerating",
                     keyId, iamRoleArn);
             String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamRoleArn);
