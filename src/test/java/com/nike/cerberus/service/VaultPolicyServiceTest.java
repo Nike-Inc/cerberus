@@ -11,14 +11,14 @@ import static org.mockito.Mockito.mock;
 
 public class VaultPolicyServiceTest {
 
-    String sdbName = "my-sdb-name";
-    String sdbPath = "/secret/foo";
-    String read = "read";
+    private String sdbName = "my-sdb-name";
+    private String sdbPath = "/secret/foo";
+    private String read = "read";
 
 
-    Slugger slugger = new Slugger();
-    VaultAdminClient vaultAdminClient;
-    VaultPolicyService vaultPolicyService;
+    private Slugger slugger = new Slugger();
+    private VaultAdminClient vaultAdminClient;
+    private VaultPolicyService vaultPolicyService;
 
     @Before
     public void setup() {
