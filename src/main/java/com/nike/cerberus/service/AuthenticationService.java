@@ -25,7 +25,6 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -176,15 +175,64 @@ public class AuthenticationService {
      * @return Encrypted auth response
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
-
-        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
-                credentials.getRoleName());
-
-        final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
+        IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
+        iamRoleCredentialsV2.setRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                credentials.getAccountId(), credentials.getRoleName()));
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
-        return authenticate(iamRoleCredentialsV2);
+        final String keyId;
+        try {
+            keyId = getKeyId(iamRoleCredentialsV2);
+        } catch (AmazonServiceException e) {
+            if ("InvalidArnException".equals(e.getErrorCode())) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
+                        .withExceptionCause(e)
+                        .withExceptionMessage(String.format(
+                                "Failed to lazily provision KMS key for %s in region: %s",
+                                credentials.getRoleArn(), credentials.getRegion()))
+                        .build();
+            }
+            throw e;
+        }
+
+        final String iamRoleArn = credentials.getRoleArn();
+        final Set<String> policies = buildPolicySet(iamRoleArn);
+
+        final Map<String, String> meta = Maps.newHashMap();
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+
+        // We will allow specific ARNs access to the user portions of the API
+        if (getAdminRoleArnSet().contains(iamRoleArn)) {
+            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+        }
+
+        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
+                .setPolicies(policies)
+                .setMeta(meta)
+                .setTtl(iamTokenTTL)
+                .setNoDefaultPolicy(true);
+
+        final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
+
+        byte[] authResponseJson;
+        try {
+            authResponseJson = objectMapper.writeValueAsBytes(authResponse);
+        } catch (JsonProcessingException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionCause(e)
+                    .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
+                    .build();
+        }
+        final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
+
+        IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
+        iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
+        return iamRoleAuthResponse;
     }
 
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
@@ -208,19 +256,15 @@ public class AuthenticationService {
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
-        Set<String> groups = new HashSet<>();
-        groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
         if (getAdminRoleArnSet().contains(iamRoleArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
-            groups.add("admin-iam-principals");
-        } else {
-             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
         }
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)

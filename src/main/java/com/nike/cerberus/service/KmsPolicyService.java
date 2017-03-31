@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2016 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package com.nike.cerberus.service;
@@ -22,21 +21,22 @@ import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.auth.policy.Principal;
 import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.io.IOException;
 
 /**
  * Helpful service for putting together the KMS policy documents to be associated with provisioned KMS keys.
  */
 @Singleton
-public class KmsPolicyServiceV2 {
+public class KmsPolicyService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -58,14 +58,19 @@ public class KmsPolicyServiceV2 {
     private final ObjectMapper objectMapper;
 
     @Inject
-    public KmsPolicyServiceV2(@Named(ROOT_USER_ARN_PROPERTY) String rootUserArn,
-                              @Named(ADMIN_ROLE_ARN_PROPERTY) String adminRoleArn,
-                              @Named(CMS_ROLE_ARN_PROPERTY) String cmsRoleArn) {
+    public KmsPolicyService(@Named(ROOT_USER_ARN_PROPERTY) String rootUserArn,
+                            @Named(ADMIN_ROLE_ARN_PROPERTY) String adminRoleArn,
+                            @Named(CMS_ROLE_ARN_PROPERTY) String cmsRoleArn) {
         this.rootUserArn = rootUserArn;
         this.adminRoleArn = adminRoleArn;
         this.cmsRoleArn = cmsRoleArn;
 
         objectMapper = new ObjectMapper();
+    }
+
+    public String generateStandardKmsPolicy(final String iamRoleAccountId, final String iamRoleName) {
+        return generateStandardKmsPolicy(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                iamRoleAccountId, iamRoleName));
     }
 
     /***

@@ -22,9 +22,9 @@ import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.security.VaultSecurityContext;
-import com.nike.cerberus.service.AuthenticationServiceV1;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.vault.client.model.VaultAuthResponse;
 import com.nike.vault.client.model.VaultClientTokenResponse;
 import com.nike.riposte.server.http.RequestInfo;
@@ -49,13 +49,13 @@ public class RefreshUserTokenTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationServiceV1 authenticationService;
+    private AuthenticationService authenticationService;
 
     private RefreshUserToken subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationServiceV1.class);
+        authenticationService = mock(AuthenticationService.class);
         subject = new RefreshUserToken(authenticationService);
     }
 
@@ -71,10 +71,10 @@ public class RefreshUserTokenTest {
     public void execute_returns_new_token_if_replacing_valid_one() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipalV1.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipalV1.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipalV1.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipalV1 authPrincipal = new VaultAuthPrincipalV1(new VaultClientTokenResponse().setMeta(meta));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
+        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
+        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
                 new VaultSecurityContext(authPrincipal, "https"));
         final VaultAuthResponse vaultAuthResponse = new VaultAuthResponse();

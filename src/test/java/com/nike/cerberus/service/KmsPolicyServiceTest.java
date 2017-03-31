@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  *
  *
  */
-public class KmsPolicyServiceV1Test {
+public class KmsPolicyServiceTest {
 
     private static final String CERBERUS_CONSUMER_ACCOUNT_ID = "1234567890";
     private static final String CERBERUS_CONSUMER_ROLE_NAME = "cerberus-consumer";
@@ -27,7 +27,7 @@ public class KmsPolicyServiceV1Test {
             String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                     CERBERUS_CONSUMER_ACCOUNT_ID, CERBERUS_CONSUMER_ROLE_NAME);
 
-    private KmsPolicyServiceV1 kmsPolicyService;
+    private KmsPolicyService kmsPolicyService;
     private ObjectMapper objectMapper;
 
     @Before
@@ -35,7 +35,7 @@ public class KmsPolicyServiceV1Test {
         String rootUserArn = "arn:aws:iam::1111111111:root";
         String adminRoleArn = "arn:aws:iam::1111111111:role/admin";
         String cmsRoleArn = "arn:aws:iam::1111111111:role/cms-iam-role";
-        kmsPolicyService = new KmsPolicyServiceV1(rootUserArn, adminRoleArn, cmsRoleArn);
+        kmsPolicyService = new KmsPolicyService(rootUserArn, adminRoleArn, cmsRoleArn);
         objectMapper = new ObjectMapper();
     }
 

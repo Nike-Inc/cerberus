@@ -22,6 +22,7 @@ import javax.validation.constraints.Pattern;
 
 import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
 import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
  * Represents the IAM role credentials sent during authentication.
@@ -29,11 +30,16 @@ import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
 @Deprecated
 public class IamRoleCredentialsV1 {
 
+    // TODO: remove
     @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID")
     private String accountId;
 
+    // TODO: remove
     @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
     private String roleName;
+
+    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
+    private String roleArn;
 
     @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
     private String region;
@@ -52,6 +58,14 @@ public class IamRoleCredentialsV1 {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getRoleArn() {
+        return roleArn;
+    }
+
+    public void setRoleArn(String roleArn) {
+        this.roleArn = roleArn;
     }
 
     public String getRegion() {

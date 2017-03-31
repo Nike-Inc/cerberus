@@ -14,22 +14,22 @@ import java.time.OffsetDateTime;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class KmsServiceV1Test {
+public class KmsServiceTest {
 
     private AwsIamRoleDao awsIamRoleDao;
     private UuidSupplier uuidSupplier;
     private KmsClientFactory kmsClientFactory;
-    private KmsPolicyServiceV1 kmsPolicyService;
+    private KmsPolicyService kmsPolicyService;
 
-    private KmsServiceV1 kmsService;
+    private KmsService kmsService;
 
     @Before
     public void setup() {
         awsIamRoleDao = mock(AwsIamRoleDao.class);
         uuidSupplier = mock(UuidSupplier.class);
         kmsClientFactory = mock(KmsClientFactory.class);
-        kmsPolicyService = mock(KmsPolicyServiceV1.class);
-        kmsService = new KmsServiceV1(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService);
+        kmsPolicyService = mock(KmsPolicyService.class);
+        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService);
     }
 
     @Test

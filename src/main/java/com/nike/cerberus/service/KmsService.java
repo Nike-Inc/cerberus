@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2016 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package com.nike.cerberus.service;
@@ -24,6 +23,7 @@ import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyResult;
+import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.nike.backstopper.exception.ApiException;
@@ -44,7 +44,7 @@ import java.time.OffsetDateTime;
  * Abstracts interactions with the AWS KMS service.
  */
 @Singleton
-public class KmsServiceV2 {
+public class KmsService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -56,13 +56,13 @@ public class KmsServiceV2 {
 
     private final KmsClientFactory kmsClientFactory;
 
-    private final KmsPolicyServiceV2 kmsPolicyService;
+    private final KmsPolicyService kmsPolicyService;
 
     @Inject
-    public KmsServiceV2(final AwsIamRoleDao awsIamRoleDao,
-                        final UuidSupplier uuidSupplier,
-                        final KmsClientFactory kmsClientFactory,
-                        final KmsPolicyServiceV2 kmsPolicyService) {
+    public KmsService(final AwsIamRoleDao awsIamRoleDao,
+                      final UuidSupplier uuidSupplier,
+                      final KmsClientFactory kmsClientFactory,
+                      final KmsPolicyService kmsPolicyService) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
@@ -97,7 +97,9 @@ public class KmsServiceV2 {
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
         aliasRequest.setAliasName(getAliasName(awsIamRoleKmsKeyId));
-        aliasRequest.setTargetKeyId(result.getKeyMetadata().getArn());
+        KeyMetadata keyMetadata = result.getKeyMetadata();
+        String arn = keyMetadata.getArn();
+        aliasRequest.setTargetKeyId(arn);
         kmsClient.createAlias(aliasRequest);
 
         final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();

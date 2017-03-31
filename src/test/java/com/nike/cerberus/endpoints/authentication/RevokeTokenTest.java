@@ -19,9 +19,9 @@ package com.nike.cerberus.endpoints.authentication;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.security.VaultSecurityContext;
-import com.nike.cerberus.service.AuthenticationServiceV1;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.vault.client.model.VaultClientTokenResponse;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -49,13 +49,13 @@ public class RevokeTokenTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationServiceV1 authenticationService;
+    private AuthenticationService authenticationService;
 
     private RevokeToken subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationServiceV1.class);
+        authenticationService = mock(AuthenticationService.class);
         subject = new RevokeToken(authenticationService);
     }
 
@@ -71,7 +71,7 @@ public class RevokeTokenTest {
     public void execute_returns_no_content_code() {
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final VaultAuthPrincipalV1 authPrincipal = mock(VaultAuthPrincipalV1.class);
+        final VaultAuthPrincipal authPrincipal = mock(VaultAuthPrincipal.class);
         final VaultClientTokenResponse vaultClientTokenResponse = new VaultClientTokenResponse().setId(TOKEN_ID);
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
                 new VaultSecurityContext(authPrincipal, "https"));

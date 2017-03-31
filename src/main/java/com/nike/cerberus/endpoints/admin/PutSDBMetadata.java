@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -55,7 +55,7 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
                                                            SecurityContext securityContext) {
 
         return CompletableFuture.supplyAsync(() -> {
-            VaultAuthPrincipalV1 vaultAuthPrincipal = (VaultAuthPrincipalV1) securityContext.getUserPrincipal();
+            VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
 
             String principal = vaultAuthPrincipal.getName();
 

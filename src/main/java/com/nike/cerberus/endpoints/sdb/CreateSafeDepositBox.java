@@ -21,7 +21,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -74,7 +74,7 @@ public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<S
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipalV1 vaultAuthPrincipal = (VaultAuthPrincipalV1) securityContext.get().getUserPrincipal();
+            final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
                     vaultAuthPrincipal.getName(), request.getContent().getName());
