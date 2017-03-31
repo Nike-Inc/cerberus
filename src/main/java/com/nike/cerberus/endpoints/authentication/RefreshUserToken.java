@@ -20,8 +20,8 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
-import com.nike.cerberus.service.AuthenticationServiceV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -40,10 +40,10 @@ import java.util.concurrent.Executor;
  */
 public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
 
-    private final AuthenticationServiceV1 authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Inject
-    public RefreshUserToken(final AuthenticationServiceV1 authenticationService) {
+    public RefreshUserToken(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
@@ -64,7 +64,7 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
         if (securityContext.isPresent()) {
             return ResponseInfo.newBuilder(
                     authenticationService.refreshUserToken(
-                            (VaultAuthPrincipalV1) securityContext.get().getUserPrincipal())).build();
+                            (VaultAuthPrincipal) securityContext.get().getUserPrincipal())).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_VAULT_TOKEN_INVALID).build();

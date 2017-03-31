@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2016 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package com.nike.cerberus.service;
@@ -40,6 +39,7 @@ import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
+import com.nike.cerberus.domain.IamRoleCredentialsV1;
 import com.nike.cerberus.domain.IamRoleCredentialsV2;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
@@ -47,7 +47,8 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
-import com.nike.cerberus.security.VaultAuthPrincipalV2;
+import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultServerException;
@@ -70,7 +71,7 @@ import java.util.Set;
  * Authentication service for Users and IAM roles to be able to authenticate and get an assigned Vault token.
  */
 @Singleton
-public class AuthenticationServiceV2 {
+public class AuthenticationService {
 
     public static final String SYSTEM_USER = "system";
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
@@ -83,7 +84,7 @@ public class AuthenticationServiceV2 {
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
     private final AuthConnector authServiceConnector;
-    private final KmsServiceV2 kmsService;
+    private final KmsService kmsService;
     private final KmsClientFactory kmsClientFactory;
     private final VaultAdminClient vaultAdminClient;
     private final VaultPolicyService vaultPolicyService;
@@ -106,16 +107,16 @@ public class AuthenticationServiceV2 {
     String iamTokenTTL = DEFAULT_TOKEN_TTL;
 
     @Inject
-    public AuthenticationServiceV2(final SafeDepositBoxDao safeDepositBoxDao,
-                                   final AwsIamRoleDao awsIamRoleDao,
-                                   final AuthConnector authConnector,
-                                   final KmsServiceV2 kmsService,
-                                   final KmsClientFactory kmsClientFactory,
-                                   final VaultAdminClient vaultAdminClient,
-                                   final VaultPolicyService vaultPolicyService,
-                                   final ObjectMapper objectMapper,
-                                   @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
-                                   final DateTimeSupplier dateTimeSupplier) {
+    public AuthenticationService(final SafeDepositBoxDao safeDepositBoxDao,
+                                 final AwsIamRoleDao awsIamRoleDao,
+                                 final AuthConnector authConnector,
+                                 final KmsService kmsService,
+                                 final KmsClientFactory kmsClientFactory,
+                                 final VaultAdminClient vaultAdminClient,
+                                 final VaultPolicyService vaultPolicyService,
+                                 final ObjectMapper objectMapper,
+                                 @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
+                                 final DateTimeSupplier dateTimeSupplier) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
@@ -173,6 +174,67 @@ public class AuthenticationServiceV2 {
      * @param credentials IAM role credentials
      * @return Encrypted auth response
      */
+    public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
+        IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
+        iamRoleCredentialsV2.setRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                credentials.getAccountId(), credentials.getRoleName()));
+        iamRoleCredentialsV2.setRegion(credentials.getRegion());
+
+        final String keyId;
+        try {
+            keyId = getKeyId(iamRoleCredentialsV2);
+        } catch (AmazonServiceException e) {
+            if ("InvalidArnException".equals(e.getErrorCode())) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
+                        .withExceptionCause(e)
+                        .withExceptionMessage(String.format(
+                                "Failed to lazily provision KMS key for %s in region: %s",
+                                credentials.getRoleArn(), credentials.getRegion()))
+                        .build();
+            }
+            throw e;
+        }
+
+        final String iamRoleArn = credentials.getRoleArn();
+        final Set<String> policies = buildPolicySet(iamRoleArn);
+
+        final Map<String, String> meta = Maps.newHashMap();
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+
+        // We will allow specific ARNs access to the user portions of the API
+        if (getAdminRoleArnSet().contains(iamRoleArn)) {
+            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+        }
+
+        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
+                .setPolicies(policies)
+                .setMeta(meta)
+                .setTtl(iamTokenTTL)
+                .setNoDefaultPolicy(true);
+
+        final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
+
+        byte[] authResponseJson;
+        try {
+            authResponseJson = objectMapper.writeValueAsBytes(authResponse);
+        } catch (JsonProcessingException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionCause(e)
+                    .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
+                    .build();
+        }
+        final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
+
+        IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
+        iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
+        return iamRoleAuthResponse;
+    }
+
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
         final String keyId;
         try {
@@ -190,16 +252,18 @@ public class AuthenticationServiceV2 {
             throw e;
         }
 
-        final Set<String> policies = buildPolicySet(credentials.getRoleArn());
+        final String iamRoleArn = credentials.getRoleArn();
+        final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_AWS_IAM_ROLE_ARN, credentials.getRoleArn());
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_USERNAME, credentials.getRoleArn());
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
+//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
 
         // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(credentials.getRoleArn())) {
-            meta.put(VaultAuthPrincipalV2.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+        if (getAdminRoleArnSet().contains(iamRoleArn)) {
+            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
         }
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
@@ -234,7 +298,7 @@ public class AuthenticationServiceV2 {
      * @param authPrincipal The principal for the caller
      * @return The auth response directly from Vault with the token and metadata
      */
-    public AuthResponse refreshUserToken(final VaultAuthPrincipalV2 authPrincipal) {
+    public AuthResponse refreshUserToken(final VaultAuthPrincipal authPrincipal) {
         revoke(authPrincipal.getClientToken().getId());
 
         final AuthResponse authResponse = new AuthResponse();
@@ -275,14 +339,14 @@ public class AuthenticationServiceV2 {
      */
     private VaultAuthResponse generateToken(final String username, final Set<String> userGroups) {
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_USERNAME, username);
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, username);
 
         boolean isAdmin = false;
         if (userGroups.contains(this.adminGroup)) {
             isAdmin = true;
         }
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
-        meta.put(VaultAuthPrincipalV2.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
 
         final Set<String> policies = buildPolicySet(userGroups);
 
@@ -341,8 +405,7 @@ public class AuthenticationServiceV2 {
      * @return KMS Key id
      */
     private String getKeyId(IamRoleCredentialsV2 credentials) {
-        final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(credentials.getRoleArn());
+        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getRoleArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -357,8 +420,7 @@ public class AuthenticationServiceV2 {
         final String kmsKeyId;
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(
-                    iamRole.get().getId(), credentials.getRoleArn(),
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getRoleArn(),
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();

@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipalV1;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -41,7 +41,7 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
-        if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipalV1.ROLE_ADMIN)) {
+        if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipal.ROLE_ADMIN)) {
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 

@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.UserCredentials;
-import com.nike.cerberus.service.AuthenticationServiceV1;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -54,13 +54,13 @@ public class AuthenticateUserTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationServiceV1 authenticationService;
+    private AuthenticationService authenticationService;
 
     private AuthenticateUser subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationServiceV1.class);
+        authenticationService = mock(AuthenticationService.class);
         subject = new AuthenticateUser(authenticationService);
     }
 

@@ -18,7 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentialsV1;
-import com.nike.cerberus.service.AuthenticationServiceV1;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -34,12 +34,13 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
+@Deprecated
 public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1, IamRoleAuthResponse> {
 
-    private final AuthenticationServiceV1 authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRoleV1(final AuthenticationServiceV1 authenticationService) {
+    public AuthenticateIamRoleV1(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 

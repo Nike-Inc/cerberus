@@ -29,7 +29,7 @@ import java.util.Set;
  * Represents the authenticated principal.  This contains the vault client token entity and any assigned roles based
  * on that.
  */
-public class VaultAuthPrincipalV1 implements Principal {
+public class VaultAuthPrincipal implements Principal {
 
     public static final String ROLE_ADMIN = "admin";
 
@@ -41,9 +41,11 @@ public class VaultAuthPrincipalV1 implements Principal {
 
     public static final String METADATA_KEY_USERNAME = "username";
 
-    public static final String METADATA_KEY_AWS_ACCOUNT_ID = "aws_account_id";
+//    public static final String METADATA_KEY_AWS_ACCOUNT_ID = "aws_account_id";
+//
+//    public static final String METADATA_KEY_AWS_IAM_ROLE_NAME = "aws_iam_role_name";
 
-    public static final String METADATA_KEY_AWS_IAM_ROLE_NAME = "aws_iam_role_name";
+    public static final String METADATA_KEY_AWS_IAM_ROLE_ARN = "aws_iam_role_arn";
 
     public static final String METADATA_KEY_AWS_REGION = "aws_region";
 
@@ -55,7 +57,7 @@ public class VaultAuthPrincipalV1 implements Principal {
 
     private final Set<String> roles;
 
-    public VaultAuthPrincipalV1(VaultClientTokenResponse clientToken) {
+    public VaultAuthPrincipal(VaultClientTokenResponse clientToken) {
         this.clientToken = clientToken;
         this.roles = buildRoles(clientToken);
         this.userGroupSet = extractUserGroups(clientToken);

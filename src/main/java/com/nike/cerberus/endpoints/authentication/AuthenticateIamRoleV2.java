@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentialsV2;
-import com.nike.cerberus.service.AuthenticationServiceV2;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -37,10 +37,10 @@ import java.util.concurrent.Executor;
  */
 public class AuthenticateIamRoleV2 extends StandardEndpoint<IamRoleCredentialsV2, IamRoleAuthResponse> {
 
-    private final AuthenticationServiceV2 authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRoleV2(final AuthenticationServiceV2 authenticationService) {
+    public AuthenticateIamRoleV2(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 

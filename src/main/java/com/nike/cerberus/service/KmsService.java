@@ -23,6 +23,7 @@ import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyResult;
+import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.nike.backstopper.exception.ApiException;
@@ -43,7 +44,7 @@ import java.time.OffsetDateTime;
  * Abstracts interactions with the AWS KMS service.
  */
 @Singleton
-public class KmsServiceV1 {
+public class KmsService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -55,13 +56,13 @@ public class KmsServiceV1 {
 
     private final KmsClientFactory kmsClientFactory;
 
-    private final KmsPolicyServiceV1 kmsPolicyService;
+    private final KmsPolicyService kmsPolicyService;
 
     @Inject
-    public KmsServiceV1(final AwsIamRoleDao awsIamRoleDao,
-                        final UuidSupplier uuidSupplier,
-                        final KmsClientFactory kmsClientFactory,
-                        final KmsPolicyServiceV1 kmsPolicyService) {
+    public KmsService(final AwsIamRoleDao awsIamRoleDao,
+                      final UuidSupplier uuidSupplier,
+                      final KmsClientFactory kmsClientFactory,
+                      final KmsPolicyService kmsPolicyService) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
@@ -72,8 +73,7 @@ public class KmsServiceV1 {
      * Provisions a new KMS CMK in the specified region to be used by the specified role.
      *
      * @param iamRoleId        The IAM role that this CMK will be associated with
-     * @param iamRoleAccountId The AWS account ID for the IAM role
-     * @param iamRoleName      The AWS IAM role name for the IAM role
+     * @param iamRoleArn       The AWS IAM role ARN
      * @param awsRegion        The region to provision the key in
      * @param user             The user requesting it
      * @param dateTime         The date of creation
@@ -81,8 +81,7 @@ public class KmsServiceV1 {
      */
     @Transactional
     public String provisionKmsKey(final String iamRoleId,
-                                  final String iamRoleAccountId,
-                                  final String iamRoleName,
+                                  final String iamRoleArn,
                                   final String awsRegion,
                                   final String user,
                                   final OffsetDateTime dateTime) {
@@ -93,12 +92,14 @@ public class KmsServiceV1 {
         final CreateKeyRequest request = new CreateKeyRequest();
         request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
         request.setDescription("Key used by Cerberus for IAM role authentication.");
-        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamRoleAccountId, iamRoleName));
+        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamRoleArn));
         final CreateKeyResult result = kmsClient.createKey(request);
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
         aliasRequest.setAliasName(getAliasName(awsIamRoleKmsKeyId));
-        aliasRequest.setTargetKeyId(result.getKeyMetadata().getArn());
+        KeyMetadata keyMetadata = result.getKeyMetadata();
+        String arn = keyMetadata.getArn();
+        aliasRequest.setTargetKeyId(arn);
         kmsClient.createAlias(aliasRequest);
 
         final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
