@@ -36,9 +36,6 @@ public class IamRoleCredentialsV1 {
     @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
     private String roleName;
 
-    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
-    private String roleArn;
-
     @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
     private String region;
 
@@ -56,14 +53,6 @@ public class IamRoleCredentialsV1 {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
-    }
-
-    public String getRoleArn() {
-        return roleArn;
-    }
-
-    public void setRoleArn(String roleArn) {
-        this.roleArn = roleArn;
     }
 
     public String getRegion() {
