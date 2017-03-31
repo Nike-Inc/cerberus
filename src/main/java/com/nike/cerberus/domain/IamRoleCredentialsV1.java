@@ -22,7 +22,6 @@ import javax.validation.constraints.Pattern;
 
 import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
 import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
  * Represents the IAM role credentials sent during authentication.
