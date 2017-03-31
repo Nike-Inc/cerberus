@@ -27,13 +27,12 @@ import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 /**
  * Represents the IAM role credentials sent during authentication.
  */
+@Deprecated
 public class IamRoleCredentialsV1 {
 
-    // TODO: remove
     @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID")
     private String accountId;
 
-    // TODO: remove
     @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
     private String roleName;
 

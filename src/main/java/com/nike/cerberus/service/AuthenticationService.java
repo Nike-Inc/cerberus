@@ -175,9 +175,12 @@ public class AuthenticationService {
      * @return Encrypted auth response
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
-        IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                credentials.getAccountId(), credentials.getRoleName()));
+
+        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                credentials.getAccountId(), credentials.getRoleName());
+
+        final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
+        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
         final String keyId;
@@ -190,18 +193,15 @@ public class AuthenticationService {
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
                                 "Failed to lazily provision KMS key for %s in region: %s",
-                                credentials.getRoleArn(), credentials.getRegion()))
+                                iamRoleArn, iamRoleCredentialsV2.getRegion()))
                         .build();
             }
             throw e;
         }
 
-        final String iamRoleArn = credentials.getRoleArn();
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
-//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
-//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
 
@@ -256,8 +256,6 @@ public class AuthenticationService {
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
-//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
-//        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
 
