@@ -176,8 +176,8 @@ public class AuthenticationService {
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
 
-        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                credentials.getAccountId(), credentials.getRoleName());
+        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
+                credentials.getRoleName());
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
         iamRoleCredentialsV2.setRoleArn(iamRoleArn);
@@ -193,7 +193,7 @@ public class AuthenticationService {
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
                                 "Failed to lazily provision KMS key for %s in region: %s",
-                                iamRoleArn, iamRoleCredentialsV2.getRegion()))
+                                iamRoleArn, credentials.getRegion()))
                         .build();
             }
             throw e;
@@ -202,6 +202,8 @@ public class AuthenticationService {
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
 
