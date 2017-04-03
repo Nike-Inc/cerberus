@@ -17,7 +17,7 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentials;
+import com.nike.cerberus.domain.IamRoleCredentialsV1;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
@@ -37,19 +37,20 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
-public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
+@Deprecated
+public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRole(final AuthenticationService authenticationService) {
+    public AuthenticateIamRoleV1(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentials> request,
+    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentialsV1> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> {

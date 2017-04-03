@@ -141,6 +141,36 @@ This endpoint allows a user to exchange their current token for a new one with u
                }
             }
 
+## App Login v2 [/v2/auth/iam-role]
+
+### Authenticate with Cerberus as an App [POST]
+
+This endpoint will take a Users credentials and proxy the request to Vault to get a Vault token for the user with some extra metadata.
+
++ Request (application/json)
+
+    + Body
+
+            {
+                "role_arn" : "arn:aws:iam::111111111:role/cerberus-api-tester",
+                "region": "us-west-2"
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "client_token" : "e5fd901b-bc65-71e7-a214-6066fef1e918",
+              "policies" : [ "foo-bar-read", "lookup-self" ],
+              "metadata" : {
+                "aws_region" : "us-west-2",
+                "username" : "arn:aws:iam::933764306573:role/cerberus-api-tester"
+              },
+              "lease_duration" : 3600,
+              "renewable" : true
+            }
+
 
 ## App Login [/v1/auth/iam-role]
 
@@ -162,7 +192,7 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
 
     + Body
 
-            "{
+            {
               "client_token" : "234808f1-ede3-2177-aa9d-45f507391310",
               "policies" : [ "health-check-bucket-read", "lookup-self" ],
               "metadata" : {
@@ -173,7 +203,7 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
               },
               "lease_duration" : 3600,
               "renewable" : true
-            }"
+            }
 
 
 ## Auth [/v1/auth]

@@ -31,7 +31,9 @@ public class AwsIamRoleArnParser {
 
     public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
-    private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile("^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$");
+    public static final String AWS_IAM_ROLE_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
+
+    private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
 
     public String getAccountId(String roleArn) {
 

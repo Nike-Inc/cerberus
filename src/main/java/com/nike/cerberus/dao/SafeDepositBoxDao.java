@@ -41,9 +41,8 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.getUserAssociatedSafeDepositBoxRoles(userGroups);
     }
 
-    public List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(final String awsAccountId,
-                                                                                  final String awsIamRoleName) {
-        return safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsAccountId, awsIamRoleName);
+    public List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(final String awsIamRoleArn) {
+        return safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn);
     }
 
     public List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxes(final Set<String> userGroups) {

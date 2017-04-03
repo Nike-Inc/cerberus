@@ -1,7 +1,5 @@
 package com.nike.cerberus.service;
 
-import com.amazonaws.auth.policy.Policy;
-import com.amazonaws.auth.policy.Statement;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
