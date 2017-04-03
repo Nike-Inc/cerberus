@@ -25,6 +25,7 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -209,11 +210,15 @@ public class AuthenticationService {
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+        Set<String> groups = new HashSet<>();
+        groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
         if (getAdminRoleArnSet().contains(iamRoleArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            groups.add("admin-iam-principals");
         }
+        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
