@@ -183,58 +183,7 @@ public class AuthenticationService {
         iamRoleCredentialsV2.setRoleArn(iamRoleArn);
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
-        final String keyId;
-        try {
-            keyId = getKeyId(iamRoleCredentialsV2);
-        } catch (AmazonServiceException e) {
-            if ("InvalidArnException".equals(e.getErrorCode())) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
-                        .withExceptionCause(e)
-                        .withExceptionMessage(String.format(
-                                "Failed to lazily provision KMS key for %s in region: %s",
-                                iamRoleArn, credentials.getRegion()))
-                        .build();
-            }
-            throw e;
-        }
-
-        final Set<String> policies = buildPolicySet(iamRoleArn);
-
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
-
-        // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamRoleArn)) {
-            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
-        }
-
-        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
-                .setPolicies(policies)
-                .setMeta(meta)
-                .setTtl(iamTokenTTL)
-                .setNoDefaultPolicy(true);
-
-        final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
-
-        byte[] authResponseJson;
-        try {
-            authResponseJson = objectMapper.writeValueAsBytes(authResponse);
-        } catch (JsonProcessingException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
-                    .build();
-        }
-        final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
-
-        IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
-        iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
-        return iamRoleAuthResponse;
+        return authenticate(iamRoleCredentialsV2);
     }
 
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
