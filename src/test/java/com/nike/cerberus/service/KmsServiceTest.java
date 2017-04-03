@@ -36,8 +36,6 @@ public class KmsServiceTest {
     public void test_provisionKmsKey() {
 
         String iamRoleId = "role-id";
-        String iamRoleAccountId = "account-id";
-        String iamRoleName = "role-name";
         String awsRegion = "aws-region";
         String user = "user";
         OffsetDateTime dateTime = OffsetDateTime.now();
@@ -48,7 +46,7 @@ public class KmsServiceTest {
         String awsIamRoleKmsKeyId = "awsIamRoleKmsKeyId";
 
         when(uuidSupplier.get()).thenReturn(awsIamRoleKmsKeyId);
-        when(kmsPolicyService.generateStandardKmsPolicy(iamRoleAccountId, iamRoleName)).thenReturn(policy);
+        when(kmsPolicyService.generateStandardKmsPolicy(arn)).thenReturn(policy);
 
         AWSKMSClient client = mock(AWSKMSClient.class);
         when(kmsClientFactory.getClient(awsRegion)).thenReturn(client);
@@ -60,13 +58,12 @@ public class KmsServiceTest {
 
         CreateKeyResult createKeyResult = mock(CreateKeyResult.class);
         KeyMetadata metadata = mock(KeyMetadata.class);
-
-        when(createKeyResult.getKeyMetadata()).thenReturn(metadata);
         when(metadata.getArn()).thenReturn(arn);
+        when(createKeyResult.getKeyMetadata()).thenReturn(metadata);
         when(client.createKey(request)).thenReturn(createKeyResult);
 
         // invoke method under test
-        String actualResult = kmsService.provisionKmsKey(iamRoleId, iamRoleAccountId, iamRoleName, awsRegion, user, dateTime);
+        String actualResult = kmsService.provisionKmsKey(iamRoleId, arn, awsRegion, user, dateTime);
 
         assertEquals(arn, actualResult);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentials;
+import com.nike.cerberus.domain.IamRoleCredentialsV2;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -34,18 +35,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AuthenticateIamRoleTest {
+public class AuthenticateIamRoleV2Test {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     private AuthenticationService authenticationService;
 
-    private AuthenticateIamRole subject;
+    private AuthenticateIamRoleV2 subject;
 
     @Before
     public void setUp() throws Exception {
         authenticationService = mock(AuthenticationService.class);
-        subject = new AuthenticateIamRole(authenticationService);
+        subject = new AuthenticateIamRoleV2(authenticationService);
     }
 
     @Test
@@ -60,8 +61,8 @@ public class AuthenticateIamRoleTest {
     public void execute_returns_iam_role_auth_response() {
         final IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData("AUTH_DATA");
-        final IamRoleCredentials credentials = new IamRoleCredentials();
-        final RequestInfo<IamRoleCredentials> requestInfo = mock(RequestInfo.class);
+        final IamRoleCredentialsV2 credentials = new IamRoleCredentialsV2();
+        final RequestInfo<IamRoleCredentialsV2> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getContent()).thenReturn(credentials);
         when(authenticationService.authenticate(credentials)).thenReturn(iamRoleAuthResponse);
 

@@ -25,6 +25,7 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -39,7 +40,8 @@ import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentials;
+import com.nike.cerberus.domain.IamRoleCredentialsV1;
+import com.nike.cerberus.domain.IamRoleCredentialsV2;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
@@ -173,7 +175,19 @@ public class AuthenticationService {
      * @param credentials IAM role credentials
      * @return Encrypted auth response
      */
-    public IamRoleAuthResponse authenticate(IamRoleCredentials credentials) {
+    public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
+
+        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
+                credentials.getRoleName());
+
+        final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
+        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
+        iamRoleCredentialsV2.setRegion(credentials.getRegion());
+
+        return authenticate(iamRoleCredentialsV2);
+    }
+
+    public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -183,27 +197,28 @@ public class AuthenticationService {
                         .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
-                                "Failed to lazily provision KMS key for arn:aws:iam::%s:role/%s in region: %s",
-                                credentials.getAccountId(), credentials.getRoleName(), credentials.getRegion()))
+                                "Failed to lazily provision KMS key for %s in region: %s",
+                                credentials.getRoleArn(), credentials.getRegion()))
                         .build();
             }
             throw e;
         }
 
-        final Set<String> policies = buildPolicySet(credentials.getAccountId(), credentials.getRoleName());
-        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
-                credentials.getRoleName());
+        final String iamRoleArn = credentials.getRoleArn();
+        final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, arn);
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+        Set<String> groups = new HashSet<>();
+        groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(arn)) {
+        if (getAdminRoleArnSet().contains(iamRoleArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            groups.add("admin-iam-principals");
         }
+        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
@@ -321,14 +336,13 @@ public class AuthenticationService {
      * Builds the policy set to be associated with the to-be generated Vault token.  The lookup-self policy is
      * included by default.  All other associated policies are based on what permissions are granted to the IAM role.
      *
-     * @param accountId AWS account ID
-     * @param iamRoleName IAM role name
+     * @param iamRoleArn IAM role ARN
      * @return Set of policies to be associated
      */
-    private Set<String> buildPolicySet(final String accountId, final String iamRoleName) {
+    private Set<String> buildPolicySet(final String iamRoleArn) {
         final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
         final List<SafeDepositBoxRoleRecord> sdbRoles =
-                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(accountId, iamRoleName);
+                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn);
 
         sdbRoles.forEach(i -> {
             policies.add(vaultPolicyService.buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
@@ -344,15 +358,14 @@ public class AuthenticationService {
      * @param credentials IAM role credentials
      * @return KMS Key id
      */
-    private String getKeyId(IamRoleCredentials credentials) {
-        final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(credentials.getAccountId(), credentials.getRoleName());
+    private String getKeyId(IamRoleCredentialsV2 credentials) {
+        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getRoleArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
-                    .withExceptionMessage(String.format("The IAM Role: %s for Acct id: %s was not configured for any SDB",
-                            credentials.getRoleName(), credentials.getAccountId()))
+                    .withExceptionMessage(String.format("The role: %s was not configured for any SDB",
+                            credentials.getRoleArn()))
                     .build();
         }
 
@@ -361,14 +374,12 @@ public class AuthenticationService {
         final String kmsKeyId;
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(
-                    iamRole.get().getId(), credentials.getAccountId(), credentials.getRoleName(),
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getRoleArn(),
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();
-            String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(), credentials.getRoleName());
             String keyRegion = credentials.getRegion();
-            kmsService.validatePolicy(kmsKeyId, iamRoleArn, keyRegion);
+            kmsService.validatePolicy(kmsKeyId, credentials.getRoleArn(), keyRegion);
         }
 
         return kmsKeyId;

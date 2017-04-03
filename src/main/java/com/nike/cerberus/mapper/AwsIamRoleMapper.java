@@ -30,10 +30,6 @@ public interface AwsIamRoleMapper {
 
     AwsIamRoleRecord getIamRoleById(@Param("id") String id);
 
-    // TODO: remove
-    AwsIamRoleRecord getIamRole(@Param("awsAccountId") String awsAccountId,
-                                @Param("awsIamRoleName") String awsIamRoleName);
-
     AwsIamRoleRecord getIamRole(@Param("awsIamRoleArn") String awsIamRoleArn);
 
     AwsIamRoleKmsKeyRecord getKmsKey(@Param("awsIamRoleId") String awsIamRoleId,

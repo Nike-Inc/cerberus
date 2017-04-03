@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.domain;
@@ -20,37 +21,25 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.Pattern;
 
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
  * Represents the IAM role credentials sent during authentication.
  */
-public class IamRoleCredentials {
+public class IamRoleCredentialsV2 {
 
-    @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID")
-    private String accountId;
-
-    @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
-    private String roleName;
+    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
+    private String roleArn;
 
     @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
     private String region;
 
-    public String getAccountId() {
-        return accountId;
+    public String getRoleArn() {
+        return roleArn;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setRoleArn(String roleArn) {
+        this.roleArn = roleArn;
     }
 
     public String getRegion() {

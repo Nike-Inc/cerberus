@@ -41,11 +41,6 @@ public class AwsIamRoleDao {
         return Optional.ofNullable(awsIamRoleMapper.getIamRoleById(id));
     }
 
-    // TODO: remove
-    public Optional<AwsIamRoleRecord> getIamRole(final String awsAccountId, final String awsIamRoleName) {
-        return Optional.ofNullable(awsIamRoleMapper.getIamRole(awsAccountId, awsIamRoleName));
-    }
-
     public Optional<AwsIamRoleRecord> getIamRole(final String awsIamRoleArn) {
         return Optional.ofNullable(awsIamRoleMapper.getIamRole(awsIamRoleArn));
     }

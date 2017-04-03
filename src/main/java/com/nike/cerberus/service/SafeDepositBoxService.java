@@ -263,7 +263,7 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
+        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
 
         if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -513,12 +513,8 @@ public class SafeDepositBoxService {
 
         final String safeDepositBoxId = currentBox.getId();
 
-        final Set<IamRolePermission> updatedToAddSet = addIamRoleArnToPermissions(toAddSet);
-        iamRolePermissionService.grantIamRolePermissions(safeDepositBoxId, updatedToAddSet, user, dateTime);
-
-        final Set<IamRolePermission> updatedToUpdateSet = addIamRoleArnToPermissions(toUpdateSet);
-        iamRolePermissionService.updateIamRolePermissions(safeDepositBoxId, updatedToUpdateSet, user, dateTime);
-
+        iamRolePermissionService.grantIamRolePermissions(safeDepositBoxId, toAddSet, user, dateTime);
+        iamRolePermissionService.updateIamRolePermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
         iamRolePermissionService.revokeIamRolePermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
     }
 
