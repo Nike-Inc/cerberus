@@ -69,7 +69,7 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
             String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() : String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Delete SDB Event: the principal: {} is attempting to delete an SDB with name: {}", vaultAuthPrincipal.getName(), sdbName);
+            log.info("Delete SDB Event: the principal: {} is attempting to delete sdb name: '{}'", vaultAuthPrincipal.getName(), sdbName);
 
             safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())

@@ -71,7 +71,7 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
             String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() : String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Update SDB Event: the principal: {} is attempting to update an SDB with name: {}", vaultAuthPrincipal.getName(), sdbName);
+            log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}'", vaultAuthPrincipal.getName(), sdbName);
 
             safeDepositBoxService.updateSafeDepositBox(request.getContent(),
                     vaultAuthPrincipal.getUserGroups(),

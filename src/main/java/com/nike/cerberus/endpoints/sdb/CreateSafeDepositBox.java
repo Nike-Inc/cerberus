@@ -76,7 +76,7 @@ public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<S
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
 
-            log.info("Create SDB Event: the principal: {} is attempting to create an SDB with name: {}",
+            log.info("Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
                     vaultAuthPrincipal.getName(), request.getContent().getName());
 
             final String id =

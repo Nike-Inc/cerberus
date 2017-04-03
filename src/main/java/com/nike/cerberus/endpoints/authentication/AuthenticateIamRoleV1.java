@@ -54,7 +54,7 @@ public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> {
-            IamRoleCredentials credentials = request.getContent();
+            IamRoleCredentialsV1 credentials = request.getContent();
             log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
                     String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                             credentials.getAccountId(), credentials.getRoleName()), credentials.getRegion());

@@ -51,9 +51,9 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
                         securityContext.get().getUserPrincipal().getName() :
                         "( Principal is not a Vault auth principal. )" : "( Principal name is empty. )";
 
-        log.info("The principal {} is attempting to access admin endpoint: {}", principal, this.getClass().getName());
+        log.info("Admin Endpoint Event: the principal {} is attempting to access admin endpoint: {}", principal, this.getClass().getName());
         if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipal.ROLE_ADMIN)) {
-            log.error("The principal {} is attempted to access {}, an admin endpoint but was not an admin", principal,
+            log.error("Admin Endpoint Event: the principal {} is attempted to access {}, an admin endpoint but was not an admin", principal,
                     this.getClass().getName());
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }

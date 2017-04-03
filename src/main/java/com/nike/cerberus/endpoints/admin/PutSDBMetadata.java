@@ -27,6 +27,8 @@ import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.concurrent.CompletableFuture;
@@ -36,6 +38,8 @@ import java.util.concurrent.Executor;
  * Allows an Admin to restore (create or update) Metadata for an SDB
  */
 public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final MetadataService metadataService;
 
@@ -52,7 +56,12 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
 
         return CompletableFuture.supplyAsync(() -> {
             VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
-            metadataService.restoreMetadata(request.getContent(), vaultAuthPrincipal.getName());
+
+            String principal = vaultAuthPrincipal.getName();
+
+            log.info("Metadata Restore Event: the principal {} is attempting to restore sdb name: '{}'", principal, request.getContent().getName());
+
+            metadataService.restoreMetadata(request.getContent(), principal);
 
             return ResponseInfo.<Void>newBuilder()
                     .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
