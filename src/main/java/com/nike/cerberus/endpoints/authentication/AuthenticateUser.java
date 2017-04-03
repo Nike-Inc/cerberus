@@ -29,6 +29,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
@@ -40,6 +42,8 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for user credentials.  If valid, a client token will be returned.
  */
 public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
@@ -56,6 +60,9 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
                 () -> {
                     final UserCredentials credentials =
                             extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
+
+                    log.info("User Auth Event: the principal: {} is attempting to authenticate", credentials.getUsername());
+
                     return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
                 },
                 longRunningTaskExecutor

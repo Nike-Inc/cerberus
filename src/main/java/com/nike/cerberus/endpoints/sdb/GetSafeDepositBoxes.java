@@ -28,6 +28,8 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -41,6 +43,8 @@ import java.util.concurrent.Executor;
  * associated with that list of user groups.
  */
 public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDepositBoxSummary>> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final SafeDepositBoxService safeDepositBoxService;
 
@@ -62,6 +66,8 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+
+            log.info("List SDB Event: the principal: {} is attempting to list the SDBs that it has access to", vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
                     safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal.getUserGroups())).build();

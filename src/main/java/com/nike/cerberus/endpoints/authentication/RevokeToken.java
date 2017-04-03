@@ -28,6 +28,8 @@ import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -39,6 +41,8 @@ import java.util.concurrent.Executor;
  * Revokes the token supplied in the Vault token header.
  */
 public class RevokeToken extends StandardEndpoint<Void, Void> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
@@ -61,6 +65,9 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+
+            log.info("Delete Token Auth Event: the principal: {} is attempting to delete a token", vaultAuthPrincipal.getName());
+
             authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
         }

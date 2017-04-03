@@ -29,6 +29,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -40,6 +42,8 @@ import java.util.concurrent.Executor;
  * Endpoint for deleting a safe deposit box.
  */
 public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
@@ -61,7 +65,13 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), request.getPathParam("id"));
+
+            String sdbId = request.getPathParam("id");
+            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() : String.format("(Failed to lookup name from id: %s)", sdbId);
+            log.info("Delete SDB Event: the principal: {} is attempting to delete an SDB with name: {}", vaultAuthPrincipal.getName(), sdbName);
+
+            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
                     .build();

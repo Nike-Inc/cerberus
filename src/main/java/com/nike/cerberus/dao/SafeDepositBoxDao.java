@@ -86,4 +86,8 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.getSafeDepositBoxIdByName(name);
     }
 
+    public String getSafeDepositBoxNameById(String id) {
+        return safeDepositBoxMapper.getSafeDepositBoxNameById(id);
+    }
+
 }

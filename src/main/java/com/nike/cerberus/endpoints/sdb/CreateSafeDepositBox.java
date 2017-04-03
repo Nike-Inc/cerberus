@@ -31,6 +31,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -45,6 +47,8 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
 public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<String, String>> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final String BASE_PATH = "/v1/safe-deposit-box";
 
@@ -71,6 +75,10 @@ public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<S
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+
+            log.info("Create SDB Event: the principal: {} is attempting to create an SDB with name: {}",
+                    vaultAuthPrincipal.getName(), request.getContent().getName());
+
             final String id =
                     safeDepositBoxService.createSafeDepositBox(request.getContent(), vaultAuthPrincipal.getName());
 

@@ -606,6 +606,15 @@ public class SafeDepositBoxService {
     }
 
     /**
+     * @param id Safe Deposit Box id
+     * @return The name for the box
+     */
+    public Optional<String> getSafeDepositBoxNameById(String id) {
+        return Optional.ofNullable(safeDepositBoxDao.getSafeDepositBoxNameById(id));
+    }
+
+
+    /**
      * Admin method for restoring sdb
      * @param safeDepositBox Safe Deposit Box to restore
      */
