@@ -289,6 +289,8 @@ public class SafeDepositBoxService {
                     .build();
         }
 
+        assertIsOwner(groups, box.get());
+
         // 1. Remove permissions and metadata from database.
         iamRolePermissionService.deleteIamRolePermissions(id);
         userGroupPermissionService.deleteUserGroupPermissions(id);
