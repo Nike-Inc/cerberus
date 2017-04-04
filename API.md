@@ -145,7 +145,7 @@ This endpoint allows a user to exchange their current token for a new one with u
 
 ### Authenticate with Cerberus as an App [POST]
 
-This endpoint will take a Users credentials and proxy the request to Vault to get a Vault token for the user with some extra metadata.
+This endpoint takes IAM ARN information and generates an base 64 encoded KMS encrypted payload of the below. The ARN if registered with an SDB will have kms decrypt permissions on the KMS key that the payload was enrypted with.
 
 + Request (application/json)
 
@@ -166,6 +166,8 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
               "metadata" : {
                 "aws_region" : "us-west-2",
                 "username" : "arn:aws:iam::933764306573:role/cerberus-api-tester"
+                "is_admin": "false",
+                "groups": "registered-iam-principals"
               },
               "lease_duration" : 3600,
               "renewable" : true
@@ -176,7 +178,7 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
 
 ### Authenticate with Cerberus as an App [POST]
 
-This endpoint will take a Users credentials and proxy the request to Vault to get a Vault token for the user with some extra metadata.
+This endpoint takes IAM ARN information and generates an base 64 encoded KMS encrypted payload of the below. The ARN if registered with an SDB will have kms decrypt permissions on the KMS key that the payload was enrypted with.
 
 + Request (application/json)
 
@@ -196,10 +198,10 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
               "client_token" : "234808f1-ede3-2177-aa9d-45f507391310",
               "policies" : [ "health-check-bucket-read", "lookup-self" ],
               "metadata" : {
-                "aws_account_id" : "111111111",
-                "aws_iam_role_name" : "cerberus-api-tester",
                 "aws_region" : "us-west-2",
-                "username" : "arn:aws:iam::111111111:role/cerberus-api-tester"
+                "username" : "arn:aws:iam::111111111:role/cerberus-api-tester",
+                "is_admin": "false",
+                "groups": "registered-iam-principals"                
               },
               "lease_duration" : 3600,
               "renewable" : true
