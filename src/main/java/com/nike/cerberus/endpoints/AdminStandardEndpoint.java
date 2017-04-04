@@ -24,6 +24,8 @@ import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
@@ -35,13 +37,24 @@ import java.util.concurrent.Executor;
  */
 public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O> {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
                                                             final Executor longRunningTaskExecutor,
                                                             final ChannelHandlerContext ctx) {
+
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
+        String principal = securityContext.isPresent() ?
+                securityContext.get().getUserPrincipal() instanceof VaultAuthPrincipal ?
+                        securityContext.get().getUserPrincipal().getName() :
+                        "( Principal is not a Vault auth principal. )" : "( Principal name is empty. )";
+
+        log.info("Admin Endpoint Event: the principal {} is attempting to access admin endpoint: {}", principal, this.getClass().getName());
         if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipal.ROLE_ADMIN)) {
+            log.error("Admin Endpoint Event: the principal {} is attempted to access {}, an admin endpoint but was not an admin", principal,
+                    this.getClass().getName());
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 

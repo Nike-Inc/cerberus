@@ -51,4 +51,6 @@ public interface SafeDepositBoxMapper {
     int count();
 
     String getSafeDepositBoxIdByName(@Param("name") String name);
+
+    String getSafeDepositBoxNameById(@Param("id") String id);
 }

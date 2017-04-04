@@ -29,6 +29,8 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -41,6 +43,8 @@ import java.util.concurrent.Executor;
  * deposit box by its unique id.
  */
 public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final SafeDepositBoxService safeDepositBoxService;
 
@@ -62,10 +66,18 @@ public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+
+            String sdbId = request.getPathParam("id");
+            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
+                    String.format("(Failed to lookup name from id: %s)", sdbId);
+            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
+                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+
             final Optional<SafeDepositBox> safeDepositBox =
                     safeDepositBoxService.getAssociatedSafeDepositBox(
                             vaultAuthPrincipal.getUserGroups(),
-                            request.getPathParam("id"));
+                            sdbId);
 
             if (safeDepositBox.isPresent()) {
                 return ResponseInfo.newBuilder(safeDepositBox.get()).build();

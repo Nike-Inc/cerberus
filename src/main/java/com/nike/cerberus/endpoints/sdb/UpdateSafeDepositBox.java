@@ -31,6 +31,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -42,6 +44,8 @@ import java.util.concurrent.Executor;
  * Endpoint for updating a safe deposit box.
  */
 public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void> {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
@@ -63,10 +67,18 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+
+            String sdbId = request.getPathParam("id");
+            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
+                    String.format("(Failed to lookup name from id: %s)", sdbId);
+            log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
+                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+
             safeDepositBoxService.updateSafeDepositBox(request.getContent(),
                     vaultAuthPrincipal.getUserGroups(),
                     vaultAuthPrincipal.getName(),
-                    request.getPathParam("id"));
+                    sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
                     .build();
