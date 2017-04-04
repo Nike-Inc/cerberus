@@ -69,8 +69,10 @@ public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() : String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}'", vaultAuthPrincipal.getName(), sdbName);
+            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
+                    String.format("(Failed to lookup name from id: %s)", sdbId);
+            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
+                    vaultAuthPrincipal.getName(), sdbName, sdbId);
 
             final Optional<SafeDepositBox> safeDepositBox =
                     safeDepositBoxService.getAssociatedSafeDepositBox(

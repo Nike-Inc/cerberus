@@ -67,7 +67,8 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
 
-            log.info("List SDB Event: the principal: {} is attempting to list the SDBs that it has access to", vaultAuthPrincipal.getName());
+            log.info("List SDB Event: the principal: {} is attempting to list the SDBs that it has access to",
+                    vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
                     safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal.getUserGroups())).build();
