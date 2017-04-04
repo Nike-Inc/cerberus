@@ -217,6 +217,8 @@ public class AuthenticationService {
         if (getAdminRoleArnSet().contains(iamRoleArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
             groups.add("admin-iam-principals");
+        } else {
+             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
         }
         meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
