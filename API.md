@@ -395,7 +395,7 @@ This endpoint allows a user to delete a safe deposit box that they own
 
             X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
 
-+ Response 204
++ Response 200
 
     + Headers
 
