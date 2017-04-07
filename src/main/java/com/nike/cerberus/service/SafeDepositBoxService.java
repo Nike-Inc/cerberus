@@ -606,6 +606,11 @@ public class SafeDepositBoxService {
         }
     }
 
+    /**
+     * Concatenates the account ID and role name into an ARN and adds it to the given IamRolePermission
+     * @param iamRolePermission - The IamRolePermission to which to add the ARN
+     * @return - The updated IamRolePermission
+     */
     protected IamRolePermission populateAccountIdAndRoleNameFromIamRoleArn(IamRolePermission iamRolePermission) {
 
         final String iamRoleArn = iamRolePermission.getIamPrincipalArn();
@@ -621,6 +626,11 @@ public class SafeDepositBoxService {
                 .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleArn));
     }
 
+    /**
+     * Parses out the account id and role name from an ARN and adds them to the given IamRolePermission
+     * @param iamRolePermission - The IamRolePermission to which to add the account id and role name
+     * @return - The updated IamRolePermission
+     */
     protected IamRolePermission populateIamRoleArnFromAccountIdAndRoleName(IamRolePermission iamRolePermission) {
 
         final String accountId = iamRolePermission.getAccountId();
