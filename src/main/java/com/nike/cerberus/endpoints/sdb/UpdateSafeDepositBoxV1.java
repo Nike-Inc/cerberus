@@ -43,7 +43,8 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for updating a safe deposit box.
  */
-public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void> {
+@Deprecated
+public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBox, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -52,7 +53,7 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public UpdateSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public UpdateSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
@@ -75,7 +76,7 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
             log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            safeDepositBoxService.updateSafeDepositBox(request.getContent(),
+            safeDepositBoxService.updateSafeDepositBoxV1(request.getContent(),
                     vaultAuthPrincipal.getUserGroups(),
                     vaultAuthPrincipal.getName(),
                     sdbId);

@@ -157,6 +157,11 @@ public enum DefaultApiError implements ApiError {
     SDB_IAM_ROLE_PERMISSION_AWS_REGION_INVALID(99217, "Invalid AWS region specified for the IAM role.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
+     * IAM Role permission on SDB specifies in invalid AWS region.
+     */
+    SDB_IAM_ROLE_PERMISSION_IAM_ROLE_INVALID(99226, "Invalid AWS IAM role specified for the SDB.", HttpServletResponse.SC_BAD_REQUEST),
+
+    /**
      * User group permissions contain duplicate entries.
      */
     SDB_USER_GROUP_REPEATED(99218, "The user group permissions contains duplicate entries.", HttpServletResponse.SC_BAD_REQUEST),

@@ -92,7 +92,7 @@ public class IamRolePermissionService {
                                        final String user,
                                        final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> possibleIamRoleRecord =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
 
         final Optional<Role> role = roleService.getRoleById(iamRolePermission.getRoleId());
 
@@ -111,7 +111,7 @@ public class IamRolePermissionService {
             awsIamRoleRecord.setId(iamRoleId);
             awsIamRoleRecord.setAwsAccountId(iamRolePermission.getAccountId());  // TODO: remove
             awsIamRoleRecord.setAwsIamRoleName(iamRolePermission.getIamRoleName());  // TODO: remove
-            awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamRoleArn());
+            awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamPrincipalArn());
             awsIamRoleRecord.setCreatedBy(user);
             awsIamRoleRecord.setLastUpdatedBy(user);
             awsIamRoleRecord.setCreatedTs(dateTime);
@@ -163,7 +163,7 @@ public class IamRolePermissionService {
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -213,7 +213,7 @@ public class IamRolePermissionService {
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamRoleArn());
+                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -237,7 +237,7 @@ public class IamRolePermissionService {
                 permission.setId(r.getId());
                 permission.setAccountId(awsIamRoleArnParser.getAccountId(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
                 permission.setIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
-                permission.setIamRoleArn(iamRoleRecord.get().getAwsIamRoleArn());
+                permission.setIamPrincipalArn(iamRoleRecord.get().getAwsIamRoleArn());
                 permission.setRoleId(r.getRoleId());
                 permission.setCreatedBy(r.getCreatedBy());
                 permission.setLastUpdatedBy(r.getLastUpdatedBy());

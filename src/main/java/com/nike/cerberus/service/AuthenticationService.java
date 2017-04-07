@@ -180,61 +180,10 @@ public class AuthenticationService {
                 credentials.getRoleName());
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
+        iamRoleCredentialsV2.setIamPrincipalArn(iamRoleArn);
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
-        final String keyId;
-        try {
-            keyId = getKeyId(iamRoleCredentialsV2);
-        } catch (AmazonServiceException e) {
-            if ("InvalidArnException".equals(e.getErrorCode())) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
-                        .withExceptionCause(e)
-                        .withExceptionMessage(String.format(
-                                "Failed to lazily provision KMS key for %s in region: %s",
-                                iamRoleArn, credentials.getRegion()))
-                        .build();
-            }
-            throw e;
-        }
-
-        final Set<String> policies = buildPolicySet(iamRoleArn);
-
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, credentials.getAccountId());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, credentials.getRoleName());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
-
-        // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamRoleArn)) {
-            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
-        }
-
-        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
-                .setPolicies(policies)
-                .setMeta(meta)
-                .setTtl(iamTokenTTL)
-                .setNoDefaultPolicy(true);
-
-        final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
-
-        byte[] authResponseJson;
-        try {
-            authResponseJson = objectMapper.writeValueAsBytes(authResponse);
-        } catch (JsonProcessingException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
-                    .build();
-        }
-        final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
-
-        IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
-        iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
-        return iamRoleAuthResponse;
+        return authenticate(iamRoleCredentialsV2);
     }
 
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
@@ -248,23 +197,30 @@ public class AuthenticationService {
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
                                 "Failed to lazily provision KMS key for %s in region: %s",
-                                credentials.getRoleArn(), credentials.getRegion()))
+                                credentials.getIamPrincipalArn(), credentials.getRegion()))
                         .build();
             }
             throw e;
         }
 
-        final String iamRoleArn = credentials.getRoleArn();
+        final String iamRoleArn = credentials.getIamPrincipalArn();
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
 
+        Set<String> groups = new HashSet<>();
+        groups.add("registered-iam-principals");
+
         // We will allow specific ARNs access to the user portions of the API
         if (getAdminRoleArnSet().contains(iamRoleArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            groups.add("admin-iam-principals");
+        } else {
+             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
         }
+        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
@@ -405,13 +361,13 @@ public class AuthenticationService {
      * @return KMS Key id
      */
     private String getKeyId(IamRoleCredentialsV2 credentials) {
-        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getRoleArn());
+        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
                     .withExceptionMessage(String.format("The role: %s was not configured for any SDB",
-                            credentials.getRoleArn()))
+                            credentials.getIamPrincipalArn()))
                     .build();
         }
 
@@ -420,12 +376,12 @@ public class AuthenticationService {
         final String kmsKeyId;
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getRoleArn(),
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getIamPrincipalArn(),
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();
             String keyRegion = credentials.getRegion();
-            kmsService.validatePolicy(kmsKeyId, credentials.getRoleArn(), keyRegion);
+            kmsService.validatePolicy(kmsKeyId, credentials.getIamPrincipalArn(), keyRegion);
         }
 
         return kmsKeyId;

@@ -55,8 +55,8 @@ public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
 
     @Override
     public CompletableFuture<ResponseInfo<SafeDepositBox>> execute(final RequestInfo<Void> request,
-                                                                                final Executor longRunningTaskExecutor,
-                                                                                final ChannelHandlerContext ctx) {
+                                                                   final Executor longRunningTaskExecutor,
+                                                                   final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> getSafeDepositBox(request), longRunningTaskExecutor);
     }
 

@@ -46,7 +46,8 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
 /**
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
-public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<String, String>> {
+@Deprecated
+public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBox, Map<String, String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -57,7 +58,7 @@ public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<S
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public CreateSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public CreateSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
@@ -80,7 +81,7 @@ public class CreateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Map<S
                     vaultAuthPrincipal.getName(), request.getContent().getName());
 
             final String id =
-                    safeDepositBoxService.createSafeDepositBox(request.getContent(), vaultAuthPrincipal.getName());
+                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), vaultAuthPrincipal.getName());
 
             final String location = basePath + "/" + id;
             final Map<String, String> map = Maps.newHashMap();

@@ -82,6 +82,8 @@ public class SafeDepositBoxService {
 
     private final DateTimeSupplier dateTimeSupplier;
 
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
+
     @Inject
     public SafeDepositBoxService(final SafeDepositBoxDao safeDepositBoxDao,
                                  final UserGroupDao userGroupDao,
@@ -93,7 +95,8 @@ public class SafeDepositBoxService {
                                  final UserGroupPermissionService userGroupPermissionService,
                                  final IamRolePermissionService iamRolePermissionService,
                                  final Slugger slugger,
-                                 final DateTimeSupplier dateTimeSupplier) {
+                                 final DateTimeSupplier dateTimeSupplier,
+                                 final AwsIamRoleArnParser awsIamRoleArnParser) {
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
         this.uuidSupplier = uuidSupplier;
@@ -105,6 +108,7 @@ public class SafeDepositBoxService {
         this.iamRolePermissionService = iamRolePermissionService;
         this.slugger = slugger;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
@@ -203,13 +207,35 @@ public class SafeDepositBoxService {
      * @return ID of the created safe deposit box
      */
     @Transactional
-    public String createSafeDepositBox(final SafeDepositBox safeDepositBox, final String user) {
+    public String createSafeDepositBoxV1(final SafeDepositBox safeDepositBox, final String user) {
+
+        final Set<IamRolePermission> iamRolePermissionsWithArns = safeDepositBox.getIamRolePermissions().stream()
+                .map(this::populateIamRoleArnFromAccountIdAndRoleName)
+                .collect(Collectors.toSet());
+
+        safeDepositBox.setIamRolePermissions(iamRolePermissionsWithArns);
+
+        return createSafeDepositBoxV2(safeDepositBox, user);
+    }
+
+    /**
+     * Creates a safe deposit box and all the appropriate permissions.  Policies for each role are also
+     * created within Vault.
+     *
+     * @param safeDepositBox Safe deposit box to create
+     * @param user User requesting the creation
+     * @return ID of the created safe deposit box
+     */
+    @Transactional
+    public String createSafeDepositBoxV2(final SafeDepositBox safeDepositBox, final String user) {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
         addOwnerPermission(userGroupPermissionSet, safeDepositBox.getOwner());
 
-        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
+        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions().stream()
+                .map(this::populateAccountIdAndRoleNameFromIamRoleArn)
+                .collect(Collectors.toSet());
 
         final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
 
@@ -247,7 +273,28 @@ public class SafeDepositBoxService {
      * @param id Safe deposit box id
      */
     @Transactional
-    public void updateSafeDepositBox(final SafeDepositBox safeDepositBox, final Set<String> groups,
+    public void updateSafeDepositBoxV1(final SafeDepositBox safeDepositBox, final Set<String> groups,
+                                       final String user, final String id) {
+
+        final Set<IamRolePermission> iamRolePermissionsWithArns = safeDepositBox.getIamRolePermissions().stream()
+                .map(this::populateIamRoleArnFromAccountIdAndRoleName)
+                .collect(Collectors.toSet());
+
+        safeDepositBox.setIamRolePermissions(iamRolePermissionsWithArns);
+
+        updateSafeDepositBoxV2(safeDepositBox, groups, user, id);
+    }
+
+    /**
+     * Updates a safe deposit box.  Currently, only the description, owner and permissions are updatable.
+     *
+     * @param safeDepositBox Updated safe deposit box
+     * @param groups Caller's user groups
+     * @param user Caller's username
+     * @param id Safe deposit box id
+     */
+    @Transactional
+    public void updateSafeDepositBoxV2(final SafeDepositBox safeDepositBox, final Set<String> groups,
                                      final String user, final String id) {
         final Optional<SafeDepositBox> currentBox = getAssociatedSafeDepositBox(groups, id);
 
@@ -263,7 +310,9 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = addIamRoleArnToPermissions(safeDepositBox.getIamRolePermissions());
+        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions().stream()
+                .map(this::populateAccountIdAndRoleNameFromIamRoleArn)
+                .collect(Collectors.toSet());
 
         if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -557,19 +606,38 @@ public class SafeDepositBoxService {
         }
     }
 
-    /**
-     * Populates the ARN field for new Iam Role Permission objects
-     * @param iamRolePermissions - IAM role permissions to be modified
-     * @return - Modified IAM role permissions
-     */
-    protected Set<IamRolePermission> addIamRoleArnToPermissions(Set<IamRolePermission> iamRolePermissions) {
+    protected IamRolePermission populateAccountIdAndRoleNameFromIamRoleArn(IamRolePermission iamRolePermission) {
 
-        return iamRolePermissions.stream()
-                .map(iamRolePermission ->
-                        iamRolePermission.withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                                iamRolePermission.getAccountId(),
-                                iamRolePermission.getIamRoleName())))
-                .collect(Collectors.toSet());
+        final String iamRoleArn = iamRolePermission.getIamPrincipalArn();
+
+        if (iamRoleArn == null) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.SDB_IAM_ROLE_PERMISSION_IAM_ROLE_INVALID)
+                    .build();
+        }
+
+        return iamRolePermission
+                .withAccountId(awsIamRoleArnParser.getAccountId(iamRoleArn))
+                .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleArn));
+    }
+
+    protected IamRolePermission populateIamRoleArnFromAccountIdAndRoleName(IamRolePermission iamRolePermission) {
+
+        final String accountId = iamRolePermission.getAccountId();
+        final String roleName = iamRolePermission.getIamRoleName();
+        if (accountId == null) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.IAM_ROLE_ACCT_ID_BLANK)
+                    .build();
+        }
+
+        if (roleName == null) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.IAM_ROLE_NAME_INVALID)
+                    .build();
+        }
+
+        return iamRolePermission.withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName));
     }
 
     /**

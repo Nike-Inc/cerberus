@@ -36,11 +36,13 @@ import com.nike.cerberus.endpoints.category.GetAllCategories;
 import com.nike.cerberus.endpoints.category.GetCategory;
 import com.nike.cerberus.endpoints.role.GetAllRoles;
 import com.nike.cerberus.endpoints.role.GetRole;
-import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBox;
+import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV1;
+import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.sdb.DeleteSafeDepositBox;
 import com.nike.cerberus.endpoints.sdb.GetSafeDepositBox;
 import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
-import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBox;
+import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
+import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
@@ -174,8 +176,10 @@ public class CmsGuiceModule extends AbstractModule {
             GetSafeDepositBoxes getSafeDepositBoxes,
             GetSafeDepositBox getSafeDepositBox,
             DeleteSafeDepositBox deleteSafeDepositBox,
-            UpdateSafeDepositBox updateSafeDepositBox,
-            CreateSafeDepositBox createSafeDepositBox,
+            UpdateSafeDepositBoxV1 updateSafeDepositBoxV1,
+            UpdateSafeDepositBoxV2 updateSafeDepositBoxV2,
+            CreateSafeDepositBoxV1 createSafeDepositBoxV1,
+            CreateSafeDepositBoxV2 createSafeDepositBoxV2,
             GetSDBMetadata getSDBMetadata,
             PutSDBMetadata putSDBMetadata
     ) {
@@ -186,7 +190,7 @@ public class CmsGuiceModule extends AbstractModule {
                 authenticateUser, authenticateIamRoleV2, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBox,
-                deleteSafeDepositBox, updateSafeDepositBox, createSafeDepositBox,
+                deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
                 getSDBMetadata, putSDBMetadata
         ));
     }

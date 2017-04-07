@@ -68,7 +68,7 @@ public class MetadataService {
 
     /**
      * Creates or Updates an SDB using saved off metadata.
-     * This method differs from SafeDepositBoxService::createSafeDepositBox and SafeDepositBoxService::updateSafeDepositBox
+     * This method differs from SafeDepositBoxService::createSafeDepositBoxV1 and SafeDepositBoxService::updateSafeDepositBoxV1
      * only in that this method sets the created by and last updated fields which are normally sourced automatically.
      * <p>
      * This is an admin function so that backed up SDB metadata can easily be restored.

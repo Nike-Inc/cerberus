@@ -18,10 +18,8 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV1;
 import com.nike.cerberus.domain.IamRoleCredentialsV2;
 import com.nike.cerberus.service.AuthenticationService;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -57,7 +55,7 @@ public class AuthenticateIamRoleV2 extends StandardEndpoint<IamRoleCredentialsV2
         return CompletableFuture.supplyAsync(() -> {
             IamRoleCredentialsV2 credentials = request.getContent();
             log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
-                    credentials.getRoleArn(), credentials.getRegion());
+                    credentials.getIamPrincipalArn(), credentials.getRegion());
 
             return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
         }, longRunningTaskExecutor);
