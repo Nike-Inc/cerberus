@@ -27,7 +27,6 @@ import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.vault.client.VaultAdminClient;
-import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -82,6 +81,9 @@ public class SafeDepositBoxServiceTest {
 
     @Mock
     private DateTimeSupplier dateTimeSupplier;
+
+    @Mock
+    private AwsIamRoleArnParser awsIamRoleArnParser;
 
     @InjectMocks
     private SafeDepositBoxService safeDepositBoxService;
@@ -202,19 +204,34 @@ public class SafeDepositBoxServiceTest {
     }
 
     @Test
-    public void test_that_addIamRoleArnToPermissions_adds_arn_to_role_permissions() {
+    public void test_that_populateIamRoleArnFromAccountIdAndRoleName_adds_arn_to_role_permissions() {
 
         String accountId = "account id";
         String roleName = "role name";
         IamRolePermission iamRolePermission = new IamRolePermission().withAccountId(accountId).withIamRoleName(roleName);
 
+        IamRolePermission result = safeDepositBoxService.populateIamRoleArnFromAccountIdAndRoleName(iamRolePermission);
+
         String expectedArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
         IamRolePermission expectedPerm = new IamRolePermission().withAccountId(accountId).withIamRoleName(roleName).withIamRoleArn(expectedArn);
-        Set<IamRolePermission> permissions = Sets.newHashSet();
-        permissions.add(iamRolePermission);
+        assertEquals(expectedPerm, result);
+    }
 
-        Set<IamRolePermission> result = safeDepositBoxServiceSpy.addIamRoleArnToPermissions(permissions);
-        assertEquals(expectedPerm, result.toArray()[0]);
+    @Test
+    public void test_that_populateAccountIdAndRoleNameFromIamRoleArn_adds_arn_to_role_permissions() {
+
+        String accountId = "000111000111";
+        String roleName = "ro1e-name_0";
+        String roleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+        IamRolePermission iamRolePermission = new IamRolePermission().withIamRoleArn(roleArn);
+
+        when(awsIamRoleArnParser.getAccountId(roleArn)).thenReturn(accountId);
+        when(awsIamRoleArnParser.getRoleName(roleArn)).thenReturn(roleName);
+
+        IamRolePermission result = safeDepositBoxService.populateAccountIdAndRoleNameFromIamRoleArn(iamRolePermission);
+
+        IamRolePermission expectedPerm = new IamRolePermission().withAccountId(accountId).withIamRoleName(roleName).withIamRoleArn(roleArn);
+        assertEquals(expectedPerm, result);
     }
 
 }

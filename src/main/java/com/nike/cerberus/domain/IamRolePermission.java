@@ -44,7 +44,7 @@ public class IamRolePermission {
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
-    private String iamRoleArn;
+    private String iamPrincipalArn;
 
     private OffsetDateTime createdTs;
 
@@ -101,16 +101,16 @@ public class IamRolePermission {
         return this;
     }
 
-    public String getIamRoleArn() {
-        return iamRoleArn;
+    public String getIamPrincipalArn() {
+        return iamPrincipalArn;
     }
 
-    public void setIamRoleArn(String iamRoleArn) {
-        this.iamRoleArn = iamRoleArn;
+    public void setIamPrincipalArn(String iamPrincipalArn) {
+        this.iamPrincipalArn = iamPrincipalArn;
     }
 
     public IamRolePermission withIamRoleArn(String iamRoleArn) {
-        this.iamRoleArn = iamRoleArn;
+        this.iamPrincipalArn = iamRoleArn;
         return this;
     }
 
@@ -155,7 +155,7 @@ public class IamRolePermission {
 
         if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
         if (iamRoleName != null ? !iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null) return false;
-        return iamRoleArn != null ? iamRoleArn.equals(that.iamRoleArn) : that.iamRoleArn == null;
+        return iamPrincipalArn != null ? iamPrincipalArn.equals(that.iamPrincipalArn) : that.iamPrincipalArn == null;
 
     }
 
@@ -163,7 +163,7 @@ public class IamRolePermission {
     public int hashCode() {
         int result = accountId != null ? accountId.hashCode() : 0;
         result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
-        result = 31 * result + (iamRoleArn != null ? iamRoleArn.hashCode() : 0);
+        result = 31 * result + (iamPrincipalArn != null ? iamPrincipalArn.hashCode() : 0);
         return result;
     }
 }

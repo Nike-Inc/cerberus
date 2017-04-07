@@ -25,7 +25,6 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -181,7 +180,7 @@ public class AuthenticationService {
                 credentials.getRoleName());
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
+        iamRoleCredentialsV2.setIamPrincipalArn(iamRoleArn);
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
         return authenticate(iamRoleCredentialsV2);
@@ -198,18 +197,19 @@ public class AuthenticationService {
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
                                 "Failed to lazily provision KMS key for %s in region: %s",
-                                credentials.getRoleArn(), credentials.getRegion()))
+                                credentials.getIamPrincipalArn(), credentials.getRegion()))
                         .build();
             }
             throw e;
         }
 
-        final String iamRoleArn = credentials.getRoleArn();
+        final String iamRoleArn = credentials.getIamPrincipalArn();
         final Set<String> policies = buildPolicySet(iamRoleArn);
 
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+
         Set<String> groups = new HashSet<>();
         groups.add("registered-iam-principals");
 
@@ -361,13 +361,13 @@ public class AuthenticationService {
      * @return KMS Key id
      */
     private String getKeyId(IamRoleCredentialsV2 credentials) {
-        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getRoleArn());
+        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
                     .withExceptionMessage(String.format("The role: %s was not configured for any SDB",
-                            credentials.getRoleArn()))
+                            credentials.getIamPrincipalArn()))
                     .build();
         }
 
@@ -376,12 +376,12 @@ public class AuthenticationService {
         final String kmsKeyId;
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getRoleArn(),
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getIamPrincipalArn(),
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();
             String keyRegion = credentials.getRegion();
-            kmsService.validatePolicy(kmsKeyId, credentials.getRoleArn(), keyRegion);
+            kmsService.validatePolicy(kmsKeyId, credentials.getIamPrincipalArn(), keyRegion);
         }
 
         return kmsKeyId;
