@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,13 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.apierror.sample.SampleCoreApiError;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV1;
+import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
@@ -42,25 +44,25 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and attempts to get details about the safe
  * deposit box by its unique id.
  */
-public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
+public class GetSafeDepositBoxV2 extends StandardEndpoint<Void, SafeDepositBoxV2> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public GetSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public GetSafeDepositBoxV2(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<SafeDepositBox>> execute(final RequestInfo<Void> request,
-                                                                   final Executor longRunningTaskExecutor,
-                                                                   final ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV2>> execute(final RequestInfo<Void> request,
+                                                                     final Executor longRunningTaskExecutor,
+                                                                     final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> getSafeDepositBox(request), longRunningTaskExecutor);
     }
 
-    public ResponseInfo<SafeDepositBox> getSafeDepositBox(final RequestInfo<Void> request) {
+    public ResponseInfo<SafeDepositBoxV2> getSafeDepositBox(final RequestInfo<Void> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
@@ -74,8 +76,8 @@ public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
             log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            final Optional<SafeDepositBox> safeDepositBox =
-                    safeDepositBoxService.getAssociatedSafeDepositBox(
+            final Optional<SafeDepositBoxV2> safeDepositBox =
+                    safeDepositBoxService.getAssociatedSafeDepositBoxV2(
                             vaultAuthPrincipal.getUserGroups(),
                             sdbId);
 
@@ -91,6 +93,6 @@ public class GetSafeDepositBox extends StandardEndpoint<Void, SafeDepositBox> {
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v1/safe-deposit-box/{id}", HttpMethod.GET);
+        return Matcher.match("/v2/safe-deposit-box/{id}", HttpMethod.GET);
     }
 }

@@ -91,6 +91,7 @@ public class AuthenticationService {
     private final ObjectMapper objectMapper;
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -116,7 +117,8 @@ public class AuthenticationService {
                                  final VaultPolicyService vaultPolicyService,
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
-                                 final DateTimeSupplier dateTimeSupplier) {
+                                 final DateTimeSupplier dateTimeSupplier,
+                                 final AwsIamRoleArnParser awsIamRoleArnParser) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
@@ -128,6 +130,7 @@ public class AuthenticationService {
         this.objectMapper = objectMapper;
         this.adminGroup = adminGroup;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
@@ -176,11 +179,11 @@ public class AuthenticationService {
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
 
-        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
+        final String iamPrincipalArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
                 credentials.getRoleName());
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setIamPrincipalArn(iamRoleArn);
+        iamRoleCredentialsV2.setIamPrincipalArn(iamPrincipalArn);
         iamRoleCredentialsV2.setRegion(credentials.getRegion());
 
         return authenticate(iamRoleCredentialsV2);
@@ -203,18 +206,20 @@ public class AuthenticationService {
             throw e;
         }
 
-        final String iamRoleArn = credentials.getIamPrincipalArn();
-        final Set<String> policies = buildPolicySet(iamRoleArn);
+        final String iamPrincipalArn = credentials.getIamPrincipalArn();
+        final Set<String> policies = buildPolicySet(iamPrincipalArn);
 
         final Map<String, String> meta = Maps.newHashMap();
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
         meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
+        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
 
         Set<String> groups = new HashSet<>();
         groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamRoleArn)) {
+        if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
             groups.add("admin-iam-principals");
         } else {

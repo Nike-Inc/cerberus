@@ -18,7 +18,7 @@ package com.nike.cerberus.endpoints.sdb;
 
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
@@ -47,7 +47,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
 @Deprecated
-public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBox, Map<String, String>> {
+public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, Map<String, String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -63,13 +63,13 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBox, Map
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Map<String, String>>> execute(final RequestInfo<SafeDepositBox> request,
+    public CompletableFuture<ResponseInfo<Map<String, String>>> execute(final RequestInfo<SafeDepositBoxV1> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> createSafeDepositBox(request, BASE_PATH), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Map<String, String>> createSafeDepositBox(final RequestInfo<SafeDepositBox> request,
+    private ResponseInfo<Map<String, String>> createSafeDepositBox(final RequestInfo<SafeDepositBoxV1> request,
                                                                    final String basePath) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);

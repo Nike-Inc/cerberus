@@ -21,7 +21,6 @@ import com.nike.cerberus.mapper.AwsIamRoleMapper;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -128,7 +127,7 @@ public class AwsIamRoleDaoTest {
 
     @Test
     public void getIamRole_returns_record_when_found() {
-        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName);
+        String arn = "arn";
         when(awsIamRoleMapper.getIamRole(arn)).thenReturn(awsIamRoleRecord);
 
         final Optional<AwsIamRoleRecord> actual = subject.getIamRole(arn);
@@ -158,7 +157,7 @@ public class AwsIamRoleDaoTest {
 
     @Test
     public void getIamRole_with_arn_returns_empty_when_record_not_found() {
-        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName);
+        String arn = "arn";
         when(awsIamRoleMapper.getIamRole(arn)).thenReturn(null);
 
         final Optional<AwsIamRoleRecord> actual = subject.getIamRole(arn);

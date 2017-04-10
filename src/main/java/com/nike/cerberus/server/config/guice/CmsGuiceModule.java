@@ -39,7 +39,8 @@ import com.nike.cerberus.endpoints.role.GetRole;
 import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.sdb.DeleteSafeDepositBox;
-import com.nike.cerberus.endpoints.sdb.GetSafeDepositBox;
+import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV1;
+import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
@@ -174,7 +175,8 @@ public class CmsGuiceModule extends AbstractModule {
             GetAllRoles getAllRoles,
             GetRole getRole,
             GetSafeDepositBoxes getSafeDepositBoxes,
-            GetSafeDepositBox getSafeDepositBox,
+            GetSafeDepositBoxV1 getSafeDepositBoxV1,
+            GetSafeDepositBoxV2 getSafeDepositBoxV2,
             DeleteSafeDepositBox deleteSafeDepositBox,
             UpdateSafeDepositBoxV1 updateSafeDepositBoxV1,
             UpdateSafeDepositBoxV2 updateSafeDepositBoxV2,
@@ -189,7 +191,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllCategories, getCategory, createCategory, deleteCategory,
                 authenticateUser, authenticateIamRoleV2, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
-                getSafeDepositBoxes, getSafeDepositBox,
+                getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
                 getSDBMetadata, putSDBMetadata
         ));

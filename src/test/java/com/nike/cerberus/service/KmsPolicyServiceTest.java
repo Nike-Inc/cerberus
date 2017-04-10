@@ -2,7 +2,6 @@ package com.nike.cerberus.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,11 +20,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class KmsPolicyServiceTest {
 
-    private static final String CERBERUS_CONSUMER_ACCOUNT_ID = "1234567890";
-    private static final String CERBERUS_CONSUMER_ROLE_NAME = "cerberus-consumer";
-    private static final String CERBERUS_CONSUMER_IAM_ROLE_ARN =
-            String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                    CERBERUS_CONSUMER_ACCOUNT_ID, CERBERUS_CONSUMER_ROLE_NAME);
+    private static final String CERBERUS_CONSUMER_IAM_ROLE_ARN = "arn:aws:iam::1234567890:role/cerberus-consumer";
 
     private KmsPolicyService kmsPolicyService;
     private ObjectMapper objectMapper;
@@ -48,8 +43,7 @@ public class KmsPolicyServiceTest {
         String minifiedPolicyJsonAsString = expectedPolicy.toString();
 
         // invoke method under test
-        String actualPolicyJsonAsString = kmsPolicyService.generateStandardKmsPolicy(CERBERUS_CONSUMER_ACCOUNT_ID,
-                CERBERUS_CONSUMER_ROLE_NAME);
+        String actualPolicyJsonAsString = kmsPolicyService.generateStandardKmsPolicy(CERBERUS_CONSUMER_IAM_ROLE_ARN);
 
         assertEquals(minifiedPolicyJsonAsString, actualPolicyJsonAsString);
     }

@@ -19,7 +19,7 @@ package com.nike.cerberus.service;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.AwsIamRoleDao;
-import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.IamRolePermissionV2;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
@@ -70,10 +70,10 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void grantIamRolePermissions(final String safeDepositBoxId,
-                                        final Set<IamRolePermission> iamRolePermissionSet,
+                                        final Set<IamRolePermissionV2> iamRolePermissionSet,
                                         final String user,
                                         final OffsetDateTime dateTime) {
-        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
+        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
             grantIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
@@ -88,7 +88,7 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void grantIamRolePermission(final String safeDepositBoxId,
-                                       final IamRolePermission iamRolePermission,
+                                       final IamRolePermissionV2 iamRolePermission,
                                        final String user,
                                        final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> possibleIamRoleRecord =
@@ -98,7 +98,7 @@ public class IamRolePermissionService {
 
         if (!role.isPresent()) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.USER_GROUP_ROLE_ID_INVALID)
+                    .withApiErrors(DefaultApiError.IAM_ROLE_ROLE_ID_INVALID)
                     .build();
         }
 
@@ -109,8 +109,8 @@ public class IamRolePermissionService {
             iamRoleId = uuidSupplier.get();
             AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
             awsIamRoleRecord.setId(iamRoleId);
-            awsIamRoleRecord.setAwsAccountId(iamRolePermission.getAccountId());  // TODO: remove
-            awsIamRoleRecord.setAwsIamRoleName(iamRolePermission.getIamRoleName());  // TODO: remove
+            awsIamRoleRecord.setAwsAccountId(awsIamRoleArnParser.getAccountId(iamRolePermission.getIamPrincipalArn()));  // TODO: remove
+            awsIamRoleRecord.setAwsIamRoleName(awsIamRoleArnParser.getRoleName(iamRolePermission.getIamPrincipalArn()));  // TODO: remove
             awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamPrincipalArn());
             awsIamRoleRecord.setCreatedBy(user);
             awsIamRoleRecord.setLastUpdatedBy(user);
@@ -141,10 +141,10 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void updateIamRolePermissions(final String safeDepositBoxId,
-                                         final Set<IamRolePermission> iamRolePermissionSet,
+                                         final Set<IamRolePermissionV2> iamRolePermissionSet,
                                          final String user,
                                          final OffsetDateTime dateTime) {
-        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
+        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
             updateIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
@@ -159,7 +159,7 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void updateIamRolePermission(final String safeDepositBoxId,
-                                        final IamRolePermission iamRolePermission,
+                                        final IamRolePermissionV2 iamRolePermission,
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
@@ -191,10 +191,10 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void revokeIamRolePermissions(final String safeDepositBoxId,
-                                         final Set<IamRolePermission> iamRolePermissionSet,
+                                         final Set<IamRolePermissionV2> iamRolePermissionSet,
                                          final String user,
                                          final OffsetDateTime dateTime) {
-        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
+        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
             revokeIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
@@ -209,7 +209,7 @@ public class IamRolePermissionService {
      */
     @Transactional
     public void revokeIamRolePermission(final String safeDepositBoxId,
-                                        final IamRolePermission iamRolePermission,
+                                        final IamRolePermissionV2 iamRolePermission,
                                         final String user,
                                         final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
@@ -225,18 +225,16 @@ public class IamRolePermissionService {
         awsIamRoleDao.deleteIamRolePermission(safeDepositBoxId, iamRole.get().getId());
     }
 
-    public Set<IamRolePermission> getIamRolePermissions(final String safeDepositBoxId) {
-        final Set<IamRolePermission> iamRolePermissionSet = Sets.newHashSet();
+    public Set<IamRolePermissionV2> getIamRolePermissions(final String safeDepositBoxId) {
+        final Set<IamRolePermissionV2> iamRolePermissionSet = Sets.newHashSet();
         final List<AwsIamRolePermissionRecord> permissionRecords = awsIamRoleDao.getIamRolePermissions(safeDepositBoxId);
 
         permissionRecords.forEach(r -> {
             final Optional<AwsIamRoleRecord> iamRoleRecord = awsIamRoleDao.getIamRoleById(r.getAwsIamRoleId());
 
             if (iamRoleRecord.isPresent()) {
-                final IamRolePermission permission = new IamRolePermission();
+                final IamRolePermissionV2 permission = new IamRolePermissionV2();
                 permission.setId(r.getId());
-                permission.setAccountId(awsIamRoleArnParser.getAccountId(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
-                permission.setIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleRecord.get().getAwsIamRoleArn()));  // TODO: remove
                 permission.setIamPrincipalArn(iamRoleRecord.get().getAwsIamRoleArn());
                 permission.setRoleId(r.getRoleId());
                 permission.setCreatedBy(r.getCreatedBy());

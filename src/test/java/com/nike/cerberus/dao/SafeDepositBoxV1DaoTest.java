@@ -21,7 +21,6 @@ import com.google.common.collect.Sets;
 import com.nike.cerberus.mapper.SafeDepositBoxMapper;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SafeDepositBoxDaoTest {
+public class SafeDepositBoxV1DaoTest {
 
     private final String safeDepositBoxId = "SDB_ID";
 
@@ -61,9 +60,7 @@ public class SafeDepositBoxDaoTest {
 
     private final Set<String> userGroupSet = Sets.newHashSet(userGroup);
 
-    private final String awsAccountId = "AWS_ACCOUNT_ID";
-
-    private final String awsIamRoleName = "AWS_IAM_ROLE_NAME";
+    private final String awsIamPrincipalArn = "AWS_IAM_PRINCIPAL_ARN";
 
     private final SafeDepositBoxRecord safeDepositBoxRecord = new SafeDepositBoxRecord()
             .setId(safeDepositBoxId)
@@ -108,13 +105,11 @@ public class SafeDepositBoxDaoTest {
 
     @Test
     public void getIamRoleAssociatedSafeDepositBoxRoles_returns_list_of_role_records() {
-        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                    awsAccountId, awsIamRoleName)))
+        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamPrincipalArn))
                 .thenReturn(safeDepositBoxRoleRecordList);
 
         List<SafeDepositBoxRoleRecord> actual =
-                subject.getIamRoleAssociatedSafeDepositBoxRoles(
-                        String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName));
+                subject.getIamRoleAssociatedSafeDepositBoxRoles(awsIamPrincipalArn);
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).hasSameElementsAs(safeDepositBoxRoleRecordList);

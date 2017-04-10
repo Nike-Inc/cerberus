@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.domain;
@@ -23,27 +24,19 @@ import javax.validation.constraints.Pattern;
 import javax.validation.groups.Default;
 import java.time.OffsetDateTime;
 
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit box
  */
-public class IamRolePermission {
+public class IamRolePermissionV2 {
 
     private String id;
 
-    @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID", groups = {Default.class, Updatable.class})
-    private String accountId;
-
-    // TODO: remove
-    @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "IAM_ROLE_NAME_INVALID", groups = {Default.class, Updatable.class})
-    private String iamRoleName;
-
-    // TODO: remove
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
+    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "SDB_IAM_ROLE_PERMISSION_ROLE_ARN_INVALID", groups = {Default.class, Updatable.class})
     private String iamPrincipalArn;
 
     private OffsetDateTime createdTs;
@@ -62,32 +55,6 @@ public class IamRolePermission {
         this.id = id;
     }
 
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public IamRolePermission withAccountId(String accountId) {
-        this.accountId = accountId;
-        return this;
-    }
-
-    public String getIamRoleName() {
-        return iamRoleName;
-    }
-
-    public void setIamRoleName(String iamRoleName) {
-        this.iamRoleName = iamRoleName;
-    }
-
-    public IamRolePermission withIamRoleName(String iamRoleName) {
-        this.iamRoleName = iamRoleName;
-        return this;
-    }
-
     public String getRoleId() {
         return roleId;
     }
@@ -96,7 +63,7 @@ public class IamRolePermission {
         this.roleId = roleId;
     }
 
-    public IamRolePermission withRoleId(String roleId) {
+    public IamRolePermissionV2 withRoleId(String roleId) {
         this.roleId = roleId;
         return this;
     }
@@ -109,7 +76,7 @@ public class IamRolePermission {
         this.iamPrincipalArn = iamPrincipalArn;
     }
 
-    public IamRolePermission withIamRoleArn(String iamRoleArn) {
+    public IamRolePermissionV2 withIamPrincipalArn(String iamRoleArn) {
         this.iamPrincipalArn = iamRoleArn;
         return this;
     }
@@ -151,19 +118,14 @@ public class IamRolePermission {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IamRolePermission that = (IamRolePermission) o;
+        IamRolePermissionV2 that = (IamRolePermissionV2) o;
 
-        if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
-        if (iamRoleName != null ? !iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null) return false;
         return iamPrincipalArn != null ? iamPrincipalArn.equals(that.iamPrincipalArn) : that.iamPrincipalArn == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = accountId != null ? accountId.hashCode() : 0;
-        result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
-        result = 31 * result + (iamPrincipalArn != null ? iamPrincipalArn.hashCode() : 0);
-        return result;
+        return iamPrincipalArn != null ? iamPrincipalArn.hashCode() : 0;
     }
 }

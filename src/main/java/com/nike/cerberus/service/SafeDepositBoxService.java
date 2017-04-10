@@ -22,10 +22,12 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.UserGroupDao;
 import com.nike.cerberus.domain.Category;
-import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.IamRolePermissionV1;
+import com.nike.cerberus.domain.IamRolePermissionV2;
 import com.nike.cerberus.domain.Role;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
+import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
@@ -141,7 +143,24 @@ public class SafeDepositBoxService {
      * @param id The unique identifier for the safe deposit box to lookup
      * @return The safe deposit box, if found
      */
-    public Optional<SafeDepositBox> getAssociatedSafeDepositBox(final Set<String> groups, final String id) {
+    public Optional<SafeDepositBoxV1> getAssociatedSafeDepositBoxV1(final Set<String> groups, final String id) {
+
+        Optional<SafeDepositBoxV2> safeDepositBoxV2 = getAssociatedSafeDepositBoxV2(groups, id);
+
+        return safeDepositBoxV2.map(this::convertSafeDepositBoxV2ToV1);
+    }
+
+    /**
+     * Queries the data store for the specific safe deposit box by ID.  The query also enforces that the specified
+     * safe deposit box has a linked permission via the user groups supplied in the call.
+     *
+     * @param groups Set of user groups that must have at least one matching permission for the specific safe
+     *               deposit box
+     * @param id The unique identifier for the safe deposit box to lookup
+     * @return The safe deposit box, if found
+     */
+    public Optional<SafeDepositBoxV2> getAssociatedSafeDepositBoxV2(final Set<String> groups, final String id) {
+
         final Optional<SafeDepositBoxRecord> safeDepositBoxRecord = safeDepositBoxDao.getSafeDepositBox(id);
 
         if (safeDepositBoxRecord.isPresent()) {
@@ -154,20 +173,27 @@ public class SafeDepositBoxService {
                         .build();
             }
 
-            return Optional.of(getSDBFromRecord(safeDepositBoxRecord.get()));
+            return Optional.of(getSDBFromRecordV2(safeDepositBoxRecord.get()));
         }
 
         return Optional.empty();
     }
 
-    protected SafeDepositBox getSDBFromRecord(SafeDepositBoxRecord safeDepositBoxRecord) {
+    protected SafeDepositBoxV1 getSDBFromRecordV1(SafeDepositBoxRecord safeDepositBoxRecord) {
+
+        SafeDepositBoxV2 safeDepositBoxV2 = getSDBFromRecordV2(safeDepositBoxRecord);
+
+        return convertSafeDepositBoxV2ToV1(safeDepositBoxV2);
+    }
+
+    protected SafeDepositBoxV2 getSDBFromRecordV2(SafeDepositBoxRecord safeDepositBoxRecord) {
         if (safeDepositBoxRecord == null) {
             throw new IllegalArgumentException("Safe Deposit Box Record must not be null");
         }
 
         String id = safeDepositBoxRecord.getId();
-        
-        final Set<UserGroupPermission> userGroupPermissions = 
+
+        final Set<UserGroupPermission> userGroupPermissions =
                 userGroupPermissionService.getUserGroupPermissions(id);
 
         String owner = null;
@@ -179,9 +205,10 @@ public class SafeDepositBoxService {
             owner = possibleOwner.get();
         }
 
-        final Set<IamRolePermission> iamRolePermissions = iamRolePermissionService.getIamRolePermissions(id);
+        final Set<IamRolePermissionV2> iamRolePermissions = iamRolePermissionService.getIamRolePermissions(id);
 
-        SafeDepositBox safeDepositBox = new SafeDepositBox();
+
+        SafeDepositBoxV2 safeDepositBox = new SafeDepositBoxV2();
         safeDepositBox.setId(safeDepositBoxRecord.getId());
         safeDepositBox.setName(safeDepositBoxRecord.getName());
         safeDepositBox.setDescription(safeDepositBoxRecord.getDescription());
@@ -207,15 +234,11 @@ public class SafeDepositBoxService {
      * @return ID of the created safe deposit box
      */
     @Transactional
-    public String createSafeDepositBoxV1(final SafeDepositBox safeDepositBox, final String user) {
+    public String createSafeDepositBoxV1(final SafeDepositBoxV1 safeDepositBox, final String user) {
 
-        final Set<IamRolePermission> iamRolePermissionsWithArns = safeDepositBox.getIamRolePermissions().stream()
-                .map(this::populateIamRoleArnFromAccountIdAndRoleName)
-                .collect(Collectors.toSet());
+        SafeDepositBoxV2 safeDepositBoxV2 = convertSafeDepositBoxV1ToV2(safeDepositBox);
 
-        safeDepositBox.setIamRolePermissions(iamRolePermissionsWithArns);
-
-        return createSafeDepositBoxV2(safeDepositBox, user);
+        return createSafeDepositBoxV2(safeDepositBoxV2, user);
     }
 
     /**
@@ -227,15 +250,13 @@ public class SafeDepositBoxService {
      * @return ID of the created safe deposit box
      */
     @Transactional
-    public String createSafeDepositBoxV2(final SafeDepositBox safeDepositBox, final String user) {
+    public String createSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final String user) {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
         addOwnerPermission(userGroupPermissionSet, safeDepositBox.getOwner());
 
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions().stream()
-                .map(this::populateAccountIdAndRoleNameFromIamRoleArn)
-                .collect(Collectors.toSet());
+        final Set<IamRolePermissionV2> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
 
         final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
 
@@ -273,16 +294,12 @@ public class SafeDepositBoxService {
      * @param id Safe deposit box id
      */
     @Transactional
-    public void updateSafeDepositBoxV1(final SafeDepositBox safeDepositBox, final Set<String> groups,
+    public void updateSafeDepositBoxV1(final SafeDepositBoxV1 safeDepositBox, final Set<String> groups,
                                        final String user, final String id) {
 
-        final Set<IamRolePermission> iamRolePermissionsWithArns = safeDepositBox.getIamRolePermissions().stream()
-                .map(this::populateIamRoleArnFromAccountIdAndRoleName)
-                .collect(Collectors.toSet());
+        SafeDepositBoxV2 safeDepositBoxV2 = convertSafeDepositBoxV1ToV2(safeDepositBox);
 
-        safeDepositBox.setIamRolePermissions(iamRolePermissionsWithArns);
-
-        updateSafeDepositBoxV2(safeDepositBox, groups, user, id);
+        updateSafeDepositBoxV2(safeDepositBoxV2, groups, user, id);
     }
 
     /**
@@ -294,9 +311,9 @@ public class SafeDepositBoxService {
      * @param id Safe deposit box id
      */
     @Transactional
-    public void updateSafeDepositBoxV2(final SafeDepositBox safeDepositBox, final Set<String> groups,
-                                     final String user, final String id) {
-        final Optional<SafeDepositBox> currentBox = getAssociatedSafeDepositBox(groups, id);
+    public void updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final Set<String> groups,
+                                       final String user, final String id) {
+        final Optional<SafeDepositBoxV2> currentBox = getAssociatedSafeDepositBoxV2(groups, id);
 
         if (!currentBox.isPresent()) {
             throw ApiException.newBuilder()
@@ -310,9 +327,7 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermission> iamRolePermissionSet = safeDepositBox.getIamRolePermissions().stream()
-                .map(this::populateAccountIdAndRoleNameFromIamRoleArn)
-                .collect(Collectors.toSet());
+        final Set<IamRolePermissionV2> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
 
         if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -330,7 +345,7 @@ public class SafeDepositBoxService {
      */
     @Transactional
     public void deleteSafeDepositBox(final Set<String> groups, final String id) {
-        final Optional<SafeDepositBox> box = getAssociatedSafeDepositBox(groups, id);
+        final Optional<SafeDepositBoxV2> box = getAssociatedSafeDepositBoxV2(groups, id);
 
         if (!box.isPresent()) {
             throw ApiException.newBuilder()
@@ -372,7 +387,7 @@ public class SafeDepositBoxService {
         return Optional.of(ownerPermission.get().getName());
     }
 
-    private void assertIsOwner(final Set<String> groups, final SafeDepositBox box) {
+    private void assertIsOwner(final Set<String> groups, final SafeDepositBoxV2 box) {
         if (!groups.contains(box.getOwner())) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SDB_CALLER_OWNERSHIP_REQUIRED)
@@ -412,7 +427,7 @@ public class SafeDepositBoxService {
      * @param dateTime The timestamp for the creation
      * @return The safe deposit box to be stored
      */
-    private SafeDepositBoxRecord buildBoxToStore(final SafeDepositBox requestedBox,
+    private SafeDepositBoxRecord buildBoxToStore(final SafeDepositBoxV2 requestedBox,
                                            final String user,
                                            final OffsetDateTime dateTime) {
         final SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
@@ -447,7 +462,7 @@ public class SafeDepositBoxService {
      * @return Safe deposit box with only updatable data
      */
     private SafeDepositBoxRecord buildBoxToUpdate(final String id,
-                                                  final SafeDepositBox safeDepositBox,
+                                                  final SafeDepositBoxV2 safeDepositBox,
                                                   final String user,
                                                   final OffsetDateTime now) {
         final SafeDepositBoxRecord boxToUpdate = new SafeDepositBoxRecord();
@@ -513,7 +528,7 @@ public class SafeDepositBoxService {
     /**
      * Sorts out the set of permissions into, grant, update and revoke sets.  After that it applies those changes.
      */
-    protected void modifyUserGroupPermissions(final SafeDepositBox currentBox,
+    protected void modifyUserGroupPermissions(final SafeDepositBoxV2 currentBox,
                                             final Set<UserGroupPermission> userGroupPermissionSet,
                                             final String user,
                                             final OffsetDateTime dateTime) {
@@ -542,15 +557,15 @@ public class SafeDepositBoxService {
     /**
      * Sorts out the set of permissions into, grant, update and revoke sets.  After that it applies those changes.
      */
-    protected void modifyIamRolePermissions(final SafeDepositBox currentBox,
-                                          final Set<IamRolePermission> iamRolePermissionSet,
+    protected void modifyIamRolePermissions(final SafeDepositBoxV2 currentBox,
+                                          final Set<IamRolePermissionV2> iamRolePermissionSet,
                                           final String user,
                                           final OffsetDateTime dateTime) {
-        Set<IamRolePermission> toAddSet = Sets.newHashSet();
-        Set<IamRolePermission> toUpdateSet = Sets.newHashSet();
-        Set<IamRolePermission> toDeleteSet = Sets.newHashSet();
+        Set<IamRolePermissionV2> toAddSet = Sets.newHashSet();
+        Set<IamRolePermissionV2> toUpdateSet = Sets.newHashSet();
+        Set<IamRolePermissionV2> toDeleteSet = Sets.newHashSet();
 
-        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
+        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
             if (currentBox.getIamRolePermissions().contains(iamRolePermission)) {
                 toUpdateSet.add(iamRolePermission);
             } else {
@@ -606,48 +621,52 @@ public class SafeDepositBoxService {
         }
     }
 
-    /**
-     * Concatenates the account ID and role name into an ARN and adds it to the given IamRolePermission
-     * @param iamRolePermission - The IamRolePermission to which to add the ARN
-     * @return - The updated IamRolePermission
-     */
-    protected IamRolePermission populateAccountIdAndRoleNameFromIamRoleArn(IamRolePermission iamRolePermission) {
+    protected SafeDepositBoxV1 convertSafeDepositBoxV2ToV1(SafeDepositBoxV2 safeDepositBoxV2) {
 
-        final String iamRoleArn = iamRolePermission.getIamPrincipalArn();
+        final SafeDepositBoxV1 safeDepositBoxV1 = new SafeDepositBoxV1();
+        safeDepositBoxV1.setId(safeDepositBoxV2.getId());
+        safeDepositBoxV1.setName(safeDepositBoxV2.getName());
+        safeDepositBoxV1.setDescription(safeDepositBoxV2.getDescription());
+        safeDepositBoxV1.setPath(safeDepositBoxV2.getPath());
+        safeDepositBoxV1.setCategoryId(safeDepositBoxV2.getCategoryId());
+        safeDepositBoxV1.setCreatedBy(safeDepositBoxV2.getCreatedBy());
+        safeDepositBoxV1.setLastUpdatedBy(safeDepositBoxV2.getLastUpdatedBy());
+        safeDepositBoxV1.setCreatedTs(safeDepositBoxV2.getCreatedTs());
+        safeDepositBoxV1.setLastUpdatedTs(safeDepositBoxV2.getLastUpdatedTs());
+        safeDepositBoxV1.setOwner(safeDepositBoxV2.getOwner());
+        safeDepositBoxV1.setUserGroupPermissions(safeDepositBoxV2.getUserGroupPermissions());
+        safeDepositBoxV1.setIamRolePermissions(safeDepositBoxV2.getIamRolePermissions().stream()
+                .map(iamRolePermission -> new IamRolePermissionV1()
+                        .withAccountId(awsIamRoleArnParser.getAccountId(iamRolePermission.getIamPrincipalArn()))
+                        .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRolePermission.getIamPrincipalArn()))
+                        .withRoleId(iamRolePermission.getRoleId()))
+                .collect(Collectors.toSet()));
 
-        if (iamRoleArn == null) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SDB_IAM_ROLE_PERMISSION_IAM_ROLE_INVALID)
-                    .build();
-        }
-
-        return iamRolePermission
-                .withAccountId(awsIamRoleArnParser.getAccountId(iamRoleArn))
-                .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleArn));
+        return safeDepositBoxV1;
     }
 
-    /**
-     * Parses out the account id and role name from an ARN and adds them to the given IamRolePermission
-     * @param iamRolePermission - The IamRolePermission to which to add the account id and role name
-     * @return - The updated IamRolePermission
-     */
-    protected IamRolePermission populateIamRoleArnFromAccountIdAndRoleName(IamRolePermission iamRolePermission) {
+    protected SafeDepositBoxV2 convertSafeDepositBoxV1ToV2(SafeDepositBoxV1 safeDepositBoxV1) {
 
-        final String accountId = iamRolePermission.getAccountId();
-        final String roleName = iamRolePermission.getIamRoleName();
-        if (accountId == null) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.IAM_ROLE_ACCT_ID_BLANK)
-                    .build();
-        }
+        final SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
+        safeDepositBoxV2.setId(safeDepositBoxV1.getId());
+        safeDepositBoxV2.setName(safeDepositBoxV1.getName());
+        safeDepositBoxV2.setDescription(safeDepositBoxV1.getDescription());
+        safeDepositBoxV2.setPath(safeDepositBoxV1.getPath());
+        safeDepositBoxV2.setCategoryId(safeDepositBoxV1.getCategoryId());
+        safeDepositBoxV2.setCreatedBy(safeDepositBoxV1.getCreatedBy());
+        safeDepositBoxV2.setLastUpdatedBy(safeDepositBoxV1.getLastUpdatedBy());
+        safeDepositBoxV2.setCreatedTs(safeDepositBoxV1.getCreatedTs());
+        safeDepositBoxV2.setLastUpdatedTs(safeDepositBoxV1.getLastUpdatedTs());
+        safeDepositBoxV2.setOwner(safeDepositBoxV1.getOwner());
+        safeDepositBoxV2.setUserGroupPermissions(safeDepositBoxV1.getUserGroupPermissions());
+        safeDepositBoxV2.setIamRolePermissions(safeDepositBoxV1.getIamRolePermissions().stream()
+                .map(iamRolePermission -> new IamRolePermissionV2()
+                        .withIamPrincipalArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                                iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName()))
+                        .withRoleId(iamRolePermission.getRoleId()))
+                .collect(Collectors.toSet()));
 
-        if (roleName == null) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.IAM_ROLE_NAME_INVALID)
-                    .build();
-        }
-
-        return iamRolePermission.withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName));
+        return safeDepositBoxV2;
     }
 
     /**
@@ -658,17 +677,17 @@ public class SafeDepositBoxService {
     }
 
     /**
-     * 
+     *
      * A paginatable method for iterating retrieving all SDBs
-     * 
+     *
      * @param limit The maximum number of SDBs to fetch
      * @param offset The offset to paginate with
      */
-    public List<SafeDepositBox> getSafeDepositBoxes(int limit, int offset) {
+    public List<SafeDepositBoxV2> getSafeDepositBoxes(int limit, int offset) {
         List<SafeDepositBoxRecord> records = safeDepositBoxDao.getSafeDepositBoxes(limit, offset);
-        List<SafeDepositBox> result = new LinkedList<>();
+        List<SafeDepositBoxV2> result = new LinkedList<>();
         records.forEach(safeDepositBoxRecord -> {
-            result.add(getSDBFromRecord(safeDepositBoxRecord));
+            result.add(getSDBFromRecordV2(safeDepositBoxRecord));
         });
         return result;
     }
@@ -695,7 +714,7 @@ public class SafeDepositBoxService {
      * @param safeDepositBox Safe Deposit Box to restore
      */
     @Transactional
-    public void restoreSafeDepositBox(SafeDepositBox safeDepositBox,
+    public void restoreSafeDepositBox(SafeDepositBoxV2 safeDepositBox,
                                       String adminUser) {
 
         SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
@@ -713,7 +732,7 @@ public class SafeDepositBoxService {
         Optional<SafeDepositBoxRecord> existingBoxRecord = safeDepositBoxDao.getSafeDepositBox(safeDepositBox.getId());
         if (existingBoxRecord.isPresent()) {
             safeDepositBoxDao.fullUpdateSafeDepositBox(boxToStore);
-            SafeDepositBox existingBox = getSDBFromRecord(existingBoxRecord.get());
+            SafeDepositBoxV2 existingBox = getSDBFromRecordV2(existingBoxRecord.get());
             updateOwner(safeDepositBox.getId(), safeDepositBox.getOwner(), adminUser, now);
             modifyUserGroupPermissions(existingBox, safeDepositBox.getUserGroupPermissions(), adminUser, now);
             modifyIamRolePermissions(existingBox, safeDepositBox.getIamRolePermissions(), adminUser, now);

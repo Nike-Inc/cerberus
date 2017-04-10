@@ -16,21 +16,19 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
+import com.nike.backstopper.apierror.sample.SampleCoreApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
-import com.nike.cerberus.validation.group.Updatable;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,28 +39,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 /**
- * Endpoint for updating a safe deposit box.
+ * Extracts the user groups from the security context for the request and attempts to get details about the safe
+ * deposit box by its unique id.
  */
 @Deprecated
-public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, Void> {
+public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public UpdateSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
+    public GetSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV1> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> updateSafeDepositBox(request), longRunningTaskExecutor);
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV1>> execute(final RequestInfo<Void> request,
+                                                                     final Executor longRunningTaskExecutor,
+                                                                     final ChannelHandlerContext ctx) {
+        return CompletableFuture.supplyAsync(() -> getSafeDepositBox(request), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV1> request) {
+    public ResponseInfo<SafeDepositBoxV1> getSafeDepositBox(final RequestInfo<Void> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
@@ -73,16 +72,19 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
             String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
                     String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
+            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            safeDepositBoxService.updateSafeDepositBoxV1(request.getContent(),
-                    vaultAuthPrincipal.getUserGroups(),
-                    vaultAuthPrincipal.getName(),
-                    sdbId);
-            return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
-                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
-                    .build();
+            final Optional<SafeDepositBoxV1> safeDepositBox =
+                    safeDepositBoxService.getAssociatedSafeDepositBoxV1(
+                            vaultAuthPrincipal.getUserGroups(),
+                            sdbId);
+
+            if (safeDepositBox.isPresent()) {
+                return ResponseInfo.newBuilder(safeDepositBox.get()).build();
+            }
+
+            throw ApiException.newBuilder().withApiErrors(SampleCoreApiError.NOT_FOUND).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();
@@ -90,13 +92,6 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v1/safe-deposit-box/{id}", HttpMethod.PUT);
-    }
-
-    @Override
-    public Class[] validationGroups(RequestInfo<?> request) {
-        return new Class[] {
-            Updatable.class
-        };
+        return Matcher.match("/v1/safe-deposit-box/{id}", HttpMethod.GET);
     }
 }

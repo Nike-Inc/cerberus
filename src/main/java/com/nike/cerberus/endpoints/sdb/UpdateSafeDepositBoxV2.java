@@ -18,7 +18,7 @@
 package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
@@ -42,7 +42,7 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for updating a safe deposit box.
  */
-public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBox, Void> {
+public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, Void> {
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
@@ -54,11 +54,11 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBox, Voi
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBox> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV2> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> updateSafeDepositBox(request), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBox> request) {
+    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV2> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 

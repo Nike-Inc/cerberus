@@ -152,7 +152,7 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
     + Body
 
             {
-                "role_arn" : "arn:aws:iam::111111111:role/cerberus-api-tester",
+                "iam_principal_arn" : "arn:aws:iam::111111111:role/cerberus-api-tester",
                 "region": "us-west-2"
             }
 
@@ -224,9 +224,132 @@ This endpoint will take the users `X-Vault-Token` header and proxy to Vault to r
 
 # Group Safe Deposit Box
 
-## Get authorized Safe Deposit Box list [/v1/safe-deposit-box]
+## Safe Deposit Box V2 [/v2/safe-deposit-box]
 
-### Get details for each authorized Safe Deposit Box [GET]
+### Create a Safe Deposit Box [POST]
+
+This endpoint will create a new Safe Deposit Box
+
++ Request (application/json)
+
+    + Headers
+
+            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+
+    + Body
+
+            {
+                "name": "Stage",
+                "description": "Sensitive configuration properties for the stage micro-service.",
+                "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+                "owner": "Lst-digital.platform-tools.internal",
+                "user_group_permissions": [
+                    {
+                      "name": "Lst-CDT.CloudPlatformEngine.FTE",
+                      "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ],
+                "iam_role_permissions": [
+                    {
+                        "iam_principal_arn": ""arn:aws:iam::1111111111:role/role-name"
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ]
+            }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            X-Refresh-Token: true
+            Location: /v1/safe-deposit-box/a7d703da-faac-11e5-a8a9-7fa3b294cd46
+
+    + Body
+
+            {
+                "id": "a7d703da-faac-11e5-a8a9-7fa3b294cd46"
+            }
+
+### Get details for a specific authorized Safe Deposit Box [GET /v2/safe-deposit-box/{id}]
+
+This endpoint returns details on a specific Safe Deposit Box.
+
++ Parameters
+
+    + id (required, string, `a7d703da-faac-11e5-a8a9-7fa3b294cd46`) - The id of the Safe Deposit Box
+
++ Request (application/json)
+
+    + Headers
+
+            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+
++ Response 200 (application/json)
+
+    + body
+
+            {
+                "id": "a7d703da-faac-11e5-a8a9-7fa3b294cd46",
+                "name": "Stage",
+                "description": "Sensitive configuration properties for the stage micro-service.",
+                "path": "app/stage",
+                "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+                "owner": "Lst-digital.platform-tools.internal",
+                "user_group_permissions": [
+                    {
+                        "id": "3fc6455c-faad-11e5-a8a9-7fa3b294cd46",
+                        "name": "Lst-CDT.CloudPlatformEngine.FTE",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ],
+                "iam_role_permissions": [
+                    {
+                        "id": "d05bf72e-faad-11e5-a8a9-7fa3b294cd46",
+                        "iam_principal_arn": "arn:aws:iam::1111111111:role/role-name",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ]
+            }
+
+
+### Update a specific authorized Safe Deposit Box [PUT]
+
+This endpoint allows a user to update the description, user group, and iam role mappings
+
++ Request (application/json)
+
+    + Headers
+
+            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+
+    + Body
+
+            {
+                "description": "All configuration properties for the stage micro-service.",
+                "owner": "Lst-Squad.Carebears",
+                "user_group_permissions": [
+                    {
+                        "name": "Lst-CDT.CloudPlatformEngine.FTE",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ],
+                "iam_role_permissions": [
+                    {
+                        "iam_principal_arn": ""arn:aws:iam::1111111111:role/role-name2"
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ]
+            }
+
++ Response 204
+
+    + Headers
+
+            X-Refresh-Token: true
+
+## Safe Deposit Box V1 [/v1/safe-deposit-box]
+
+## Get details for each authorized Safe Deposit Box [GET]
 
 This endpoint will list all the Safe Deposit Box a user is authorized to see.
 
@@ -301,9 +424,7 @@ This endpoint will create a new Safe Deposit Box
             }
 
 
-## Safe Deposit Box [/v1/safe-deposit-box/{id}]
-
-### Get details for a specific authorized Safe Deposit Box [GET]
+### Get details for a specific authorized Safe Deposit Box [GET /v1/safe-deposit-box/{id}]
 
 This endpoint returns details on a specific Safe Deposit Box.
 

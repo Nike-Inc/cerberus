@@ -48,4 +48,5 @@ public class UniqueOwnerValidator implements ConstraintValidator<UniqueOwner, Sa
 
         return !userGroupNameSet.contains(safeDepositBox.getOwner());
     }
+
 }
