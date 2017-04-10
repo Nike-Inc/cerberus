@@ -60,7 +60,7 @@ public class IamRolePermissionsValidatorV1
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH));
-        stringBuilder.append("-");
+        stringBuilder.append('-');
         stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getIamRoleName(), Locale.ENGLISH));
 
         return stringBuilder.toString();
