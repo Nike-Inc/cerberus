@@ -621,6 +621,11 @@ public class SafeDepositBoxService {
         }
     }
 
+    /**
+     * Converts a v2 API version safe deposit box into a v1 version
+     * @param safeDepositBoxV2 - V2 API version safe deposit box
+     * @return - V1 API version safe deposit box
+     */
     protected SafeDepositBoxV1 convertSafeDepositBoxV2ToV1(SafeDepositBoxV2 safeDepositBoxV2) {
 
         final SafeDepositBoxV1 safeDepositBoxV1 = new SafeDepositBoxV1();
@@ -645,6 +650,11 @@ public class SafeDepositBoxService {
         return safeDepositBoxV1;
     }
 
+    /**
+     * Converts a v1 API version safe deposit box into a v2 version
+     * @param safeDepositBoxV1 - V1 API version safe deposit box
+     * @return - V2 API version safe deposit box
+     */
     protected SafeDepositBoxV2 convertSafeDepositBoxV1ToV2(SafeDepositBoxV1 safeDepositBoxV1) {
 
         final SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
