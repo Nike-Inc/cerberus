@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.sdb;
 
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
@@ -45,7 +46,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
 /**
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
-public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, Map<String, String>> {
+public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
 
     public static final String BASE_PATH = "/v2/safe-deposit-box";
 
@@ -59,26 +60,25 @@ public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, M
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Map<String, String>>> execute(final RequestInfo<SafeDepositBoxV2> request,
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV2>> execute(final RequestInfo<SafeDepositBoxV2> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> createSafeDepositBox(request, BASE_PATH), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Map<String, String>> createSafeDepositBox(final RequestInfo<SafeDepositBoxV2> request,
-                                                                   final String basePath) {
+    private ResponseInfo<SafeDepositBoxV2> createSafeDepositBox(final RequestInfo<SafeDepositBoxV2> request,
+                                                              final String basePath) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final String id =
+            final SafeDepositBoxV2 safeDepositBox =
                     safeDepositBoxService.createSafeDepositBoxV2(request.getContent(), vaultAuthPrincipal.getName());
 
-            final String location = basePath + "/" + id;
-            final Map<String, String> map = Maps.newHashMap();
-            map.put("id", id);
-            return ResponseInfo.newBuilder(map)
+            final String location = basePath + "/" + safeDepositBox.getId();
+
+            return ResponseInfo.newBuilder(safeDepositBox)
                     .withHeaders(new DefaultHttpHeaders()
                             .set(LOCATION, location)
                             .set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))

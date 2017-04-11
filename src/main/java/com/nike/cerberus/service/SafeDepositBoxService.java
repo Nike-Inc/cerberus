@@ -179,13 +179,6 @@ public class SafeDepositBoxService {
         return Optional.empty();
     }
 
-    protected SafeDepositBoxV1 getSDBFromRecordV1(SafeDepositBoxRecord safeDepositBoxRecord) {
-
-        SafeDepositBoxV2 safeDepositBoxV2 = getSDBFromRecordV2(safeDepositBoxRecord);
-
-        return convertSafeDepositBoxV2ToV1(safeDepositBoxV2);
-    }
-
     protected SafeDepositBoxV2 getSDBFromRecordV2(SafeDepositBoxRecord safeDepositBoxRecord) {
         if (safeDepositBoxRecord == null) {
             throw new IllegalArgumentException("Safe Deposit Box Record must not be null");
@@ -238,7 +231,7 @@ public class SafeDepositBoxService {
 
         SafeDepositBoxV2 safeDepositBoxV2 = convertSafeDepositBoxV1ToV2(safeDepositBox);
 
-        return createSafeDepositBoxV2(safeDepositBoxV2, user);
+        return createSafeDepositBoxV2(safeDepositBoxV2, user).getId();
     }
 
     /**
@@ -250,7 +243,7 @@ public class SafeDepositBoxService {
      * @return ID of the created safe deposit box
      */
     @Transactional
-    public String createSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final String user) {
+    public SafeDepositBoxV2 createSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final String user) {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
@@ -282,7 +275,7 @@ public class SafeDepositBoxService {
 
         vaultPolicyService.createStandardPolicies(boxRecordToStore.getName(), boxRecordToStore.getPath());
 
-        return boxRecordToStore.getId();
+        return getSDBFromRecordV2(boxRecordToStore);
     }
 
     /**
