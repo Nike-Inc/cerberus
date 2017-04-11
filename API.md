@@ -267,7 +267,26 @@ This endpoint will create a new Safe Deposit Box
     + Body
 
             {
-                "id": "a7d703da-faac-11e5-a8a9-7fa3b294cd46"
+                "id": "a7d703da-faac-11e5-a8a9-7fa3b294cd46",
+                "name": "Stage",
+                "description": "Sensitive configuration properties for the stage micro-service.",
+                "path": "app/stage",
+                "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+                "owner": "Lst-digital.platform-tools.internal",
+                "user_group_permissions": [
+                    {
+                        "id": "3fc6455c-faad-11e5-a8a9-7fa3b294cd46",
+                        "name": "Lst-CDT.CloudPlatformEngine.FTE",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ],
+                "iam_role_permissions": [
+                    {
+                        "id": "d05bf72e-faad-11e5-a8a9-7fa3b294cd46",
+                        "iam_principal_arn": "arn:aws:iam::1111111111:role/role-name",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ]
             }
 
 ### Get details for a specific authorized Safe Deposit Box [GET /v2/safe-deposit-box/{id}]
