@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.endpoints.sdb;
@@ -41,7 +42,7 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for deleting a safe deposit box.
  */
-public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
+public class DeleteSafeDepositBoxV2 extends StandardEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -50,7 +51,7 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public DeleteSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public DeleteSafeDepositBoxV2(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
@@ -84,6 +85,6 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v1/safe-deposit-box/{id}", HttpMethod.DELETE);
+        return Matcher.match("/v2/safe-deposit-box/{id}", HttpMethod.DELETE);
     }
 }
