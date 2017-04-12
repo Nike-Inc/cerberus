@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
+import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.error.DefaultApiError;
@@ -26,6 +27,7 @@ import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.Matcher;
+import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
@@ -42,6 +44,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
+@Deprecated
 public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDepositBoxSummary>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -79,6 +82,7 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v1/safe-deposit-box", HttpMethod.GET);
+
+        return MultiMatcher.match(Sets.newHashSet("/v1/safe-deposit-box", "/v2/safe-deposit-box"), HttpMethod.GET);
     }
 }

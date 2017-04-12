@@ -226,6 +226,35 @@ This endpoint will take the users `X-Vault-Token` header and proxy to Vault to r
 
 ## Safe Deposit Box V2 [/v2/safe-deposit-box]
 
+### Get details for each authorized Safe Deposit Box [GET]
+
+This endpoint will list all the Safe Deposit Box a user is authorized to see.
+
++ Request (application/json)
+
+    + Headers
+
+            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "id": "fb013540-fb5f-11e5-ba72-e899458df21a",
+                    "name": "Web",
+                    "path": "app/web",
+                    "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46"
+                },
+                {
+                     "id": "06f82494-fb60-11e5-ba72-e899458df21a",
+                     "name": "OneLogin",
+                     "path": "shared/onelogin",
+                     "category_id": "f7ffb890-faaa-11e5-a8a9-7fa3b294cd46"
+                }
+            ]
+
 ### Create a Safe Deposit Box [POST]
 
 This endpoint will create a new Safe Deposit Box
@@ -360,7 +389,52 @@ This endpoint allows a user to update the description, user group, and iam role 
                 ]
             }
 
-+ Response 204
++ Response 200
+
+    + Headers
+
+            X-Refresh-Token: true
+
+    + body
+    
+            {
+                "id": "a7d703da-faac-11e5-a8a9-7fa3b294cd46",
+                "name": "Stage",
+                "description": "Sensitive configuration properties for the stage micro-service.",
+                "path": "app/stage",
+                "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+                "owner": "Lst-digital.platform-tools.internal",
+                "user_group_permissions": [
+                    {
+                        "id": "3fc6455c-faad-11e5-a8a9-7fa3b294cd46",
+                        "name": "Lst-CDT.CloudPlatformEngine.FTE",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ],
+                "iam_role_permissions": [
+                    {
+                        "id": "d05bf72e-faad-11e5-a8a9-7fa3b294cd46",
+                        "iam_principal_arn": "arn:aws:iam::1111111111:role/role-name",
+                        "role_id": "f800558e-faaa-11e5-a8a9-7fa3b294cd46"
+                    }
+                ]
+            }
+
+### Delete a specific authorized Safe Deposit Box [DELETE]
+
+This endpoint allows a user to delete a safe deposit box that they own
+
++ Parameters
+
+    + id (required, string, `a7d703da-faac-11e5-a8a9-7fa3b294cd46`) - The id of the Safe Deposit Box
+
++ Request (application/json)
+
+    + Headers
+
+            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+
++ Response 200
 
     + Headers
 

@@ -304,7 +304,7 @@ public class SafeDepositBoxService {
      * @param id Safe deposit box id
      */
     @Transactional
-    public void updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final Set<String> groups,
+    public SafeDepositBoxV2 updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final Set<String> groups,
                                        final String user, final String id) {
         final Optional<SafeDepositBoxV2> currentBox = getAssociatedSafeDepositBoxV2(groups, id);
 
@@ -329,6 +329,16 @@ public class SafeDepositBoxService {
         updateOwner(currentBox.get().getId(), safeDepositBox.getOwner(), user, now);
         modifyUserGroupPermissions(currentBox.get(), userGroupPermissionSet, user, now);
         modifyIamRolePermissions(currentBox.get(), iamRolePermissionSet, user, now);
+
+        Optional<SafeDepositBoxV2> updatedSafeDepositBox = getAssociatedSafeDepositBoxV2(groups, id);
+        if (updatedSafeDepositBox.isPresent()) {
+            return updatedSafeDepositBox.get();
+        } else {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionMessage("The updated safe deposit box was not found.")
+                    .build();
+        }
     }
 
     /**

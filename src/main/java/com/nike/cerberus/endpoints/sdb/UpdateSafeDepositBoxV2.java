@@ -42,7 +42,7 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for updating a safe deposit box.
  */
-public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, Void> {
+public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
@@ -54,22 +54,23 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, V
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV2> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV2>> execute(RequestInfo<SafeDepositBoxV2> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> updateSafeDepositBox(request), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV2> request) {
+    private ResponseInfo<SafeDepositBoxV2> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV2> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            safeDepositBoxService.updateSafeDepositBoxV2(request.getContent(),
+            SafeDepositBoxV2 safeDepositBoxV2 = safeDepositBoxService.updateSafeDepositBoxV2(request.getContent(),
                     vaultAuthPrincipal.getUserGroups(),
                     vaultAuthPrincipal.getName(),
                     request.getPathParam("id"));
-            return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
+            return ResponseInfo.newBuilder(safeDepositBoxV2)
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                    .withHttpStatusCode(HttpResponseStatus.OK.code())
                     .build();
         }
 
