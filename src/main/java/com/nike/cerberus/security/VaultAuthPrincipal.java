@@ -45,6 +45,8 @@ public class VaultAuthPrincipal implements Principal {
 
     public static final String METADATA_KEY_AWS_IAM_ROLE_NAME = "aws_iam_role_name";
 
+    public static final String METADATA_KEY_AWS_IAM_PRINCIPAL_ARN = "aws_iam_principal_arn";
+
     public static final String METADATA_KEY_AWS_REGION = "aws_region";
 
     private final VaultClientTokenResponse clientToken;

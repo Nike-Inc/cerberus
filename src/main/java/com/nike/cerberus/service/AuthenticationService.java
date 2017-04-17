@@ -181,15 +181,29 @@ public class AuthenticationService {
 
         final String iamPrincipalArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
                 credentials.getRoleName());
+        final String region = credentials.getRegion();
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
         iamRoleCredentialsV2.setIamPrincipalArn(iamPrincipalArn);
-        iamRoleCredentialsV2.setRegion(credentials.getRegion());
+        iamRoleCredentialsV2.setRegion(region);
 
-        return authenticate(iamRoleCredentialsV2);
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, region);
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID,awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+
+        return authenticate(iamRoleCredentialsV2, vaultAuthPrincipalMetadata);
     }
 
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
+
+        final String iamPrincipalArn = credentials.getIamPrincipalArn();
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+
+        return authenticate(credentials, vaultAuthPrincipalMetadata);
+    }
+
+    public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials, Map<String, String> vaultAuthPrincipalMetadata) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -206,30 +220,11 @@ public class AuthenticationService {
             throw e;
         }
 
-        final String iamPrincipalArn = credentials.getIamPrincipalArn();
-        final Set<String> policies = buildPolicySet(iamPrincipalArn);
-
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
-
-        Set<String> groups = new HashSet<>();
-        groups.add("registered-iam-principals");
-
-        // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
-            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
-            groups.add("admin-iam-principals");
-        } else {
-             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
-        }
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
+        final Set<String> policies = buildPolicySet(credentials.getIamPrincipalArn());
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
-                .setMeta(meta)
+                .setMeta(vaultAuthPrincipalMetadata)
                 .setTtl(iamTokenTTL)
                 .setNoDefaultPolicy(true);
 
@@ -370,7 +365,7 @@ public class AuthenticationService {
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
+                    .withApiErrors(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID)
                     .withExceptionMessage(String.format("The role: %s was not configured for any SDB",
                             credentials.getIamPrincipalArn()))
                     .build();
@@ -441,5 +436,26 @@ public class AuthenticationService {
             }
         }
         return adminRoleArnSet;
+    }
+
+    private Map<String, String> generateCommonVaultPrincipalAuthMetadata(String iamPrincipalArn, String region) {
+
+        Map<String, String> metadata = Maps.newHashMap();
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
+
+        Set<String> groups = new HashSet<>();
+        groups.add("registered-iam-principals");
+
+        // We will allow specific ARNs access to the user portions of the API
+        if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
+            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            groups.add("admin-iam-principals");
+        } else {
+            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
+        }
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
+
+        return metadata;
     }
 }

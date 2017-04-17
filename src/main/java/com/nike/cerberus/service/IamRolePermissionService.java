@@ -109,8 +109,6 @@ public class IamRolePermissionService {
             iamRoleId = uuidSupplier.get();
             AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
             awsIamRoleRecord.setId(iamRoleId);
-            awsIamRoleRecord.setAwsAccountId(awsIamRoleArnParser.getAccountId(iamRolePermission.getIamPrincipalArn()));  // TODO: remove
-            awsIamRoleRecord.setAwsIamRoleName(awsIamRoleArnParser.getRoleName(iamRolePermission.getIamPrincipalArn()));  // TODO: remove
             awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamPrincipalArn());
             awsIamRoleRecord.setCreatedBy(user);
             awsIamRoleRecord.setLastUpdatedBy(user);

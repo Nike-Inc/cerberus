@@ -24,6 +24,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.groups.Default;
 import java.time.OffsetDateTime;
 
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
@@ -36,7 +37,7 @@ public class IamRolePermissionV2 {
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
-    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "SDB_IAM_ROLE_PERMISSION_ROLE_ARN_INVALID", groups = {Default.class, Updatable.class})
+    @Pattern(regexp = AWS_IAM_PRINCIPAL_ARN_REGEX, message = "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID", groups = {Default.class, Updatable.class})
     private String iamPrincipalArn;
 
     private OffsetDateTime createdTs;
