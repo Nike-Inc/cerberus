@@ -165,7 +165,8 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
               "policies" : [ "foo-bar-read", "lookup-self" ],
               "metadata" : {
                 "aws_region" : "us-west-2",
-                "username" : "arn:aws:iam::933764306573:role/cerberus-api-tester"
+                "iam_principal_arn" : "arn:aws:iam::111111111:role/fake-role"
+                "username" : "arn:aws:iam::111111111:role/fake-role"
                 "is_admin": "false",
                 "groups": "registered-iam-principals"
               },
@@ -199,7 +200,9 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
               "policies" : [ "health-check-bucket-read", "lookup-self" ],
               "metadata" : {
                 "aws_region" : "us-west-2",
-                "username" : "arn:aws:iam::111111111:role/cerberus-api-tester",
+                "aws_account_id" : "111111111",
+                "aws_iam_role_name" : "fake-role",
+                "username" : "arn:aws:iam::111111111:role/fake-role",
                 "is_admin": "false",
                 "groups": "registered-iam-principals"                
               },
