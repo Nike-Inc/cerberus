@@ -438,7 +438,7 @@ public class AuthenticationService {
         return adminRoleArnSet;
     }
 
-    private Map<String, String> generateCommonVaultPrincipalAuthMetadata(String iamPrincipalArn, String region) {
+    protected Map<String, String> generateCommonVaultPrincipalAuthMetadata(String iamPrincipalArn, String region) {
 
         Map<String, String> metadata = Maps.newHashMap();
         metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
