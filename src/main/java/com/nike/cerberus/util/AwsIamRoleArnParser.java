@@ -33,7 +33,7 @@ public class AwsIamRoleArnParser {
 
     public static final String AWS_IAM_ROLE_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
 
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:iam::.+$";
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::.+$";
 
     private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
 
