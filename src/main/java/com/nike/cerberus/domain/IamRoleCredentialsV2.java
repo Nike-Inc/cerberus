@@ -21,25 +21,25 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.Pattern;
 
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX;
 
 /**
  * Represents the IAM role credentials sent during authentication.
  */
 public class IamRoleCredentialsV2 {
 
-    @Pattern(regexp = AWS_IAM_ROLE_ARN_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
-    private String roleArn;
+    @Pattern(regexp = AWS_IAM_PRINCIPAL_ARN_REGEX, message = "AUTH_IAM_PRINCIPAL_INVALID")
+    private String iamPrincipalArn;
 
     @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
     private String region;
 
-    public String getRoleArn() {
-        return roleArn;
+    public String getIamPrincipalArn() {
+        return iamPrincipalArn;
     }
 
-    public void setRoleArn(String roleArn) {
-        this.roleArn = roleArn;
+    public void setIamPrincipalArn(String iamPrincipalArn) {
+        this.iamPrincipalArn = iamPrincipalArn;
     }
 
     public String getRegion() {

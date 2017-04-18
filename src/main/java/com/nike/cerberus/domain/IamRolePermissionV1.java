@@ -29,7 +29,7 @@ import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit box
  */
-public class IamRolePermission {
+public class IamRolePermissionV1 {
 
     private String id;
 
@@ -43,8 +43,6 @@ public class IamRolePermission {
     // TODO: remove
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
-
-    private String iamRoleArn;
 
     private OffsetDateTime createdTs;
 
@@ -70,7 +68,7 @@ public class IamRolePermission {
         this.accountId = accountId;
     }
 
-    public IamRolePermission withAccountId(String accountId) {
+    public IamRolePermissionV1 withAccountId(String accountId) {
         this.accountId = accountId;
         return this;
     }
@@ -83,7 +81,7 @@ public class IamRolePermission {
         this.iamRoleName = iamRoleName;
     }
 
-    public IamRolePermission withIamRoleName(String iamRoleName) {
+    public IamRolePermissionV1 withIamRoleName(String iamRoleName) {
         this.iamRoleName = iamRoleName;
         return this;
     }
@@ -96,21 +94,8 @@ public class IamRolePermission {
         this.roleId = roleId;
     }
 
-    public IamRolePermission withRoleId(String roleId) {
+    public IamRolePermissionV1 withRoleId(String roleId) {
         this.roleId = roleId;
-        return this;
-    }
-
-    public String getIamRoleArn() {
-        return iamRoleArn;
-    }
-
-    public void setIamRoleArn(String iamRoleArn) {
-        this.iamRoleArn = iamRoleArn;
-    }
-
-    public IamRolePermission withIamRoleArn(String iamRoleArn) {
-        this.iamRoleArn = iamRoleArn;
         return this;
     }
 
@@ -151,11 +136,10 @@ public class IamRolePermission {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IamRolePermission that = (IamRolePermission) o;
+        IamRolePermissionV1 that = (IamRolePermissionV1) o;
 
         if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
-        if (iamRoleName != null ? !iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null) return false;
-        return iamRoleArn != null ? iamRoleArn.equals(that.iamRoleArn) : that.iamRoleArn == null;
+        return iamRoleName != null ? iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null;
 
     }
 
@@ -163,7 +147,6 @@ public class IamRolePermission {
     public int hashCode() {
         int result = accountId != null ? accountId.hashCode() : 0;
         result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
-        result = 31 * result + (iamRoleArn != null ? iamRoleArn.hashCode() : 0);
         return result;
     }
 }

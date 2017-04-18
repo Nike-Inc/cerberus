@@ -149,7 +149,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * The IAM Role + Region don't have a KMS key provisioned to encrypt the auth response.
      */
-    AUTH_IAM_ROLE_INVALID(99216, "The specified IAM role is not valid.", HttpServletResponse.SC_BAD_REQUEST),
+    AUTH_IAM_PRINCIPAL_INVALID(99216, "The specified IAM principal is not valid.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
      * IAM Role permission on SDB specifies in invalid AWS region.
@@ -196,6 +196,11 @@ public enum DefaultApiError implements ApiError {
      * Failed to validate that the KMS key policy was valid
      */
     FAILED_TO_VALIDATE_KMS_KEY_POLICY(99225, "Failed to validate KMS key policy", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+
+    /**
+     * IAM Role permission on SDB specifies in invalid AWS region.
+     */
+    SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID(99226, "Invalid AWS IAM role specified for the SDB.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
      * Generic not found error.

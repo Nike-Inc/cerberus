@@ -17,15 +17,14 @@
 package com.nike.cerberus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.IamRolePermissionV2;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.server.config.CmsConfig;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +43,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -71,9 +68,6 @@ public class MetadataServiceTest {
 
     @Mock
     private UuidSupplier uuidSupplier;
-
-    @Mock
-    private AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Before
     public void before() {
@@ -137,8 +131,7 @@ public class MetadataServiceTest {
         String grumpyBearsId = "111-def";
         String ownerId = "000";
         String readId = "111";
-        String acctId = "12345";
-        String roleName = "foo-role";
+        String arn = "arn:aws:iam::12345:role/foo-role";
 
         OffsetDateTime offsetDateTime = OffsetDateTime.now();
 
@@ -152,7 +145,7 @@ public class MetadataServiceTest {
         when(roleService.getRoleIdToStringMap()).thenReturn(roleIdToStringMap);
         when(categoryService.getCategoryIdToCategoryNameMap()).thenReturn(catMap);
 
-        SafeDepositBox box = new SafeDepositBox();
+        SafeDepositBoxV2 box = new SafeDepositBoxV2();
         box.setId(sdbId);
         box.setName(name);
         box.setPath(path);
@@ -168,8 +161,8 @@ public class MetadataServiceTest {
         userPerms.add(new UserGroupPermission().withName(grumpyBearsGroup).withRoleId(readId));
         box.setUserGroupPermissions(userPerms);
 
-        Set<IamRolePermission> iamPerms = new HashSet<>();
-        iamPerms.add(new IamRolePermission().withAccountId(acctId).withIamRoleName(roleName).withRoleId(readId));
+        Set<IamRolePermissionV2> iamPerms = new HashSet<>();
+        iamPerms.add(new IamRolePermissionV2().withIamPrincipalArn(arn).withRoleId(readId));
         box.setIamRolePermissions(iamPerms);
 
         when(safeDepositBoxService.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(box));
@@ -187,7 +180,7 @@ public class MetadataServiceTest {
         assertEquals("updated ts should match record", offsetDateTime, data.getLastUpdatedTs());
 
         Map<String, String> expectedIamPermMap = new HashMap<>();
-        expectedIamPermMap.put(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, acctId, roleName), RoleRecord.ROLE_READ);
+        expectedIamPermMap.put(arn, RoleRecord.ROLE_READ);
         assertEquals("iam role perm map should match what is returned by getIamRolePermissionMap",
                 expectedIamPermMap, data.getIamRolePermissions());
 
@@ -218,12 +211,10 @@ public class MetadataServiceTest {
         Role readRole = new Role();
         readRole.setId(readId);
         when(roleService.getRoleByName(RoleRecord.ROLE_READ)).thenReturn(Optional.of(readRole));
-        when(awsIamRoleArnParser.getAccountId(anyString())).thenCallRealMethod();
-        when(awsIamRoleArnParser.getRoleName(anyString())).thenCallRealMethod();
 
         metadataService.restoreMetadata(sdbMetadata, user);
 
-        SafeDepositBox expectedSdb = new SafeDepositBox();
+        SafeDepositBoxV2 expectedSdb = new SafeDepositBoxV2();
         expectedSdb.setId(id);
         expectedSdb.setPath("app/health-check-bucket/");
         expectedSdb.setCategoryId(categoryId);
@@ -240,9 +231,9 @@ public class MetadataServiceTest {
         userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
         expectedSdb.setUserGroupPermissions(userPerms);
 
-        Set<IamRolePermission> iamPerms = new HashSet<>();
-        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, "1111111111", "lambda_prod_healthcheck");
-        iamPerms.add(new IamRolePermission().withAccountId("1111111111").withIamRoleName("lambda_prod_healthcheck").withIamRoleArn(arn).withRoleId(readId));
+        Set<IamRolePermissionV2> iamPerms = new HashSet<>();
+        String arn = "arn:aws:iam::1111111111:role/lambda_prod_healthcheck";
+        iamPerms.add(new IamRolePermissionV2().withIamPrincipalArn(arn).withRoleId(readId));
         expectedSdb.setIamRolePermissions(iamPerms);
 
         expectedSdb.setUserGroupPermissions(userPerms);

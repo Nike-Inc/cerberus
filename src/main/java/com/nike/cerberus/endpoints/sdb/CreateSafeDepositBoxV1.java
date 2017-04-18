@@ -16,8 +16,9 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
@@ -26,7 +27,6 @@ import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.Matcher;
-import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -36,49 +36,61 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
+
 /**
- * Endpoint for deleting a safe deposit box.
+ * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
 @Deprecated
-public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
+public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, Map<String, String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    public static final String BASE_PATH = "/v1/safe-deposit-box";
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public DeleteSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public CreateSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> deleteSafeDepositBox(request), longRunningTaskExecutor);
+    public CompletableFuture<ResponseInfo<Map<String, String>>> execute(final RequestInfo<SafeDepositBoxV1> request,
+                                                                        final Executor longRunningTaskExecutor,
+                                                                        final ChannelHandlerContext ctx) {
+        return CompletableFuture.supplyAsync(() -> createSafeDepositBox(request, BASE_PATH), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Void> deleteSafeDepositBox(final RequestInfo<Void> request) {
+    private ResponseInfo<Map<String, String>> createSafeDepositBox(final RequestInfo<SafeDepositBoxV1> request,
+                                                                   final String basePath) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
 
-            String sdbId = request.getPathParam("id");
-            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
-                    String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Delete SDB Event: the principal: {} is attempting to delete sdb name: '{}' and id: '{}'",
-                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+            log.info("Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
+                    vaultAuthPrincipal.getName(), request.getContent().getName());
 
-            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), sdbId);
-            return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
-                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+            final String id =
+                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), vaultAuthPrincipal.getName());
+
+            final String location = basePath + "/" + id;
+            final Map<String, String> map = Maps.newHashMap();
+            map.put("id", id);
+            return ResponseInfo.newBuilder(map)
+                    .withHeaders(new DefaultHttpHeaders()
+                            .set(LOCATION, location)
+                            .set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                    .withHttpStatusCode(HttpResponseStatus.CREATED.code())
                     .build();
         }
 
@@ -87,7 +99,6 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     @Override
     public Matcher requestMatcher() {
-
-        return MultiMatcher.match(Sets.newHashSet("/v1/safe-deposit-box/{id}","/v2/safe-deposit-box/{id}"),HttpMethod.DELETE);
+        return Matcher.match(BASE_PATH, HttpMethod.POST);
     }
 }

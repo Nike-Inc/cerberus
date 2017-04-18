@@ -17,15 +17,14 @@
 package com.nike.cerberus.service;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.IamRolePermissionV2;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.InvalidCategoryNameApiError;
 import com.nike.cerberus.error.InvalidRoleNameApiError;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,25 +49,22 @@ public class MetadataService {
     private final CategoryService categoryService;
     private final RoleService roleService;
     private final UuidSupplier uuidSupplier;
-    private final AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Inject
     public MetadataService(SafeDepositBoxService safeDepositBoxService,
                            CategoryService categoryService,
                            RoleService roleService,
-                           UuidSupplier uuidSupplier,
-                           AwsIamRoleArnParser awsIamRoleArnParser) {
+                           UuidSupplier uuidSupplier) {
 
         this.safeDepositBoxService = safeDepositBoxService;
         this.categoryService = categoryService;
         this.roleService = roleService;
         this.uuidSupplier = uuidSupplier;
-        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
      * Creates or Updates an SDB using saved off metadata.
-     * This method differs from SafeDepositBoxService::createSafeDepositBox and SafeDepositBoxService::updateSafeDepositBox
+     * This method differs from SafeDepositBoxService::createSafeDepositBoxV1 and SafeDepositBoxService::updateSafeDepositBoxV1
      * only in that this method sets the created by and last updated fields which are normally sourced automatically.
      * <p>
      * This is an admin function so that backed up SDB metadata can easily be restored.
@@ -83,9 +79,9 @@ public class MetadataService {
         String id = getSdbId(sdbMetadata);
         String categoryId = getCategoryId(sdbMetadata);
         Set<UserGroupPermission> userGroupPermissionSet = getUserGroupPermissionSet(sdbMetadata);
-        Set<IamRolePermission> iamRolePermissionSet = getIamRolePermissionSet(sdbMetadata);
+        Set<IamRolePermissionV2> iamRolePermissionSet = getIamRolePermissionSet(sdbMetadata);
 
-        SafeDepositBox sdb = new SafeDepositBox();
+        SafeDepositBoxV2 sdb = new SafeDepositBoxV2();
         sdb.setId(id);
         sdb.setPath(sdbMetadata.getPath());
         sdb.setCategoryId(categoryId);
@@ -107,17 +103,12 @@ public class MetadataService {
      * @param sdbMetadata the sdb metadata
      * @return IAM Role Permission Set
      */
-    private Set<IamRolePermission> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
-        Set<IamRolePermission> iamRolePermissionSet = new HashSet<>();
+    private Set<IamRolePermissionV2> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
+        Set<IamRolePermissionV2> iamRolePermissionSet = new HashSet<>();
         sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
 
-            String awsAccountId = awsIamRoleArnParser.getAccountId(iamRoleArn);
-            String awsIamRoleName = awsIamRoleArnParser.getRoleName(iamRoleArn);
-
-            iamRolePermissionSet.add(new IamRolePermission()
-                    .withAccountId(awsIamRoleArnParser.getAccountId(iamRoleArn))
-                    .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRoleArn))
-                    .withIamRoleArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, awsAccountId, awsIamRoleName))
+            iamRolePermissionSet.add(new IamRolePermissionV2()
+                    .withIamPrincipalArn(iamRoleArn)
                     .withRoleId(getRoleIdFromName(roleName))
             );
         });
@@ -213,7 +204,7 @@ public class MetadataService {
         // Collect the roles
         Map<String, String> roleIdToStringMap = roleService.getRoleIdToStringMap();
         // Collect The SDB Records
-        List<SafeDepositBox> safeDepositBoxes = safeDepositBoxService.getSafeDepositBoxes(limit, offset);
+        List<SafeDepositBoxV2> safeDepositBoxes = safeDepositBoxService.getSafeDepositBoxes(limit, offset);
 
         // for each SDB collect the user and iam permissions and add to result
         safeDepositBoxes.forEach(sdb -> {
@@ -252,13 +243,13 @@ public class MetadataService {
      * Retrieves a simplified iam permission map that is only strings so it can be transported across Cerberus environments
      */
     protected Map<String,String> getIamRolePermissionMap(Map<String, String> roleIdToStringMap,
-                                                         Set<IamRolePermission> iamPerms) {
+                                                         Set<IamRolePermissionV2> iamPerms) {
 
         Map<String, String> iamRoleMap = new HashMap<>(iamPerms.size());
         iamPerms.forEach(perm -> {
             String role = roleIdToStringMap.get(perm.getRoleId());
 
-            iamRoleMap.put(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, perm.getAccountId(), perm.getIamRoleName()), role);
+            iamRoleMap.put(perm.getIamPrincipalArn(), role);
         });
         return iamRoleMap;
     }

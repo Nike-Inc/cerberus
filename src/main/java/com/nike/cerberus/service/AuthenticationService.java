@@ -25,7 +25,6 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -92,6 +91,7 @@ public class AuthenticationService {
     private final ObjectMapper objectMapper;
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -117,7 +117,8 @@ public class AuthenticationService {
                                  final VaultPolicyService vaultPolicyService,
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
-                                 final DateTimeSupplier dateTimeSupplier) {
+                                 final DateTimeSupplier dateTimeSupplier,
+                                 final AwsIamRoleArnParser awsIamRoleArnParser) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
@@ -129,6 +130,7 @@ public class AuthenticationService {
         this.objectMapper = objectMapper;
         this.adminGroup = adminGroup;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
@@ -177,17 +179,31 @@ public class AuthenticationService {
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
 
-        final String iamRoleArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
+        final String iamPrincipalArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
                 credentials.getRoleName());
+        final String region = credentials.getRegion();
 
         final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setRoleArn(iamRoleArn);
-        iamRoleCredentialsV2.setRegion(credentials.getRegion());
+        iamRoleCredentialsV2.setIamPrincipalArn(iamPrincipalArn);
+        iamRoleCredentialsV2.setRegion(region);
 
-        return authenticate(iamRoleCredentialsV2);
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, region);
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID,awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+
+        return authenticate(iamRoleCredentialsV2, vaultAuthPrincipalMetadata);
     }
 
     public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
+
+        final String iamPrincipalArn = credentials.getIamPrincipalArn();
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+
+        return authenticate(credentials, vaultAuthPrincipalMetadata);
+    }
+
+    public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials, Map<String, String> vaultAuthPrincipalMetadata) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -198,33 +214,17 @@ public class AuthenticationService {
                         .withExceptionCause(e)
                         .withExceptionMessage(String.format(
                                 "Failed to lazily provision KMS key for %s in region: %s",
-                                credentials.getRoleArn(), credentials.getRegion()))
+                                credentials.getIamPrincipalArn(), credentials.getRegion()))
                         .build();
             }
             throw e;
         }
 
-        final String iamRoleArn = credentials.getRoleArn();
-        final Set<String> policies = buildPolicySet(iamRoleArn);
-
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, credentials.getRegion());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamRoleArn);
-        Set<String> groups = new HashSet<>();
-        groups.add("registered-iam-principals");
-
-        // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamRoleArn)) {
-            meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
-            groups.add("admin-iam-principals");
-        } else {
-             meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
-        }
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
+        final Set<String> policies = buildPolicySet(credentials.getIamPrincipalArn());
 
         final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
                 .setPolicies(policies)
-                .setMeta(meta)
+                .setMeta(vaultAuthPrincipalMetadata)
                 .setTtl(iamTokenTTL)
                 .setNoDefaultPolicy(true);
 
@@ -361,13 +361,13 @@ public class AuthenticationService {
      * @return KMS Key id
      */
     private String getKeyId(IamRoleCredentialsV2 credentials) {
-        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getRoleArn());
+        final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_INVALID)
+                    .withApiErrors(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID)
                     .withExceptionMessage(String.format("The role: %s was not configured for any SDB",
-                            credentials.getRoleArn()))
+                            credentials.getIamPrincipalArn()))
                     .build();
         }
 
@@ -376,12 +376,12 @@ public class AuthenticationService {
         final String kmsKeyId;
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getRoleArn(),
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getIamPrincipalArn(),
                     credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
         } else {
             kmsKeyId = kmsKey.get().getAwsKmsKeyId();
             String keyRegion = credentials.getRegion();
-            kmsService.validatePolicy(kmsKeyId, credentials.getRoleArn(), keyRegion);
+            kmsService.validatePolicy(kmsKeyId, credentials.getIamPrincipalArn(), keyRegion);
         }
 
         return kmsKeyId;
@@ -436,5 +436,26 @@ public class AuthenticationService {
             }
         }
         return adminRoleArnSet;
+    }
+
+    protected Map<String, String> generateCommonVaultPrincipalAuthMetadata(String iamPrincipalArn, String region) {
+
+        Map<String, String> metadata = Maps.newHashMap();
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
+
+        Set<String> groups = new HashSet<>();
+        groups.add("registered-iam-principals");
+
+        // We will allow specific ARNs access to the user portions of the API
+        if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
+            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            groups.add("admin-iam-principals");
+        } else {
+            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
+        }
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
+
+        return metadata;
     }
 }

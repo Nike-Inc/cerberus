@@ -17,7 +17,7 @@
 package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SafeDepositBox;
+import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.VaultAuthPrincipal;
@@ -43,7 +43,8 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for updating a safe deposit box.
  */
-public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void> {
+@Deprecated
+public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -52,16 +53,16 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public UpdateSafeDepositBox(final SafeDepositBoxService safeDepositBoxService) {
+    public UpdateSafeDepositBoxV1(final SafeDepositBoxService safeDepositBoxService) {
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBox> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV1> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> updateSafeDepositBox(request), longRunningTaskExecutor);
     }
 
-    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBox> request) {
+    private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV1> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
@@ -75,7 +76,7 @@ public class UpdateSafeDepositBox extends StandardEndpoint<SafeDepositBox, Void>
             log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            safeDepositBoxService.updateSafeDepositBox(request.getContent(),
+            safeDepositBoxService.updateSafeDepositBoxV1(request.getContent(),
                     vaultAuthPrincipal.getUserGroups(),
                     vaultAuthPrincipal.getName(),
                     sdbId);
