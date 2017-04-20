@@ -18,7 +18,7 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV2;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -37,7 +37,7 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
-public class AuthenticateIamRoleV2 extends StandardEndpoint<IamRoleCredentialsV2, IamRoleAuthResponse> {
+public class AuthenticateIamRoleV2 extends StandardEndpoint<IamPrincipalCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -49,11 +49,11 @@ public class AuthenticateIamRoleV2 extends StandardEndpoint<IamRoleCredentialsV2
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentialsV2> request,
+    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamPrincipalCredentials> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> {
-            IamRoleCredentialsV2 credentials = request.getContent();
+            IamPrincipalCredentials credentials = request.getContent();
             log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
                     credentials.getIamPrincipalArn(), credentials.getRegion());
 

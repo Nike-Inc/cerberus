@@ -29,7 +29,7 @@ import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit box
  */
-public class IamRolePermissionV1 {
+public class IamRolePermission {
 
     private String id;
 
@@ -68,7 +68,7 @@ public class IamRolePermissionV1 {
         this.accountId = accountId;
     }
 
-    public IamRolePermissionV1 withAccountId(String accountId) {
+    public IamRolePermission withAccountId(String accountId) {
         this.accountId = accountId;
         return this;
     }
@@ -81,7 +81,7 @@ public class IamRolePermissionV1 {
         this.iamRoleName = iamRoleName;
     }
 
-    public IamRolePermissionV1 withIamRoleName(String iamRoleName) {
+    public IamRolePermission withIamRoleName(String iamRoleName) {
         this.iamRoleName = iamRoleName;
         return this;
     }
@@ -94,7 +94,7 @@ public class IamRolePermissionV1 {
         this.roleId = roleId;
     }
 
-    public IamRolePermissionV1 withRoleId(String roleId) {
+    public IamRolePermission withRoleId(String roleId) {
         this.roleId = roleId;
         return this;
     }
@@ -136,7 +136,7 @@ public class IamRolePermissionV1 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IamRolePermissionV1 that = (IamRolePermissionV1) o;
+        IamRolePermission that = (IamRolePermission) o;
 
         if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
         return iamRoleName != null ? iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null;

@@ -43,7 +43,7 @@ redwire.http('http://127.0.0.1:9000/v2', '127.0.0.1:8080/v2');
 var express = require('express')
 var app = express()
 
-app.use(express.static(__dirname + '/../build/dashbord'))
+app.use(express.static(__dirname + '/../build/dashboard'))
 
 app.listen(8000, function () {
     console.log('express server listing on port 8000')

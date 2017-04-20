@@ -17,7 +17,6 @@
 package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.Map;
 
 public class SDBMetadata {

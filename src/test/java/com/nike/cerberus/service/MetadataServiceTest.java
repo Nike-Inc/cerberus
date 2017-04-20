@@ -17,7 +17,7 @@
 package com.nike.cerberus.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
@@ -161,9 +161,9 @@ public class MetadataServiceTest {
         userPerms.add(new UserGroupPermission().withName(grumpyBearsGroup).withRoleId(readId));
         box.setUserGroupPermissions(userPerms);
 
-        Set<IamRolePermissionV2> iamPerms = new HashSet<>();
-        iamPerms.add(new IamRolePermissionV2().withIamPrincipalArn(arn).withRoleId(readId));
-        box.setIamRolePermissions(iamPerms);
+        Set<IamPrincipalPermission> iamPerms = new HashSet<>();
+        iamPerms.add(new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(readId));
+        box.setIamPrincipalPermissions(iamPerms);
 
         when(safeDepositBoxService.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(box));
 
@@ -181,7 +181,7 @@ public class MetadataServiceTest {
 
         Map<String, String> expectedIamPermMap = new HashMap<>();
         expectedIamPermMap.put(arn, RoleRecord.ROLE_READ);
-        assertEquals("iam role perm map should match what is returned by getIamRolePermissionMap",
+        assertEquals("iam role perm map should match what is returned by getIamPrincipalPermissionMap",
                 expectedIamPermMap, data.getIamRolePermissions());
 
         Map<String, String> expectedGroupPermMap = new HashMap<>();
@@ -231,13 +231,13 @@ public class MetadataServiceTest {
         userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
         expectedSdb.setUserGroupPermissions(userPerms);
 
-        Set<IamRolePermissionV2> iamPerms = new HashSet<>();
+        Set<IamPrincipalPermission> iamPerms = new HashSet<>();
         String arn = "arn:aws:iam::1111111111:role/lambda_prod_healthcheck";
-        iamPerms.add(new IamRolePermissionV2().withIamPrincipalArn(arn).withRoleId(readId));
-        expectedSdb.setIamRolePermissions(iamPerms);
+        iamPerms.add(new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(readId));
+        expectedSdb.setIamPrincipalPermissions(iamPerms);
 
         expectedSdb.setUserGroupPermissions(userPerms);
-        expectedSdb.setIamRolePermissions(iamPerms);
+        expectedSdb.setIamPrincipalPermissions(iamPerms);
 
         verify(safeDepositBoxService, times(1)).restoreSafeDepositBox(expectedSdb, user);
     }

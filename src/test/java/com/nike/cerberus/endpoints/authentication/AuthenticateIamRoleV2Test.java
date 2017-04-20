@@ -18,7 +18,7 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV2;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -61,8 +61,8 @@ public class AuthenticateIamRoleV2Test {
     public void execute_returns_iam_role_auth_response() {
         final IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData("AUTH_DATA");
-        final IamRoleCredentialsV2 credentials = new IamRoleCredentialsV2();
-        final RequestInfo<IamRoleCredentialsV2> requestInfo = mock(RequestInfo.class);
+        final IamPrincipalCredentials credentials = new IamPrincipalCredentials();
+        final RequestInfo<IamPrincipalCredentials> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getContent()).thenReturn(credentials);
         when(authenticationService.authenticate(credentials)).thenReturn(iamRoleAuthResponse);
 

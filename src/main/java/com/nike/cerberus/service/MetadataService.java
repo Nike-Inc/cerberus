@@ -17,7 +17,7 @@
 package com.nike.cerberus.service;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
@@ -79,7 +79,7 @@ public class MetadataService {
         String id = getSdbId(sdbMetadata);
         String categoryId = getCategoryId(sdbMetadata);
         Set<UserGroupPermission> userGroupPermissionSet = getUserGroupPermissionSet(sdbMetadata);
-        Set<IamRolePermissionV2> iamRolePermissionSet = getIamRolePermissionSet(sdbMetadata);
+        Set<IamPrincipalPermission> iamPrincipalPermissionSet = getIamPrincipalPermissionSet(sdbMetadata);
 
         SafeDepositBoxV2 sdb = new SafeDepositBoxV2();
         sdb.setId(id);
@@ -93,7 +93,7 @@ public class MetadataService {
         sdb.setCreatedBy(sdbMetadata.getCreatedBy());
         sdb.setLastUpdatedBy(sdbMetadata.getLastUpdatedBy());
         sdb.setUserGroupPermissions(userGroupPermissionSet);
-        sdb.setIamRolePermissions(iamRolePermissionSet);
+        sdb.setIamPrincipalPermissions(iamPrincipalPermissionSet);
 
         safeDepositBoxService.restoreSafeDepositBox(sdb, adminUser);
     }
@@ -101,18 +101,18 @@ public class MetadataService {
     /**
      * Retrieves the IAM Role Permission Set for SDB Metadata Object.
      * @param sdbMetadata the sdb metadata
-     * @return IAM Role Permission Set
+     * @return IAM Principal Permission Set
      */
-    private Set<IamRolePermissionV2> getIamRolePermissionSet(SDBMetadata sdbMetadata) {
-        Set<IamRolePermissionV2> iamRolePermissionSet = new HashSet<>();
-        sdbMetadata.getIamRolePermissions().forEach((iamRoleArn, roleName) -> {
+    private Set<IamPrincipalPermission> getIamPrincipalPermissionSet(SDBMetadata sdbMetadata) {
+        Set<IamPrincipalPermission> iamPrincipalPermissionSet = new HashSet<>();
+        sdbMetadata.getIamRolePermissions().forEach((iamPrincipalArn, roleName) -> {
 
-            iamRolePermissionSet.add(new IamRolePermissionV2()
-                    .withIamPrincipalArn(iamRoleArn)
+            iamPrincipalPermissionSet.add(new IamPrincipalPermission()
+                    .withIamPrincipalArn(iamPrincipalArn)
                     .withRoleId(getRoleIdFromName(roleName))
             );
         });
-        return iamRolePermissionSet;
+        return iamPrincipalPermissionSet;
     }
 
     /**
@@ -219,7 +219,7 @@ public class MetadataService {
             data.setLastUpdatedTs(sdb.getLastUpdatedTs());
             data.setOwner(sdb.getOwner());
             data.setUserGroupPermissions(getUserGroupPermissionsMap(roleIdToStringMap, sdb.getUserGroupPermissions()));
-            data.setIamRolePermissions(getIamRolePermissionMap(roleIdToStringMap, sdb.getIamRolePermissions()));
+            data.setIamRolePermissions(getIamPrincipalPermissionMap(roleIdToStringMap, sdb.getIamPrincipalPermissions()));
             sdbs.add(data);
         });
 
@@ -242,16 +242,16 @@ public class MetadataService {
     /**
      * Retrieves a simplified iam permission map that is only strings so it can be transported across Cerberus environments
      */
-    protected Map<String,String> getIamRolePermissionMap(Map<String, String> roleIdToStringMap,
-                                                         Set<IamRolePermissionV2> iamPerms) {
+    protected Map<String,String> getIamPrincipalPermissionMap(Map<String, String> roleIdToStringMap,
+                                                              Set<IamPrincipalPermission> iamPerms) {
 
-        Map<String, String> iamRoleMap = new HashMap<>(iamPerms.size());
+        Map<String, String> iamPrincipalMap = new HashMap<>(iamPerms.size());
         iamPerms.forEach(perm -> {
             String role = roleIdToStringMap.get(perm.getRoleId());
 
-            iamRoleMap.put(perm.getIamPrincipalArn(), role);
+            iamPrincipalMap.put(perm.getIamPrincipalArn(), role);
         });
-        return iamRoleMap;
+        return iamPrincipalMap;
     }
 
     /**

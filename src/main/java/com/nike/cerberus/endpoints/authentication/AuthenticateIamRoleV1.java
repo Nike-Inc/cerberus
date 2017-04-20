@@ -17,7 +17,7 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV1;
+import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
@@ -38,7 +38,7 @@ import java.util.concurrent.Executor;
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
 @Deprecated
-public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1, IamRoleAuthResponse> {
+public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -50,11 +50,11 @@ public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentialsV1> request,
+    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentials> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> {
-            IamRoleCredentialsV1 credentials = request.getContent();
+            IamRoleCredentials credentials = request.getContent();
             log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
                     String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                             credentials.getAccountId(), credentials.getRoleName()), credentials.getRegion());

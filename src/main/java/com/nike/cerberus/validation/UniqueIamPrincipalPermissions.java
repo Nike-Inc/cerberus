@@ -34,10 +34,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = IamRolePermissionsValidatorV2.class)
+@Constraint(validatedBy = IamPrincipalPermissionsValidator.class)
 @Documented
-public @interface UniqueIamRolePermissionsV2 {
-    String message() default "SDB_IAM_ROLE_REPEATED";
+public @interface UniqueIamPrincipalPermissions {
+    String message() default "SDB_IAM_PRINCIPAL_REPEATED";
 
     Class<?>[] groups() default { };
 

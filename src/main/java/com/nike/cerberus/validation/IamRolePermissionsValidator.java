@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.validation;
 
-import com.nike.cerberus.domain.IamRolePermissionV1;
+import com.nike.cerberus.domain.IamRolePermission;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.ConstraintValidator;
@@ -28,14 +28,15 @@ import java.util.Set;
 /**
  * Validator class for validating that a set of IAM role permissions contain no duplicate user group names.
  */
-public class IamRolePermissionsValidatorV1
-        implements ConstraintValidator<UniqueIamRolePermissionsV1, Set<IamRolePermissionV1>> {
+@Deprecated
+public class IamRolePermissionsValidator
+        implements ConstraintValidator<UniqueIamRolePermissions, Set<IamRolePermission>> {
 
-    public void initialize(UniqueIamRolePermissionsV1 constraint) {
+    public void initialize(UniqueIamRolePermissions constraint) {
         // no-op
     }
 
-    public boolean isValid(Set<IamRolePermissionV1> iamRolePermissionSet, ConstraintValidatorContext context) {
+    public boolean isValid(Set<IamRolePermission> iamRolePermissionSet, ConstraintValidatorContext context) {
         if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
             return true;
         }
@@ -43,7 +44,7 @@ public class IamRolePermissionsValidatorV1
         boolean isValid = true;
         Set<String> iamRoles = new HashSet<>();
 
-        for (IamRolePermissionV1 iamRolePermission : iamRolePermissionSet) {
+        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
             final String key = buildKey(iamRolePermission);
             if (iamRoles.contains(key)) {
                 isValid = false;
@@ -56,7 +57,7 @@ public class IamRolePermissionsValidatorV1
         return isValid;
     }
 
-    private String buildKey(IamRolePermissionV1 iamRolePermission) {
+    private String buildKey(IamRolePermission iamRolePermission) {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH));

@@ -22,8 +22,8 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.UserGroupDao;
 import com.nike.cerberus.domain.Category;
-import com.nike.cerberus.domain.IamRolePermissionV1;
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
+import com.nike.cerberus.domain.IamRolePermission;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
@@ -78,7 +78,7 @@ public class SafeDepositBoxService {
 
     private final UserGroupPermissionService userGroupPermissionService;
 
-    private final IamRolePermissionService iamRolePermissionService;
+    private final IamPrincipalPermissionService iamPrincipalPermissionService;
 
     private final Slugger slugger;
 
@@ -95,7 +95,7 @@ public class SafeDepositBoxService {
                                  final VaultAdminClient vaultAdminClient,
                                  final VaultPolicyService vaultPolicyService,
                                  final UserGroupPermissionService userGroupPermissionService,
-                                 final IamRolePermissionService iamRolePermissionService,
+                                 final IamPrincipalPermissionService iamPrincipalPermissionService,
                                  final Slugger slugger,
                                  final DateTimeSupplier dateTimeSupplier,
                                  final AwsIamRoleArnParser awsIamRoleArnParser) {
@@ -107,7 +107,7 @@ public class SafeDepositBoxService {
         this.vaultAdminClient = vaultAdminClient;
         this.vaultPolicyService = vaultPolicyService;
         this.userGroupPermissionService = userGroupPermissionService;
-        this.iamRolePermissionService = iamRolePermissionService;
+        this.iamPrincipalPermissionService = iamPrincipalPermissionService;
         this.slugger = slugger;
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
@@ -198,7 +198,7 @@ public class SafeDepositBoxService {
             owner = possibleOwner.get();
         }
 
-        final Set<IamRolePermissionV2> iamRolePermissions = iamRolePermissionService.getIamRolePermissions(id);
+        final Set<IamPrincipalPermission> iamRolePermissions = iamPrincipalPermissionService.getIamPrincipalPermissions(id);
 
 
         SafeDepositBoxV2 safeDepositBox = new SafeDepositBoxV2();
@@ -213,7 +213,7 @@ public class SafeDepositBoxService {
         safeDepositBox.setLastUpdatedTs(safeDepositBoxRecord.getLastUpdatedTs());
         safeDepositBox.setOwner(owner);
         safeDepositBox.setUserGroupPermissions(userGroupPermissions);
-        safeDepositBox.setIamRolePermissions(iamRolePermissions);
+        safeDepositBox.setIamPrincipalPermissions(iamRolePermissions);
 
         return safeDepositBox;
     }
@@ -249,7 +249,7 @@ public class SafeDepositBoxService {
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
         addOwnerPermission(userGroupPermissionSet, safeDepositBox.getOwner());
 
-        final Set<IamRolePermissionV2> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
+        final Set<IamPrincipalPermission> iamRolePermissionSet = safeDepositBox.getIamPrincipalPermissions();
 
         final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
 
@@ -267,7 +267,7 @@ public class SafeDepositBoxService {
                 user,
                 now);
 
-        iamRolePermissionService.grantIamRolePermissions(
+        iamPrincipalPermissionService.grantIamPrincipalPermissions(
                 boxRecordToStore.getId(),
                 iamRolePermissionSet,
                 user,
@@ -320,7 +320,7 @@ public class SafeDepositBoxService {
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
-        final Set<IamRolePermissionV2> iamRolePermissionSet = safeDepositBox.getIamRolePermissions();
+        final Set<IamPrincipalPermission> iamRolePermissionSet = safeDepositBox.getIamPrincipalPermissions();
 
         if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -328,7 +328,7 @@ public class SafeDepositBoxService {
 
         updateOwner(currentBox.get().getId(), safeDepositBox.getOwner(), user, now);
         modifyUserGroupPermissions(currentBox.get(), userGroupPermissionSet, user, now);
-        modifyIamRolePermissions(currentBox.get(), iamRolePermissionSet, user, now);
+        modifyIamPrincipalPermissions(currentBox.get(), iamRolePermissionSet, user, now);
 
         Optional<SafeDepositBoxV2> updatedSafeDepositBox = getAssociatedSafeDepositBoxV2(groups, id);
         if (updatedSafeDepositBox.isPresent()) {
@@ -359,7 +359,7 @@ public class SafeDepositBoxService {
         assertIsOwner(groups, box.get());
 
         // 1. Remove permissions and metadata from database.
-        iamRolePermissionService.deleteIamRolePermissions(id);
+        iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
         userGroupPermissionService.deleteUserGroupPermissions(id);
         safeDepositBoxDao.deleteSafeDepositBox(id);
 
@@ -560,31 +560,31 @@ public class SafeDepositBoxService {
     /**
      * Sorts out the set of permissions into, grant, update and revoke sets.  After that it applies those changes.
      */
-    protected void modifyIamRolePermissions(final SafeDepositBoxV2 currentBox,
-                                          final Set<IamRolePermissionV2> iamRolePermissionSet,
-                                          final String user,
-                                          final OffsetDateTime dateTime) {
-        Set<IamRolePermissionV2> toAddSet = Sets.newHashSet();
-        Set<IamRolePermissionV2> toUpdateSet = Sets.newHashSet();
-        Set<IamRolePermissionV2> toDeleteSet = Sets.newHashSet();
+    protected void modifyIamPrincipalPermissions(final SafeDepositBoxV2 currentBox,
+                                                 final Set<IamPrincipalPermission> iamPrincipalPermissionSet,
+                                                 final String user,
+                                                 final OffsetDateTime dateTime) {
+        Set<IamPrincipalPermission> toAddSet = Sets.newHashSet();
+        Set<IamPrincipalPermission> toUpdateSet = Sets.newHashSet();
+        Set<IamPrincipalPermission> toDeleteSet = Sets.newHashSet();
 
-        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
-            if (currentBox.getIamRolePermissions().contains(iamRolePermission)) {
+        for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
+            if (currentBox.getIamPrincipalPermissions().contains(iamRolePermission)) {
                 toUpdateSet.add(iamRolePermission);
             } else {
                 toAddSet.add(iamRolePermission);
             }
         }
 
-        toDeleteSet.addAll(currentBox.getIamRolePermissions().stream()
-                .filter(iamRolePermission -> !iamRolePermissionSet.contains(iamRolePermission))
+        toDeleteSet.addAll(currentBox.getIamPrincipalPermissions().stream()
+                .filter(iamRolePermission -> !iamPrincipalPermissionSet.contains(iamRolePermission))
                 .collect(Collectors.toList()));
 
         final String safeDepositBoxId = currentBox.getId();
 
-        iamRolePermissionService.grantIamRolePermissions(safeDepositBoxId, toAddSet, user, dateTime);
-        iamRolePermissionService.updateIamRolePermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
-        iamRolePermissionService.revokeIamRolePermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
+        iamPrincipalPermissionService.grantIamPrincipalPermissions(safeDepositBoxId, toAddSet, user, dateTime);
+        iamPrincipalPermissionService.updateIamPrincipalPermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
+        iamPrincipalPermissionService.revokeIamPrincipalPermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
     }
 
     /**
@@ -643,8 +643,8 @@ public class SafeDepositBoxService {
         safeDepositBoxV1.setLastUpdatedTs(safeDepositBoxV2.getLastUpdatedTs());
         safeDepositBoxV1.setOwner(safeDepositBoxV2.getOwner());
         safeDepositBoxV1.setUserGroupPermissions(safeDepositBoxV2.getUserGroupPermissions());
-        safeDepositBoxV1.setIamRolePermissions(safeDepositBoxV2.getIamRolePermissions().stream()
-                .map(iamRolePermission -> new IamRolePermissionV1()
+        safeDepositBoxV1.setIamRolePermissions(safeDepositBoxV2.getIamPrincipalPermissions().stream()
+                .map(iamRolePermission -> new IamRolePermission()
                         .withAccountId(awsIamRoleArnParser.getAccountId(iamRolePermission.getIamPrincipalArn()))
                         .withIamRoleName(awsIamRoleArnParser.getRoleName(iamRolePermission.getIamPrincipalArn()))
                         .withRoleId(iamRolePermission.getRoleId()))
@@ -672,8 +672,8 @@ public class SafeDepositBoxService {
         safeDepositBoxV2.setLastUpdatedTs(safeDepositBoxV1.getLastUpdatedTs());
         safeDepositBoxV2.setOwner(safeDepositBoxV1.getOwner());
         safeDepositBoxV2.setUserGroupPermissions(safeDepositBoxV1.getUserGroupPermissions());
-        safeDepositBoxV2.setIamRolePermissions(safeDepositBoxV1.getIamRolePermissions().stream()
-                .map(iamRolePermission -> new IamRolePermissionV2()
+        safeDepositBoxV2.setIamPrincipalPermissions(safeDepositBoxV1.getIamRolePermissions().stream()
+                .map(iamRolePermission -> new IamPrincipalPermission()
                         .withIamPrincipalArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                                 iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName()))
                         .withRoleId(iamRolePermission.getRoleId()))
@@ -748,7 +748,7 @@ public class SafeDepositBoxService {
             SafeDepositBoxV2 existingBox = getSDBFromRecordV2(existingBoxRecord.get());
             updateOwner(safeDepositBox.getId(), safeDepositBox.getOwner(), adminUser, now);
             modifyUserGroupPermissions(existingBox, safeDepositBox.getUserGroupPermissions(), adminUser, now);
-            modifyIamRolePermissions(existingBox, safeDepositBox.getIamRolePermissions(), adminUser, now);
+            modifyIamPrincipalPermissions(existingBox, safeDepositBox.getIamPrincipalPermissions(), adminUser, now);
         } else {
             safeDepositBoxDao.createSafeDepositBox(boxToStore);
             addOwnerPermission(safeDepositBox.getUserGroupPermissions(), safeDepositBox.getOwner());
@@ -758,9 +758,9 @@ public class SafeDepositBoxService {
                     adminUser,
                     now);
 
-            iamRolePermissionService.grantIamRolePermissions(
+            iamPrincipalPermissionService.grantIamPrincipalPermissions(
                     safeDepositBox.getId(),
-                    safeDepositBox.getIamRolePermissions(),
+                    safeDepositBox.getIamPrincipalPermissions(),
                     adminUser,
                     now);
 

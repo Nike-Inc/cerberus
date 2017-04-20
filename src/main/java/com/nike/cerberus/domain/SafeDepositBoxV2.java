@@ -17,7 +17,7 @@
 
 package com.nike.cerberus.domain;
 
-import com.nike.cerberus.validation.UniqueIamRolePermissionsV2;
+import com.nike.cerberus.validation.UniqueIamPrincipalPermissions;
 import com.nike.cerberus.validation.UniqueOwner;
 import com.nike.cerberus.validation.UniqueUserGroupPermissions;
 import com.nike.cerberus.validation.group.Updatable;
@@ -67,8 +67,8 @@ public class SafeDepositBoxV2 implements SafeDepositBox {
     private Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
 
     @Valid
-    @UniqueIamRolePermissionsV2(groups = {Default.class, Updatable.class})
-    private Set<IamRolePermissionV2> iamRolePermissions = new HashSet<>();
+    @UniqueIamPrincipalPermissions(groups = {Default.class, Updatable.class})
+    private Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
 
     public String getId() {
         return id;
@@ -158,12 +158,12 @@ public class SafeDepositBoxV2 implements SafeDepositBox {
         this.userGroupPermissions = userGroupPermissions;
     }
 
-    public Set<IamRolePermissionV2> getIamRolePermissions() {
-        return iamRolePermissions;
+    public Set<IamPrincipalPermission> getIamPrincipalPermissions() {
+        return iamPrincipalPermissions;
     }
 
-    public void setIamRolePermissions(Set<IamRolePermissionV2> iamRolePermissions) {
-        this.iamRolePermissions = iamRolePermissions;
+    public void setIamPrincipalPermissions(Set<IamPrincipalPermission> iamPrincipalPermissions) {
+        this.iamPrincipalPermissions = iamPrincipalPermissions;
     }
 
     @Override
@@ -187,7 +187,7 @@ public class SafeDepositBoxV2 implements SafeDepositBox {
         if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
         if (userGroupPermissions != null ? !userGroupPermissions.equals(that.userGroupPermissions) : that.userGroupPermissions != null)
             return false;
-        return iamRolePermissions != null ? iamRolePermissions.equals(that.iamRolePermissions) : that.iamRolePermissions == null;
+        return iamPrincipalPermissions != null ? iamPrincipalPermissions.equals(that.iamPrincipalPermissions) : that.iamPrincipalPermissions == null;
 
     }
 
@@ -204,7 +204,7 @@ public class SafeDepositBoxV2 implements SafeDepositBox {
         result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
         result = 31 * result + (owner != null ? owner.hashCode() : 0);
         result = 31 * result + (userGroupPermissions != null ? userGroupPermissions.hashCode() : 0);
-        result = 31 * result + (iamRolePermissions != null ? iamRolePermissions.hashCode() : 0);
+        result = 31 * result + (iamPrincipalPermissions != null ? iamPrincipalPermissions.hashCode() : 0);
         return result;
     }
 }
