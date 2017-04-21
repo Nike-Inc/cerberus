@@ -25,12 +25,11 @@ import javax.validation.groups.Default;
 import java.time.OffsetDateTime;
 
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX;
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_REGEX;
 
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit box
  */
-public class IamRolePermissionV2 {
+public class IamPrincipalPermission {
 
     private String id;
 
@@ -64,7 +63,7 @@ public class IamRolePermissionV2 {
         this.roleId = roleId;
     }
 
-    public IamRolePermissionV2 withRoleId(String roleId) {
+    public IamPrincipalPermission withRoleId(String roleId) {
         this.roleId = roleId;
         return this;
     }
@@ -77,7 +76,7 @@ public class IamRolePermissionV2 {
         this.iamPrincipalArn = iamPrincipalArn;
     }
 
-    public IamRolePermissionV2 withIamPrincipalArn(String iamRoleArn) {
+    public IamPrincipalPermission withIamPrincipalArn(String iamRoleArn) {
         this.iamPrincipalArn = iamRoleArn;
         return this;
     }
@@ -119,7 +118,7 @@ public class IamRolePermissionV2 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IamRolePermissionV2 that = (IamRolePermissionV2) o;
+        IamPrincipalPermission that = (IamPrincipalPermission) o;
 
         return iamPrincipalArn != null ? iamPrincipalArn.equals(that.iamPrincipalArn) : that.iamPrincipalArn == null;
 

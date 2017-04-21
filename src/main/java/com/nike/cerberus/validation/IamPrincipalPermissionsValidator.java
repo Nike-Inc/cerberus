@@ -17,7 +17,7 @@
 
 package com.nike.cerberus.validation;
 
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.ConstraintValidator;
@@ -29,14 +29,14 @@ import java.util.Set;
 /**
  * Validator class for validating that a set of IAM role permissions contain no duplicate user group names.
  */
-public class IamRolePermissionsValidatorV2
-        implements ConstraintValidator<UniqueIamRolePermissionsV2, Set<IamRolePermissionV2>> {
+public class IamPrincipalPermissionsValidator
+        implements ConstraintValidator<UniqueIamPrincipalPermissions, Set<IamPrincipalPermission>> {
 
-    public void initialize(UniqueIamRolePermissionsV2 constraint) {
+    public void initialize(UniqueIamPrincipalPermissions constraint) {
         // no-op
     }
 
-    public boolean isValid(Set<IamRolePermissionV2> iamRolePermissionSet, ConstraintValidatorContext context) {
+    public boolean isValid(Set<IamPrincipalPermission> iamRolePermissionSet, ConstraintValidatorContext context) {
         if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
             return true;
         }
@@ -44,7 +44,7 @@ public class IamRolePermissionsValidatorV2
         boolean isValid = true;
         Set<String> iamRoles = new HashSet<>();
 
-        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
+        for (IamPrincipalPermission iamRolePermission : iamRolePermissionSet) {
             final String key = buildKey(iamRolePermission);
             if (iamRoles.contains(key)) {
                 isValid = false;
@@ -57,7 +57,7 @@ public class IamRolePermissionsValidatorV2
         return isValid;
     }
 
-    private String buildKey(IamRolePermissionV2 iamRolePermission) {
+    private String buildKey(IamPrincipalPermission iamRolePermission) {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getIamPrincipalArn(), Locale.ENGLISH));

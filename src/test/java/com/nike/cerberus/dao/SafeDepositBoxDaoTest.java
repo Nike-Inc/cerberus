@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SafeDepositBoxV1DaoTest {
+public class SafeDepositBoxDaoTest {
 
     private final String safeDepositBoxId = "SDB_ID";
 
@@ -60,7 +60,7 @@ public class SafeDepositBoxV1DaoTest {
 
     private final Set<String> userGroupSet = Sets.newHashSet(userGroup);
 
-    private final String awsIamPrincipalArn = "AWS_IAM_PRINCIPAL_ARN";
+    private final String awsIamRoleArn = "AWS_IAM_ROLE_ARN";
 
     private final SafeDepositBoxRecord safeDepositBoxRecord = new SafeDepositBoxRecord()
             .setId(safeDepositBoxId)
@@ -105,11 +105,11 @@ public class SafeDepositBoxV1DaoTest {
 
     @Test
     public void getIamRoleAssociatedSafeDepositBoxRoles_returns_list_of_role_records() {
-        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamPrincipalArn))
+        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn))
                 .thenReturn(safeDepositBoxRoleRecordList);
 
         List<SafeDepositBoxRoleRecord> actual =
-                subject.getIamRoleAssociatedSafeDepositBoxRoles(awsIamPrincipalArn);
+                subject.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn);
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).hasSameElementsAs(safeDepositBoxRoleRecordList);

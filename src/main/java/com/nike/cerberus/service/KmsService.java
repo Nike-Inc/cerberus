@@ -73,7 +73,7 @@ public class KmsService {
      * Provisions a new KMS CMK in the specified region to be used by the specified role.
      *
      * @param iamRoleId        The IAM role that this CMK will be associated with
-     * @param iamRoleArn       The AWS IAM role ARN
+     * @param iamPrincipalArn  The AWS IAM principal ARN
      * @param awsRegion        The region to provision the key in
      * @param user             The user requesting it
      * @param dateTime         The date of creation
@@ -81,29 +81,29 @@ public class KmsService {
      */
     @Transactional
     public String provisionKmsKey(final String iamRoleId,
-                                  final String iamRoleArn,
+                                  final String iamPrincipalArn,
                                   final String awsRegion,
                                   final String user,
                                   final OffsetDateTime dateTime) {
         final AWSKMSClient kmsClient = kmsClientFactory.getClient(awsRegion);
 
-        final String awsIamRoleKmsKeyId = uuidSupplier.get();
+        final String awsIamPrincipalKmsKeyId = uuidSupplier.get();
 
         final CreateKeyRequest request = new CreateKeyRequest();
         request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
         request.setDescription("Key used by Cerberus for IAM role authentication.");
-        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamRoleArn));
+        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn));
         final CreateKeyResult result = kmsClient.createKey(request);
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(getAliasName(awsIamRoleKmsKeyId));
+        aliasRequest.setAliasName(getAliasName(awsIamPrincipalKmsKeyId));
         KeyMetadata keyMetadata = result.getKeyMetadata();
         String arn = keyMetadata.getArn();
         aliasRequest.setTargetKeyId(arn);
         kmsClient.createAlias(aliasRequest);
 
         final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-        awsIamRoleKmsKeyRecord.setId(awsIamRoleKmsKeyId);
+        awsIamRoleKmsKeyRecord.setId(awsIamPrincipalKmsKeyId);
         awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
         awsIamRoleKmsKeyRecord.setAwsKmsKeyId(result.getKeyMetadata().getArn());
         awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
@@ -135,10 +135,10 @@ public class KmsService {
      * or recreate the policy.
      *
      * @param keyId - The CMK Id to validate the policies on.
-     * @param iamRoleArn - The Role ARN that should have decrypt permission
+     * @param iamPrincipalArn - The principal ARN that should have decrypt permission
      * @param kmsCMKRegion - The region that the key was provisioned for
      */
-    public void validatePolicy(String keyId, String iamRoleArn, String kmsCMKRegion) {
+    public void validatePolicy(String keyId, String iamPrincipalArn, String kmsCMKRegion) {
         AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
         GetKeyPolicyResult policyResult = null;
         try {
@@ -149,14 +149,14 @@ public class KmsService {
                     .withExceptionCause(e)
                     .withExceptionMessage(
                             String.format("Failed to validate KMS key policy for keyId: " +
-                                    "%s for IAM role: %s in region: %s", keyId, iamRoleArn, kmsCMKRegion))
+                                    "%s for IAM principal: %s in region: %s", keyId, iamPrincipalArn, kmsCMKRegion))
                     .build();
         }
 
-        if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamRoleArn)) {
-            logger.info("The KMS key: {} generated for IAM Role: {} contained an invalid policy, regenerating",
-                    keyId, iamRoleArn);
-            String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamRoleArn);
+        if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamPrincipalArn)) {
+            logger.info("The KMS key: {} generated for IAM principal: {} contained an invalid policy, regenerating",
+                    keyId, iamPrincipalArn);
+            String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
             kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
                     .withKeyId(keyId)
                     .withPolicyName("default")

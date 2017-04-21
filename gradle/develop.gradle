@@ -18,7 +18,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v0.11.0'
+def dashboardRelease = 'v0.12.0'
 def vaultVersion = "0.6.4"
 
 buildscript {
@@ -83,7 +83,7 @@ task extractDashboard(type: Copy, dependsOn: downloadDashboard) {
     description 'Extracts the dashboard archive into the build dir for the express server to service when running the dashboard / proxy'
 
     from tarTree("${project.buildDir.absolutePath}${File.separator}cerberus-dashboard.tar.gz")
-    File dashboardDir = new File("${project.buildDir.absolutePath}${File.separator}dashbord")
+    File dashboardDir = new File("${project.buildDir.absolutePath}${File.separator}dashboard")
     dashboardDir.mkdirs()
     into dashboardDir
 }

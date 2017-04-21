@@ -19,12 +19,11 @@ package com.nike.cerberus.service;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.AwsIamRoleDao;
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import org.mybatis.guice.transactional.Transactional;
 
@@ -39,7 +38,7 @@ import java.util.Set;
  * Provides operations for granting, updating and revoking IAM role permissions.
  */
 @Singleton
-public class IamRolePermissionService {
+public class IamPrincipalPermissionService {
 
     private final UuidSupplier uuidSupplier;
 
@@ -47,34 +46,30 @@ public class IamRolePermissionService {
 
     private final AwsIamRoleDao awsIamRoleDao;
 
-    private final AwsIamRoleArnParser awsIamRoleArnParser;
-
     @Inject
-    public IamRolePermissionService(final UuidSupplier uuidSupplier,
-                                    final RoleService roleService,
-                                    final AwsIamRoleDao awsIamRoleDao,
-                                    final AwsIamRoleArnParser awsIamRoleArnParser) {
+    public IamPrincipalPermissionService(final UuidSupplier uuidSupplier,
+                                         final RoleService roleService,
+                                         final AwsIamRoleDao awsIamRoleDao) {
         this.uuidSupplier = uuidSupplier;
         this.roleService = roleService;
         this.awsIamRoleDao = awsIamRoleDao;
-        this.awsIamRoleArnParser = awsIamRoleArnParser;
     }
 
     /**
      * Grants a set of IAM role permissions.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermissionSet The set of IAM role permissions
+     * @param iamPrincipalPermissionSet The set of IAM principal permissions
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void grantIamRolePermissions(final String safeDepositBoxId,
-                                        final Set<IamRolePermissionV2> iamRolePermissionSet,
-                                        final String user,
-                                        final OffsetDateTime dateTime) {
-        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
-            grantIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
+    public void grantIamPrincipalPermissions(final String safeDepositBoxId,
+                                             final Set<IamPrincipalPermission> iamPrincipalPermissionSet,
+                                             final String user,
+                                             final OffsetDateTime dateTime) {
+        for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
+            grantIamPrincipalPermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
 
@@ -82,19 +77,19 @@ public class IamRolePermissionService {
      * Grants a IAM role permission.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermission The IAM role permission
+     * @param iamPrincipalPermission The IAM principal permission
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void grantIamRolePermission(final String safeDepositBoxId,
-                                       final IamRolePermissionV2 iamRolePermission,
-                                       final String user,
-                                       final OffsetDateTime dateTime) {
+    public void grantIamPrincipalPermission(final String safeDepositBoxId,
+                                            final IamPrincipalPermission iamPrincipalPermission,
+                                            final String user,
+                                            final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> possibleIamRoleRecord =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
+                awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 
-        final Optional<Role> role = roleService.getRoleById(iamRolePermission.getRoleId());
+        final Optional<Role> role = roleService.getRoleById(iamPrincipalPermission.getRoleId());
 
         if (!role.isPresent()) {
             throw ApiException.newBuilder()
@@ -109,7 +104,7 @@ public class IamRolePermissionService {
             iamRoleId = uuidSupplier.get();
             AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
             awsIamRoleRecord.setId(iamRoleId);
-            awsIamRoleRecord.setAwsIamRoleArn(iamRolePermission.getIamPrincipalArn());
+            awsIamRoleRecord.setAwsIamRoleArn(iamPrincipalPermission.getIamPrincipalArn());
             awsIamRoleRecord.setCreatedBy(user);
             awsIamRoleRecord.setLastUpdatedBy(user);
             awsIamRoleRecord.setCreatedTs(dateTime);
@@ -120,7 +115,7 @@ public class IamRolePermissionService {
         AwsIamRolePermissionRecord permissionRecord = new AwsIamRolePermissionRecord();
         permissionRecord.setId(uuidSupplier.get());
         permissionRecord.setAwsIamRoleId(iamRoleId);
-        permissionRecord.setRoleId(iamRolePermission.getRoleId());
+        permissionRecord.setRoleId(iamPrincipalPermission.getRoleId());
         permissionRecord.setSdboxId(safeDepositBoxId);
         permissionRecord.setCreatedBy(user);
         permissionRecord.setLastUpdatedBy(user);
@@ -133,17 +128,17 @@ public class IamRolePermissionService {
      * Updates a set of IAM role permissions.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermissionSet The set of IAM role permissions
+     * @param iamPrincipalPermissionSet The set of IAM principal permissions
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void updateIamRolePermissions(final String safeDepositBoxId,
-                                         final Set<IamRolePermissionV2> iamRolePermissionSet,
-                                         final String user,
-                                         final OffsetDateTime dateTime) {
-        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
-            updateIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
+    public void updateIamPrincipalPermissions(final String safeDepositBoxId,
+                                              final Set<IamPrincipalPermission> iamPrincipalPermissionSet,
+                                              final String user,
+                                              final OffsetDateTime dateTime) {
+        for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
+            updateIamPrincipalPermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
 
@@ -151,17 +146,17 @@ public class IamRolePermissionService {
      * Updates a IAM role permission.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermission The IAM role permission
+     * @param iamPrincipalPermission The IAM principal permission
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void updateIamRolePermission(final String safeDepositBoxId,
-                                        final IamRolePermissionV2 iamRolePermission,
-                                        final String user,
-                                        final OffsetDateTime dateTime) {
+    public void updateIamPrincipalPermission(final String safeDepositBoxId,
+                                             final IamPrincipalPermission iamPrincipalPermission,
+                                             final String user,
+                                             final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
+                awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -173,7 +168,7 @@ public class IamRolePermissionService {
         AwsIamRolePermissionRecord record = new AwsIamRolePermissionRecord();
         record.setSdboxId(safeDepositBoxId);
         record.setAwsIamRoleId(iamRole.get().getId());
-        record.setRoleId(iamRolePermission.getRoleId());
+        record.setRoleId(iamPrincipalPermission.getRoleId());
         record.setLastUpdatedBy(user);
         record.setLastUpdatedTs(dateTime);
         awsIamRoleDao.updateIamRolePermission(record);
@@ -183,17 +178,17 @@ public class IamRolePermissionService {
      * Revokes a set of IAM role permissions.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermissionSet The set of IAM role permissions
+     * @param iamPrincipalPermissionSet The set of IAM principal permissions
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void revokeIamRolePermissions(final String safeDepositBoxId,
-                                         final Set<IamRolePermissionV2> iamRolePermissionSet,
-                                         final String user,
-                                         final OffsetDateTime dateTime) {
-        for (IamRolePermissionV2 iamRolePermission : iamRolePermissionSet) {
-            revokeIamRolePermission(safeDepositBoxId, iamRolePermission, user, dateTime);
+    public void revokeIamPrincipalPermissions(final String safeDepositBoxId,
+                                              final Set<IamPrincipalPermission> iamPrincipalPermissionSet,
+                                              final String user,
+                                              final OffsetDateTime dateTime) {
+        for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
+            revokeIamPrincipalPermission(safeDepositBoxId, iamRolePermission, user, dateTime);
         }
     }
 
@@ -201,17 +196,17 @@ public class IamRolePermissionService {
      * Revokes a IAM role permission.
      *
      * @param safeDepositBoxId The safe deposit box id
-     * @param iamRolePermission The IAM role permission
+     * @param iamPrincipalPermission The IAM principal permission
      * @param user The user making the changes
      * @param dateTime The time of the changes
      */
     @Transactional
-    public void revokeIamRolePermission(final String safeDepositBoxId,
-                                        final IamRolePermissionV2 iamRolePermission,
-                                        final String user,
-                                        final OffsetDateTime dateTime) {
+    public void revokeIamPrincipalPermission(final String safeDepositBoxId,
+                                             final IamPrincipalPermission iamPrincipalPermission,
+                                             final String user,
+                                             final OffsetDateTime dateTime) {
         final Optional<AwsIamRoleRecord> iamRole =
-                awsIamRoleDao.getIamRole(iamRolePermission.getIamPrincipalArn());
+                awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
             throw ApiException.newBuilder()
@@ -223,15 +218,15 @@ public class IamRolePermissionService {
         awsIamRoleDao.deleteIamRolePermission(safeDepositBoxId, iamRole.get().getId());
     }
 
-    public Set<IamRolePermissionV2> getIamRolePermissions(final String safeDepositBoxId) {
-        final Set<IamRolePermissionV2> iamRolePermissionSet = Sets.newHashSet();
+    public Set<IamPrincipalPermission> getIamPrincipalPermissions(final String safeDepositBoxId) {
+        final Set<IamPrincipalPermission> iamPrincipalPermissionSet = Sets.newHashSet();
         final List<AwsIamRolePermissionRecord> permissionRecords = awsIamRoleDao.getIamRolePermissions(safeDepositBoxId);
 
         permissionRecords.forEach(r -> {
             final Optional<AwsIamRoleRecord> iamRoleRecord = awsIamRoleDao.getIamRoleById(r.getAwsIamRoleId());
 
             if (iamRoleRecord.isPresent()) {
-                final IamRolePermissionV2 permission = new IamRolePermissionV2();
+                final IamPrincipalPermission permission = new IamPrincipalPermission();
                 permission.setId(r.getId());
                 permission.setIamPrincipalArn(iamRoleRecord.get().getAwsIamRoleArn());
                 permission.setRoleId(r.getRoleId());
@@ -239,15 +234,15 @@ public class IamRolePermissionService {
                 permission.setLastUpdatedBy(r.getLastUpdatedBy());
                 permission.setCreatedTs(r.getCreatedTs());
                 permission.setLastUpdatedTs(r.getLastUpdatedTs());
-                iamRolePermissionSet.add(permission);
+                iamPrincipalPermissionSet.add(permission);
             }
         });
 
-        return iamRolePermissionSet;
+        return iamPrincipalPermissionSet;
     }
 
     @Transactional
-    public void deleteIamRolePermissions(final String safeDepositBoxId) {
+    public void deleteIamPrincipalPermissions(final String safeDepositBoxId) {
         awsIamRoleDao.deleteIamRolePermissions(safeDepositBoxId);
     }
 }

@@ -24,8 +24,8 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRoleV1;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRoleV2;
+import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
+import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
 import com.nike.cerberus.endpoints.authentication.MfaCheck;
 import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
@@ -169,8 +169,8 @@ public class CmsGuiceModule extends AbstractModule {
             AuthenticateUser authenticateUser,
             MfaCheck mfaCheck,
             RefreshUserToken refreshUserToken,
-            AuthenticateIamRoleV1 authenticateIamRole,
-            AuthenticateIamRoleV2 authenticateIamRoleV2,
+            AuthenticateIamRole authenticateIamRole,
+            AuthenticateIamPrincipal authenticateIamPrincipal,
             RevokeToken revokeToken,
             GetAllRoles getAllRoles,
             GetRole getRole,
@@ -189,7 +189,7 @@ public class CmsGuiceModule extends AbstractModule {
                 healthCheckEndpoint,
                 // Cerberus endpoints
                 getAllCategories, getCategory, createCategory, deleteCategory,
-                authenticateUser, authenticateIamRoleV2, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
+                authenticateUser, authenticateIamPrincipal, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
@@ -286,8 +286,8 @@ public class CmsGuiceModule extends AbstractModule {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
                 || i instanceof AuthenticateUser
                 || i instanceof MfaCheck
-                || i instanceof AuthenticateIamRoleV1
-                || i instanceof AuthenticateIamRoleV2)).collect(Collectors.toList());
+                || i instanceof AuthenticateIamRole
+                || i instanceof AuthenticateIamPrincipal)).collect(Collectors.toList());
     }
 
     @Provides

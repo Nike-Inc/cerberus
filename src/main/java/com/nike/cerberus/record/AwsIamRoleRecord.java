@@ -26,12 +26,6 @@ public class AwsIamRoleRecord {
 
     private String id;
 
-    // TODO: remove
-    private String awsAccountId;
-
-    // TODO: remove
-    private String awsIamRoleName;
-
     private String createdBy;
 
     private String lastUpdatedBy;
@@ -48,24 +42,6 @@ public class AwsIamRoleRecord {
 
     public AwsIamRoleRecord setId(String id) {
         this.id = id;
-        return this;
-    }
-
-    public String getAwsAccountId() {
-        return awsAccountId;
-    }
-
-    public AwsIamRoleRecord setAwsAccountId(String awsAccountId) {
-        this.awsAccountId = awsAccountId;
-        return this;
-    }
-
-    public String getAwsIamRoleName() {
-        return awsIamRoleName;
-    }
-
-    public AwsIamRoleRecord setAwsIamRoleName(String awsIamRoleName) {
-        this.awsIamRoleName = awsIamRoleName;
         return this;
     }
 
@@ -120,16 +96,15 @@ public class AwsIamRoleRecord {
         if (o == null || getClass() != o.getClass()) return false;
         AwsIamRoleRecord that = (AwsIamRoleRecord) o;
         return Objects.equals(id, that.id) &&
-                Objects.equals(awsAccountId, that.awsAccountId) &&
-                Objects.equals(awsIamRoleName, that.awsIamRoleName) &&
                 Objects.equals(createdBy, that.createdBy) &&
                 Objects.equals(lastUpdatedBy, that.lastUpdatedBy) &&
                 Objects.equals(createdTs, that.createdTs) &&
-                Objects.equals(lastUpdatedTs, that.lastUpdatedTs);
+                Objects.equals(lastUpdatedTs, that.lastUpdatedTs) &&
+                Objects.equals(awsIamRoleArn, that.awsIamRoleArn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, awsAccountId, awsIamRoleName, createdBy, lastUpdatedBy, createdTs, lastUpdatedTs);
+        return Objects.hash(id, createdBy, lastUpdatedBy, createdTs, lastUpdatedTs);
     }
 }

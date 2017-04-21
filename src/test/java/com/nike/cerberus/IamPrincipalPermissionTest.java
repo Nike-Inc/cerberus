@@ -17,7 +17,7 @@
 
 package com.nike.cerberus;
 
-import com.nike.cerberus.domain.IamRolePermissionV2;
+import com.nike.cerberus.domain.IamPrincipalPermission;
 import org.junit.Test;
 
 import javax.validation.Validation;
@@ -27,41 +27,41 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the IamRolePermissionV2 class
+ * Tests the IamPrincipalPermission class
  */
-public class IamRolePermissionV2Test {
+public class IamPrincipalPermissionTest {
 
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
-    public void test_that_IamRolePermissionV2_can_be_constructed_with_a_user_iam_principal_arn() {
+    public void test_that_IamPrincipalPermission_can_be_constructed_with_a_user_iam_principal_arn() {
 
         assertTrue(validator.validate(
-                new IamRolePermissionV2().withIamPrincipalArn("arn:aws:iam::123456789012:user/Bob").withRoleId("role id")).isEmpty());
+                new IamPrincipalPermission().withIamPrincipalArn("arn:aws:iam::123456789012:user/Bob").withRoleId("role id")).isEmpty());
 
     }
 
     @Test
-    public void test_that_IamRolePermissionV2_fails_with_invalid_iam_principal_arn() {
+    public void test_that_IamPrincipalPermission_fails_with_invalid_iam_principal_arn() {
 
         assertFalse(validator.validate(
-                new IamRolePermissionV2().withIamPrincipalArn("arn:aws:foo::123456789012:user/Bob").withRoleId("role id")).isEmpty());
+                new IamPrincipalPermission().withIamPrincipalArn("arn:aws:foo::123456789012:user/Bob").withRoleId("role id")).isEmpty());
 
     }
 
     @Test
-    public void test_that_IamRolePermissionV2_can_be_constructed_with_a_federated_user_iam_principal_arn() {
+    public void test_that_IamPrincipalPermission_can_be_constructed_with_a_federated_user_iam_principal_arn() {
 
         assertTrue(validator.validate(
-                new IamRolePermissionV2().withIamPrincipalArn("arn:aws:sts::123456789012:federated-user/Bob").withRoleId("role id")).isEmpty());
+                new IamPrincipalPermission().withIamPrincipalArn("arn:aws:sts::123456789012:federated-user/Bob").withRoleId("role id")).isEmpty());
 
     }
 
     @Test
-    public void test_that_IamRolePermissionV2_can_be_constructed_with_a_assumed_role_iam_principal_arn() {
+    public void test_that_IamPrincipalPermission_can_be_constructed_with_a_assumed_role_iam_principal_arn() {
 
         assertTrue(validator.validate(
-                new IamRolePermissionV2().withIamPrincipalArn("arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary").withRoleId("role id")).isEmpty());
+                new IamPrincipalPermission().withIamPrincipalArn("arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary").withRoleId("role id")).isEmpty());
 
     }
 

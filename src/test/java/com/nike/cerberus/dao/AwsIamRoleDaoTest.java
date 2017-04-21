@@ -35,10 +35,6 @@ import static org.mockito.Mockito.when;
 
 public class AwsIamRoleDaoTest {
 
-    private final String awsAccountId = "ACCOUNT_ID";
-
-    private final String awsIamRoleName = "IAM_ROLE";
-
     private final String awsIamRoleArn = "IAM_ROLE_ARN";
 
     private final String awsRegion = "us-west-2";
@@ -65,8 +61,6 @@ public class AwsIamRoleDaoTest {
 
     private final AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord()
             .setId(iamRoleId)
-            .setAwsAccountId(awsAccountId)
-            .setAwsIamRoleName(awsIamRoleName)
             .setAwsIamRoleArn(awsIamRoleArn)
             .setCreatedBy(createdBy)
             .setLastUpdatedBy(lastUpdatedBy)

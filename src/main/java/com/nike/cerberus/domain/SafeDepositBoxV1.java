@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.domain;
 
-import com.nike.cerberus.validation.UniqueIamRolePermissionsV1;
+import com.nike.cerberus.validation.UniqueIamRolePermissions;
 import com.nike.cerberus.validation.UniqueOwner;
 import com.nike.cerberus.validation.UniqueUserGroupPermissions;
 import com.nike.cerberus.validation.group.Updatable;
@@ -66,8 +66,8 @@ public class SafeDepositBoxV1 implements SafeDepositBox {
     private Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
 
     @Valid
-    @UniqueIamRolePermissionsV1(groups = {Default.class, Updatable.class})
-    private Set<IamRolePermissionV1> iamRolePermissions = new HashSet<>();
+    @UniqueIamRolePermissions(groups = {Default.class, Updatable.class})
+    private Set<IamRolePermission> iamRolePermissions = new HashSet<>();
 
     public String getId() {
         return id;
@@ -157,11 +157,11 @@ public class SafeDepositBoxV1 implements SafeDepositBox {
         this.userGroupPermissions = userGroupPermissions;
     }
 
-    public Set<IamRolePermissionV1> getIamRolePermissions() {
+    public Set<IamRolePermission> getIamRolePermissions() {
         return iamRolePermissions;
     }
 
-    public void setIamRolePermissions(Set<IamRolePermissionV1> iamRolePermissions) {
+    public void setIamRolePermissions(Set<IamRolePermission> iamRolePermissions) {
         this.iamRolePermissions = iamRolePermissions;
     }
 

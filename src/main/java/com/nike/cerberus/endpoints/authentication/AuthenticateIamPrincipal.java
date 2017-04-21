@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV1;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.service.AuthenticationService;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -37,35 +37,32 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
-@Deprecated
-public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentialsV1, IamRoleAuthResponse> {
+public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRoleV1(final AuthenticationService authenticationService) {
+    public AuthenticateIamPrincipal(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamRoleCredentialsV1> request,
+    public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamPrincipalCredentials> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(() -> {
-            IamRoleCredentialsV1 credentials = request.getContent();
+            IamPrincipalCredentials credentials = request.getContent();
             log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
-                    String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                            credentials.getAccountId(), credentials.getRoleName()), credentials.getRegion());
+                    credentials.getIamPrincipalArn(), credentials.getRegion());
 
             return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
         }, longRunningTaskExecutor);
-
     }
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v1/auth/iam-role", HttpMethod.POST);
+        return Matcher.match("/v2/auth/iam-principal", HttpMethod.POST);
     }
 }

@@ -44,7 +44,7 @@ public interface AwsIamRoleMapper {
     int updateIamRolePermission(@Param("record") AwsIamRolePermissionRecord record);
 
     int deleteIamRolePermission(@Param("safeDepositBoxId") String safeDepositBoxId,
-                                    @Param("awsIamRoleId") String awsIamRoleId);
+                                @Param("awsIamRoleId") String awsIamRoleId);
 
     List<AwsIamRolePermissionRecord> getIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
 

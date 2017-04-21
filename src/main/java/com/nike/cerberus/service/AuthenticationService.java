@@ -39,8 +39,8 @@ import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.domain.IamRoleCredentialsV1;
-import com.nike.cerberus.domain.IamRoleCredentialsV2;
+import com.nike.cerberus.domain.IamRoleCredentials;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
@@ -177,24 +177,24 @@ public class AuthenticationService {
      * @param credentials IAM role credentials
      * @return Encrypted auth response
      */
-    public IamRoleAuthResponse authenticate(IamRoleCredentialsV1 credentials) {
+    public IamRoleAuthResponse authenticate(IamRoleCredentials credentials) {
 
         final String iamPrincipalArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(),
                 credentials.getRoleName());
         final String region = credentials.getRegion();
 
-        final IamRoleCredentialsV2 iamRoleCredentialsV2 = new IamRoleCredentialsV2();
-        iamRoleCredentialsV2.setIamPrincipalArn(iamPrincipalArn);
-        iamRoleCredentialsV2.setRegion(region);
+        final IamPrincipalCredentials iamPrincipalCredentials = new IamPrincipalCredentials();
+        iamPrincipalCredentials.setIamPrincipalArn(iamPrincipalArn);
+        iamPrincipalCredentials.setRegion(region);
 
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, region);
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID,awsIamRoleArnParser.getAccountId(iamPrincipalArn));
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
-        return authenticate(iamRoleCredentialsV2, vaultAuthPrincipalMetadata);
+        return authenticate(iamPrincipalCredentials, vaultAuthPrincipalMetadata);
     }
 
-    public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials) {
+    public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
 
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
@@ -203,7 +203,7 @@ public class AuthenticationService {
         return authenticate(credentials, vaultAuthPrincipalMetadata);
     }
 
-    public IamRoleAuthResponse authenticate(IamRoleCredentialsV2 credentials, Map<String, String> vaultAuthPrincipalMetadata) {
+    public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> vaultAuthPrincipalMetadata) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -360,7 +360,7 @@ public class AuthenticationService {
      * @param credentials IAM role credentials
      * @return KMS Key id
      */
-    private String getKeyId(IamRoleCredentialsV2 credentials) {
+    private String getKeyId(IamPrincipalCredentials credentials) {
         final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
