@@ -37,14 +37,14 @@ import java.util.concurrent.Executor;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
-public class AuthenticateIamRoleV2 extends StandardEndpoint<IamPrincipalCredentials, IamRoleAuthResponse> {
+public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRoleV2(final AuthenticationService authenticationService) {
+    public AuthenticateIamPrincipal(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
@@ -63,6 +63,6 @@ public class AuthenticateIamRoleV2 extends StandardEndpoint<IamPrincipalCredenti
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v2/auth/iam-role", HttpMethod.POST);
+        return Matcher.match("/v2/auth/iam-principal", HttpMethod.POST);
     }
 }

@@ -141,7 +141,7 @@ This endpoint allows a user to exchange their current token for a new one with u
                }
             }
 
-## App Login v2 [/v2/auth/iam-role]
+## App Login v2 [/v2/auth/iam-principal]
 
 ### Authenticate with Cerberus as an App [POST]
 

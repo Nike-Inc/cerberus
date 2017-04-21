@@ -38,14 +38,14 @@ import java.util.concurrent.Executor;
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
 @Deprecated
-public class AuthenticateIamRoleV1 extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
+public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
 
     @Inject
-    public AuthenticateIamRoleV1(final AuthenticationService authenticationService) {
+    public AuthenticateIamRole(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 

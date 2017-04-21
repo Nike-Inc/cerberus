@@ -34,18 +34,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AuthenticateIamRoleV1Test {
+public class AuthenticateIamRoleTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
     private AuthenticationService authenticationService;
 
-    private AuthenticateIamRoleV1 subject;
+    private AuthenticateIamRole subject;
 
     @Before
     public void setUp() throws Exception {
         authenticationService = mock(AuthenticationService.class);
-        subject = new AuthenticateIamRoleV1(authenticationService);
+        subject = new AuthenticateIamRole(authenticationService);
     }
 
     @Test
