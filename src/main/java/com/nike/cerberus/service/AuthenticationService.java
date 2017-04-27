@@ -85,10 +85,8 @@ public class AuthenticationService {
     public static final String ADMIN_IAM_ROLES_PROPERTY = "cms.admin.roles";
     public static final String USER_TOKEN_TTL_OVERRIDE = "cms.user.token.ttl.override";
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
-    public static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final String DEFAULT_TOKEN_TTL = "1h";
-    public static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000; // in milliseconds
 
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
@@ -115,10 +113,6 @@ public class AuthenticationService {
     @Inject(optional=true)
     @Named(IAM_TOKEN_TTL_OVERRIDE)
     String iamTokenTTL = DEFAULT_TOKEN_TTL;
-
-    @Inject(optional=true)
-    @Named(KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE)
-    Integer kmsKeyPolicyValidationInterval = DEFAULT_KMS_VALIDATION_INTERVAL;
 
     @Inject
     public AuthenticationService(final SafeDepositBoxDao safeDepositBoxDao,
@@ -396,15 +390,7 @@ public class AuthenticationService {
         } else {
             kmsKeyRecord = kmsKey.get();
             kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
-            String keyRegion = credentials.getRegion();
-            if (ChronoUnit.MILLIS.between(kmsKeyRecord.getLastValidatedTs(), now) >= kmsKeyPolicyValidationInterval) {
-                try {
-                    kmsService.validatePolicy(kmsKeyId, credentials.getIamPrincipalArn(), keyRegion);
-                    kmsService.updateKmsKey(kmsKeyRecord, SYSTEM_USER, now, now);
-                } catch (ApiException ae) {
-                    logger.warn("Could not validate KMS policy. API limit may have been reached for validate call.");
-                }
-            }
+            kmsService.validatePolicy(kmsKeyRecord, credentials.getIamPrincipalArn());
         }
 
         return kmsKeyId;

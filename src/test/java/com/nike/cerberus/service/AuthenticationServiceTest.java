@@ -121,8 +121,8 @@ public class AuthenticationServiceTest {
         String principalArn = "principal arn";
         String region = "region";
         String iamRoleId = "iam role id";
-        String kmsId = "kms id";
-        String keyId = "key id";
+        String kmsKeyId = "kms id";
+        String cmkId = "key id";
 
         // ensure that validate interval is passed
         OffsetDateTime dateTime = OffsetDateTime.of(2016, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
@@ -138,26 +138,19 @@ public class AuthenticationServiceTest {
         when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.of(awsIamRoleRecord));
 
         AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-        awsIamRoleKmsKeyRecord.setId(kmsId);
-        awsIamRoleKmsKeyRecord.setAwsKmsKeyId(keyId);
+        awsIamRoleKmsKeyRecord.setId(kmsKeyId);
+        awsIamRoleKmsKeyRecord.setAwsKmsKeyId(cmkId);
         awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
 
         when(awsIamRoleDao.getKmsKey(iamRoleId, region)).thenReturn(Optional.of(awsIamRoleKmsKeyRecord));
 
         when(dateTimeSupplier.get()).thenReturn(now);
 
-        authenticationService.getKeyId(iamPrincipalCredentials);
+        String result = authenticationService.getKeyId(iamPrincipalCredentials);
 
         // verify validate is called once interval has passed
-        verify(kmsService, times(1)).validatePolicy(keyId, principalArn, region);
-
-        // reset interval
-        awsIamRoleKmsKeyRecord.setLastValidatedTs(now);
-
-        // verify validate is not called when interval has not passed
-        authenticationService.getKeyId(iamPrincipalCredentials);
-        authenticationService.getKeyId(iamPrincipalCredentials);
-        verify(kmsService, times(1)).validatePolicy(keyId, principalArn, region);
+        assertEquals(cmkId, result);
+        verify(kmsService, times(1)).validatePolicy(awsIamRoleKmsKeyRecord, principalArn);
     }
 
 }

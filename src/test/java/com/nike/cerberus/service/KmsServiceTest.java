@@ -1,16 +1,19 @@
 package com.nike.cerberus.service;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.*;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -22,6 +25,7 @@ public class KmsServiceTest {
     private UuidSupplier uuidSupplier;
     private KmsClientFactory kmsClientFactory;
     private KmsPolicyService kmsPolicyService;
+    private DateTimeSupplier dateTimeSupplier;
 
     private KmsService kmsService;
 
@@ -31,7 +35,9 @@ public class KmsServiceTest {
         uuidSupplier = mock(UuidSupplier.class);
         kmsClientFactory = mock(KmsClientFactory.class);
         kmsPolicyService = mock(KmsPolicyService.class);
-        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService);
+        dateTimeSupplier = mock(DateTimeSupplier.class);
+
+        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService, dateTimeSupplier);
     }
 
     @Test
@@ -93,24 +99,88 @@ public class KmsServiceTest {
     }
 
     @Test
-    public void test_validatePolicy() {
-        String keyId = "key-id";
-        String iamRoleArn = "arn";
+    public void test_validatePolicy_validates_policy_when_validate_interval_has_passed() {
+        String kmsKeyArn = "kms key arn";
+        String awsIamRoleRecordId = "aws iam role record id";
         String kmsCMKRegion = "kmsCMKRegion";
         String policy = "policy";
+        OffsetDateTime lastValidated = OffsetDateTime.of(2016, 1, 1, 1, 1,
+                1, 1, ZoneOffset.UTC);
+        OffsetDateTime now = OffsetDateTime.now();
 
         AWSKMSClient client = mock(AWSKMSClient.class);
         when(kmsClientFactory.getClient(kmsCMKRegion)).thenReturn(client);
 
         GetKeyPolicyResult result = mock(GetKeyPolicyResult.class);
         when(result.getPolicy()).thenReturn(policy);
-        when(client.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"))).thenReturn(result);
-        when(kmsPolicyService.isPolicyValid(policy, iamRoleArn)).thenReturn(true);
+        when(client.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(kmsKeyArn)
+                .withPolicyName("default"))).thenReturn(result);
+        when(kmsPolicyService.isPolicyValid(policy, kmsKeyArn)).thenReturn(true);
 
-        kmsService.validatePolicy(keyId, iamRoleArn, kmsCMKRegion);
+        AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
+        when(kmsKey.getAwsIamRoleId()).thenReturn(awsIamRoleRecordId);
+        when(kmsKey.getAwsKmsKeyId()).thenReturn(kmsKeyArn);
+        when(kmsKey.getAwsRegion()).thenReturn(kmsCMKRegion);
+        when(kmsKey.getLastValidatedTs()).thenReturn(lastValidated);
+        when(awsIamRoleDao.getKmsKey(awsIamRoleRecordId, kmsCMKRegion)).thenReturn(Optional.of(kmsKey));
 
-        verify(client, times(1)).getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"));
-        verify(kmsPolicyService, times(1)).isPolicyValid(policy, iamRoleArn);
+        when(dateTimeSupplier.get()).thenReturn(now);
+        kmsService.validatePolicy(kmsKey, kmsKeyArn);
+
+        verify(client, times(1)).getKeyPolicy(new GetKeyPolicyRequest().withKeyId(kmsKeyArn)
+                .withPolicyName("default"));
+        verify(kmsPolicyService, times(1)).isPolicyValid(policy, kmsKeyArn);
+    }
+
+    @Test
+    public void test_validatePolicy_validates_policy_when_validate_interval_has_not_passed() {
+        String awsKmsKeyArn = "aws kms key arn";
+        String iamPrincipalArn = "arn";
+        String awsIamRoleRecordId = "aws iam role record id";
+        String kmsCMKRegion = "kmsCMKRegion";
+        OffsetDateTime now = OffsetDateTime.now();
+
+        AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
+        when(kmsKey.getAwsKmsKeyId()).thenReturn(awsKmsKeyArn);
+        when(kmsKey.getAwsIamRoleId()).thenReturn(awsIamRoleRecordId);
+        when(kmsKey.getAwsRegion()).thenReturn(kmsCMKRegion);
+        when(kmsKey.getLastValidatedTs()).thenReturn(now);
+
+        when(dateTimeSupplier.get()).thenReturn(now);
+        kmsService.validatePolicy(kmsKey, iamPrincipalArn);
+
+        verify(kmsClientFactory, never()).getClient(anyString());
+        verify(kmsPolicyService, never()).isPolicyValid(anyString(), anyString());
+    }
+
+    @Test
+    public void test_validatePolicy_does_not_throw_error_when_cannot_validate() {
+        String keyId = "key-id";
+        String iamPrincipalArn = "arn";
+        String kmsCMKRegion = "kmsCMKRegion";
+        String policy = "policy";
+        OffsetDateTime lastValidated = OffsetDateTime.of(2016, 1, 1, 1, 1,
+                1, 1, ZoneOffset.UTC);
+        OffsetDateTime now = OffsetDateTime.now();
+        when(dateTimeSupplier.get()).thenReturn(now);
+
+        AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
+        when(kmsKey.getAwsKmsKeyId()).thenReturn(keyId);
+        when(kmsKey.getAwsIamRoleId()).thenReturn(iamPrincipalArn);
+        when(kmsKey.getAwsRegion()).thenReturn(kmsCMKRegion);
+        when(kmsKey.getLastValidatedTs()).thenReturn(lastValidated);
+
+        AWSKMSClient client = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(kmsCMKRegion)).thenReturn(client);
+
+        GetKeyPolicyResult result = mock(GetKeyPolicyResult.class);
+        when(result.getPolicy()).thenReturn(policy);
+        when(client.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"))).thenThrow(AmazonServiceException.class);
+
+        kmsService.validatePolicy(kmsKey, iamPrincipalArn);
+
+        verify(kmsPolicyService, never()).isPolicyValid(policy, iamPrincipalArn);
+        verify(client, never()).putKeyPolicy(anyObject());
     }
 
     @Test
@@ -121,17 +191,13 @@ public class KmsServiceTest {
         String user = "user";
         OffsetDateTime dateTime = OffsetDateTime.now();
 
-        AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-        awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
-        awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
-
         AwsIamRoleKmsKeyRecord dbRecord = new AwsIamRoleKmsKeyRecord();
         dbRecord.setAwsRegion(awsRegion);
         dbRecord.setAwsIamRoleId(iamRoleId);
         dbRecord.setLastValidatedTs(OffsetDateTime.now());
         when(awsIamRoleDao.getKmsKey(iamRoleId, awsRegion)).thenReturn(Optional.of(dbRecord));
 
-        kmsService.updateKmsKey(awsIamRoleKmsKeyRecord, user, dateTime, dateTime);
+        kmsService.updateKmsKey(iamRoleId, awsRegion, user, dateTime, dateTime);
 
         AwsIamRoleKmsKeyRecord expected = new AwsIamRoleKmsKeyRecord();
         expected.setAwsIamRoleId(iamRoleId);
@@ -151,12 +217,8 @@ public class KmsServiceTest {
         String user = "user";
         OffsetDateTime dateTime = OffsetDateTime.now();
 
-        AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-        awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
-        awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
-
         when(awsIamRoleDao.getKmsKey(iamRoleId, awsRegion)).thenReturn(Optional.empty());
 
-        kmsService.updateKmsKey(awsIamRoleKmsKeyRecord, user, dateTime, dateTime);
+        kmsService.updateKmsKey(iamRoleId, awsRegion, user, dateTime, dateTime);
     }
 }
