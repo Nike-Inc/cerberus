@@ -18,8 +18,8 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v0.12.0'
-def vaultVersion = "0.6.4"
+def dashboardRelease = 'v1.0.0'
+def vaultVersion = "0.7.0"
 
 buildscript {
     apply from: file('gradle/buildscript.gradle'), to: buildscript

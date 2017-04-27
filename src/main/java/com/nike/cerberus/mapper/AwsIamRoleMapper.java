@@ -49,4 +49,6 @@ public interface AwsIamRoleMapper {
     List<AwsIamRolePermissionRecord> getIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
 
     int deleteIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
+
+    int updateIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
 }

@@ -2,6 +2,7 @@ package com.nike.cerberus.service;
 
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.*;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
@@ -10,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -81,6 +83,7 @@ public class KmsServiceTest {
         awsIamRoleKmsKeyRecord.setLastUpdatedBy(user);
         awsIamRoleKmsKeyRecord.setCreatedTs(dateTime);
         awsIamRoleKmsKeyRecord.setLastUpdatedTs(dateTime);
+        awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
         verify(awsIamRoleDao).createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
     }
 
@@ -108,5 +111,52 @@ public class KmsServiceTest {
 
         verify(client, times(1)).getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"));
         verify(kmsPolicyService, times(1)).isPolicyValid(policy, iamRoleArn);
+    }
+
+    @Test
+    public void test_updateKmsKey() {
+
+        String iamRoleId = "role-id";
+        String awsRegion = "aws-region";
+        String user = "user";
+        OffsetDateTime dateTime = OffsetDateTime.now();
+
+        AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+        awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
+        awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
+
+        AwsIamRoleKmsKeyRecord dbRecord = new AwsIamRoleKmsKeyRecord();
+        dbRecord.setAwsRegion(awsRegion);
+        dbRecord.setAwsIamRoleId(iamRoleId);
+        dbRecord.setLastValidatedTs(OffsetDateTime.now());
+        when(awsIamRoleDao.getKmsKey(iamRoleId, awsRegion)).thenReturn(Optional.of(dbRecord));
+
+        kmsService.updateKmsKey(awsIamRoleKmsKeyRecord, user, dateTime, dateTime);
+
+        AwsIamRoleKmsKeyRecord expected = new AwsIamRoleKmsKeyRecord();
+        expected.setAwsIamRoleId(iamRoleId);
+        expected.setLastUpdatedBy(user);
+        expected.setLastUpdatedTs(dateTime);
+        expected.setLastValidatedTs(dateTime);
+        expected.setAwsRegion(awsRegion);
+
+        verify(awsIamRoleDao).updateIamRoleKmsKey(expected);
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_updateKmsKey_fails_when_record_not_found() {
+
+        String iamRoleId = "role-id";
+        String awsRegion = "aws-region";
+        String user = "user";
+        OffsetDateTime dateTime = OffsetDateTime.now();
+
+        AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+        awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
+        awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
+
+        when(awsIamRoleDao.getKmsKey(iamRoleId, awsRegion)).thenReturn(Optional.empty());
+
+        kmsService.updateKmsKey(awsIamRoleKmsKeyRecord, user, dateTime, dateTime);
     }
 }

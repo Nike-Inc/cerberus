@@ -76,4 +76,8 @@ public class AwsIamRoleDao {
     public int createIamRoleKmsKey(final AwsIamRoleKmsKeyRecord record) {
         return awsIamRoleMapper.createIamRoleKmsKey(record);
     }
+
+    public int updateIamRoleKmsKey(final AwsIamRoleKmsKeyRecord record) {
+        return awsIamRoleMapper.updateIamRoleKmsKey(record);
+    }
 }

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 /**
  * Abstracts interactions with the AWS KMS service.
@@ -111,10 +112,37 @@ public class KmsService {
         awsIamRoleKmsKeyRecord.setLastUpdatedBy(user);
         awsIamRoleKmsKeyRecord.setCreatedTs(dateTime);
         awsIamRoleKmsKeyRecord.setLastUpdatedTs(dateTime);
+        awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
 
         awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
         return result.getKeyMetadata().getArn();
+    }
+
+    @Transactional
+    public void updateKmsKey(final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord,
+                             final String user,
+                             final OffsetDateTime dateTime,
+                             final OffsetDateTime lastValidatedTs) {
+        final Optional<AwsIamRoleKmsKeyRecord> kmsKey =
+                awsIamRoleDao.getKmsKey(awsIamRoleKmsKeyRecord.getAwsIamRoleId(), awsIamRoleKmsKeyRecord.getAwsRegion());
+
+        if (!kmsKey.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                    .withExceptionMessage("Unable to update a KMS key that does not exist.")
+                    .build();
+        }
+
+        AwsIamRoleKmsKeyRecord kmsKeyRecord = kmsKey.get();
+
+        AwsIamRoleKmsKeyRecord updatedKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+        updatedKmsKeyRecord.setAwsIamRoleId(kmsKeyRecord.getAwsIamRoleId());
+        updatedKmsKeyRecord.setLastUpdatedBy(user);
+        updatedKmsKeyRecord.setLastUpdatedTs(dateTime);
+        updatedKmsKeyRecord.setLastValidatedTs(lastValidatedTs);
+        updatedKmsKeyRecord.setAwsRegion(kmsKeyRecord.getAwsRegion());
+        awsIamRoleDao.updateIamRoleKmsKey(updatedKmsKeyRecord);
     }
 
     protected String getAliasName(String awsIamRoleKmsKeyId) {
