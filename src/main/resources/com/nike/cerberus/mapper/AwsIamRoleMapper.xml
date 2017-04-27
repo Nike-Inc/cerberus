@@ -57,7 +57,8 @@
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
-      LAST_UPDATED_TS
+      LAST_UPDATED_TS,
+      LAST_VALIDATED_TS
     FROM
       AWS_IAM_ROLE_KMS_KEY
     WHERE
@@ -75,7 +76,8 @@
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
-      LAST_UPDATED_TS
+      LAST_UPDATED_TS,
+      LAST_VALIDATED_TS
     )
     VALUES (
       #{record.id},
@@ -85,7 +87,8 @@
       #{record.createdBy},
       #{record.lastUpdatedBy},
       #{record.createdTs},
-      #{record.lastUpdatedTs}
+      #{record.lastUpdatedTs},
+      #{record.lastValidatedTs}
     )
   </insert>
 
@@ -158,6 +161,19 @@
         SDBOX_ID = #{record.sdboxId}
       AND
         AWS_IAM_ROLE_ID = #{record.awsIamRoleId}
+  </update>
+
+  <update id="updateIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">
+    UPDATE
+      AWS_IAM_ROLE_KMS_KEY
+    SET
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs},
+      LAST_VALIDATED_TS = #{record.lastValidatedTs}
+    WHERE
+        AWS_IAM_ROLE_ID = #{record.awsIamRoleId}
+      AND
+        AWS_REGION = #{record.awsRegion}
   </update>
 
   <delete id="deleteIamRolePermission">

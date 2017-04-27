@@ -22,21 +22,32 @@ import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -102,6 +113,44 @@ public class AuthenticationServiceTest {
         assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_GROUPS));
 
         assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN));
+    }
+
+    @Test
+    public void tests_that_getKeyId_only_validates_kms_policy_one_time_within_interval() {
+
+        String principalArn = "principal arn";
+        String region = "region";
+        String iamRoleId = "iam role id";
+        String kmsKeyId = "kms id";
+        String cmkId = "key id";
+
+        // ensure that validate interval is passed
+        OffsetDateTime dateTime = OffsetDateTime.of(2016, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
+        OffsetDateTime now = OffsetDateTime.now();
+
+        IamPrincipalCredentials iamPrincipalCredentials = new IamPrincipalCredentials();
+        iamPrincipalCredentials.setIamPrincipalArn(principalArn);
+        iamPrincipalCredentials.setRegion(region);
+
+        AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord().setAwsIamRoleArn(principalArn);
+        awsIamRoleRecord.setAwsIamRoleArn(principalArn);
+        awsIamRoleRecord.setId(iamRoleId);
+        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.of(awsIamRoleRecord));
+
+        AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+        awsIamRoleKmsKeyRecord.setId(kmsKeyId);
+        awsIamRoleKmsKeyRecord.setAwsKmsKeyId(cmkId);
+        awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
+
+        when(awsIamRoleDao.getKmsKey(iamRoleId, region)).thenReturn(Optional.of(awsIamRoleKmsKeyRecord));
+
+        when(dateTimeSupplier.get()).thenReturn(now);
+
+        String result = authenticationService.getKeyId(iamPrincipalCredentials);
+
+        // verify validate is called once interval has passed
+        assertEquals(cmkId, result);
+        verify(kmsService, times(1)).validatePolicy(awsIamRoleKmsKeyRecord, principalArn);
     }
 
 }

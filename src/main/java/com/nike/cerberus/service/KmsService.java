@@ -26,11 +26,13 @@ import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
@@ -39,6 +41,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+
+import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 
 /**
  * Abstracts interactions with the AWS KMS service.
@@ -49,6 +55,9 @@ public class KmsService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String KMS_ALIAS_FORMAT = "alias/cerberus/%s";
+    public static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
+    public static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000; // in milliseconds
+
 
     private final AwsIamRoleDao awsIamRoleDao;
 
@@ -58,15 +67,23 @@ public class KmsService {
 
     private final KmsPolicyService kmsPolicyService;
 
+    private final DateTimeSupplier dateTimeSupplier;
+
+    @com.google.inject.Inject(optional=true)
+    @Named(KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE)
+    Integer kmsKeyPolicyValidationInterval = DEFAULT_KMS_VALIDATION_INTERVAL;
+
     @Inject
     public KmsService(final AwsIamRoleDao awsIamRoleDao,
                       final UuidSupplier uuidSupplier,
                       final KmsClientFactory kmsClientFactory,
-                      final KmsPolicyService kmsPolicyService) {
+                      final KmsPolicyService kmsPolicyService,
+                      final DateTimeSupplier dateTimeSupplier) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
         this.kmsPolicyService = kmsPolicyService;
+        this.dateTimeSupplier = dateTimeSupplier;
     }
 
     /**
@@ -111,10 +128,45 @@ public class KmsService {
         awsIamRoleKmsKeyRecord.setLastUpdatedBy(user);
         awsIamRoleKmsKeyRecord.setCreatedTs(dateTime);
         awsIamRoleKmsKeyRecord.setLastUpdatedTs(dateTime);
+        awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
 
         awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
         return result.getKeyMetadata().getArn();
+    }
+
+    /**
+     * Updates the KMS CMK record for the specified IAM role and region
+     * @param awsIamRoleId    The IAM role that this CMK will be associated with
+     * @param awsRegion       The region to provision the key in
+     * @param user            The user requesting it
+     * @param lastedUpdatedTs The date when the record was last updated
+     * @param lastValidatedTs The date when the record was last validated
+     */
+    @Transactional
+    public void updateKmsKey(final String awsIamRoleId,
+                             final String awsRegion,
+                             final String user,
+                             final OffsetDateTime lastedUpdatedTs,
+                             final OffsetDateTime lastValidatedTs) {
+        final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(awsIamRoleId, awsRegion);
+
+        if (!kmsKey.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                    .withExceptionMessage("Unable to update a KMS key that does not exist.")
+                    .build();
+        }
+
+        AwsIamRoleKmsKeyRecord kmsKeyRecord = kmsKey.get();
+
+        AwsIamRoleKmsKeyRecord updatedKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+        updatedKmsKeyRecord.setAwsIamRoleId(kmsKeyRecord.getAwsIamRoleId());
+        updatedKmsKeyRecord.setLastUpdatedBy(user);
+        updatedKmsKeyRecord.setLastUpdatedTs(lastedUpdatedTs);
+        updatedKmsKeyRecord.setLastValidatedTs(lastValidatedTs);
+        updatedKmsKeyRecord.setAwsRegion(kmsKeyRecord.getAwsRegion());
+        awsIamRoleDao.updateIamRoleKmsKey(updatedKmsKeyRecord);
     }
 
     protected String getAliasName(String awsIamRoleKmsKeyId) {
@@ -134,34 +186,51 @@ public class KmsService {
      * statement has been deleted the ARN is replaced by the ID. We can validate that principal matches an ARN pattern
      * or recreate the policy.
      *
-     * @param keyId - The CMK Id to validate the policies on.
+     * @param kmsKeyRecord - The CMK record to validate policy on
      * @param iamPrincipalArn - The principal ARN that should have decrypt permission
-     * @param kmsCMKRegion - The region that the key was provisioned for
      */
-    public void validatePolicy(String keyId, String iamPrincipalArn, String kmsCMKRegion) {
-        AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
-        GetKeyPolicyResult policyResult = null;
-        try {
-            policyResult = kmsClient.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"));
-        } catch (AmazonServiceException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.FAILED_TO_VALIDATE_KMS_KEY_POLICY)
-                    .withExceptionCause(e)
-                    .withExceptionMessage(
-                            String.format("Failed to validate KMS key policy for keyId: " +
-                                    "%s for IAM principal: %s in region: %s", keyId, iamPrincipalArn, kmsCMKRegion))
-                    .build();
+    public void validatePolicy(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
+
+        if (! kmsPolicyNeedsValidation(kmsKeyRecord)) {
+            return;
         }
 
-        if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamPrincipalArn)) {
-            logger.info("The KMS key: {} generated for IAM principal: {} contained an invalid policy, regenerating",
-                    keyId, iamPrincipalArn);
-            String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
-            kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
-                    .withKeyId(keyId)
-                    .withPolicyName("default")
-                    .withPolicy(updatedPolicy)
-            );
+        String kmsCMKRegion = kmsKeyRecord.getAwsRegion();
+        String awsKmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
+        AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
+        try {
+            GetKeyPolicyResult policyResult = kmsClient.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(awsKmsKeyArn).withPolicyName("default"));
+
+            if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamPrincipalArn)) {
+                logger.info("The KMS key: {} generated for IAM principal: {} contained an invalid policy, regenerating",
+                        awsKmsKeyArn, iamPrincipalArn);
+                String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
+                kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
+                        .withKeyId(awsKmsKeyArn)
+                        .withPolicyName("default")
+                        .withPolicy(updatedPolicy)
+                );
+            }
+
+            // update last validated timestamp
+            OffsetDateTime now = dateTimeSupplier.get();
+            updateKmsKey(kmsKeyRecord.getAwsIamRoleId(), kmsCMKRegion, SYSTEM_USER, now, now);
+        } catch (AmazonServiceException e) {
+            logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s. API limit" +
+                    " may have been reached for validate call.", awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion), e);
         }
+    }
+
+    /**
+     * Determines if given KMS policy should be validated
+     * @param kmsKeyRecord - KMS key record to check for validation
+     * @return True if needs validation, False if not
+     */
+    protected boolean kmsPolicyNeedsValidation(AwsIamRoleKmsKeyRecord kmsKeyRecord) {
+
+        OffsetDateTime now = dateTimeSupplier.get();
+        long timeSinceLastValidatedInMillis = ChronoUnit.MILLIS.between(kmsKeyRecord.getLastValidatedTs(), now);
+
+        return timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
     }
 }

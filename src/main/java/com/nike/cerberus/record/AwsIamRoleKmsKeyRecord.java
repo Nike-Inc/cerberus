@@ -40,6 +40,8 @@ public class AwsIamRoleKmsKeyRecord {
 
     private OffsetDateTime lastUpdatedTs;
 
+    private OffsetDateTime lastValidatedTs;
+
     public String getId() {
         return id;
     }
@@ -112,6 +114,15 @@ public class AwsIamRoleKmsKeyRecord {
         return this;
     }
 
+    public OffsetDateTime getLastValidatedTs() {
+        return lastValidatedTs;
+    }
+
+    public AwsIamRoleKmsKeyRecord setLastValidatedTs(OffsetDateTime lastValidatedTs) {
+        this.lastValidatedTs = lastValidatedTs;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -124,11 +135,12 @@ public class AwsIamRoleKmsKeyRecord {
                 Objects.equals(createdBy, that.createdBy) &&
                 Objects.equals(lastUpdatedBy, that.lastUpdatedBy) &&
                 Objects.equals(createdTs, that.createdTs) &&
-                Objects.equals(lastUpdatedTs, that.lastUpdatedTs);
+                Objects.equals(lastUpdatedTs, that.lastUpdatedTs) &&
+                Objects.equals(lastValidatedTs, that.lastValidatedTs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, awsIamRoleId, awsRegion, awsKmsKeyId, createdBy, lastUpdatedBy, createdTs, lastUpdatedTs);
+        return Objects.hash(id, awsIamRoleId, awsRegion, awsKmsKeyId, createdBy, lastUpdatedBy, createdTs, lastUpdatedTs, lastValidatedTs);
     }
 }

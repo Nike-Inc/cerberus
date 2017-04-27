@@ -57,9 +57,14 @@ import com.nike.vault.client.model.VaultTokenAuthRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.joda.time.Interval;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +77,8 @@ import java.util.Set;
  */
 @Singleton
 public class AuthenticationService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String SYSTEM_USER = "system";
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
@@ -203,7 +210,7 @@ public class AuthenticationService {
         return authenticate(credentials, vaultAuthPrincipalMetadata);
     }
 
-    public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> vaultAuthPrincipalMetadata) {
+    private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> vaultAuthPrincipalMetadata) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -360,7 +367,7 @@ public class AuthenticationService {
      * @param credentials IAM role credentials
      * @return KMS Key id
      */
-    private String getKeyId(IamPrincipalCredentials credentials) {
+    protected String getKeyId(IamPrincipalCredentials credentials) {
         final Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(credentials.getIamPrincipalArn());
 
         if (!iamRole.isPresent()) {
@@ -374,14 +381,16 @@ public class AuthenticationService {
         final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRole.get().getId(), credentials.getRegion());
 
         final String kmsKeyId;
+        final AwsIamRoleKmsKeyRecord kmsKeyRecord;
+        final OffsetDateTime now = dateTimeSupplier.get();
 
         if (!kmsKey.isPresent()) {
             kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), credentials.getIamPrincipalArn(),
-                    credentials.getRegion(), SYSTEM_USER, dateTimeSupplier.get());
+                    credentials.getRegion(), SYSTEM_USER, now);
         } else {
-            kmsKeyId = kmsKey.get().getAwsKmsKeyId();
-            String keyRegion = credentials.getRegion();
-            kmsService.validatePolicy(kmsKeyId, credentials.getIamPrincipalArn(), keyRegion);
+            kmsKeyRecord = kmsKey.get();
+            kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
+            kmsService.validatePolicy(kmsKeyRecord, credentials.getIamPrincipalArn());
         }
 
         return kmsKeyId;

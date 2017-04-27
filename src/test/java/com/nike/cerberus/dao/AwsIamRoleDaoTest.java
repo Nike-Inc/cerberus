@@ -247,4 +247,14 @@ public class AwsIamRoleDaoTest {
 
         assertThat(actualCount).isEqualTo(recordCount);
     }
+
+    @Test
+    public void updateIamRoleKmsKey_returns_record_count() {
+        final int recordCount = 1;
+        when(awsIamRoleMapper.updateIamRoleKmsKey(awsIamRoleKmsKeyRecord)).thenReturn(recordCount);
+
+        final int actualCount = subject.updateIamRoleKmsKey(awsIamRoleKmsKeyRecord);
+
+        assertThat(actualCount).isEqualTo(recordCount);
+    }
 }
