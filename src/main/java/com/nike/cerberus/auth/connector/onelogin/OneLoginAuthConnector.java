@@ -157,7 +157,7 @@ public class OneLoginAuthConnector implements AuthConnector {
             String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
                     stateToken, verifyFactorResponse.getStatus().getMessage());
 
-            if (verifyFactorResponse.getStatus().getCode() == 400L) {
+            if (verifyFactorResponse.getStatus().getCode() == 401) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
                         .withExceptionMessage(msg)
@@ -184,20 +184,22 @@ public class OneLoginAuthConnector implements AuthConnector {
 
         final CreateSessionLoginTokenResponse createSessionLoginTokenResponse = oneLoginClient.createSessionLoginToken(username, password);
 
+        long statusCode = createSessionLoginTokenResponse.getStatus().getCode();
+
         if (createSessionLoginTokenResponse.getStatus().isError()) {
             String msg = String.format("The user %s failed to authenticate for reason: %s", username, createSessionLoginTokenResponse.getStatus().getMessage());
-            if (createSessionLoginTokenResponse.getStatus().getCode() == 400L) {
-                if (StringUtils.startsWithIgnoreCase(createSessionLoginTokenResponse.getStatus().getMessage(), "MFA")) {
-                    throw ApiException.newBuilder()
-                            .withApiErrors(DefaultApiError.MFA_SETUP_REQUIRED)
-                            .withExceptionMessage(msg)
-                            .build();
-                } else {
-                    throw ApiException.newBuilder()
-                            .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                            .withExceptionMessage(msg)
-                            .build();
-                }
+            if (statusCode == 400 &&
+                    StringUtils.startsWithIgnoreCase(createSessionLoginTokenResponse.getStatus().getMessage(), "MFA")) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.MFA_SETUP_REQUIRED)
+                        .withExceptionMessage(msg)
+                        .build();
+            }
+            if (statusCode == 401) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
+                        .withExceptionMessage(msg)
+                        .build();
             } else {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
