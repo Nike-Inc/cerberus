@@ -195,7 +195,7 @@ public class AuthenticationService {
         iamPrincipalCredentials.setRegion(region);
 
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, region);
-        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID,awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
         return authenticate(iamPrincipalCredentials, vaultAuthPrincipalMetadata);
@@ -205,7 +205,7 @@ public class AuthenticationService {
 
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
-        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
         return authenticate(credentials, vaultAuthPrincipalMetadata);
     }
