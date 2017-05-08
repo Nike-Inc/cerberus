@@ -2,6 +2,7 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import java.util.Set;
 
+import static com.nike.cerberus.error.DefaultApiError.MFA_SETUP_REQUIRED;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -111,7 +113,7 @@ public class OneLoginAuthConnectorTest {
 
             fail("expected exception not thrown");
         } catch (ApiException e) {
-            assertTrue(e.getApiErrors().contains(DefaultApiError.MFA_SETUP_REQUIRED));
+            assertTrue(e.getApiErrors().contains(MFA_SETUP_REQUIRED));
             assertFalse(e.getApiErrors().contains(DefaultApiError.AUTH_BAD_CREDENTIALS));
         }
     }
@@ -127,7 +129,7 @@ public class OneLoginAuthConnectorTest {
             fail("expected exception not thrown");
         } catch (ApiException e) {
             assertTrue(e.getApiErrors().contains(DefaultApiError.AUTH_BAD_CREDENTIALS));
-            assertFalse(e.getApiErrors().contains(DefaultApiError.MFA_SETUP_REQUIRED));
+            assertFalse(e.getApiErrors().contains(MFA_SETUP_REQUIRED));
 
         }
     }
@@ -298,4 +300,65 @@ public class OneLoginAuthConnectorTest {
         assertEquals(expectedData, actualData);
     }
 
+    @Test
+    public void test_createSessionLoginToken_fails_with_401_when_bad_username_is_given() {
+        ResponseStatus status = new ResponseStatus();
+        status.setError(true);
+        status.setCode(400);
+        status.setMessage("bad request");
+
+        CreateSessionLoginTokenResponse createSessionLoginTokenResponse = new CreateSessionLoginTokenResponse();
+        createSessionLoginTokenResponse.setStatus(status);
+
+        when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
+
+        // invoke method under test
+        try {
+            oneLoginAuthConnector.createSessionLoginToken(USERNAME, PASSWORD);
+        } catch (ApiException ae) {
+            assertEquals(401, ae.getApiErrors().get(0).getHttpStatusCode());
+        }
+    }
+
+    @Test
+    public void test_createSessionLoginToken_fails_with_401_when_bad_password_is_given() {
+        ResponseStatus status = new ResponseStatus();
+        status.setError(true);
+        status.setCode(401);
+        status.setMessage("Authentication Failed");
+
+        CreateSessionLoginTokenResponse createSessionLoginTokenResponse = new CreateSessionLoginTokenResponse();
+        createSessionLoginTokenResponse.setStatus(status);
+
+        when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
+
+        // invoke method under test
+        try {
+            oneLoginAuthConnector.createSessionLoginToken(USERNAME, PASSWORD);
+        } catch (ApiException ae) {
+            assertEquals(401, ae.getApiErrors().get(0).getHttpStatusCode());
+        }
+
+    }
+
+    @Test
+    public void test_createSessionLoginToken_fails_with_when_MFA_setup_is_required() {
+        ResponseStatus status = new ResponseStatus();
+        status.setError(true);
+        status.setCode(400);
+        status.setMessage("MFA: rest doesnt matter");
+
+        CreateSessionLoginTokenResponse createSessionLoginTokenResponse = new CreateSessionLoginTokenResponse();
+        createSessionLoginTokenResponse.setStatus(status);
+
+        when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
+
+        // invoke method under test
+        try {
+            oneLoginAuthConnector.createSessionLoginToken(USERNAME, PASSWORD);
+        } catch (ApiException ae) {
+            assertEquals(MFA_SETUP_REQUIRED.getHttpStatusCode(), ae.getApiErrors().get(0).getHttpStatusCode());
+        }
+
+    }
 }
