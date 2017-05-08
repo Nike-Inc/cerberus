@@ -64,7 +64,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * Supplied credentials are invalid.
      */
-    AUTH_BAD_CREDENTIALS(99106, "Invalid credentials", HttpServletResponse.SC_BAD_REQUEST),
+    AUTH_BAD_CREDENTIALS(99106, "Invalid credentials", HttpServletResponse.SC_UNAUTHORIZED),
 
     /**
      * Category display name is blank.
