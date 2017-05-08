@@ -194,8 +194,7 @@ public class OneLoginAuthConnector implements AuthConnector {
                         .withApiErrors(DefaultApiError.MFA_SETUP_REQUIRED)
                         .withExceptionMessage(msg)
                         .build();
-            }
-            if (statusCode == 401) {
+            } else if (statusCode == 401) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
                         .withExceptionMessage(msg)

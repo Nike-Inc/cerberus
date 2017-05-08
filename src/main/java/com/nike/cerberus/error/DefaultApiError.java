@@ -119,7 +119,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * SDB name isn't unique.
      */
-    SDB_UNIQUE_NAME(99210, "The name is not unique.", HttpServletResponse.SC_BAD_REQUEST),
+    SDB_UNIQUE_NAME(99210, "Duplicate SDB names are not allowed.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
      * SDB action requires caller to be the owner.
@@ -216,6 +216,11 @@ public enum DefaultApiError implements ApiError {
      * IAM Role account id is blank
      */
     AUTH_IAM_PRINCIPAL_AWS_REGION_BLANK(99228, "AWS region is malformed.", HttpServletResponse.SC_BAD_REQUEST),
+
+    /**
+     * Invalid region provided in authentication
+     */
+    AUTHENTICATION_ERROR_INVALID_REGION(99229, "Invalid AWS region provided during authentication.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
      * Generic not found error.

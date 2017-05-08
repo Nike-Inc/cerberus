@@ -103,7 +103,7 @@ public class OneLoginAuthConnectorTest {
     @Test
     public void test_authenticate_when_mfa_is_not_setup() {
 
-        setupMockWhereLoginGivesError(400L, "mfa something error message");
+        setupMockWhereLoginGivesError(400, "mfa something error message");
 
         try {
             // invoke method under test
@@ -118,7 +118,7 @@ public class OneLoginAuthConnectorTest {
 
     @Test
     public void test_authenticate_with_bad_creds() {
-        setupMockWhereLoginGivesError(400L, "any other error message");
+        setupMockWhereLoginGivesError(401, "any other error message");
 
         try {
             // invoke method under test
@@ -240,7 +240,7 @@ public class OneLoginAuthConnectorTest {
     @Test
     public void test_verifyFactor_with_400_error() {
 
-        setupMockWhereVerifyGivesError(400L, "any error message");
+        setupMockWhereVerifyGivesError(401, "any error message");
 
         try {
             // invoke method under test

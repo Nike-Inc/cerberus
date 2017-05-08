@@ -20,6 +20,8 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.google.common.collect.Maps;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.error.DefaultApiError;
 
 import javax.inject.Singleton;
 import java.util.Map;
@@ -62,7 +64,11 @@ public class KmsClientFactory {
             final Region region = Region.getRegion(Regions.fromName(regionName));
             return getClient(region);
         } catch (IllegalArgumentException iae) {
-            throw new IllegalArgumentException("Specified region is not valid.", iae);
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.AUTHENTICATION_ERROR_INVALID_REGION)
+                    .withExceptionCause(iae.getCause())
+                    .withExceptionMessage("Specified region is not valid.")
+                    .build();
         }
     }
 }
