@@ -26,6 +26,7 @@ import com.nike.cerberus.validation.group.Updatable;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -58,8 +59,13 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV1> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> updateSafeDepositBox(request), longRunningTaskExecutor);
+    public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<SafeDepositBoxV1> request,
+                                                         Executor longRunningTaskExecutor,
+                                                         ChannelHandlerContext ctx) {
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> updateSafeDepositBox(request), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     private ResponseInfo<Void> updateSafeDepositBox(final RequestInfo<SafeDepositBoxV1> request) {

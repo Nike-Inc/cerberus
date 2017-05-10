@@ -21,6 +21,7 @@ import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -46,14 +47,14 @@ public class GetCategory extends StandardEndpoint<Void, Category> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Category>> execute(
-        RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx
-    ) {
+    public CompletableFuture<ResponseInfo<Category>> execute(RequestInfo<Void> request,
+                                                             Executor longRunningTaskExecutor,
+                                                             ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-            () -> {
-                String id = request.getPathParam(PATH_PARAM_ID);
-                return getCategory(id);
-            },
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> {
+                    String id = request.getPathParam(PATH_PARAM_ID);
+                    return getCategory(id);
+                }, ctx),
             longRunningTaskExecutor
         );
     }

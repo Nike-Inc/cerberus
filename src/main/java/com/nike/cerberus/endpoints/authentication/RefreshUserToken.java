@@ -25,6 +25,7 @@ import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -53,10 +54,10 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
 
     @Override
     public CompletableFuture<ResponseInfo<AuthResponse>> execute(final RequestInfo<Void> request,
-                                                                      final Executor longRunningTaskExecutor,
-                                                                      final ChannelHandlerContext ctx) {
+                                                                 final Executor longRunningTaskExecutor,
+                                                                 final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-                () -> getRefreshedUserToken(request),
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> getRefreshedUserToken(request), ctx),
                 longRunningTaskExecutor
         );
     }

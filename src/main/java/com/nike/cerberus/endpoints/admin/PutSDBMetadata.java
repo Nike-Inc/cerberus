@@ -23,6 +23,7 @@ import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -54,19 +55,24 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
                                                            ChannelHandlerContext ctx,
                                                            SecurityContext securityContext) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> restoreSdbMetadata(request, securityContext), ctx),
+                longRunningTaskExecutor
+        );
+    }
 
-            String principal = vaultAuthPrincipal.getName();
+    private ResponseInfo<Void> restoreSdbMetadata(RequestInfo<SDBMetadata> request, SecurityContext securityContext) {
+        VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
 
-            log.info("Metadata Restore Event: the principal {} is attempting to restore sdb name: '{}'", principal, request.getContent().getName());
+        String principal = vaultAuthPrincipal.getName();
 
-            metadataService.restoreMetadata(request.getContent(), principal);
+        log.info("Metadata Restore Event: the principal {} is attempting to restore sdb name: '{}'", principal, request.getContent().getName());
 
-            return ResponseInfo.<Void>newBuilder()
-                    .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
-                    .build();
-        }, longRunningTaskExecutor);
+        metadataService.restoreMetadata(request.getContent(), principal);
+
+        return ResponseInfo.<Void>newBuilder()
+                .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
+                .build();
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,7 +44,6 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for deleting a safe deposit box.
  */
-@Deprecated
 public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -59,7 +59,10 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     @Override
     public CompletableFuture<ResponseInfo<Void>> execute(RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> deleteSafeDepositBox(request), longRunningTaskExecutor);
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> deleteSafeDepositBox(request), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     private ResponseInfo<Void> deleteSafeDepositBox(final RequestInfo<Void> request) {

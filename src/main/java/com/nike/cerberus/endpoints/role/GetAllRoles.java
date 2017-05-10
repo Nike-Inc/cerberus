@@ -21,6 +21,7 @@ import com.nike.cerberus.service.RoleService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -47,7 +48,9 @@ public class GetAllRoles extends StandardEndpoint<Void, List<Role>> {
                                                                final Executor longRunningTaskExecutor,
                                                                final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(roleService.getAllRoles()).build(), longRunningTaskExecutor);
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> ResponseInfo.newBuilder(roleService.getAllRoles()).build(), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     @Override

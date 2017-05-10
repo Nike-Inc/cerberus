@@ -23,6 +23,7 @@ import com.nike.cerberus.endpoints.AdminStandardEndpoint;
 import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -53,11 +54,10 @@ public class CreateCategory extends AdminStandardEndpoint<Category, Void> {
     public CompletableFuture<ResponseInfo<Void>> doExecute(final RequestInfo<Category> request,
                                                            final Executor longRunningTaskExecutor,
                                                            final ChannelHandlerContext ctx,
-                                                           final SecurityContext securityContext
-    ) {
+                                                           final SecurityContext securityContext) {
         return CompletableFuture.supplyAsync(
-            () -> createCategory(request.getContent(), securityContext, CATEGORY_PATH),
-            longRunningTaskExecutor
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> createCategory(request.getContent(), securityContext, CATEGORY_PATH), ctx),
+                longRunningTaskExecutor
         );
     }
 
@@ -71,8 +71,8 @@ public class CreateCategory extends AdminStandardEndpoint<Category, Void> {
         final String id = categoryService.createCategory(category, securityContext.getUserPrincipal().getName());
         final String location = basePathNoId + "/" + id;
         return ResponseInfo.<Void>newBuilder().withHeaders(new DefaultHttpHeaders().set(LOCATION, location))
-                                              .withHttpStatusCode(201)
-                                              .build();
+                .withHttpStatusCode(201)
+                .build();
     }
 
     @Override

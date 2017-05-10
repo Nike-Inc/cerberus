@@ -17,12 +17,13 @@
 
 package com.nike.cerberus.endpoints.authentication;
 
-import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -52,13 +53,18 @@ public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCrede
     public CompletableFuture<ResponseInfo<IamRoleAuthResponse>> execute(final RequestInfo<IamPrincipalCredentials> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> {
-            IamPrincipalCredentials credentials = request.getContent();
-            log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
-                    credentials.getIamPrincipalArn(), credentials.getRegion());
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> authenticate(request), ctx),
+                longRunningTaskExecutor
+        );
+    }
 
-            return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
-        }, longRunningTaskExecutor);
+    private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamPrincipalCredentials> request) {
+        IamPrincipalCredentials credentials = request.getContent();
+        log.info("IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
+                credentials.getIamPrincipalArn(), credentials.getRegion());
+
+        return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
     }
 
     @Override
