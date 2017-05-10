@@ -19,7 +19,7 @@ repositories {
     jcenter()
 }
 
-def riposteVersion = '0.8.1'
+def riposteVersion = '0.9.4'
 def logbackVersion = '1.1.7'
 // Request version 4 for full java 8 support
 def guiceVersion = '4.0'
