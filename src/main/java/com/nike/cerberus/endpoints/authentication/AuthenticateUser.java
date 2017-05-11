@@ -24,6 +24,7 @@ import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -57,16 +58,17 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
                                                                  final Executor longRunningTaskExecutor,
                                                                  final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-                () -> {
-                    final UserCredentials credentials =
-                            extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
-
-                    log.info("User Auth Event: the principal: {} is attempting to authenticate", credentials.getUsername());
-
-                    return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
-                },
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> authenticate(request), ctx),
                 longRunningTaskExecutor
         );
+    }
+
+    private ResponseInfo<AuthResponse> authenticate(RequestInfo<Void> request) {
+        final UserCredentials credentials = extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
+
+        log.info("User Auth Event: the principal: {} is attempting to authenticate", credentials.getUsername());
+
+        return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
     }
 
     @Override

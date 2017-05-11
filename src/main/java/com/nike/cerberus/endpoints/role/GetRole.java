@@ -22,6 +22,7 @@ import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.server.http.impl.FullResponseInfo;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -47,9 +48,13 @@ public class GetRole extends StandardEndpoint<Void, Role> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Role>> execute(RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Role>> execute(RequestInfo<Void> request,
+                                                         Executor longRunningTaskExecutor,
+                                                         ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-                () -> getRole(request.getPathParam(PATH_PARAM_ID)), longRunningTaskExecutor);
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> getRole(request.getPathParam(PATH_PARAM_ID)), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     public FullResponseInfo<Role> getRole(final String id) {

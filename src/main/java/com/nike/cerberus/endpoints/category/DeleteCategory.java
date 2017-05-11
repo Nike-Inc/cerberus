@@ -20,6 +20,7 @@ import com.nike.cerberus.endpoints.AdminStandardEndpoint;
 import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -48,11 +49,10 @@ public class DeleteCategory extends AdminStandardEndpoint<Void, Void> {
     public CompletableFuture<ResponseInfo<Void>> doExecute(final RequestInfo<Void> request,
                                                            final Executor longRunningTaskExecutor,
                                                            final ChannelHandlerContext ctx,
-                                                           final SecurityContext securityContext
-    ) {
+                                                           final SecurityContext securityContext) {
         return CompletableFuture.supplyAsync(
-            () -> deleteCategory(request.getPathParam(PATH_PARAM_ID)),
-            longRunningTaskExecutor
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> deleteCategory(request.getPathParam(PATH_PARAM_ID)), ctx),
+                longRunningTaskExecutor
         );
     }
 

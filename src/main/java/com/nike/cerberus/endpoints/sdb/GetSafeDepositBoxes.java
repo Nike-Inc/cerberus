@@ -26,6 +26,7 @@ import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,7 +45,6 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
-@Deprecated
 public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDepositBoxSummary>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -60,7 +60,10 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
     public CompletableFuture<ResponseInfo<List<SafeDepositBoxSummary>>> execute(final RequestInfo<Void> request,
                                                                                 final Executor longRunningTaskExecutor,
                                                                                 final ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> getSafeDepositBoxes(request), longRunningTaskExecutor);
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> getSafeDepositBoxes(request), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     public ResponseInfo<List<SafeDepositBoxSummary>> getSafeDepositBoxes(final RequestInfo<Void> request) {

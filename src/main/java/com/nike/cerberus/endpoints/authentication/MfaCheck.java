@@ -22,6 +22,7 @@ import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -47,7 +48,10 @@ public class MfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
                                                                  final Executor longRunningTaskExecutor,
                                                                  final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(authenticationService.mfaCheck(request.getContent())).build(),
+                AsyncNettyHelper.supplierWithTracingAndMdc(
+                        () -> ResponseInfo.newBuilder(authenticationService.mfaCheck(request.getContent())).build(),
+                        ctx
+                ),
                 longRunningTaskExecutor
         );
     }

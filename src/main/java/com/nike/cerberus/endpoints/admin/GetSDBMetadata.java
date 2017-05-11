@@ -25,6 +25,8 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
+import com.nike.riposte.server.http.impl.FullResponseInfo;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -57,15 +59,20 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx,
                                                                         final SecurityContext securityContext) {
-
         return CompletableFuture.supplyAsync(
-                () -> ResponseInfo.newBuilder(metadataService.getSDBMetadata(getLimit(request), getOffset(request)))
-                        .build(), longRunningTaskExecutor
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> getMetadata(request), ctx),
+                longRunningTaskExecutor
         );
+    }
+
+    private FullResponseInfo<SDBMetadataResult> getMetadata(RequestInfo<Void> request) {
+        return ResponseInfo.newBuilder(metadataService.getSDBMetadata(getLimit(request), getOffset(request)))
+                .build();
     }
 
     /**
      * Parses and validates limit query param
+     *
      * @param request The request
      * @return default or parsed vaule
      */
@@ -83,10 +90,11 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
 
     /**
      * validates that the limit query is a valid number >= 1
+     *
      * @param limitQueryValue
      */
     protected void validateLimitQuery(String limitQueryValue) {
-        if (! StringUtils.isNumeric(limitQueryValue) || Integer.parseInt(limitQueryValue) < 1) {
+        if (!StringUtils.isNumeric(limitQueryValue) || Integer.parseInt(limitQueryValue) < 1) {
             throw ApiException.newBuilder()
                     .withApiErrors(new ApiErrorBase(
                             DefaultApiError.INVALID_QUERY_PARAMS.getName(),
@@ -99,6 +107,7 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
 
     /**
      * Parses and validates offset query param
+     *
      * @param request The request
      * @return default or parsed vaule
      */
@@ -116,10 +125,11 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
 
     /**
      * Validates that the offset value is a number that is >= 0
+     *
      * @param offsetQueryValue
      */
     protected void validateOffsetQuery(String offsetQueryValue) {
-        if (! StringUtils.isNumeric(offsetQueryValue)) {
+        if (!StringUtils.isNumeric(offsetQueryValue)) {
             throw ApiException.newBuilder()
                     .withApiErrors(new ApiErrorBase(
                             DefaultApiError.INVALID_QUERY_PARAMS.getName(),

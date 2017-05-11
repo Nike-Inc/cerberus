@@ -24,6 +24,7 @@ import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -55,7 +56,10 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
     public CompletableFuture<ResponseInfo<Void>> execute(final RequestInfo<Void> request,
                                                          final Executor longRunningTaskExecutor,
                                                          final ChannelHandlerContext ctx) {
-        return CompletableFuture.supplyAsync(() -> revokeToken(request), longRunningTaskExecutor);
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> revokeToken(request), ctx),
+                longRunningTaskExecutor
+        );
     }
 
     public ResponseInfo<Void> revokeToken(RequestInfo<Void> request) {
