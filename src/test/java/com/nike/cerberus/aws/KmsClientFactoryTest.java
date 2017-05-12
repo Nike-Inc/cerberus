@@ -19,6 +19,7 @@ package com.nike.cerberus.aws;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
+import com.nike.backstopper.exception.ApiException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +57,7 @@ public class KmsClientFactoryTest {
         assertThat(client).isNotNull();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ApiException.class)
     public void get_client_by_region_string_throws_exception_if_bad_region_passed() {
         subject.getClient(badRegionName);
     }

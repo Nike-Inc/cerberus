@@ -25,6 +25,8 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -87,6 +89,7 @@ public class AuthenticationService {
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final String DEFAULT_TOKEN_TTL = "1h";
+    public static final int KMS_SIZE_LIMIT = 4096;
 
     private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
@@ -247,6 +250,43 @@ public class AuthenticationService {
                     .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
                     .build();
         }
+
+        // if the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata and policies from the token
+        // This information is stored in Vault and can be fetched by the client with a look-up self call
+        if (authResponseJson.length > KMS_SIZE_LIMIT) {
+            String originalMetadata = "unknown";
+            String originalPolicies = "unknown";
+            try {
+                originalMetadata = objectMapper.writeValueAsString(authResponse.getMetadata());
+                originalPolicies = objectMapper.writeValueAsString(authResponse.getPolicies());
+            } catch (JsonProcessingException e) {
+                logger.warn("Failed to serialize original metadata or policies for token generated for IAM Principal: {}", credentials.getIamPrincipalArn());
+            }
+
+            authResponse.setMetadata(ImmutableMap.of("_truncated", "true"));
+            authResponse.setPolicies(ImmutableSet.of("_truncated"));
+
+            logger.error(
+                    "The auth token has length: {} which is > {} KMS cannot encrypt it, truncating token and removing policies and metadata " +
+                            "original metadata: {} " +
+                            "original policies: {}",
+                    authResponseJson.length,
+                    KMS_SIZE_LIMIT,
+                    originalMetadata,
+                    originalPolicies
+            );
+
+            try {
+                authResponseJson = objectMapper.writeValueAsBytes(authResponse);
+            } catch (JsonProcessingException e) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                        .withExceptionCause(e)
+                        .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
+                        .build();
+            }
+        }
+
         final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
 
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
