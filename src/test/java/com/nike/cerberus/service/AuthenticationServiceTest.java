@@ -26,6 +26,7 @@ import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
+import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
 import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
@@ -33,6 +34,8 @@ import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.model.VaultAuthResponse;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.assertj.core.util.Lists;
+import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -40,16 +43,22 @@ import org.mockito.Mock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.PatternSyntaxException;
 
+import static com.nike.cerberus.service.AuthenticationService.LOOKUP_SELF_POLICY;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,7 +130,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void tests_that_getKeyId_only_validates_kms_policy_one_time_within_interval() {
+    public void test_that_getKeyId_only_validates_kms_policy_one_time_within_interval() {
 
         String principalArn = "principal arn";
         String region = "region";
@@ -156,6 +165,128 @@ public class AuthenticationServiceTest {
         // verify validate is called once interval has passed
         assertEquals(cmkId, result);
         verify(kmsService, times(1)).validatePolicy(awsIamRoleKmsKeyRecord, principalArn);
+    }
+
+    @Test
+    public void test_that_buildCompleteSetOfPolicies_returns_all_policies() {
+
+        String accountId = "0000000000";
+        String roleName = "role/path";
+        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+
+        String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+
+        String principalPolicy1 = "principal policy 1";
+        String principalPolicy2 = "principal policy 2";
+        String principalArnSdb1 = "principal arn sdb 1";
+        String principalArnSdb2 = "principal arn sdb 2";
+        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb1);
+        SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb2);
+        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2);
+        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn)).thenReturn(principalArnRecords);
+        when(vaultPolicyService.buildPolicyName(principalArnSdb1, roleName)).thenReturn(principalPolicy1);
+        when(vaultPolicyService.buildPolicyName(principalArnSdb2, roleName)).thenReturn(principalPolicy2);
+
+        String rolePolicy = "role policy";
+        String roleArnSdb = "role arn sdb";
+        SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(roleArnSdb);
+        List<SafeDepositBoxRoleRecord> roleArnRecords = Lists.newArrayList(roleArnRecord);
+        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(roleArn)).thenReturn(roleArnRecords);
+        when(vaultPolicyService.buildPolicyName(roleArnSdb, roleName)).thenReturn(rolePolicy);
+
+        List<String> expectedPolicies = Lists.newArrayList(principalPolicy1, principalPolicy2, rolePolicy, LOOKUP_SELF_POLICY);
+        Set<String> expected = Sets.newHashSet(expectedPolicies);
+        Set<String> result = authenticationService.buildCompleteSetOfPolicies(principalArn);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void test_that_buildCompleteSetOfPolicies_does_not_throw_error_if_role_arn_parsing_fails() {
+
+        String accountId = "0000000000";
+        String roleName = "role/path";
+        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+
+        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenThrow(new NullPointerException());
+
+        String principalPolicy1 = "principal policy";
+        String principalArnSdb1 = "principal arn sdb";
+        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb1);
+        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1);
+        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn)).thenReturn(principalArnRecords);
+        when(vaultPolicyService.buildPolicyName(principalArnSdb1, roleName)).thenReturn(principalPolicy1);
+
+        authenticationService.buildCompleteSetOfPolicies(principalArn);
+    }
+
+    @Test
+    public void test_that_findIamRoleAssociatedWithSdb_returns_first_matching_iam_role_record_if_found() {
+
+        String principalArn = "principal arn";
+        AwsIamRoleRecord awsIamRoleRecord = mock(AwsIamRoleRecord.class);
+        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.of(awsIamRoleRecord));
+
+        Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
+
+        assertEquals(awsIamRoleRecord, result.get());
+    }
+
+    @Test
+    public void test_that_findIamRoleAssociatedWithSdb_returns_generic_role_when_iam_principal_not_found() {
+
+        String accountId = "0000000000";
+        String roleName = "role/path";
+        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+        String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+
+        AwsIamRoleRecord awsIamRoleRecord = mock(AwsIamRoleRecord.class);
+        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
+        when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.of(awsIamRoleRecord));
+
+        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+
+        Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
+
+        assertEquals(awsIamRoleRecord, result.get());
+    }
+
+    @Test
+    public void test_that_findIamRoleAssociatedWithSdb_returns_empty_optional_when_roles_not_found() {
+
+        String accountId = "0000000000";
+        String roleName = "role/path";
+        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+        String roleArn = String.format("arn:aws:iam::%s:role/%s", accountId, roleName);
+
+        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
+        when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.empty());
+
+        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+
+        Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void test_that_findIamRoleAssociatedWithSdb_does_not_throw_error_if_role_arn_parsing_fails() {
+
+        String accountId = "0000000000";
+        String roleName = "role/path";
+        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+
+        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
+
+        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenThrow(new PatternSyntaxException("", "", 0));
+
+        authenticationService.findIamRoleAssociatedWithSdb(principalArn);
     }
 
     @Test

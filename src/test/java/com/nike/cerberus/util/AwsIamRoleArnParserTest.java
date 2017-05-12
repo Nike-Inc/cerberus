@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,5 +65,43 @@ public class AwsIamRoleArnParserTest {
     public void getRoleName_fails_on_invalid_arn() {
 
         awsIamRoleArnParser.getRoleName("brouhaha");
+    }
+
+    @Test
+    public void convertPrincipalArnToRoleArn_properly_converts_principals_to_role_arns() {
+
+        assertEquals("arn:aws:iam::1111111111:role/lamb_dev_health", awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:sts::1111111111:federated-user/lamb_dev_health"));
+        assertEquals("arn:aws:iam::2222222222:role/prince_role", awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:sts::2222222222:assumed-role/prince_role/session-name"));
+        assertEquals("arn:aws:iam::2222222222:role/sir/alfred/role", awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:sts::2222222222:assumed-role/sir/alfred/role/session-name"));
+        assertEquals("arn:aws:iam::3333333333:role/path/to/foo", awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:iam::3333333333:role/path/to/foo"));
+        assertEquals("arn:aws:iam::4444444444:role/name", awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:iam::4444444444:role/name"));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void convertPrincipalArnToRoleArn_fails_on_invalid_arn() {
+
+        awsIamRoleArnParser.convertPrincipalArnToRoleArn("foobar");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void convertPrincipalArnToRoleArn_fails_on_group_arn() {
+
+        awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:iam::1111111111:group/path/to/group");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void convertPrincipalArnToRoleArn_fails_on_invalid_assumed_role_arn() {
+
+        awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:sts::1111111111:assumed-role/blah");
+    }
+
+    @Test
+    public void isRoleArn_returns_true_when_is_role_arn()  {
+
+        assertTrue(awsIamRoleArnParser.isRoleArn("arn:aws:iam::2222222222:role/fancy/role/path"));
+        assertTrue(awsIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:role/name"));
+        assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:iam::3333333333:assumed-role/happy/path"));
+        assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:sts::1111111111:federated-user/my_user"));
+        assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:group/path/to/group"));
     }
 }

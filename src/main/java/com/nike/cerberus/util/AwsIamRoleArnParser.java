@@ -19,6 +19,7 @@ package com.nike.cerberus.util;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.InvalidIamRoleArnApiError;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,40 +27,68 @@ import java.util.regex.Pattern;
 /**
  * Utility class for concatenating and parsing AWS IAM role ARNs.
  */
-// TODO: remove
 public class AwsIamRoleArnParser {
 
     public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
     public static final String AWS_IAM_ROLE_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
 
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::.+$";
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(?!group).+?/(?<roleName>.+)$";
+
+    public static final String AWS_IAM_ASSUMED_ROLE_ARN_REGEX = "^arn:aws:sts::(?<accountId>\\d+?):assumed-role/(?<roleName>.+)/.+$";
+
+    private static final String GENERIC_ASSUMED_ROLE_REGEX = "^arn:aws:sts::(?<accountId>\\d+?):assumed-role/.+$";
 
     private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
 
-    public String getAccountId(String roleArn) {
+    private static final Pattern IAM_PRINCIPAL_ARN_PATTERN = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX);
 
-        Matcher iamRoleArnMatcher = IAM_ROLE_ARN_PATTERN.matcher(roleArn);
+    private static final Pattern IAM_ASSUMED_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ASSUMED_ROLE_ARN_REGEX);
 
-        if (! iamRoleArnMatcher.find()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(new InvalidIamRoleArnApiError(roleArn))
-                    .build();
-        }
+    private static final Pattern GENERIC_ASSUMED_ROLE_PATTERN = Pattern.compile(GENERIC_ASSUMED_ROLE_REGEX);
 
-        return iamRoleArnMatcher.group("accountId");
+    public String getAccountId(final String roleArn) {
+
+        return getNamedGroupFromPattern(IAM_ROLE_ARN_PATTERN, "accountId", roleArn);
     }
 
-    public String getRoleName(String roleArn) {
+    public String getRoleName(final String roleArn) {
 
-        Matcher iamRoleArnMatcher = IAM_ROLE_ARN_PATTERN.matcher(roleArn);
+        return getNamedGroupFromPattern(IAM_ROLE_ARN_PATTERN, "roleName", roleArn);
+
+    }
+
+    public boolean isRoleArn(final String arn) {
+
+        final Matcher iamRoleArnMatcher = IAM_ROLE_ARN_PATTERN.matcher(arn);
+
+        return iamRoleArnMatcher.find();
+    }
+
+    public String convertPrincipalArnToRoleArn(final String principalArn) {
+
+        if (isRoleArn(principalArn)) {
+            return principalArn;
+        }
+
+        final boolean isAssumedRole = GENERIC_ASSUMED_ROLE_PATTERN.matcher(principalArn).find();
+        final Pattern patternToMatch = isAssumedRole ? IAM_ASSUMED_ROLE_ARN_PATTERN : IAM_PRINCIPAL_ARN_PATTERN;
+
+        final String accountId = getNamedGroupFromPattern(patternToMatch, "accountId", principalArn);
+        final String roleName = getNamedGroupFromPattern(patternToMatch, "roleName", principalArn);
+
+        return String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    }
+
+    private String getNamedGroupFromPattern(final Pattern pattern, final String groupName, final String input) {
+        final Matcher iamRoleArnMatcher = pattern.matcher(input);
 
         if (! iamRoleArnMatcher.find()) {
             throw ApiException.newBuilder()
-                    .withApiErrors(new InvalidIamRoleArnApiError(roleArn))
+                    .withApiErrors(new InvalidIamRoleArnApiError(input))
                     .build();
         }
 
-        return iamRoleArnMatcher.group("roleName");
+        return iamRoleArnMatcher.group(groupName);
     }
 }
