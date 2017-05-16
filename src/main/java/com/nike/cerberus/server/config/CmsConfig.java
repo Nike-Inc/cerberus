@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.server.config;
 
+import com.google.inject.util.Modules;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
 import com.nike.cerberus.server.config.guice.*;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
@@ -85,9 +86,16 @@ public class CmsConfig implements ServerConfig {
         // Create a Guice Injector for this app.
         List<Module> appGuiceModules = new ArrayList<>();
         appGuiceModules.add(propertiesRegistrationGuiceModule);
-        appGuiceModules.addAll(getAppGuiceModules(appConfig));
+        appGuiceModules.addAll(Arrays.asList(
+                new CmsMyBatisModule(),
+                new BackstopperRiposteConfigGuiceModule(),
+                new CmsFlywayModule(),
+                new OneLoginGuiceModule()
+        ));
 
-        Injector appInjector = Guice.createInjector(appGuiceModules);
+        // bind the CMS Guice module last allowing the S3 props file to override any given application property
+        Injector appInjector = Guice.createInjector(Modules.override(appGuiceModules)
+                .with(new CmsGuiceModule(appConfig, objectMapper)));
 
         // Use the new Guice Injector to create a GuiceProvidedServerConfigValues, which will contain all the guice-provided config stuff for this app.
         this.guiceValues = appInjector.getProvider(GuiceProvidedServerConfigValues.class).get();
@@ -99,16 +107,6 @@ public class CmsConfig implements ServerConfig {
 
     public CmsConfig(Config appConfig) {
         this(appConfig, new TypesafeConfigPropertiesRegistrationGuiceModule(appConfig));
-    }
-
-    protected List<Module> getAppGuiceModules(Config appConfig) {
-        return Arrays.asList(
-                new CmsGuiceModule(appConfig, objectMapper),
-                new CmsMyBatisModule(),
-                new BackstopperRiposteConfigGuiceModule(),
-                new CmsFlywayModule(),
-                new OneLoginGuiceModule()
-        );
     }
 
     public static ObjectMapper configureObjectMapper() {
