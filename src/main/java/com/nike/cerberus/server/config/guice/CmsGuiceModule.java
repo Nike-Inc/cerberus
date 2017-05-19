@@ -50,6 +50,7 @@ import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
+import com.nike.vault.client.ClientVersion;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultClientFactory;
@@ -275,8 +276,11 @@ public class CmsGuiceModule extends AbstractModule {
      */
     @Singleton
     @Provides
-    public VaultAdminClient vaultAdminClient(UrlResolver urlResolver, VaultCredentialsProvider vaultCredentialsProvider) {
-        return VaultClientFactory.getAdminClient(urlResolver, vaultCredentialsProvider);
+    public VaultAdminClient vaultAdminClient(UrlResolver urlResolver,
+                                             VaultCredentialsProvider vaultCredentialsProvider,
+                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost) {
+        logger.info("Vault clientVersion={}, maxRequestsPerHost={}, url={}", ClientVersion.getVersion(), vaultMaxRequestsPerHost, urlResolver.resolve());
+        return VaultClientFactory.getAdminClient(urlResolver, vaultCredentialsProvider, vaultMaxRequestsPerHost);
     }
 
     @Provides

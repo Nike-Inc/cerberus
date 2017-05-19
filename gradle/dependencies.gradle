@@ -28,7 +28,7 @@ def groovyVersion = '2.3.9'
 
 dependencies {
     compile (
-            "com.nike:vault-client:1.0.0",
+            "com.nike:vault-client:1.4.0",
             "com.nike.riposte:riposte-spi:$riposteVersion",
             "com.nike.riposte:riposte-core:$riposteVersion",
             "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
