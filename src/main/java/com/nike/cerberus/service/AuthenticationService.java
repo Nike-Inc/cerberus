@@ -238,7 +238,7 @@ public class AuthenticationService {
                 .setTtl(iamTokenTTL)
                 .setNoDefaultPolicy(true);
 
-        final VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
+        VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
 
         byte[] authResponseJson;
         try {
@@ -251,47 +251,67 @@ public class AuthenticationService {
                     .build();
         }
 
-        // if the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata and policies from the token
-        // This information is stored in Vault and can be fetched by the client with a look-up self call
-        if (authResponseJson.length > KMS_SIZE_LIMIT) {
-            String originalMetadata = "unknown";
-            String originalPolicies = "unknown";
-            try {
-                originalMetadata = objectMapper.writeValueAsString(authResponse.getMetadata());
-                originalPolicies = objectMapper.writeValueAsString(authResponse.getPolicies());
-            } catch (JsonProcessingException e) {
-                logger.warn("Failed to serialize original metadata or policies for token generated for IAM Principal: {}", credentials.getIamPrincipalArn());
-            }
-
-            authResponse.setMetadata(ImmutableMap.of("_truncated", "true"));
-            authResponse.setPolicies(ImmutableSet.of("_truncated"));
-
-            logger.error(
-                    "The auth token has length: {} which is > {} KMS cannot encrypt it, truncating token and removing policies and metadata " +
-                            "original metadata: {} " +
-                            "original policies: {}",
-                    authResponseJson.length,
-                    KMS_SIZE_LIMIT,
-                    originalMetadata,
-                    originalPolicies
-            );
-
-            try {
-                authResponseJson = objectMapper.writeValueAsBytes(authResponse);
-            } catch (JsonProcessingException e) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                        .withExceptionCause(e)
-                        .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
-                        .build();
-            }
-        }
+        authResponseJson = validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(authResponseJson,
+                authResponse, credentials.getIamPrincipalArn());
 
         final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
 
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
         return iamRoleAuthResponse;
+    }
+
+    /**
+     * if the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata
+     * and policies from the token.
+     *
+     * This information is stored in Vault and can be fetched by the client with a look-up self call
+     *
+     * @param authResponseJson The current serialized auth payload
+     * @param authResponse The response object, with the original policies and metadata
+     * @param iamPrincipal The calling iam principal
+     * @return a serialized auth payload that KMS can encrypt
+     */
+    protected byte[] validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(byte[] authResponseJson,
+                                                                                     VaultAuthResponse authResponse,
+                                                                                     String iamPrincipal) {
+
+        if (authResponseJson.length <= KMS_SIZE_LIMIT) {
+            return authResponseJson;
+        }
+
+        String originalMetadata = "unknown";
+        String originalPolicies = "unknown";
+        try {
+            originalMetadata = objectMapper.writeValueAsString(authResponse.getMetadata());
+            originalPolicies = objectMapper.writeValueAsString(authResponse.getPolicies());
+        } catch (JsonProcessingException e) {
+            logger.warn("Failed to serialize original metadata or policies for token generated for IAM Principal: {}", iamPrincipal, e);
+        }
+
+        authResponse.setMetadata(ImmutableMap.of("_truncated", "true"));
+        authResponse.setPolicies(ImmutableSet.of("_truncated"));
+
+        logger.warn(
+                "The auth token has length: {} which is > {} KMS cannot encrypt it, truncating auth payload by removing policies and metadata " +
+                        "original metadata: {} " +
+                        "original policies: {}",
+                authResponseJson.length,
+                KMS_SIZE_LIMIT,
+                originalMetadata,
+                originalPolicies
+        );
+
+        try {
+            return objectMapper.writeValueAsBytes(authResponse);
+        } catch (JsonProcessingException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+                    .withExceptionCause(e)
+                    .withExceptionMessage("Failed to write IAM role authentication response as JSON for encrypting.")
+                    .build();
+        }
+
     }
 
     /**
