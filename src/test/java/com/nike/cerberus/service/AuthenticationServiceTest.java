@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
@@ -26,25 +27,29 @@ import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
-import org.joda.time.DateTime;
+import com.nike.vault.client.model.VaultAuthResponse;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,10 +81,7 @@ public class AuthenticationServiceTest {
     @Mock
     private VaultPolicyService vaultPolicyService;
 
-    @Mock
     private ObjectMapper objectMapper;
-
-//    @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
 
     @Mock
     private DateTimeSupplier dateTimeSupplier;
@@ -87,13 +89,16 @@ public class AuthenticationServiceTest {
     @Mock
     private AwsIamRoleArnParser awsIamRoleArnParser;
 
-    @InjectMocks
     private AuthenticationService authenticationService;
 
     @Before
     public void setup() {
-
         initMocks(this);
+        objectMapper = CmsConfig.configureObjectMapper();
+        authenticationService = new AuthenticationService(safeDepositBoxDao,
+                awsIamRoleDao, authConnector, kmsService, kmsClientFactory,
+                vaultAdminClient, vaultPolicyService, objectMapper, "foo",
+                dateTimeSupplier, awsIamRoleArnParser);
     }
 
     @Test
@@ -153,4 +158,43 @@ public class AuthenticationServiceTest {
         verify(kmsService, times(1)).validatePolicy(awsIamRoleKmsKeyRecord, principalArn);
     }
 
+    @Test
+    public void tests_that_validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize_returns_the_original_payload_if_the_size_can_be_encrypted_by_kms() throws JsonProcessingException {
+        VaultAuthResponse response = new VaultAuthResponse()
+                .setClientToken(UUID.randomUUID().toString())
+                .setLeaseDuration(3600)
+                .setMetadata(new HashMap<>())
+                .setPolicies(new HashSet<>())
+                .setRenewable(false);
+
+        byte[] serializedAuth = new ObjectMapper().writeValueAsBytes(response);
+
+        byte[] actual = authenticationService.validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(serializedAuth, response, "foo");
+
+        assertEquals(serializedAuth, actual);
+    }
+
+    @Test
+    public void tests_that_validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize_returns_a_truncated_payload_if_the_size_cannot_be_encrypted_by_kms() throws JsonProcessingException {
+        Map<String, String> meta = new HashMap<>();
+        Set<String> policies = new HashSet<>();
+        for (int i = 0; i < 100; i++) {
+            policies.add(RandomStringUtils.random(25));
+        }
+
+        VaultAuthResponse response = new VaultAuthResponse()
+                .setClientToken(UUID.randomUUID().toString())
+                .setLeaseDuration(3600)
+                .setMetadata(meta)
+                .setPolicies(policies)
+                .setRenewable(false);
+
+        byte[] serializedAuth = new ObjectMapper().writeValueAsBytes(response);
+        assertTrue(serializedAuth.length > AuthenticationService.KMS_SIZE_LIMIT);
+
+        byte[] actual = authenticationService.validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(serializedAuth, response, "foo");
+
+        assertNotEquals(serializedAuth, actual);
+        assertTrue(actual.length < AuthenticationService.KMS_SIZE_LIMIT);
+    }
 }
