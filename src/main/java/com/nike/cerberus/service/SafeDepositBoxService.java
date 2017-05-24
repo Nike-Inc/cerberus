@@ -749,6 +749,9 @@ public class SafeDepositBoxService {
             updateOwner(safeDepositBox.getId(), safeDepositBox.getOwner(), adminUser, now);
             modifyUserGroupPermissions(existingBox, safeDepositBox.getUserGroupPermissions(), adminUser, now);
             modifyIamPrincipalPermissions(existingBox, safeDepositBox.getIamPrincipalPermissions(), adminUser, now);
+
+            // add/update the vault policies, in case they were tampered with or deleted
+            vaultPolicyService.createStandardPolicies(safeDepositBox.getName(), safeDepositBox.getPath());
         } else {
             safeDepositBoxDao.createSafeDepositBox(boxToStore);
             addOwnerPermission(safeDepositBox.getUserGroupPermissions(), safeDepositBox.getOwner());
