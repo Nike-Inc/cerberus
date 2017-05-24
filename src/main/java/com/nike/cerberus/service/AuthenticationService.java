@@ -401,20 +401,22 @@ public class AuthenticationService {
         return policies;
     }
 
+    /**
+     * Build a set of policies that is allowed for the specific IAM principal (e.g. an assumed user, or instance profile)
+     * as well as the generic role ARN (i.e. arn:aws:iam::1111111111:role/example)
+     * @param iamPrincipalArn - The given IAM principal ARN during authentication
+     * @return - List of all policies the given ARN has access to
+     */
     protected Set<String> buildCompleteSetOfPolicies(final String iamPrincipalArn) {
 
         final Set<String> allPolicies = buildPolicySet(iamPrincipalArn);
 
-        try {
-            if (! awsIamRoleArnParser.isRoleArn(iamPrincipalArn)) {
-                logger.debug("Could not find IAM role in principal format, trying 'role' format...");
-                final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
+        if (! awsIamRoleArnParser.isRoleArn(iamPrincipalArn)) {
+            logger.debug("Could not find IAM role in principal format, trying 'role' format...");
+            final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
-                final Set<String> additionalPolicies = buildPolicySet(iamPrincipalInRoleFormat);
-                allPolicies.addAll(additionalPolicies);
-            }
-        } catch (Exception e) {
-            logger.debug("Failed to convert principal ARN to role ARN");
+            final Set<String> additionalPolicies = buildPolicySet(iamPrincipalInRoleFormat);
+            allPolicies.addAll(additionalPolicies);
         }
 
         return allPolicies;
@@ -448,7 +450,6 @@ public class AuthenticationService {
      */
     protected String getKeyId(IamPrincipalCredentials credentials) {
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
-        final String region = credentials.getRegion();
         final Optional<AwsIamRoleRecord> iamRole = findIamRoleAssociatedWithSdb(iamPrincipalArn);
 
         if (!iamRole.isPresent()) {
@@ -458,14 +459,14 @@ public class AuthenticationService {
                     .build();
         }
 
-        final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRole.get().getId(), region);
+        final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRole.get().getId(), credentials.getRegion());
 
         final String kmsKeyId;
         final AwsIamRoleKmsKeyRecord kmsKeyRecord;
         final OffsetDateTime now = dateTimeSupplier.get();
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), iamPrincipalArn, region, SYSTEM_USER, now);
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), iamPrincipalArn, credentials.getRegion(), SYSTEM_USER, now);
         } else {
             kmsKeyRecord = kmsKey.get();
             kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
@@ -526,6 +527,12 @@ public class AuthenticationService {
         return adminRoleArnSet;
     }
 
+    /**
+     * Generate map of Vault token metadata that is common to all principals
+     * @param iamPrincipalArn - The authenticating IAM principal ARN
+     * @param region - The AWS region
+     * @return - Map of token metadata
+     */
     protected Map<String, String> generateCommonVaultPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
         Map<String, String> metadata = Maps.newHashMap();
         metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
@@ -546,20 +553,22 @@ public class AuthenticationService {
         return metadata;
     }
 
+    /**
+     * Search for the given IAM principal (e.g. instance profile, or assumed user), if not found, then search for the
+     * generic role ARN (i.e. arn:aws:iam::1111111111:role/example)
+     * @param iamPrincipalArn - The authenticating IAM principal ARN
+     * @return - The associated IAM role record
+     */
     protected Optional<AwsIamRoleRecord> findIamRoleAssociatedWithSdb(final String iamPrincipalArn) {
         Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(iamPrincipalArn);
 
-        try {
-            // if the arn is not already in 'role' format, and cannot be found,
-            // then try checking for the generic "arn:aws:iam::0000000000:role/foo" format
-            if ( !( awsIamRoleArnParser.isRoleArn(iamPrincipalArn) || iamRole.isPresent() ) ) {
-                logger.debug("Could not find IAM role in principal format, trying 'role' format...");
-                final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
+        // if the arn is not already in 'role' format, and cannot be found,
+        // then try checking for the generic "arn:aws:iam::0000000000:role/foo" format
+        if (!iamRole.isPresent() && !awsIamRoleArnParser.isRoleArn(iamPrincipalArn) ) {
+            logger.debug("Could not find IAM role in principal format, trying 'role' format...");
+            final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
-                iamRole = awsIamRoleDao.getIamRole(iamPrincipalInRoleFormat);
-            }
-        } catch(Exception e) {
-            logger.debug("Failed to convert principal ARN to role ARN");
+            iamRole = awsIamRoleDao.getIamRole(iamPrincipalInRoleFormat);
         }
 
         return iamRole;

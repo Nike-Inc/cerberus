@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.PatternSyntaxException;
 
 import static com.nike.cerberus.service.AuthenticationService.LOOKUP_SELF_POLICY;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
@@ -58,7 +57,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -204,26 +203,6 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void test_that_buildCompleteSetOfPolicies_does_not_throw_error_if_role_arn_parsing_fails() {
-
-        String accountId = "0000000000";
-        String roleName = "role/path";
-        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-
-        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
-        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenThrow(new NullPointerException());
-
-        String principalPolicy1 = "principal policy";
-        String principalArnSdb1 = "principal arn sdb";
-        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb1);
-        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1);
-        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn)).thenReturn(principalArnRecords);
-        when(vaultPolicyService.buildPolicyName(principalArnSdb1, roleName)).thenReturn(principalPolicy1);
-
-        authenticationService.buildCompleteSetOfPolicies(principalArn);
-    }
-
-    @Test
     public void test_that_findIamRoleAssociatedWithSdb_returns_first_matching_iam_role_record_if_found() {
 
         String principalArn = "principal arn";
@@ -272,21 +251,6 @@ public class AuthenticationServiceTest {
         Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
 
         assertFalse(result.isPresent());
-    }
-
-    @Test
-    public void test_that_findIamRoleAssociatedWithSdb_does_not_throw_error_if_role_arn_parsing_fails() {
-
-        String accountId = "0000000000";
-        String roleName = "role/path";
-        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-
-        when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
-
-        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
-        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenThrow(new PatternSyntaxException("", "", 0));
-
-        authenticationService.findIamRoleAssociatedWithSdb(principalArn);
     }
 
     @Test
