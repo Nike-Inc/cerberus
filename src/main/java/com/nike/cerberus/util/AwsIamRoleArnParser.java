@@ -19,7 +19,6 @@ package com.nike.cerberus.util;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.InvalidIamRoleArnApiError;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,7 +53,7 @@ public class AwsIamRoleArnParser {
      */
     public String getAccountId(final String roleArn) {
 
-        return getNamedGroupFromPattern(IAM_ROLE_ARN_PATTERN, "accountId", roleArn);
+        return getNamedGroupFromRegexPattern(IAM_ROLE_ARN_PATTERN, "accountId", roleArn);
     }
 
     /**
@@ -64,7 +63,7 @@ public class AwsIamRoleArnParser {
      */
     public String getRoleName(final String roleArn) {
 
-        return getNamedGroupFromPattern(IAM_ROLE_ARN_PATTERN, "roleName", roleArn);
+        return getNamedGroupFromRegexPattern(IAM_ROLE_ARN_PATTERN, "roleName", roleArn);
 
     }
 
@@ -81,7 +80,7 @@ public class AwsIamRoleArnParser {
     }
 
     /**
-     * Converts a principal ARN (e.g. 'arn:aws:iam::0000000000:instance-profile/example') to a 'role' ARN,
+     * Converts a principal ARN (e.g. 'arn:aws:iam::0000000000:instance-profile/example') to a role ARN,
      * (i.e. 'arn:aws:iam::000000000:role/example')
      * @param principalArn - Principal ARN to convert
      * @return - Role ARN
@@ -95,13 +94,14 @@ public class AwsIamRoleArnParser {
         final boolean isAssumedRole = GENERIC_ASSUMED_ROLE_PATTERN.matcher(principalArn).find();
         final Pattern patternToMatch = isAssumedRole ? IAM_ASSUMED_ROLE_ARN_PATTERN : IAM_PRINCIPAL_ARN_PATTERN;
 
-        final String accountId = getNamedGroupFromPattern(patternToMatch, "accountId", principalArn);
-        final String roleName = getNamedGroupFromPattern(patternToMatch, "roleName", principalArn);
+        final String accountId = getNamedGroupFromRegexPattern(patternToMatch, "accountId", principalArn);
+        final String roleName = getNamedGroupFromRegexPattern(patternToMatch, "roleName", principalArn);
 
         return String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
     }
 
-    private String getNamedGroupFromPattern(final Pattern pattern, final String groupName, final String input) {
+
+    private String getNamedGroupFromRegexPattern(final Pattern pattern, final String groupName, final String input) {
         final Matcher iamRoleArnMatcher = pattern.matcher(input);
 
         if (! iamRoleArnMatcher.find()) {

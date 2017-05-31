@@ -402,8 +402,9 @@ public class AuthenticationService {
     }
 
     /**
-     * Build a set of policies that is allowed for the specific IAM principal (e.g. an assumed user, or instance profile)
-     * as well as the generic role ARN (i.e. arn:aws:iam::1111111111:role/example)
+     * Builds the policy set with permissions given to the specific IAM principal
+     * (e.g. arn:aws:iam::1111111111:instance-profile/example), as well as the base role that is assumed by that
+     * principal (i.e. arn:aws:iam::1111111111:role/example)
      * @param iamPrincipalArn - The given IAM principal ARN during authentication
      * @return - List of all policies the given ARN has access to
      */
@@ -412,7 +413,7 @@ public class AuthenticationService {
         final Set<String> allPolicies = buildPolicySet(iamPrincipalArn);
 
         if (! awsIamRoleArnParser.isRoleArn(iamPrincipalArn)) {
-            logger.debug("Could not find IAM role in principal format, trying 'role' format...");
+            logger.debug("Detected non-role ARN, attempting to collect policies for the principal's base role...");
             final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
             final Set<String> additionalPolicies = buildPolicySet(iamPrincipalInRoleFormat);
@@ -554,8 +555,8 @@ public class AuthenticationService {
     }
 
     /**
-     * Search for the given IAM principal (e.g. instance profile, or assumed user), if not found, then search for the
-     * generic role ARN (i.e. arn:aws:iam::1111111111:role/example)
+     * Search for the given IAM principal (e.g. arn:aws:iam::1111111111:instance-profile/example), if not found, then
+     * also search for the base role that the principal assumes (i.e. arn:aws:iam::1111111111:role/example)
      * @param iamPrincipalArn - The authenticating IAM principal ARN
      * @return - The associated IAM role record
      */
@@ -565,7 +566,7 @@ public class AuthenticationService {
         // if the arn is not already in 'role' format, and cannot be found,
         // then try checking for the generic "arn:aws:iam::0000000000:role/foo" format
         if (!iamRole.isPresent() && !awsIamRoleArnParser.isRoleArn(iamPrincipalArn) ) {
-            logger.debug("Could not find IAM role in principal format, trying 'role' format...");
+            logger.debug("Detected non-role ARN, attempting to find SDBs associated with the principal's base role...");
             final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
             iamRole = awsIamRoleDao.getIamRole(iamPrincipalInRoleFormat);
