@@ -21,6 +21,7 @@ import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -51,4 +52,12 @@ public interface AwsIamRoleMapper {
     int deleteIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
 
     int updateIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
+
+    List<AwsIamRoleKmsKeyRecord> getInactiveOrOrphanedKmsKeys(@Param("keyInactiveDateTime") OffsetDateTime keyInactiveDateTime);
+
+    List<AwsIamRoleRecord> getOrphanedIamRoles();
+
+    int deleteIamRoleById(@Param("id") final String id);
+
+    int deleteKmsKeyById(@Param("id") final String id);
 }

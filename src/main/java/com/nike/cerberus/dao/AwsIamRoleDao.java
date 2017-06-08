@@ -22,6 +22,7 @@ import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 
 import javax.inject.Inject;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,5 +80,21 @@ public class AwsIamRoleDao {
 
     public int updateIamRoleKmsKey(final AwsIamRoleKmsKeyRecord record) {
         return awsIamRoleMapper.updateIamRoleKmsKey(record);
+    }
+
+    public List<AwsIamRoleKmsKeyRecord> getInactiveOrOrphanedKmsKeys(final OffsetDateTime keyInactiveDateTime) {
+        return awsIamRoleMapper.getInactiveOrOrphanedKmsKeys(keyInactiveDateTime);
+    }
+
+    public List<AwsIamRoleRecord> getOrphanedIamRoles() {
+        return awsIamRoleMapper.getOrphanedIamRoles();
+    }
+
+    public int deleteIamRoleById(final String id) {
+        return awsIamRoleMapper.deleteIamRoleById(id);
+    }
+
+    public int deleteKmsKeyById(final String id) {
+        return awsIamRoleMapper.deleteKmsKeyById(id);
     }
 }

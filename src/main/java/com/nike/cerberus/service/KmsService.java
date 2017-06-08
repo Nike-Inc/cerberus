@@ -17,6 +17,7 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -26,6 +27,7 @@ import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
 import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
@@ -42,6 +44,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
@@ -55,9 +58,12 @@ public class KmsService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String KMS_ALIAS_FORMAT = "alias/cerberus/%s";
-    public static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
-    public static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000; // in milliseconds
 
+    private static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
+
+    private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000;  // in milliseconds
+
+    private static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
 
     private final AwsIamRoleDao awsIamRoleDao;
 
@@ -219,6 +225,21 @@ public class KmsService {
             logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s. API limit" +
                     " may have been reached for validate call.", awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion), e);
         }
+    }
+
+    /**
+     * Delete a CMK in AWS
+     * @param kmsKeyId - The AWS KMS Key ID
+     * @param region - The KMS key region
+     */
+    public void deleteKmsKeyInAws(String kmsKeyId, String region) {
+
+        final AWSKMSClient kmsClient = kmsClientFactory.getClient(region);
+        final ScheduleKeyDeletionRequest scheduleKeyDeletionRequest = new ScheduleKeyDeletionRequest()
+                .withKeyId(kmsKeyId)
+                .withPendingWindowInDays(SOONEST_A_KMS_KEY_CAN_BE_DELETED);
+
+        kmsClient.scheduleKeyDeletion(scheduleKeyDeletionRequest);
     }
 
     /**
