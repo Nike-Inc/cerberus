@@ -25,6 +25,8 @@ import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
 import com.okta.sdk.models.usergroups.UserGroupProfile;
+import com.okta.sdk.models.users.User;
+import com.okta.sdk.models.users.UserProfile;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -218,6 +220,31 @@ public class OktaMFAAuthConnectorTest {
 
         // do the call
         AuthResponse result = this.oktaMFAAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
+
+        // verify results
+        assertEquals(id, result.getData().getUserId());
+        assertEquals(email, result.getData().getUsername());
+    }
+
+    @Test
+    public void mfaCheckMfaNotRequiredForUserInOktaHappy() {
+
+        String email = "email";
+        String id = "id";
+
+        String stateToken = "userId:" + id;
+        String deviceId = "device id";
+        String otpToken = "otp token";
+
+        User user = new User();
+        UserProfile profile = new UserProfile();
+        profile.setLogin(email);
+        user.setId(id);
+        user.setProfile(profile);
+        when(oktaApiClientHelper.verifyFactorMfaNotRequiredForUserInOkta(deviceId, id, otpToken)).thenReturn(user);
+
+        // do the call
+        AuthResponse result = this.oktaMFAAuthConnector.mfaCheckMfaNotRequiredForUserInOkta(stateToken, deviceId, otpToken);
 
         // verify results
         assertEquals(id, result.getData().getUserId());

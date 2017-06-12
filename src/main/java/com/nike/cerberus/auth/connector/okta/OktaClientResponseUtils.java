@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sford4 on 1/30/17.
+ * Helper class to parse Okta API responses
  */
 public class OktaClientResponseUtils {
 
