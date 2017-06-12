@@ -23,7 +23,9 @@ import com.okta.sdk.clients.AuthApiClient;
 import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.models.auth.AuthResult;
+import com.okta.sdk.models.factors.Verification;
 import com.okta.sdk.models.usergroups.UserGroup;
+import com.okta.sdk.models.users.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -34,6 +36,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -116,6 +119,33 @@ public class OktaApiClientHelperTest {
 
         // do the call
         this.oktaApiClientHelper.verifyFactor("factor id", "state token", "pass code");
+    }
+
+    @Test
+    public void verifyFactorMfaNotRequiredForUserInOktaHappy() throws Exception {
+
+        String factorId = "factor id";
+        String passCode = "pass code";
+        String userId = "user id";
+
+        User user = mock(User.class);
+        when(userApiClient.getUser(userId)).thenReturn(user);
+
+        User result = this.oktaApiClientHelper.verifyFactorMfaNotRequiredForUserInOkta(factorId, userId, passCode);
+
+        assertEquals(user, result);
+    }
+
+    @Test(expected = ApiException.class)
+    public void verifyFactorMfaNotRequiredForUserInOktaFailsIO() throws Exception {
+
+        String factorId = "factor id";
+        String passCode = "pass code";
+        String userId = "user id";
+
+        when(factorsApiClient.verifyFactor(anyString(), anyString(), anyObject())).thenThrow(IOException.class);
+
+        this.oktaApiClientHelper.verifyFactorMfaNotRequiredForUserInOkta(factorId, userId, passCode);
     }
 
     @Test

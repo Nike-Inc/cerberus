@@ -26,6 +26,7 @@ import com.nike.cerberus.auth.connector.AuthStatus;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
+import com.okta.sdk.models.users.User;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
@@ -41,6 +42,8 @@ public class OktaMFAAuthConnector implements AuthConnector {
     private final OktaApiClientHelper oktaApiClientHelper;
 
     private final OktaClientResponseUtils oktaClientResponseUtils;
+
+    private static final String NO_MFA_REQUIRED_IN_OKTA_STATE_TOKEN_PREFIX = "userId:";
 
     @Inject
     public OktaMFAAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
@@ -82,16 +85,52 @@ public class OktaMFAAuthConnector implements AuthConnector {
     @Override
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
 
-        final AuthResult authResult = oktaApiClientHelper.verifyFactor(deviceId, stateToken, otpToken);
-        final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
-        final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
+        final AuthResponse authResponse;
 
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse()
-                .setData(authData)
-                .setStatus(AuthStatus.SUCCESS);
+        if (StringUtils.startsWith(stateToken, NO_MFA_REQUIRED_IN_OKTA_STATE_TOKEN_PREFIX)) {
+            return mfaCheckMfaNotRequiredForUserInOkta(stateToken, deviceId, otpToken);
+        } else {
+
+            final AuthResult authResult = oktaApiClientHelper.verifyFactor(deviceId, stateToken, otpToken);
+            final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
+            final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
+
+            final AuthData authData = new AuthData()
+                    .setUserId(userId)
+                    .setUsername(userLogin);
+            authResponse = new AuthResponse()
+                    .setData(authData)
+                    .setStatus(AuthStatus.SUCCESS);
+
+        }
+
+        return authResponse;
+    }
+
+    /**
+     * Verifies a user's MFA factor without a state token (when MFA is not required for the given user in Okta).
+     *
+     * This is necessary because a state token is required to make the 'authenticate with factor' Okta API call.
+     * Since state tokens are only returned from the 'authenticate' API call when MFA is required for a user
+     * in Okta, then multiple other API calls are needed to verify MFA when Okta does not require it.
+     *
+     * @param stateToken - State token (should be the user's id in format: 'userId:[id]')
+     * @param deviceId - ID of the multi-factor device
+     * @param otpToken - Passcode fo the multi-factor device
+     * @return - The auth response
+     */
+    protected AuthResponse mfaCheckMfaNotRequiredForUserInOkta(String stateToken, String deviceId, String otpToken) {
+
+        final String userId = StringUtils.removeStart(stateToken, NO_MFA_REQUIRED_IN_OKTA_STATE_TOKEN_PREFIX);
+        final User user = oktaApiClientHelper.verifyFactorMfaNotRequiredForUserInOkta(deviceId, userId, otpToken);
+
+        final AuthData authData = new AuthData();
+        authData.setUserId(user.getId());
+        authData.setUsername(user.getProfile().getLogin());
+
+        final AuthResponse authResponse = new AuthResponse();
+        authResponse.setData(authData);
+        authResponse.setStatus(AuthStatus.SUCCESS);
 
         return authResponse;
     }

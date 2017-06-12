@@ -27,7 +27,9 @@ import com.okta.sdk.clients.UserApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.factors.Factor;
+import com.okta.sdk.models.factors.Verification;
 import com.okta.sdk.models.usergroups.UserGroup;
+import com.okta.sdk.models.users.User;
 
 import javax.inject.Named;
 import java.io.IOException;
@@ -90,9 +92,9 @@ public class OktaApiClientHelper {
     /**
      * Request for verifying a MFA factor.
      *
-     * @param factorId MFA factor id
+     * @param factorId   MFA factor id
      * @param stateToken State token
-     * @param passCode One Time Passcode from MFA factor
+     * @param passCode   One Time Passcode from MFA factor
      * @return Session login token
      */
     protected AuthResult verifyFactor(final String factorId,
@@ -113,6 +115,43 @@ public class OktaApiClientHelper {
         }
 
         return authResult;
+    }
+
+    /**
+     * Verifies a user's MFA factor without a state token (when MFA is not required for the given user in Okta).
+     *
+     * This is necessary because a state token is required to make the 'authenticate with factor' Okta API call.
+     * Since state tokens are only returned from the 'authenticate' API call when MFA is required for a user
+     * in Okta, then multiple other API calls are needed to verify MFA when Okta does not require it.
+     *
+     * @param factorId  MFA factor id
+     * @param userId    State token
+     * @param passCode  One Time Passcode from MFA factor
+     * @return Session login token
+     */
+    protected User verifyFactorMfaNotRequiredForUserInOkta(final String factorId,
+                                                           final String userId,
+                                                           final String passCode) {
+
+        final User user;
+        try {
+            final Verification verification = new Verification();
+            verification.setPassCode(passCode);
+
+            factorsApiClient.verifyFactor(userId, factorId, verification);
+
+            user = userApiClient.getUser(userId);
+        } catch (IOException ioe) {
+            final String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
+                    userId, ioe.getMessage());
+
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
+                    .withExceptionMessage(msg)
+                    .build();
+        }
+
+        return user;
     }
 
     /**
