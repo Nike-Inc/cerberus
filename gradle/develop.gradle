@@ -18,8 +18,14 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v1.0.0'
-def vaultVersion = "0.7.0"
+def dashboardRelease = 'v1.3.0'
+def vaultVersion = "0.7.3"
+
+def reverseProxyPort = 9001
+def nodeServerPort = 8000
+def cmsPort = 8080
+def vaultPort = 8200
+def cmsRemoteDebugPort = 5005
 
 buildscript {
     apply from: file('gradle/buildscript.gradle'), to: buildscript
@@ -35,7 +41,7 @@ task start() {
 
 task startProxyAndDashboardInBackground(type: SpawnProcessTask) {
     command "${project.getRootDir().absolutePath}${File.separator}gradlew runDashboardAndReverseProxy --stacktrace"
-    ready 'express server listing on port 8000'
+    ready "express server listing on port $nodeServerPort"
     pidLockFileName '.proxy-dash.pid.lock'
 
     finalizedBy 'startVaultAndMySQLInBackground'
@@ -219,7 +225,7 @@ task runCMS(dependsOn: [antReplace, assemble], ) {
         javaexec {
             classpath = sourceSets.main.runtimeClasspath
             main = 'com.nike.cerberus.Main'
-            systemProperty 'vault.addr', 'http://127.0.0.1:8200'
+            systemProperty 'vault.addr', "http://127.0.0.1:$vaultPort"
             systemProperty 'vault.token', getTokenFromVaultLog()
             systemProperty '@appId', 'cms'
             systemProperty '@environment', 'local'
@@ -234,7 +240,7 @@ task runCMS(dependsOn: [antReplace, assemble], ) {
                 systemProperty secretKey, System.getProperty(secretKey)
             }
 
-            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'
+            jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=$cmsRemoteDebugPort"
         }
     }
 }
@@ -258,8 +264,8 @@ task bootstrapData() {
             ' MySQL are running in seperate threads'
     doLast {
         def rootToken = getTokenFromVaultLog()
-        def cms = new RESTClient('http://127.0.0.1:8080', JSON)
-        def vault = new RESTClient('http://127.0.0.1:8200', JSON)
+        def cms = new RESTClient("http://127.0.0.1:$cmsPort", JSON)
+        def vault = new RESTClient("http://127.0.0.1:$vaultPort", JSON)
 
         def cats = cms.get([
                 path: '/v1/category',
