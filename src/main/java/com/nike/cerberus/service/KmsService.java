@@ -17,7 +17,6 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -26,6 +25,7 @@ import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
 import com.google.inject.name.Named;
@@ -44,7 +44,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
@@ -63,7 +62,7 @@ public class KmsService {
 
     private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000;  // in milliseconds
 
-    private static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
+    public static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
 
     private final AwsIamRoleDao awsIamRoleDao;
 
@@ -221,6 +220,11 @@ public class KmsService {
             // update last validated timestamp
             OffsetDateTime now = dateTimeSupplier.get();
             updateKmsKey(kmsKeyRecord.getAwsIamRoleId(), kmsCMKRegion, SYSTEM_USER, now, now);
+        } catch(NotFoundException nfe) {
+            logger.warn("Failed to validate KMS policy because the KMS key did not exist, but the key record did." +
+                            "Deleting the key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}",
+                        awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, nfe);
+            awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getId());
         } catch (AmazonServiceException e) {
             logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s. API limit" +
                     " may have been reached for validate call.", awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion), e);
@@ -232,12 +236,12 @@ public class KmsService {
      * @param kmsKeyId - The AWS KMS Key ID
      * @param region - The KMS key region
      */
-    public void deleteKmsKeyInAws(String kmsKeyId, String region) {
+    public void scheduleKmsKeyDeletion(String kmsKeyId, String region, Integer pendingWindowInDays) {
 
         final AWSKMSClient kmsClient = kmsClientFactory.getClient(region);
         final ScheduleKeyDeletionRequest scheduleKeyDeletionRequest = new ScheduleKeyDeletionRequest()
                 .withKeyId(kmsKeyId)
-                .withPendingWindowInDays(SOONEST_A_KMS_KEY_CAN_BE_DELETED);
+                .withPendingWindowInDays(pendingWindowInDays);
 
         kmsClient.scheduleKeyDeletion(scheduleKeyDeletionRequest);
     }

@@ -48,7 +48,7 @@
       AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
   </select>
 
-  <select id="getOrphanedIamRoles" resultType="AwsIamRole">
+  <select id="getOrphanedIamRoles" resultType="AwsIamRoleRecord">
     SELECT
       *
     FROM
@@ -59,7 +59,7 @@
           FROM
             AWS_IAM_ROLE_PERMISSIONS
           WHERE
-            AWS_IAM_ROLE.ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID);
+            AWS_IAM_ROLE.ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID)
   </select>
 
   <select id="getKmsKey" resultType="AwsIamRoleKmsKeyRecord">
@@ -87,14 +87,16 @@
     FROM
       AWS_IAM_ROLE_KMS_KEY
     WHERE
-      LAST_VALIDATED_TS < #{keyInactiveDateTime}
-        OR
-      NOT EXISTS
-        (SELECT *
-          FROM
-            AWS_IAM_ROLE_PERMISSIONS
-          WHERE
-            AWS_IAM_ROLE_KMS_KEY.AWS_IAM_ROLE_ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID);
+        LAST_VALIDATED_TS &lt; #{keyInactiveDateTime}
+      OR
+        NOT EXISTS
+          (
+             SELECT *
+               FROM
+                 AWS_IAM_ROLE_PERMISSIONS
+               WHERE
+                 AWS_IAM_ROLE_KMS_KEY.AWS_IAM_ROLE_ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID
+           )
   </select>
 
   <insert id="createIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">

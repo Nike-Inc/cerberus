@@ -30,31 +30,17 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.nike.cerberus.service.KmsService.SOONEST_A_KMS_KEY_CAN_BE_DELETED;
+
 /**
- * Utility to clean up inactive and orphaned KMS keys
+ * Service to clean up inactive and orphaned KMS keys
  */
 @Singleton
 public class CleanUpService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-//    private static final String KMS_KEY_CLEAN_UP_INTERVAL_OVERRIDE = "cms.kms.cleanup.interval.hours.override";
-
-//    private static final Integer DEFAULT_KMS_KEY_CLEAN_UP_INTERVAL = 24; // in hours
-
-//    private static final String KMS_KEY_EXPIRATION_INTERVAL_OVERRIDE = "cms.kms.key.inactive.after.n.days.override";
-
-    private static final int DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS = 30;
-
-    private static final int DEFAULT_SLEEP_BETWEEN_KMS_CALLS = 15;  // in seconds
-
-//    @Inject(optional=true)
-//    @Named(KMS_KEY_CLEAN_UP_INTERVAL_OVERRIDE)
-//    private Integer kmsKeyCleanUpInterval = DEFAULT_KMS_KEY_CLEAN_UP_INTERVAL;
-
-//    @Inject(optional=true)
-//    @Named(KMS_KEY_EXPIRATION_INTERVAL_OVERRIDE)
-//    private Integer kmsKeyInactiveAfterNDays = DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS;
+    private static final int DEFAULT_SLEEP_BETWEEN_KMS_CALLS = 10;  // in seconds
 
     private final KmsService kmsService;
 
@@ -71,56 +57,74 @@ public class CleanUpService {
         this.dateTimeSupplier = dateTimeSupplier;
     }
 
-//    public void scheduleKmsKeyCleanUp() {
-//        // schedule one task to:
-//            // clean up inactive and orphaned kms keys
-//
-//        throw new UnsupportedOperationException("Not yet implemented.");
-//    }
-//
-//    public void scheduleIamRoleCleanUp() {
-//
-//        // schedule one task to:
-//            // clean up orphaned iam roles
-//
-//        throw new UnsupportedOperationException("Not yet implemented.");
-//    }
+    /**
+     * Delete all AWS KMS keys and DB records for KMS keys that have not been used recently
+     * or are no longer associated with an SDB.
+     */
+    public void cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays) {
+
+        cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays, DEFAULT_SLEEP_BETWEEN_KMS_CALLS);
+    }
 
     /**
-     * Delete all KMS keys and DB records for keys that have not been used recently and are no longer associated with an SDB.
+     * Delete all AWS KMS keys and DB records for KMS keys that have not been used recently
+     * or are no longer associated with an SDB.
+     * @param kmsKeysInactiveAfterNDays - Consider KMS keys to be inactive after 'n' number of days
+     * @param sleepInSeconds - Sleep for 'n' seconds between AWS calls, to keep from exceeding the API limit
      */
-    private void cleanUpInactiveAndOrphanedKmsKeys() {
+    protected void cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays, final int sleepInSeconds) {
 
         // get orphaned and inactive kms keys (not used in 'n' days)
-        final OffsetDateTime inactiveDateTime = dateTimeSupplier.get().minusDays(DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS);
+        final OffsetDateTime inactiveDateTime = dateTimeSupplier.get().minusDays(kmsKeysInactiveAfterNDays);
         final List<AwsIamRoleKmsKeyRecord> inactiveAndOrphanedKmsKeys = awsIamRoleDao.getInactiveOrOrphanedKmsKeys(inactiveDateTime);
 
-        // delete inactive and orphaned kms key records from DB
-        inactiveAndOrphanedKmsKeys.forEach(kmsKeyRecord -> {
-            try {
-                awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getAwsKmsKeyId());
-                kmsService.deleteKmsKeyInAws(kmsKeyRecord.getAwsKmsKeyId(), kmsKeyRecord.getAwsRegion());
-                TimeUnit.SECONDS.sleep(DEFAULT_SLEEP_BETWEEN_KMS_CALLS);
-            } catch (InterruptedException ie) {
-                logger.error("Timeout between KMS key deletion was interrupted");
-            } catch(Exception e) {
-                logger.error("There was a problem deleting KMS key with id: {}, region: {}",
-                        kmsKeyRecord.getAwsIamRoleId(),
-                        kmsKeyRecord.getAwsRegion());
-            }
-        });
+        if (inactiveAndOrphanedKmsKeys.isEmpty()) {
+            logger.info("No keys to clean up.");
+        } else {
+
+            // delete inactive and orphaned kms key records from DB
+            logger.info("Cleaning up orphaned or inactive KMS keys...");
+            inactiveAndOrphanedKmsKeys.forEach(kmsKeyRecord -> {
+                try {
+                    logger.info("Deleting orphaned or inactive KMS key: id={}, region={}, lastValidated={}",
+                            kmsKeyRecord.getAwsKmsKeyId(), kmsKeyRecord.getAwsRegion(), kmsKeyRecord.getLastValidatedTs());
+
+                    kmsService.scheduleKmsKeyDeletion(kmsKeyRecord.getAwsKmsKeyId(), kmsKeyRecord.getAwsRegion(), SOONEST_A_KMS_KEY_CAN_BE_DELETED);
+                    awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getId());
+
+                    TimeUnit.SECONDS.sleep(sleepInSeconds);
+                } catch (InterruptedException ie) {
+                    logger.error("Timeout between KMS key deletion was interrupted");
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    logger.error("There was a problem deleting KMS key with id: {}, region: {}",
+                            kmsKeyRecord.getAwsIamRoleId(),
+                            kmsKeyRecord.getAwsRegion());
+                }
+            });
+        }
     }
 
     /**
      * Delete all IAM role records that are no longer associated with an SDB.
      */
-    private void cleanUpOrphanedIamRoles() {
+    public void cleanUpOrphanedIamRoles() {
 
         // get orphaned iam role ids
-        List<AwsIamRoleRecord> orphanedIamRoleIds = awsIamRoleDao.getOrphanedIamRoles();
+        final List<AwsIamRoleRecord> orphanedIamRoleIds = awsIamRoleDao.getOrphanedIamRoles();
 
         // delete orphaned iam role records from DB
-        orphanedIamRoleIds.forEach(awsIamRoleRecord -> awsIamRoleDao.deleteIamRoleById(awsIamRoleRecord.getId()));
+        orphanedIamRoleIds.forEach(awsIamRoleRecord -> {
+            try {
+                logger.info("Deleting orphaned IAM role: ARN={}, lastUpdated={}",
+                        awsIamRoleRecord.getAwsIamRoleArn(),
+                        awsIamRoleRecord.getLastUpdatedTs());
+                awsIamRoleDao.deleteIamRoleById(awsIamRoleRecord.getId());
+            } catch(Exception e) {
+                logger.error("There was a problem deleting orphaned IAM role with ARN: {}",
+                    awsIamRoleRecord.getAwsIamRoleArn());
+            }
+        });
     }
 }
 

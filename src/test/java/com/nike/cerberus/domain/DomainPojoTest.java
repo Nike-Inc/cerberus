@@ -20,7 +20,7 @@ public class DomainPojoTest {
 
         List<PojoClass> pojoClasses = PojoClassFactory.getPojoClasses("com.nike.cerberus.domain");
 
-        Assert.assertEquals(18, pojoClasses.size());
+        Assert.assertEquals(19, pojoClasses.size());
 
         Validator validator = ValidatorBuilder.create()
                 .with(new GetterMustExistRule())

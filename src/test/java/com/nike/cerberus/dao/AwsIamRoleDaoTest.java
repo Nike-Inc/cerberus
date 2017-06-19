@@ -273,7 +273,7 @@ public class AwsIamRoleDaoTest {
         final int recordCount = 1;
         when(awsIamRoleMapper.deleteKmsKeyById(iamRoleKmsKeyId)).thenReturn(recordCount);
 
-        final int actualCount = subject.deleteIamRolePermissions(iamRoleKmsKeyId);
+        final int actualCount = subject.deleteKmsKeyById(iamRoleKmsKeyId);
 
         assertThat(actualCount).isEqualTo(recordCount);
     }
