@@ -157,7 +157,11 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
             }
 
 + Response 200 (application/json)
-
+    + The response will be a simple JSON payload with the encrypted data
+            {
+                "auth_data": "long-encrypted-string"
+            }
+    + Once you have the encrypted string, you need to make a call to AWS to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
     + Body
 
             {
