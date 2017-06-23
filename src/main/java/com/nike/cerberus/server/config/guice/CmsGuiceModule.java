@@ -22,6 +22,7 @@ import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
+import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
@@ -184,7 +185,8 @@ public class CmsGuiceModule extends AbstractModule {
             CreateSafeDepositBoxV1 createSafeDepositBoxV1,
             CreateSafeDepositBoxV2 createSafeDepositBoxV2,
             GetSDBMetadata getSDBMetadata,
-            PutSDBMetadata putSDBMetadata
+            PutSDBMetadata putSDBMetadata,
+            CleanUpInactiveOrOrphanedRecords cleanUpInactiveOrOrphanedRecords
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -194,7 +196,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata
+                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords
         ));
     }
 

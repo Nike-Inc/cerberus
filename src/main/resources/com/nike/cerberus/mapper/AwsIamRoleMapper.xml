@@ -48,6 +48,20 @@
       AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
   </select>
 
+  <select id="getOrphanedIamRoles" resultType="AwsIamRoleRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE
+    WHERE
+      NOT EXISTS
+        (SELECT *
+          FROM
+            AWS_IAM_ROLE_PERMISSIONS
+          WHERE
+            AWS_IAM_ROLE.ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID)
+  </select>
+
   <select id="getKmsKey" resultType="AwsIamRoleKmsKeyRecord">
     SELECT
       ID,
@@ -65,6 +79,24 @@
         AWS_IAM_ROLE_ID = #{awsIamRoleId}
       AND
         AWS_REGION = #{awsRegion}
+  </select>
+
+  <select id="getInactiveOrOrphanedKmsKeys" resultType="AwsIamRoleKmsKeyRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE_KMS_KEY
+    WHERE
+        LAST_VALIDATED_TS &lt; #{keyInactiveDateTime}
+      OR
+        NOT EXISTS
+          (
+             SELECT *
+               FROM
+                 AWS_IAM_ROLE_PERMISSIONS
+               WHERE
+                 AWS_IAM_ROLE_KMS_KEY.AWS_IAM_ROLE_ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID
+           )
   </select>
 
   <insert id="createIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">
@@ -190,6 +222,20 @@
       AWS_IAM_ROLE_PERMISSIONS
     WHERE
       SDBOX_ID = #{safeDepositBoxId}
+  </delete>
+
+  <delete id="deleteIamRoleById">
+    DELETE FROM
+      AWS_IAM_ROLE
+    WHERE
+      ID = #{id}
+  </delete>
+
+  <delete id="deleteKmsKeyById">
+    DELETE FROM
+      AWS_IAM_ROLE_KMS_KEY
+    WHERE
+      ID = #{id}
   </delete>
 
 </mapper>

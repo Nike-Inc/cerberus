@@ -36,11 +36,9 @@ public class IamRolePermission {
     @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID", groups = {Default.class, Updatable.class})
     private String accountId;
 
-    // TODO: remove
     @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "IAM_ROLE_NAME_INVALID", groups = {Default.class, Updatable.class})
     private String iamRoleName;
 
-    // TODO: remove
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
