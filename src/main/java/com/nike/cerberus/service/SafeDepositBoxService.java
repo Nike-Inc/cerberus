@@ -396,10 +396,10 @@ public class SafeDepositBoxService {
 
         boolean doesPrincipalHaveAdminPermissionsForSdb = false;
         if (principal.isIamPrincipal()) {
+            Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
             for (IamPrincipalPermission perm : box.getIamPrincipalPermissions()) {
                 String roleId = perm.getRoleId();
                 Optional<Role> attachedRole = roleService.getRoleById(roleId);
-                Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
                 if (attachedRole.get().getId().equals(ownerRole.get().getId())) {
                     doesPrincipalHaveAdminPermissionsForSdb = true;
                 }
