@@ -66,10 +66,10 @@ public class VaultAuthPrincipal implements Principal {
         this.roles = buildRoles(clientToken);
         this.userGroupSet = extractUserGroups(clientToken);
         this.username = extractUsername(clientToken);
-        this.isIamPrincipal = extractIsPrincipal(clientToken);
+        this.isIamPrincipal = extractIsIamPrincipal(clientToken);
     }
 
-    private boolean extractIsPrincipal(VaultClientTokenResponse clientToken) {
+    private boolean extractIsIamPrincipal(VaultClientTokenResponse clientToken) {
         final Map<String, String> meta = clientToken.getMeta();
         // if a Token that is the root token or created outside of CMS,
         // then meta might be null and there will be no value set

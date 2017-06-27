@@ -330,7 +330,7 @@ public class SafeDepositBoxService {
 
         final SafeDepositBoxV2 currentBox = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        assertIsOwner(vaultAuthPrincipal, currentBox);
+        assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, currentBox);
 
         String principalName = vaultAuthPrincipal.getName();
         final OffsetDateTime now = dateTimeSupplier.get();
@@ -358,7 +358,7 @@ public class SafeDepositBoxService {
     public void deleteSafeDepositBox(VaultAuthPrincipal vaultAuthPrincipal, final String id) {
         final SafeDepositBoxV2 box = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        assertIsOwner(vaultAuthPrincipal, box);
+        assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, box);
 
         // 1. Remove permissions and metadata from database.
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
@@ -392,26 +392,31 @@ public class SafeDepositBoxService {
         return Optional.of(ownerPermission.get().getName());
     }
 
-    private void assertIsOwner(final VaultAuthPrincipal principal, final SafeDepositBoxV2 box) {
+    /**
+     * Asserts that the given principal has owner permissions on the given SDB
+     * @param principal The authenticated principal
+     * @param sdb The SDB that the principal is trying to access
+     */
+    private void assertPrincipalHasOwnerPermissions(final VaultAuthPrincipal principal, final SafeDepositBoxV2 sdb) {
 
-        boolean doesPrincipalHaveAdminPermissionsForSdb = false;
+        boolean principalHasOwnerPermissions = false;
         if (principal.isIamPrincipal()) {
             Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
-            for (IamPrincipalPermission perm : box.getIamPrincipalPermissions()) {
+            for (IamPrincipalPermission perm : sdb.getIamPrincipalPermissions()) {
                 String roleId = perm.getRoleId();
                 Optional<Role> attachedRole = roleService.getRoleById(roleId);
                 if (attachedRole.get().getId().equals(ownerRole.get().getId())) {
-                    doesPrincipalHaveAdminPermissionsForSdb = true;
+                    principalHasOwnerPermissions = true;
                 }
             }
 
         } else {
-            if (principal.getUserGroups().contains(box.getOwner())) {
-                doesPrincipalHaveAdminPermissionsForSdb = true;
+            if (principal.getUserGroups().contains(sdb.getOwner())) {
+                principalHasOwnerPermissions = true;
             }
         }
 
-        if (! doesPrincipalHaveAdminPermissionsForSdb) {
+        if (! principalHasOwnerPermissions) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SDB_CALLER_OWNERSHIP_REQUIRED)
                     .build();
