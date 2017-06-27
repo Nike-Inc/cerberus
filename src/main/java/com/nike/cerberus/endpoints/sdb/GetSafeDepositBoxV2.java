@@ -79,7 +79,7 @@ public class GetSafeDepositBoxV2 extends StandardEndpoint<Void, SafeDepositBoxV2
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
             final SafeDepositBoxV2 safeDepositBox =
-                    safeDepositBoxService.getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(
+                    safeDepositBoxService.getSDBAndValidatePrincipalAssociationV2(
                             vaultAuthPrincipal,
                             sdbId);
 

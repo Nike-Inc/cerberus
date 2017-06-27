@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
-import com.nike.backstopper.apierror.sample.SampleCoreApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
@@ -80,7 +79,7 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
             final SafeDepositBoxV1 safeDepositBox =
-                    safeDepositBoxService.getSafeDepositBoxByIdAndValidatePrincipalAssociationV1(
+                    safeDepositBoxService.getSDBAndValidatePrincipalAssociationV1(
                             vaultAuthPrincipal,
                             sdbId);
 

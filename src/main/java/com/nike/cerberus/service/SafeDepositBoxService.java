@@ -149,8 +149,8 @@ public class SafeDepositBoxService {
      * @param id The unique identifier for the safe deposit box to lookup
      * @return The safe deposit box, if found
      */
-    public SafeDepositBoxV1 getSafeDepositBoxByIdAndValidatePrincipalAssociationV1(VaultAuthPrincipal vaultAuthPrincipal, String id) {
-        return convertSafeDepositBoxV2ToV1(getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id));
+    public SafeDepositBoxV1 getSDBAndValidatePrincipalAssociationV1(VaultAuthPrincipal vaultAuthPrincipal, String id) {
+        return convertSafeDepositBoxV2ToV1(getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id));
     }
 
     /**
@@ -163,7 +163,7 @@ public class SafeDepositBoxService {
      * @throws ApiException Throws an exception if the requesting principal has no permissions associated with the requested SDB.
      * @throws ApiException Throws an exception if the SDB Id is invalid
      */
-    public SafeDepositBoxV2 getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(VaultAuthPrincipal vaultAuthPrincipal, String sdbId) {
+    public SafeDepositBoxV2 getSDBAndValidatePrincipalAssociationV2(VaultAuthPrincipal vaultAuthPrincipal, String sdbId) {
 
         Optional<SafeDepositBoxRecord> safeDepositBoxRecordOptional = safeDepositBoxDao.getSafeDepositBox(sdbId);
 
@@ -328,7 +328,7 @@ public class SafeDepositBoxService {
                                                    final VaultAuthPrincipal vaultAuthPrincipal,
                                                    final String id) {
 
-        final SafeDepositBoxV2 currentBox = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+        final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
         assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, currentBox);
 
@@ -346,7 +346,7 @@ public class SafeDepositBoxService {
         modifyUserGroupPermissions(currentBox, userGroupPermissionSet, principalName, now);
         modifyIamPrincipalPermissions(currentBox, iamRolePermissionSet, principalName, now);
 
-        return getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+        return getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
     }
 
     /**
@@ -356,7 +356,7 @@ public class SafeDepositBoxService {
      */
     @Transactional
     public void deleteSafeDepositBox(VaultAuthPrincipal vaultAuthPrincipal, final String id) {
-        final SafeDepositBoxV2 box = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+        final SafeDepositBoxV2 box = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
         assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, box);
 
