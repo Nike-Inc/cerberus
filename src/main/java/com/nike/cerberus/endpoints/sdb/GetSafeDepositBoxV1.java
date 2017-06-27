@@ -79,16 +79,12 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
             log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            final Optional<SafeDepositBoxV1> safeDepositBox =
-                    safeDepositBoxService.getAssociatedSafeDepositBoxV1(
-                            vaultAuthPrincipal.getUserGroups(),
+            final SafeDepositBoxV1 safeDepositBox =
+                    safeDepositBoxService.getSafeDepositBoxByIdAndValidatePrincipalAssociationV1(
+                            vaultAuthPrincipal,
                             sdbId);
 
-            if (safeDepositBox.isPresent()) {
-                return ResponseInfo.newBuilder(safeDepositBox.get()).build();
-            }
-
-            throw ApiException.newBuilder().withApiErrors(SampleCoreApiError.NOT_FOUND).build();
+            return ResponseInfo.newBuilder(safeDepositBox).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();

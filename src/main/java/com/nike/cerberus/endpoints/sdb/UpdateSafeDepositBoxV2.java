@@ -71,8 +71,7 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
             SafeDepositBoxV2 safeDepositBoxV2 = safeDepositBoxService.updateSafeDepositBoxV2(request.getContent(),
-                    vaultAuthPrincipal.getUserGroups(),
-                    vaultAuthPrincipal.getName(),
+                    vaultAuthPrincipal,
                     request.getPathParam("id"));
             return ResponseInfo.newBuilder(safeDepositBoxV2)
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))

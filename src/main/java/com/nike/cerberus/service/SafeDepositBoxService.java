@@ -33,6 +33,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
+import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -116,20 +117,26 @@ public class SafeDepositBoxService {
     /**
      * Queries the data store for all safe deposit box associated with the user groups supplied.
      *
-     * @param userGroups Set of user groups to find associated safe deposit boxes with
+     * @param vaultAuthPrincipal The authenticated principal
      * @return Collection of summaries for each associated safe deposit box
      */
-    public List<SafeDepositBoxSummary> getAssociatedSafeDepositBoxes(final Set<String> userGroups) {
-        final List<SafeDepositBoxRecord> records = safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(userGroups);
-        final List<SafeDepositBoxSummary> summaries = Lists.newArrayListWithCapacity(records.size());
+    public List<SafeDepositBoxSummary> getAssociatedSafeDepositBoxes(final VaultAuthPrincipal vaultAuthPrincipal) {
 
-        records.forEach(r -> {
-            summaries.add(new SafeDepositBoxSummary()
-                    .setId(r.getId())
-                    .setName(r.getName())
-                    .setCategoryId(r.getCategoryId())
-                    .setPath(r.getPath()));
-        });
+        List<SafeDepositBoxRecord> sdbRecords;
+        if (vaultAuthPrincipal.isIamPrincipal()) {
+            sdbRecords = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(vaultAuthPrincipal.getName());
+        } else {
+            sdbRecords = safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(vaultAuthPrincipal.getUserGroups());
+        }
+
+        final List<SafeDepositBoxSummary> summaries = Lists.newArrayListWithCapacity(sdbRecords.size());
+
+        sdbRecords.forEach(r ->
+                summaries.add(new SafeDepositBoxSummary()
+                .setId(r.getId())
+                .setName(r.getName())
+                .setCategoryId(r.getCategoryId())
+                .setPath(r.getPath())));
 
         return summaries;
     }
@@ -138,45 +145,59 @@ public class SafeDepositBoxService {
      * Queries the data store for the specific safe deposit box by ID.  The query also enforces that the specified
      * safe deposit box has a linked permission via the user groups supplied in the call.
      *
-     * @param groups Set of user groups that must have at least one matching permission for the specific safe
-     *               deposit box
+     * @param vaultAuthPrincipal The authenticated principal
      * @param id The unique identifier for the safe deposit box to lookup
      * @return The safe deposit box, if found
      */
-    public Optional<SafeDepositBoxV1> getAssociatedSafeDepositBoxV1(final Set<String> groups, final String id) {
-
-        Optional<SafeDepositBoxV2> safeDepositBoxV2 = getAssociatedSafeDepositBoxV2(groups, id);
-
-        return safeDepositBoxV2.map(this::convertSafeDepositBoxV2ToV1);
+    public SafeDepositBoxV1 getSafeDepositBoxByIdAndValidatePrincipalAssociationV1(VaultAuthPrincipal vaultAuthPrincipal, String id) {
+        return convertSafeDepositBoxV2ToV1(getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id));
     }
 
     /**
      * Queries the data store for the specific safe deposit box by ID.  The query also enforces that the specified
      * safe deposit box has a linked permission via the user groups supplied in the call.
      *
-     * @param groups Set of user groups that must have at least one matching permission for the specific safe
-     *               deposit box
-     * @param id The unique identifier for the safe deposit box to lookup
-     * @return The safe deposit box, if found
+     * @param vaultAuthPrincipal The authenticated principal, which must have an association with the requested SDB
+     * @param sdbId The unique identifier for the safe deposit box to lookup
+     * @return The safe deposit box
+     * @throws ApiException Throws an exception if the requesting principal has no permissions associated with the requested SDB.
+     * @throws ApiException Throws an exception if the SDB Id is invalid
      */
-    public Optional<SafeDepositBoxV2> getAssociatedSafeDepositBoxV2(final Set<String> groups, final String id) {
+    public SafeDepositBoxV2 getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(VaultAuthPrincipal vaultAuthPrincipal, String sdbId) {
 
-        final Optional<SafeDepositBoxRecord> safeDepositBoxRecord = safeDepositBoxDao.getSafeDepositBox(id);
+        Optional<SafeDepositBoxRecord> safeDepositBoxRecordOptional = safeDepositBoxDao.getSafeDepositBox(sdbId);
 
-        if (safeDepositBoxRecord.isPresent()) {
-            final Set<UserGroupPermission> userGroupPermissions = userGroupPermissionService.getUserGroupPermissions(id);
-
-            final long count = userGroupPermissions.stream().filter(perm -> groups.contains(perm.getName())).count();
-            if (count == 0) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.ACCESS_DENIED)
-                        .build();
-            }
-
-            return Optional.of(getSDBFromRecordV2(safeDepositBoxRecord.get()));
+        if (! safeDepositBoxRecordOptional.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                    .build();
         }
 
-        return Optional.empty();
+        SafeDepositBoxRecord safeDepositBoxRecord = safeDepositBoxRecordOptional.get();
+
+        boolean principalHasPermissionAssociationWithSdb;
+        // if the authenticated principal is an IAM Principal check to see that the iam principal is associated with the requested sdb
+        if (vaultAuthPrincipal.isIamPrincipal()) {
+            principalHasPermissionAssociationWithSdb = iamPrincipalPermissionService.getIamPrincipalPermissions(sdbId)
+                    .stream()
+                    .filter(perm -> perm.getIamPrincipalArn().equals(vaultAuthPrincipal.getName())) // filter for permissions on the SDB that match the principals arn
+                    .count() > 0; // if there is more than one, then the SDB is associated with the principal arn.
+        } else {
+            // if the the principal is a user principal ensure that one of the users groups is associated with the sdb
+            Set<UserGroupPermission> userGroupPermissions = userGroupPermissionService.getUserGroupPermissions(sdbId);
+            principalHasPermissionAssociationWithSdb = userGroupPermissions
+                    .stream()
+                    .filter(perm -> vaultAuthPrincipal.getUserGroups().contains(perm.getName())) // filter for permissions on the sdb that have groups that the authenticated user belongs too.
+                    .count() > 0;
+        }
+
+        if (! principalHasPermissionAssociationWithSdb) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ACCESS_DENIED)
+                    .build();
+        }
+
+        return getSDBFromRecordV2(safeDepositBoxRecord);
     }
 
     protected SafeDepositBoxV2 getSDBFromRecordV2(SafeDepositBoxRecord safeDepositBoxRecord) {
@@ -282,63 +303,50 @@ public class SafeDepositBoxService {
      * Updates a safe deposit box.  Currently, only the description, owner and permissions are updatable.
      *
      * @param safeDepositBox Updated safe deposit box
-     * @param groups Caller's user groups
-     * @param user Caller's username
+     * @param vaultAuthPrincipal The authenticated principal
      * @param id Safe deposit box id
      */
     @Transactional
-    public void updateSafeDepositBoxV1(final SafeDepositBoxV1 safeDepositBox, final Set<String> groups,
-                                       final String user, final String id) {
+    public void updateSafeDepositBoxV1(final SafeDepositBoxV1 safeDepositBox,
+                                       final VaultAuthPrincipal vaultAuthPrincipal,
+                                       final String id) {
 
         SafeDepositBoxV2 safeDepositBoxV2 = convertSafeDepositBoxV1ToV2(safeDepositBox);
 
-        updateSafeDepositBoxV2(safeDepositBoxV2, groups, user, id);
+        updateSafeDepositBoxV2(safeDepositBoxV2, vaultAuthPrincipal, id);
     }
 
     /**
      * Updates a safe deposit box.  Currently, only the description, owner and permissions are updatable.
      *
      * @param safeDepositBox Updated safe deposit box
-     * @param groups Caller's user groups
-     * @param user Caller's username
+     * @param vaultAuthPrincipal The authenticated principal
      * @param id Safe deposit box id
      */
     @Transactional
-    public SafeDepositBoxV2 updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox, final Set<String> groups,
-                                       final String user, final String id) {
-        final Optional<SafeDepositBoxV2> currentBox = getAssociatedSafeDepositBoxV2(groups, id);
+    public SafeDepositBoxV2 updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox,
+                                                   final VaultAuthPrincipal vaultAuthPrincipal,
+                                                   final String id) {
 
-        if (!currentBox.isPresent()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                    .withExceptionMessage("The specified safe deposit box was not found.")
-                    .build();
-        }
+        final SafeDepositBoxV2 currentBox = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        assertIsOwner(groups, currentBox.get());
+        assertIsOwner(vaultAuthPrincipal, currentBox);
 
+        String principalName = vaultAuthPrincipal.getName();
         final OffsetDateTime now = dateTimeSupplier.get();
-        final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, user, now);
+        final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, principalName, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
         final Set<IamPrincipalPermission> iamRolePermissionSet = safeDepositBox.getIamPrincipalPermissions();
 
-        if (!StringUtils.equals(currentBox.get().getDescription(), boxToUpdate.getDescription())) {
+        if (!StringUtils.equals(currentBox.getDescription(), boxToUpdate.getDescription())) {
             safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
         }
 
-        updateOwner(currentBox.get().getId(), safeDepositBox.getOwner(), user, now);
-        modifyUserGroupPermissions(currentBox.get(), userGroupPermissionSet, user, now);
-        modifyIamPrincipalPermissions(currentBox.get(), iamRolePermissionSet, user, now);
+        updateOwner(currentBox.getId(), safeDepositBox.getOwner(), principalName, now);
+        modifyUserGroupPermissions(currentBox, userGroupPermissionSet, principalName, now);
+        modifyIamPrincipalPermissions(currentBox, iamRolePermissionSet, principalName, now);
 
-        Optional<SafeDepositBoxV2> updatedSafeDepositBox = getAssociatedSafeDepositBoxV2(groups, id);
-        if (updatedSafeDepositBox.isPresent()) {
-            return updatedSafeDepositBox.get();
-        } else {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionMessage("The updated safe deposit box was not found.")
-                    .build();
-        }
+        return getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
     }
 
     /**
@@ -347,16 +355,10 @@ public class SafeDepositBoxService {
      * @param id The unique identifier for the safe deposit box
      */
     @Transactional
-    public void deleteSafeDepositBox(final Set<String> groups, final String id) {
-        final Optional<SafeDepositBoxV2> box = getAssociatedSafeDepositBoxV2(groups, id);
+    public void deleteSafeDepositBox(VaultAuthPrincipal vaultAuthPrincipal, final String id) {
+        final SafeDepositBoxV2 box = getSafeDepositBoxByIdAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        if (!box.isPresent()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                    .build();
-        }
-
-        assertIsOwner(groups, box.get());
+        assertIsOwner(vaultAuthPrincipal, box);
 
         // 1. Remove permissions and metadata from database.
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
@@ -364,10 +366,10 @@ public class SafeDepositBoxService {
         safeDepositBoxDao.deleteSafeDepositBox(id);
 
         // 2. Recursively delete all secrets from the safe deposit box Vault path.
-        deleteAllSecrets(box.get().getPath());
+        deleteAllSecrets(box.getPath());
 
         // 3. Delete the standard policies from Vault for this safe deposit box.
-        vaultPolicyService.deleteStandardPolicies(box.get().getName());
+        vaultPolicyService.deleteStandardPolicies(box.getName());
     }
 
     private Optional<String> extractOwner(Set<UserGroupPermission> userGroupPermissions) {
@@ -390,8 +392,26 @@ public class SafeDepositBoxService {
         return Optional.of(ownerPermission.get().getName());
     }
 
-    private void assertIsOwner(final Set<String> groups, final SafeDepositBoxV2 box) {
-        if (!groups.contains(box.getOwner())) {
+    private void assertIsOwner(final VaultAuthPrincipal principal, final SafeDepositBoxV2 box) {
+
+        boolean doesPrincipalHaveAdminPermissionsForSdb = false;
+        if (principal.isIamPrincipal()) {
+            for (IamPrincipalPermission perm : box.getIamPrincipalPermissions()) {
+                String roleId = perm.getRoleId();
+                Optional<Role> attachedRole = roleService.getRoleById(roleId);
+                Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
+                if (attachedRole.get().getId().equals(ownerRole.get().getId())) {
+                    doesPrincipalHaveAdminPermissionsForSdb = true;
+                }
+            }
+
+        } else {
+            if (principal.getUserGroups().contains(box.getOwner())) {
+                doesPrincipalHaveAdminPermissionsForSdb = true;
+            }
+        }
+
+        if (! doesPrincipalHaveAdminPermissionsForSdb) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SDB_CALLER_OWNERSHIP_REQUIRED)
                     .build();

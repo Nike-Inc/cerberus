@@ -102,6 +102,27 @@
       SDB.ID ASC
   </select>
 
+  <select id="getIamPrincipalAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX SDB
+    INNER JOIN
+      AWS_IAM_ROLE_PERMISSIONS ON SDB.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+    INNER JOIN
+      AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+    WHERE
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+  </select>
+
   <select id="getSafeDepositBox" resultType="SafeDepositBoxRecord">
     SELECT
       ID,

@@ -47,6 +47,8 @@ public class VaultAuthPrincipal implements Principal {
 
     public static final String METADATA_KEY_AWS_IAM_PRINCIPAL_ARN = "aws_iam_principal_arn";
 
+    public static final String METADATA_KEY_IS_IAM_PRINCIPAL = "is_iam_principal";
+
     public static final String METADATA_KEY_AWS_REGION = "aws_region";
 
     private final VaultClientTokenResponse clientToken;
@@ -57,11 +59,21 @@ public class VaultAuthPrincipal implements Principal {
 
     private final Set<String> roles;
 
+    private final boolean isIamPrincipal;
+
     public VaultAuthPrincipal(VaultClientTokenResponse clientToken) {
         this.clientToken = clientToken;
         this.roles = buildRoles(clientToken);
         this.userGroupSet = extractUserGroups(clientToken);
         this.username = extractUsername(clientToken);
+        this.isIamPrincipal = extractIsPrincipal(clientToken);
+    }
+
+    private boolean extractIsPrincipal(VaultClientTokenResponse clientToken) {
+        final Map<String, String> meta = clientToken.getMeta();
+        // if a Token that is the root token or created outside of CMS,
+        // then meta might be null and there will be no value set
+        return meta == null ? false : Boolean.valueOf(meta.get(METADATA_KEY_IS_IAM_PRINCIPAL));
     }
 
     private Set<String> buildRoles(VaultClientTokenResponse clientToken) {
@@ -113,5 +125,9 @@ public class VaultAuthPrincipal implements Principal {
 
     public Set<String> getUserGroups() {
         return userGroupSet;
+    }
+
+    public boolean isIamPrincipal() {
+        return isIamPrincipal;
     }
 }

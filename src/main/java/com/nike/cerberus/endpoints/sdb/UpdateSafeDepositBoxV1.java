@@ -77,14 +77,12 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
-                    String.format("(Failed to lookup name from id: %s)", sdbId);
+            String sdbName = sdbNameOptional.orElseGet(() -> String.format("(Failed to lookup name from id: %s)", sdbId));
             log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
             safeDepositBoxService.updateSafeDepositBoxV1(request.getContent(),
-                    vaultAuthPrincipal.getUserGroups(),
-                    vaultAuthPrincipal.getName(),
+                    vaultAuthPrincipal,
                     sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
