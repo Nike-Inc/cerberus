@@ -115,7 +115,7 @@ public class AuthenticationServiceTest {
         String principalArn = "principal arn";
         String region = "region";
 
-        Map<String, String> result = authenticationService.generateCommonVaultPrincipalAuthMetadata(principalArn, region);
+        Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(principalArn, region);
 
         assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_USERNAME));
         assertEquals(principalArn, result.get(VaultAuthPrincipal.METADATA_KEY_USERNAME));

@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
-import com.nike.backstopper.apierror.sample.SampleCoreApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.error.DefaultApiError;
@@ -79,16 +78,12 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
             log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            final Optional<SafeDepositBoxV1> safeDepositBox =
-                    safeDepositBoxService.getAssociatedSafeDepositBoxV1(
-                            vaultAuthPrincipal.getUserGroups(),
+            final SafeDepositBoxV1 safeDepositBox =
+                    safeDepositBoxService.getSDBAndValidatePrincipalAssociationV1(
+                            vaultAuthPrincipal,
                             sdbId);
 
-            if (safeDepositBox.isPresent()) {
-                return ResponseInfo.newBuilder(safeDepositBox.get()).build();
-            }
-
-            throw ApiException.newBuilder().withApiErrors(SampleCoreApiError.NOT_FOUND).build();
+            return ResponseInfo.newBuilder(safeDepositBox).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();

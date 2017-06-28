@@ -77,7 +77,7 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
                     vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
-                    safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal.getUserGroups())).build();
+                    safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal)).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();

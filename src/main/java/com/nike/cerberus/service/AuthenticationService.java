@@ -197,7 +197,7 @@ public class AuthenticationService {
         iamPrincipalCredentials.setIamPrincipalArn(iamPrincipalArn);
         iamPrincipalCredentials.setRegion(region);
 
-        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, region);
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, region);
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
@@ -207,7 +207,7 @@ public class AuthenticationService {
     public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
 
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
-        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonVaultPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
+        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
         vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
         return authenticate(credentials, vaultAuthPrincipalMetadata);
@@ -534,10 +534,11 @@ public class AuthenticationService {
      * @param region - The AWS region
      * @return - Map of token metadata
      */
-    protected Map<String, String> generateCommonVaultPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
+    protected Map<String, String> generateCommonIamPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
         Map<String, String> metadata = Maps.newHashMap();
         metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
         metadata.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
+        metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_IAM_PRINCIPAL, Boolean.TRUE.toString());
 
         Set<String> groups = new HashSet<>();
         groups.add("registered-iam-principals");

@@ -79,7 +79,7 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
             log.info("Delete SDB Event: the principal: {} is attempting to delete sdb name: '{}' and id: '{}'",
                     vaultAuthPrincipal.getName(), sdbName, sdbId);
 
-            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal.getUserGroups(), sdbId);
+            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal, sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
                     .build();
