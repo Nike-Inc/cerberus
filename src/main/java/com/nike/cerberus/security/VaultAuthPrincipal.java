@@ -80,7 +80,7 @@ public class VaultAuthPrincipal implements Principal {
         final Map<String, String> meta = clientToken.getMeta();
         // if a Token that is the root token or created outside of CMS,
         // then meta might be null and there will be no value set
-        return meta == null ?  0 : Integer.valueOf(meta.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
+        return meta == null ?  0 : Integer.parseInt(meta.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
     }
 
     private boolean extractIsIamPrincipal(VaultClientTokenResponse clientToken) {
