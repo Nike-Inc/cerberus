@@ -223,6 +223,11 @@ public enum DefaultApiError implements ApiError {
     AUTHENTICATION_ERROR_INVALID_REGION(99229, "Invalid AWS region provided during authentication.", HttpServletResponse.SC_BAD_REQUEST),
 
     /**
+     * The token has exceeded the amount of times it can be refreshed
+     */
+    MAXIMUM_TOKEN_REFRESH_COUNT_REACHED(99230, "Maximum token refresh count reached, re-authentication required.", HttpServletResponse.SC_FORBIDDEN),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", HttpServletResponse.SC_NOT_FOUND),

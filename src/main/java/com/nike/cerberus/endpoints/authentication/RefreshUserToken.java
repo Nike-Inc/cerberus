@@ -72,7 +72,7 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
             log.info("Refresh User Token Auth Event: the principal: {} is attempting to refresh its token", vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
-                    authenticationService.refreshUserToken(
+                    authenticationService.refreshToken(
                             (VaultAuthPrincipal) securityContext.get().getUserPrincipal())).build();
         }
 

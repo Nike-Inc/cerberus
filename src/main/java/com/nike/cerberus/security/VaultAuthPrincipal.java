@@ -51,6 +51,10 @@ public class VaultAuthPrincipal implements Principal {
 
     public static final String METADATA_KEY_AWS_REGION = "aws_region";
 
+    public static final String METADATA_KEY_TOKEN_REFRESH_COUNT = "refresh_count";
+
+    public static final String METADATA_KEY_MAX_TOKEN_REFRESH_COUNT = "max_refresh_count";
+
     private final VaultClientTokenResponse clientToken;
 
     private final Set<String> userGroupSet;
@@ -61,12 +65,22 @@ public class VaultAuthPrincipal implements Principal {
 
     private final boolean isIamPrincipal;
 
+    private final Integer tokenRefreshCount;
+
     public VaultAuthPrincipal(VaultClientTokenResponse clientToken) {
         this.clientToken = clientToken;
         this.roles = buildRoles(clientToken);
         this.userGroupSet = extractUserGroups(clientToken);
         this.username = extractUsername(clientToken);
         this.isIamPrincipal = extractIsIamPrincipal(clientToken);
+        this.tokenRefreshCount = extractTokenRefreshCount(clientToken);
+    }
+
+    private Integer extractTokenRefreshCount(VaultClientTokenResponse clientToken) {
+        final Map<String, String> meta = clientToken.getMeta();
+        // if a Token that is the root token or created outside of CMS,
+        // then meta might be null and there will be no value set
+        return meta == null ?  0 : Integer.valueOf(meta.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
     }
 
     private boolean extractIsIamPrincipal(VaultClientTokenResponse clientToken) {
@@ -129,5 +143,9 @@ public class VaultAuthPrincipal implements Principal {
 
     public boolean isIamPrincipal() {
         return isIamPrincipal;
+    }
+
+    public Integer getTokenRefreshCount() {
+        return tokenRefreshCount;
     }
 }

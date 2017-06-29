@@ -32,7 +32,9 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
                        "metadata": {
                            "username": "john.doe@nike.com",
                            "is_admin": "false",
-                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal"
+                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal",
+                           "refresh_count": 1,
+                           "max_refresh_count": 24
                        },
                        "lease_duration": 3600,
                        "renewable": true
@@ -97,7 +99,9 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
                        "metadata": {
                            "username": "john.doe@nike.com",
                            "is_admin": "false",
-                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal"
+                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal",
+                           "refresh_count": 1,
+                           "max_refresh_count": 24
                        },
                        "lease_duration": 3600,
                        "renewable": true
@@ -110,6 +114,8 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
 ### Refresh the user's token [GET]
 
 This endpoint allows a user to exchange their current token for a new one with updated policies.
+There is a limit to the number of times this call can be made with a token and is store in the metadata
+refresh_count and max_refresh_count can be used to determine when a re-authentication is required.
 
 + Request (application/json)
 
@@ -133,7 +139,9 @@ This endpoint allows a user to exchange their current token for a new one with u
                        "metadata": {
                            "username": "john.doe@nike.com",
                            "is_admin": "false",
-                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal"
+                           "groups": "Lst-CDT.CloudPlatformEngine.FTE,Lst-digital.platform-tools.internal",
+                           "refresh_count": 2,
+                           "max_refresh_count": 24
                        },
                        "lease_duration": 3600,
                        "renewable": true
@@ -172,7 +180,9 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
                 "iam_principal_arn" : "arn:aws:iam::111111111:role/fake-role"
                 "username" : "arn:aws:iam::111111111:role/fake-role"
                 "is_admin": "false",
-                "groups": "registered-iam-principals"
+                "groups": "registered-iam-principals",
+                "refresh_count": 1,
+                "max_refresh_count": 24
               },
               "lease_duration" : 3600,
               "renewable" : true
@@ -208,7 +218,9 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
                 "aws_iam_role_name" : "fake-role",
                 "username" : "arn:aws:iam::111111111:role/fake-role",
                 "is_admin": "false",
-                "groups": "registered-iam-principals"
+                "groups": "registered-iam-principals",
+                "refresh_count": 1,
+                "max_refresh_count": 24
               },
               "lease_duration" : 3600,
               "renewable" : true

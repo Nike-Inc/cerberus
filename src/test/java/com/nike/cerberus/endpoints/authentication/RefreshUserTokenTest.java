@@ -83,7 +83,7 @@ public class RefreshUserTokenTest {
         authResponse.setData(new AuthData().setUsername("username").setClientToken(vaultAuthResponse));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
-        when(authenticationService.refreshUserToken(authPrincipal)).thenReturn(authResponse);
+        when(authenticationService.refreshToken(authPrincipal)).thenReturn(authResponse);
 
         final CompletableFuture<ResponseInfo<AuthResponse>> completableFuture =
                 subject.execute(requestInfo, executor, null);
