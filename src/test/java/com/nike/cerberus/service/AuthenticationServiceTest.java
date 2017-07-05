@@ -105,7 +105,7 @@ public class AuthenticationServiceTest {
         objectMapper = CmsConfig.configureObjectMapper();
         authenticationService = new AuthenticationService(safeDepositBoxDao,
                 awsIamRoleDao, authConnector, kmsService, kmsClientFactory,
-                vaultAdminClient, vaultPolicyService, objectMapper, "foo",
+                vaultAdminClient, vaultPolicyService, objectMapper, "foo", 2,
                 dateTimeSupplier, awsIamRoleArnParser);
     }
 
