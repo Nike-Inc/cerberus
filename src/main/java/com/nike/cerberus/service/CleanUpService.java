@@ -94,12 +94,13 @@ public class CleanUpService {
 
                     TimeUnit.SECONDS.sleep(sleepInSeconds);
                 } catch (InterruptedException ie) {
-                    logger.error("Timeout between KMS key deletion was interrupted");
+                    logger.error("Timeout between KMS key deletion was interrupted", ie);
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
                     logger.error("There was a problem deleting KMS key with id: {}, region: {}",
                             kmsKeyRecord.getAwsIamRoleId(),
-                            kmsKeyRecord.getAwsRegion());
+                            kmsKeyRecord.getAwsRegion(),
+                            e);
                 }
             });
         }
@@ -122,7 +123,8 @@ public class CleanUpService {
                 awsIamRoleDao.deleteIamRoleById(awsIamRoleRecord.getId());
             } catch(Exception e) {
                 logger.error("There was a problem deleting orphaned IAM role with ARN: {}",
-                    awsIamRoleRecord.getAwsIamRoleArn());
+                    awsIamRoleRecord.getAwsIamRoleArn(),
+                    e);
             }
         });
     }
