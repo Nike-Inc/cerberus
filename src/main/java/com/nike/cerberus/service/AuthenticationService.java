@@ -84,6 +84,7 @@ public class AuthenticationService {
 
     public static final String SYSTEM_USER = "system";
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
+    public static final String MAX_TOKEN_REFRESH_COUNT = "auth.token.maxRefreshCount";
     public static final String ADMIN_IAM_ROLES_PROPERTY = "cms.admin.roles";
     public static final String USER_TOKEN_TTL_OVERRIDE = "cms.user.token.ttl.override";
     public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
@@ -117,6 +118,8 @@ public class AuthenticationService {
     @Named(IAM_TOKEN_TTL_OVERRIDE)
     String iamTokenTTL = DEFAULT_TOKEN_TTL;
 
+    private final int maxTokenRefreshCount;
+
     @Inject
     public AuthenticationService(final SafeDepositBoxDao safeDepositBoxDao,
                                  final AwsIamRoleDao awsIamRoleDao,
@@ -127,6 +130,7 @@ public class AuthenticationService {
                                  final VaultPolicyService vaultPolicyService,
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
+                                 @Named(MAX_TOKEN_REFRESH_COUNT) final int maxTokenRefreshCount,
                                  final DateTimeSupplier dateTimeSupplier,
                                  final AwsIamRoleArnParser awsIamRoleArnParser) {
 
@@ -141,6 +145,7 @@ public class AuthenticationService {
         this.adminGroup = adminGroup;
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
+        this.maxTokenRefreshCount = maxTokenRefreshCount;
     }
 
     /**
@@ -156,7 +161,7 @@ public class AuthenticationService {
 
         if (authResponse.getStatus() == AuthStatus.SUCCESS) {
             authResponse.getData().setClientToken(generateToken(credentials.getUsername(),
-                    authServiceConnector.getGroups(authResponse.getData())));
+                    authServiceConnector.getGroups(authResponse.getData()), 0));
         }
 
         return authResponse;
@@ -175,7 +180,7 @@ public class AuthenticationService {
 
         if (authResponse.getStatus() == AuthStatus.SUCCESS) {
             authResponse.getData().setClientToken(generateToken(authResponse.getData().getUsername(),
-                    authServiceConnector.getGroups(authResponse.getData())));
+                    authServiceConnector.getGroups(authResponse.getData()), 0));
         }
 
         return authResponse;
@@ -322,6 +327,23 @@ public class AuthenticationService {
      * @return The auth response directly from Vault with the token and metadata
      */
     public AuthResponse refreshUserToken(final VaultAuthPrincipal authPrincipal) {
+
+        if (authPrincipal.isIamPrincipal()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE)
+                    .withExceptionMessage("The iam principal: %s attempted to use the user token refresh method")
+                    .build();
+        }
+
+        Integer currentTokenRefreshCount = authPrincipal.getTokenRefreshCount();
+        if (currentTokenRefreshCount >= maxTokenRefreshCount) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.MAXIMUM_TOKEN_REFRESH_COUNT_REACHED)
+                    .withExceptionMessage(String.format("The principal %s attempted to refresh its token but has " +
+                            "reached the maximum number of refreshes allowed", authPrincipal.getName()))
+                    .build();
+        }
+
         revoke(authPrincipal.getClientToken().getId());
 
         final AuthResponse authResponse = new AuthResponse();
@@ -329,7 +351,9 @@ public class AuthenticationService {
         final AuthData authData = new AuthData();
         authResponse.setData(authData);
         authData.setUsername(authPrincipal.getName());
-        authData.setClientToken(generateToken(authPrincipal.getName(), authPrincipal.getUserGroups()));
+        authData.setClientToken(generateToken(authPrincipal.getName(),
+                authPrincipal.getUserGroups(),
+                currentTokenRefreshCount + 1));
 
         return authResponse;
     }
@@ -360,7 +384,7 @@ public class AuthenticationService {
      * @param userGroups The user's groups
      * @return The auth response directly from Vault with the token and metadata
      */
-    private VaultAuthResponse generateToken(final String username, final Set<String> userGroups) {
+    private VaultAuthResponse generateToken(final String username, final Set<String> userGroups, int refreshCount) {
         final Map<String, String> meta = Maps.newHashMap();
         meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, username);
 
@@ -370,6 +394,8 @@ public class AuthenticationService {
         }
         meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
         meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT, String.valueOf(refreshCount));
+        meta.put(VaultAuthPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT, String.valueOf(maxTokenRefreshCount));
 
         final Set<String> policies = buildPolicySet(userGroups);
 

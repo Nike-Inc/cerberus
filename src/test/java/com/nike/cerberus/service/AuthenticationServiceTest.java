@@ -19,11 +19,13 @@ package com.nike.cerberus.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
@@ -33,6 +35,7 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.model.VaultAuthResponse;
+import com.nike.vault.client.model.VaultClientTokenResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
@@ -57,6 +60,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -99,13 +103,15 @@ public class AuthenticationServiceTest {
 
     private AuthenticationService authenticationService;
 
+    private static int MAX_LIMIT = 2;
+
     @Before
     public void setup() {
         initMocks(this);
         objectMapper = CmsConfig.configureObjectMapper();
         authenticationService = new AuthenticationService(safeDepositBoxDao,
                 awsIamRoleDao, authConnector, kmsService, kmsClientFactory,
-                vaultAdminClient, vaultPolicyService, objectMapper, "foo",
+                vaultAdminClient, vaultPolicyService, objectMapper, "foo", MAX_LIMIT,
                 dateTimeSupplier, awsIamRoleArnParser);
     }
 
@@ -291,5 +297,56 @@ public class AuthenticationServiceTest {
 
         assertNotEquals(serializedAuth, actual);
         assertTrue(actual.length < AuthenticationService.KMS_SIZE_LIMIT);
+    }
+
+    @Test
+    public void tests_that_refreshUserToken_throws_access_denied_when_an_iam_principal_tries_to_call_it() {
+        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+
+        when(principal.isIamPrincipal()).thenReturn(true);
+
+        Exception e = null;
+        try {
+            authenticationService.refreshUserToken(principal);
+        } catch (Exception e2) {
+            e = e2;
+        }
+
+        assertTrue(e instanceof ApiException);
+        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE));
+    }
+
+    @Test
+    public void tests_that_refreshUserToken_refreshes_token_when_count_is_less_than_limit() {
+        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+
+        when(principal.isIamPrincipal()).thenReturn(false);
+        when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT - 1);
+
+        VaultClientTokenResponse response = mock(VaultClientTokenResponse.class);
+
+        when(principal.getClientToken()).thenReturn(response);
+
+        when(response.getId()).thenReturn("");
+
+        authenticationService.refreshUserToken(principal);
+    }
+
+    @Test
+    public void tests_that_refreshUserToken_throws_access_denied_token_when_count_is_eq_or_greater_than_limit() {
+        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+
+        when(principal.isIamPrincipal()).thenReturn(false);
+        when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT);
+
+        Exception e = null;
+        try {
+            authenticationService.refreshUserToken(principal);
+        } catch (Exception e2) {
+            e = e2;
+        }
+
+        assertTrue(e instanceof ApiException);
+        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.MAXIMUM_TOKEN_REFRESH_COUNT_REACHED));
     }
 }
