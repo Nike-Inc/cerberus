@@ -81,17 +81,17 @@ public class CleanUpService {
         if (inactiveAndOrphanedKmsKeys.isEmpty()) {
             logger.info("No keys to clean up.");
         } else {
-
             // delete inactive and orphaned kms key records from DB
             logger.info("Cleaning up orphaned or inactive KMS keys...");
             inactiveAndOrphanedKmsKeys.forEach(kmsKeyRecord -> {
+                final String kmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
+                final String kmsKeyRegion = kmsKeyRecord.getAwsRegion();
                 try {
                     logger.info("Deleting orphaned or inactive KMS key: id={}, region={}, lastValidated={}",
-                            kmsKeyRecord.getAwsKmsKeyId(), kmsKeyRecord.getAwsRegion(), kmsKeyRecord.getLastValidatedTs());
-
-                    kmsService.scheduleKmsKeyDeletion(kmsKeyRecord.getAwsKmsKeyId(), kmsKeyRecord.getAwsRegion(), SOONEST_A_KMS_KEY_CAN_BE_DELETED);
+                            kmsKeyArn, kmsKeyRegion, kmsKeyRecord.getLastValidatedTs());
+                    kmsService.validatePolicyAllowsCMSToDeleteCMK(kmsKeyArn, kmsKeyRegion);
+                    kmsService.scheduleKmsKeyDeletion(kmsKeyArn, kmsKeyRegion, SOONEST_A_KMS_KEY_CAN_BE_DELETED);
                     awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getId());
-
                     TimeUnit.SECONDS.sleep(sleepInSeconds);
                 } catch (InterruptedException ie) {
                     logger.error("Timeout between KMS key deletion was interrupted", ie);
@@ -99,7 +99,7 @@ public class CleanUpService {
                 } catch (Exception e) {
                     logger.error("There was a problem deleting KMS key with id: {}, region: {}",
                             kmsKeyRecord.getAwsIamRoleId(),
-                            kmsKeyRecord.getAwsRegion(),
+                            kmsKeyRegion,
                             e);
                 }
             });

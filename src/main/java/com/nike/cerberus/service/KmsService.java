@@ -22,7 +22,6 @@ import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
-import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.NotFoundException;
@@ -202,19 +201,16 @@ public class KmsService {
 
         String kmsCMKRegion = kmsKeyRecord.getAwsRegion();
         String awsKmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
-        AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
         try {
-            GetKeyPolicyResult policyResult = kmsClient.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(awsKmsKeyArn).withPolicyName("default"));
+            String keyPolicy = getKmsKeyPolicy(awsKmsKeyArn, kmsCMKRegion);
 
-            if (!kmsPolicyService.isPolicyValid(policyResult.getPolicy(), iamPrincipalArn)) {
+            if (!kmsPolicyService.isPolicyValid(keyPolicy, iamPrincipalArn)) {
                 logger.info("The KMS key: {} generated for IAM principal: {} contained an invalid policy, regenerating",
                         awsKmsKeyArn, iamPrincipalArn);
+
                 String updatedPolicy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
-                kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
-                        .withKeyId(awsKmsKeyArn)
-                        .withPolicyName("default")
-                        .withPolicy(updatedPolicy)
-                );
+
+                updateKmsKeyPolicy(updatedPolicy, awsKmsKeyArn, kmsCMKRegion);
             }
 
             // update last validated timestamp
@@ -232,11 +228,64 @@ public class KmsService {
     }
 
     /**
+     * Validate the the CMS IAM role has permissions to ScheduleKeyDeletion and CancelKeyDeletion for the give CMK
+     * if not, then update the policy to give the appropriate permissions.
+     * @param awsKmsKeyArn - The ARN of the CMK to validate
+     * @param kmsCMKRegion - The region that the CMK exists in
+     */
+    protected void validatePolicyAllowsCMSToDeleteCMK(String awsKmsKeyArn, String kmsCMKRegion) {
+
+        try {
+            String policyJson = getKmsKeyPolicy(awsKmsKeyArn, kmsCMKRegion);
+
+            if (!kmsPolicyService.cmsHasKeyDeletePermissions(policyJson)) {
+                // only overwrite the policy statement for CMS instead of regenerating the entire policy because regenerating
+                // the full policy would require unnecessarily looking up the associated IAM principal in the DB
+                String updatedPolicy = kmsPolicyService.overwriteCMSPolicy(policyJson);
+
+                updateKmsKeyPolicy(updatedPolicy, awsKmsKeyArn, kmsCMKRegion);
+            }
+        } catch (AmazonServiceException ase) {
+            logger.error("Failed to validate that CMS can delete the given KMS key, ARN: {}, region: {}", awsKmsKeyArn, kmsCMKRegion, ase);
+        } catch (IllegalArgumentException iae) {
+            logger.error("Failed to add ScheduleKeyDeletion to key policy for CMK: {}, because the policy does" +
+                    "not contain any allow statements for the CMS role", awsKmsKeyArn, iae);
+        }
+
+    }
+
+    /**
+     * Gets the KMS key policy from AWS for the given CMK
+     */
+    protected String getKmsKeyPolicy(String awsKmsKeyArn, String kmsCMKRegion) {
+
+        AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
+
+        GetKeyPolicyRequest request = new GetKeyPolicyRequest().withKeyId(awsKmsKeyArn).withPolicyName("default");
+
+        return kmsClient.getKeyPolicy(request).getPolicy();
+    }
+
+    /**
+     * Updates the KMS key policy in AWS for the given CMK
+     */
+    protected void updateKmsKeyPolicy(String updatedPolicyJson, String awsKmsKeyArn, String kmsCMKRegion) {
+
+        AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
+
+        kmsClient.putKeyPolicy(new PutKeyPolicyRequest()
+                .withKeyId(awsKmsKeyArn)
+                .withPolicyName("default")
+                .withPolicy(updatedPolicyJson)
+        );
+    }
+
+    /**
      * Delete a CMK in AWS
      * @param kmsKeyId - The AWS KMS Key ID
      * @param region - The KMS key region
      */
-    public void scheduleKmsKeyDeletion(String kmsKeyId, String region, Integer pendingWindowInDays) {
+    protected void scheduleKmsKeyDeletion(String kmsKeyId, String region, Integer pendingWindowInDays) {
 
         final AWSKMSClient kmsClient = kmsClientFactory.getClient(region);
         final ScheduleKeyDeletionRequest scheduleKeyDeletionRequest = new ScheduleKeyDeletionRequest()
