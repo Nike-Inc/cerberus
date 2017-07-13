@@ -66,7 +66,7 @@ public class CleanUpServiceTest {
         cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(inactivePeriod, 0);
 
         verify(awsIamRoleDao).getInactiveOrOrphanedKmsKeys(inactiveCutoffDate);
-        verify(awsIamRoleDao).deleteKmsKeyById(keyRecordId);
+        verify(kmsService).deleteKmsKeyById(keyRecordId);
         verify(kmsService).scheduleKmsKeyDeletion(awsKeyId, keyRegion, SOONEST_A_KMS_KEY_CAN_BE_DELETED);
     }
 

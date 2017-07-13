@@ -21,8 +21,10 @@ import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
+import com.amazonaws.services.kms.model.DescribeKeyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
 import com.amazonaws.services.kms.model.KeyMetadata;
+import com.amazonaws.services.kms.model.KeyState;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
@@ -35,6 +37,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
+import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,6 +176,11 @@ public class KmsService {
         awsIamRoleDao.updateIamRoleKmsKey(updatedKmsKeyRecord);
     }
 
+    @Transactional
+    public void deleteKmsKeyById(final String kmsKeyId) {
+        awsIamRoleDao.deleteKmsKeyById(kmsKeyId);
+    }
+
     protected String getAliasName(String awsIamRoleKmsKeyId) {
         return String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId);
     }
@@ -220,7 +228,7 @@ public class KmsService {
             logger.warn("Failed to validate KMS policy because the KMS key did not exist, but the key record did." +
                             "Deleting the key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}",
                         awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, nfe);
-            awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getId());
+            deleteKmsKeyById(kmsKeyRecord.getId());
         } catch (AmazonServiceException e) {
             logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s. API limit" +
                     " may have been reached for validate call.", awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion), e);
@@ -230,13 +238,13 @@ public class KmsService {
     /**
      * Validate the the CMS IAM role has permissions to ScheduleKeyDeletion and CancelKeyDeletion for the give CMK
      * if not, then update the policy to give the appropriate permissions.
-     * @param awsKmsKeyArn - The ARN of the CMK to validate
+     * @param awsKmsKeyId - The ARN of the CMK to validate
      * @param kmsCMKRegion - The region that the CMK exists in
      */
-    protected void validatePolicyAllowsCMSToDeleteCMK(String awsKmsKeyArn, String kmsCMKRegion) {
+    protected void validatePolicyAllowsCMSToDeleteCMK(String awsKmsKeyId, String kmsCMKRegion) {
 
         try {
-            String policyJson = getKmsKeyPolicy(awsKmsKeyArn, kmsCMKRegion);
+            String policyJson = getKmsKeyPolicy(awsKmsKeyId, kmsCMKRegion);
 
             if (!kmsPolicyService.cmsHasKeyDeletePermissions(policyJson)) {
                 // Overwrite the policy statement for CMS only, instead of regenerating the entire policy because regenerating
@@ -247,25 +255,58 @@ public class KmsService {
                 // of and ARN, rendering the policy invalid. So delete the consumer statement here just in case
                 String updatedPolicyWithNoConsumer = kmsPolicyService.removeConsumerPrincipalFromPolicy(updatedPolicy);
 
-                updateKmsKeyPolicy(updatedPolicyWithNoConsumer, awsKmsKeyArn, kmsCMKRegion);
+                updateKmsKeyPolicy(updatedPolicyWithNoConsumer, awsKmsKeyId, kmsCMKRegion);
             }
         } catch (AmazonServiceException ase) {
-            logger.error("Failed to validate that CMS can delete the given KMS key, ARN: {}, region: {}", awsKmsKeyArn, kmsCMKRegion, ase);
+            logger.error("Failed to validate that CMS can delete the given KMS key, ARN: {}, region: {}", awsKmsKeyId, kmsCMKRegion, ase);
         } catch (IllegalArgumentException iae) {
             logger.error("Failed to add ScheduleKeyDeletion to key policy for CMK: {}, because the policy does" +
-                    "not contain any allow statements for the CMS role", awsKmsKeyArn, iae);
+                    "not contain any allow statements for the CMS role", awsKmsKeyId, iae);
         }
 
     }
 
     /**
+     * Validate that the KMS key is usable (i.e. the key is not disabled or scheduled for deletion).
+     *
+     * If the key is not usable, then delete the DB record of the key, so that the caller will be given a new KMS key
+     * the next time they authenticate.
+     *
+     * @param kmsKeyRecord - Record of the KMS key to validate
+     * @param iamPrincipalArn - ARN of the authenticating IAM principal
+     */
+    protected void validateKmsKeyIsUsable(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
+
+        String kmsCMKRegion = kmsKeyRecord.getAwsRegion();
+        String awsKmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
+
+        if (kmsKeyIsDisabledOrScheduledForDeletion(awsKmsKeyArn, kmsCMKRegion)) {
+            logger.warn("The KMS key ID: {} for IAM principal: {} is disabled or scheduled for deletion. Deleting the" +
+                            "key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}.",
+                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion);
+            deleteKmsKeyById(kmsKeyRecord.getId());
+        }
+    }
+
+    /**
+     * Return true if the KMS key is disabled or scheduled for deletion, false if not.
+     */
+    protected boolean kmsKeyIsDisabledOrScheduledForDeletion(String awsKmsKeyId, String kmsCMKRegion) {
+
+        String keyState = getKmsKeyState(awsKmsKeyId, kmsCMKRegion);
+
+        return StringUtils.equals(keyState, KeyState.PendingDeletion.toString()) ||
+                StringUtils.equals(keyState, KeyState.Disabled.toString());
+    }
+
+    /**
      * Gets the KMS key policy from AWS for the given CMK
      */
-    protected String getKmsKeyPolicy(String awsKmsKeyArn, String kmsCMKRegion) {
+    protected String getKmsKeyPolicy(String kmsKeyId, String kmsCMKRegion) {
 
         AWSKMSClient kmsClient = kmsClientFactory.getClient(kmsCMKRegion);
 
-        GetKeyPolicyRequest request = new GetKeyPolicyRequest().withKeyId(awsKmsKeyArn).withPolicyName("default");
+        GetKeyPolicyRequest request = new GetKeyPolicyRequest().withKeyId(kmsKeyId).withPolicyName("default");
 
         return kmsClient.getKeyPolicy(request).getPolicy();
     }
@@ -282,6 +323,22 @@ public class KmsService {
                 .withPolicyName("default")
                 .withPolicy(updatedPolicyJson)
         );
+    }
+
+    /**
+     * Get the state of the KMS key
+     * @param kmsKeyId - The AWS KMS Key ID
+     * @param region - The KMS key region
+     * @return - KMS key state
+     */
+    protected String getKmsKeyState(String kmsKeyId, String region) {
+
+        AWSKMSClient kmsClient = kmsClientFactory.getClient(region);
+        DescribeKeyRequest request = new DescribeKeyRequest().withKeyId(kmsKeyId);
+
+        return kmsClient.describeKey(request)
+                .getKeyMetadata()
+                .getKeyState();
     }
 
     /**

@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.CleanUpRequest;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
+import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +103,7 @@ public class CleanUpService {
                             kmsKeyArn, kmsKeyRegion, kmsKeyRecord.getLastValidatedTs());
                     kmsService.validatePolicyAllowsCMSToDeleteCMK(kmsKeyArn, kmsKeyRegion);
                     kmsService.scheduleKmsKeyDeletion(kmsKeyArn, kmsKeyRegion, SOONEST_A_KMS_KEY_CAN_BE_DELETED);
-                    awsIamRoleDao.deleteKmsKeyById(kmsKeyRecord.getId());
+                    kmsService.deleteKmsKeyById(kmsKeyRecord.getId());
                     TimeUnit.SECONDS.sleep(sleepInSeconds);
                 } catch (InterruptedException ie) {
                     logger.error("Timeout between KMS key deletion was interrupted", ie);
@@ -120,6 +121,7 @@ public class CleanUpService {
     /**
      * Delete all IAM role records that are no longer associated with an SDB.
      */
+    @Transactional
     protected void cleanUpOrphanedIamRoles() {
 
         // get orphaned iam role ids
