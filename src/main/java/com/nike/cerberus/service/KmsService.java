@@ -239,11 +239,15 @@ public class KmsService {
             String policyJson = getKmsKeyPolicy(awsKmsKeyArn, kmsCMKRegion);
 
             if (!kmsPolicyService.cmsHasKeyDeletePermissions(policyJson)) {
-                // only overwrite the policy statement for CMS instead of regenerating the entire policy because regenerating
+                // Overwrite the policy statement for CMS only, instead of regenerating the entire policy because regenerating
                 // the full policy would require unnecessarily looking up the associated IAM principal in the DB
                 String updatedPolicy = kmsPolicyService.overwriteCMSPolicy(policyJson);
 
-                updateKmsKeyPolicy(updatedPolicy, awsKmsKeyArn, kmsCMKRegion);
+                // If the consumer IAM principal has been deleted then the policy will contain a principal 'ID' instead
+                // of and ARN, rendering the policy invalid. So delete the consumer statement here just in case
+                String updatedPolicyWithNoConsumer = kmsPolicyService.removeConsumerPrincipalFromPolicy(updatedPolicy);
+
+                updateKmsKeyPolicy(updatedPolicyWithNoConsumer, awsKmsKeyArn, kmsCMKRegion);
             }
         } catch (AmazonServiceException ase) {
             logger.error("Failed to validate that CMS can delete the given KMS key, ARN: {}, region: {}", awsKmsKeyArn, kmsCMKRegion, ase);

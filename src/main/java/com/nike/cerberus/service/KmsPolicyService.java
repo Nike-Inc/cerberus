@@ -24,6 +24,7 @@ import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.auth.policy.actions.KMSActions;
 import com.amazonaws.auth.policy.internal.JsonPolicyReader;
+import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,6 @@ public class KmsPolicyService {
      * @return true if the policy is valid, false if the policy contains an ID because the ARN had been deleted and recreated
      */
     public boolean isPolicyValid(String policyJson, String iamRoleArn) {
-
         return iamPrincipalCanAccessKey(policyJson, iamRoleArn) && cmsHasKeyDeletePermissions(policyJson);
     }
 
@@ -145,15 +145,36 @@ public class KmsPolicyService {
      * @return - The updated JSON KMS policy containing a regenerated statement for CMS
      */
     protected String overwriteCMSPolicy(String policyJson) {
-
         Policy policy = policyReader.createPolicyFromJsonString(policyJson);
-        Collection<Statement> existingStatements = policy.getStatements();
-        List<Statement> policyStatementsExcludingCMS = existingStatements.stream()
-                .filter(statement -> ! StringUtils.equals(statement.getId(), CERBERUS_MANAGEMENT_SERVICE_SID))
-                .collect(Collectors.toList());
-        policyStatementsExcludingCMS.add(generateStandardCMSPolicyStatement());
-        policy.setStatements(policyStatementsExcludingCMS);
+        removeStatementFromPolicy(policy, CERBERUS_MANAGEMENT_SERVICE_SID);
+        Collection<Statement> statements = policy.getStatements();
+        statements.add(generateStandardCMSPolicyStatement());
         return policy.toJson();
+    }
+
+    /**
+     * Removes the 'Allow' statement for the consumer IAM principal.
+     *
+     * This is important when updating the KMS policy
+     * because if the IAM principal has been deleted then the KMS policy will contain the principal 'ID' instead of the
+     * ARN, which renders the policy invalid when calling {@link com.amazonaws.services.kms.AWSKMSClient#putKeyPolicy(PutKeyPolicyRequest)}.
+     *
+     * @param policyJson - Key policy JSON from which to remove consumer principal
+     * @return - The updated key policy JSON
+     */
+    protected String removeConsumerPrincipalFromPolicy(String policyJson) {
+        Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+        removeStatementFromPolicy(policy, CERBERUS_CONSUMER_SID);
+        return policy.toJson();
+    }
+
+    protected void removeStatementFromPolicy(Policy policy, String statementId) {
+        Collection<Statement> existingStatements = policy.getStatements();
+        List<Statement> policyStatementsExcludingConsumer = existingStatements.stream()
+                .filter(statement -> ! StringUtils.equals(statement.getId(), statementId))
+                .collect(Collectors.toList());
+        policyStatementsExcludingConsumer.add(generateStandardCMSPolicyStatement());
+        policy.setStatements(policyStatementsExcludingConsumer);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -159,5 +160,34 @@ public class KmsPolicyServiceTest {
         assertEquals(KmsPolicyService.CERBERUS_MANAGEMENT_SERVICE_SID, result.getId());
         assertEquals(Statement.Effect.Allow, result.getEffect());
         assertTrue(kmsPolicyService.cmsHasKeyDeletePermissions(new Policy().withStatements(result).toJson()));
+    }
+
+    @Test
+    public void test_that_removePolicyFromStatement_removes_the_given_statement() {
+
+        String removeId = "remove id";
+        String keepId = "keep id";
+        Statement statementToRemove = new Statement(Statement.Effect.Allow).withId(removeId).withActions(KMSActions.AllKMSActions);
+        Statement statementToKeep = new Statement(Statement.Effect.Deny).withId(keepId).withActions(KMSActions.AllKMSActions);
+        Policy policy = new Policy("policy", Lists.newArrayList(statementToKeep, statementToRemove));
+
+        kmsPolicyService.removeStatementFromPolicy(policy, removeId);
+
+        assertTrue(policy.getStatements().contains(statementToKeep));
+        assertFalse(policy.getStatements().contains(statementToRemove));
+
+    }
+
+    @Test
+    public void test_that_removeConsumerPrincipalFromPolicy_removes_cms_statement() throws IOException {
+        InputStream policy = getClass().getClassLoader()
+                .getResourceAsStream("com/nike/cerberus/service/valid-cerberus-iam-auth-kms-key-policy.json");
+        String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
+
+        String result = kmsPolicyService.removeConsumerPrincipalFromPolicy(policyJsonAsString);
+        assertTrue(StringUtils.contains(policyJsonAsString, KmsPolicyService.CERBERUS_CONSUMER_SID));
+        assertFalse(StringUtils.contains(result, KmsPolicyService.CERBERUS_CONSUMER_SID));
+
+        policy.close();
     }
 }
