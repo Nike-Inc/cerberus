@@ -36,14 +36,9 @@
       "Action":[
         "kms:Encrypt",
         "kms:Decrypt",
-        "kms:ReEncryptFrom",
-        "kms:ReEncryptTo",
-        "kms:GenerateDataKey",
-        "kms:GenerateDataKeyWithoutPlaintext",
-        "kms:GenerateRandom",
-        "kms:DescribeKey",
-        "kms:ScheduleKeyDeletion",
-        "kms:CancelKeyDeletion"
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
       ],
       "Resource":[
         "*"

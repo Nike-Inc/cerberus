@@ -2,7 +2,15 @@ package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.*;
+import com.amazonaws.services.kms.model.CreateAliasRequest;
+import com.amazonaws.services.kms.model.CreateKeyRequest;
+import com.amazonaws.services.kms.model.CreateKeyResult;
+import com.amazonaws.services.kms.model.DescribeKeyResult;
+import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
+import com.amazonaws.services.kms.model.GetKeyPolicyResult;
+import com.amazonaws.services.kms.model.KeyMetadata;
+import com.amazonaws.services.kms.model.KeyState;
+import com.amazonaws.services.kms.model.KeyUsageType;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
@@ -17,7 +25,15 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class KmsServiceTest {
 
@@ -220,5 +236,130 @@ public class KmsServiceTest {
         when(awsIamRoleDao.getKmsKey(iamRoleId, awsRegion)).thenReturn(Optional.empty());
 
         kmsService.updateKmsKey(iamRoleId, awsRegion, user, dateTime, dateTime);
+    }
+
+    @Test
+    public void test_getKmsKeyState_happy() {
+        String awsRegion = "aws region";
+
+        String kmsKeyId = "kms key id";
+        String state = "state";
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(state)));
+
+        String result = kmsService.getKmsKeyState(kmsKeyId, awsRegion);
+
+        assertEquals(state, result);
+    }
+
+    @Test
+    public void test_validateKmsKeyIsUsable_returns_true_when_state_is_pending_deletion() {
+        String keyId = "key id";
+        String awsRegion = "aws region";
+
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.PendingDeletion)));
+
+        boolean result = kmsService.kmsKeyIsDisabledOrScheduledForDeletion(keyId, awsRegion);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void test_validateKmsKeyIsUsable_return_true_when_state_is_disabled() {
+        String keyId = "key id";
+        String awsRegion = "aws region";
+
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.Disabled)));
+
+        boolean result = kmsService.kmsKeyIsDisabledOrScheduledForDeletion(keyId, awsRegion);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void test_validateKmsKeyIsUsable_returns_false_when_state_is_not_deletion_or_disabled() {
+        String keyId = "key id";
+        String awsRegion = "aws region";
+
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.Enabled)));
+
+        boolean result = kmsService.kmsKeyIsDisabledOrScheduledForDeletion(keyId, awsRegion);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void test_validateKmsKeyIsUsable_deletes_kms_key_when_not_usable() {
+
+        String id = "id";
+        String awsKmsKeyArn = "aws kms key arn";
+        String iamPrincipalArn = "arn";
+        String awsRegion = "aws region";
+
+        AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
+        when(kmsKey.getId()).thenReturn(id);
+        when(kmsKey.getAwsKmsKeyId()).thenReturn(awsKmsKeyArn);
+        when(kmsKey.getAwsRegion()).thenReturn(awsRegion);
+
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.PendingDeletion)));
+
+        kmsService.validateKmsKeyIsUsable(kmsKey, iamPrincipalArn);
+
+        verify(awsIamRoleDao, times(1)).deleteKmsKeyById(id);
+    }
+
+    @Test
+    public void test_validateKmsKeyIsUsable_does_not_delete_kms_key_when_usable() {
+
+        String id = "id";
+        String awsKmsKeyArn = "aws kms key arn";
+        String iamPrincipalArn = "arn";
+        String awsRegion = "aws region";
+
+        AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
+        when(kmsKey.getId()).thenReturn(id);
+        when(kmsKey.getAwsKmsKeyId()).thenReturn(awsKmsKeyArn);
+        when(kmsKey.getAwsRegion()).thenReturn(awsRegion);
+
+        AWSKMSClient kmsClient = mock(AWSKMSClient.class);
+        when(kmsClientFactory.getClient(awsRegion)).thenReturn(kmsClient);
+        when(kmsClient.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.Enabled)));
+
+        kmsService.validateKmsKeyIsUsable(kmsKey, iamPrincipalArn);
+
+        verify(awsIamRoleDao, never()).deleteKmsKeyById(id);
     }
 }

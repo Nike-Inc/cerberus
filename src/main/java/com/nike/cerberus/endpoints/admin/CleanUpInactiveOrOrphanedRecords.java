@@ -23,7 +23,6 @@ import com.nike.cerberus.security.VaultAuthPrincipal;
 import com.nike.cerberus.service.CleanUpService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.impl.FullResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,8 +49,6 @@ public class CleanUpInactiveOrOrphanedRecords extends AdminStandardEndpoint<Clea
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final int DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS = 30;
-
     private final CleanUpService cleanUpService;
 
     @Inject
@@ -64,29 +61,22 @@ public class CleanUpInactiveOrOrphanedRecords extends AdminStandardEndpoint<Clea
                                                            final Executor longRunningTaskExecutor,
                                                            final ChannelHandlerContext ctx,
                                                            final SecurityContext securityContext) {
-        return CompletableFuture.supplyAsync(
-                AsyncNettyHelper.supplierWithTracingAndMdc(() -> cleanUp(request, securityContext), ctx),
-                longRunningTaskExecutor
-        );
-    }
-
-    private FullResponseInfo<Void> cleanUp(final RequestInfo<CleanUpRequest> request,
-                                           final SecurityContext securityContext) {
 
         final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
         final String principal = vaultAuthPrincipal.getName();
 
         log.info("Clean Up Event: the principal {} is attempting to clean up kms keys", principal);
 
-        Integer expirationPeriodInDays = request.getContent().getKmsExpirationPeriodInDays();
-        int kmsKeysInactiveAfterNDays = (expirationPeriodInDays == null) ? DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS : expirationPeriodInDays;
+        longRunningTaskExecutor.execute(AsyncNettyHelper.runnableWithTracingAndMdc(
+                () -> cleanUpService.cleanUp(request.getContent()),
+                ctx
+        ));
 
-        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays);
-        cleanUpService.cleanUpOrphanedIamRoles();
-
-        return ResponseInfo.<Void>newBuilder()
-                .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
-                .build();
+        return CompletableFuture.completedFuture(
+                ResponseInfo.<Void>newBuilder()
+                        .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
+                        .build()
+        );
     }
 
     @Override

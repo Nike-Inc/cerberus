@@ -18,17 +18,23 @@ package com.nike.cerberus.service;
 
 import com.amazonaws.auth.policy.Action;
 import com.amazonaws.auth.policy.Policy;
+import com.amazonaws.auth.policy.PolicyReaderOptions;
 import com.amazonaws.auth.policy.Principal;
 import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.amazonaws.auth.policy.actions.KMSActions;
+import com.amazonaws.auth.policy.internal.JsonPolicyReader;
+import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Helpful service for putting together the KMS policy documents to be associated with provisioned KMS keys.
@@ -45,7 +51,10 @@ public class KmsPolicyService {
     private static final String CMS_ROLE_ARN_PROPERTY = "cms.role.arn";
 
     private static final String AWS_PROVIDER = "AWS";
+
     public static final String CERBERUS_CONSUMER_SID = "Target IAM Role Has Decrypt Action";
+
+    protected static final String CERBERUS_MANAGEMENT_SERVICE_SID = "CMS Role Key Access";
 
     private final String rootUserArn;
 
@@ -53,7 +62,7 @@ public class KmsPolicyService {
 
     private final String cmsRoleArn;
 
-    private final ObjectMapper objectMapper;
+    private final JsonPolicyReader policyReader;
 
     @Inject
     public KmsPolicyService(@Named(ROOT_USER_ARN_PROPERTY) String rootUserArn,
@@ -63,35 +72,41 @@ public class KmsPolicyService {
         this.adminRoleArn = adminRoleArn;
         this.cmsRoleArn = cmsRoleArn;
 
-        objectMapper = new ObjectMapper();
+        PolicyReaderOptions policyReaderOptions = new PolicyReaderOptions();
+        policyReaderOptions.setStripAwsPrincipalIdHyphensEnabled(false);
+        policyReader = new JsonPolicyReader(policyReaderOptions);
     }
 
-    /***
-     * Please note that currently in the AWS Core SDK 1.11.108 that Policy.fromJson strips hyphens from AWS ARN Principals
-     * and Hyphens are valid in IAM role names. We will need to manually use JsonNodes and not rely on fromJson
+    /**
+     * Validates that the given key policy grants appropriate permissions to CMS and allows the given IAM principal to
+     * access the KMS key.
      *
-     * When you manually instantiate a Principal you can specify true/false for striping hyphens,
-     * when deserializing with fromJson this seems to always get set to true.
-     *
-     * @param policyString - The KMS key policy as a String
+     * @param policyJson - The KMS key policy as a String
      * @param iamRoleArn - The IAM Role that is supposed to have decrypt permissions
      * @return true if the policy is valid, false if the policy contains an ID because the ARN had been deleted and recreated
      */
-    public boolean isPolicyValid(String policyString, String iamRoleArn) {
-        // The below json node stuff is lame, should be able to use Objects created from Policy.fromJson(string)
-        // todo file Github issue and or PR with AWS SDK project
+    public boolean isPolicyValid(String policyJson, String iamRoleArn) {
+        return iamPrincipalCanAccessKey(policyJson, iamRoleArn) && cmsHasKeyDeletePermissions(policyJson);
+    }
+
+    /**
+     * Check that the given IAM principal has permissions to access the KMS key.
+     *
+     * This is important because when an IAM principal is deleted and recreated with the same name, then the recreated
+     * principal cannot access the KMS key until the key policy is regenerated -- updating the policy permissions to
+     * allow the ARN of the recreated principal instead of the ID of the deleted principal.
+     *
+     * @param policyJson - The KMS key policy as a String
+     * @param iamPrincipalArn - The IAM Role that is supposed to have decrypt permissions
+     */
+    protected boolean iamPrincipalCanAccessKey(String policyJson, String iamPrincipalArn) {
         try {
-            JsonNode policy = null;
-            policy = objectMapper.readTree(policyString);
-            JsonNode statements = policy.get("Statement");
-            for (JsonNode statement : statements) {
-                if (CERBERUS_CONSUMER_SID.equals(statement.get("Sid").textValue())) {
-                    String statementAWSPrincipal = statement.get("Principal").get("AWS").textValue();
-                    if (iamRoleArn.equals(statementAWSPrincipal)) {
-                        return true;
-                    }
-                }
-            }
+            Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+            return policy.getStatements()
+                    .stream()
+                    .anyMatch(statement ->
+                            StringUtils.equals(statement.getId(), CERBERUS_CONSUMER_SID) &&
+                                    statementAppliesToPrincipal(statement, iamPrincipalArn));
         } catch (Exception e) {
             // if we can't deserialize we will assume policy has been corrupted manually and regenerate it
             logger.error("Failed to validate policy, did someone manually edit the kms policy?", e);
@@ -100,36 +115,135 @@ public class KmsPolicyService {
         return false;
     }
 
+    /**
+     * Validate that the IAM principal for the CMS has permissions to schedule and cancel deletion of the KMS key.
+     * @param policyJson - The KMS key policy as a String
+     */
+    protected boolean cmsHasKeyDeletePermissions(String policyJson) {
+        try {
+            Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+            return policy.getStatements()
+                    .stream()
+                    .anyMatch(statement ->
+                            StringUtils.equals(statement.getId(), CERBERUS_MANAGEMENT_SERVICE_SID) &&
+                                    statementAppliesToPrincipal(statement, cmsRoleArn) &&
+                                    statement.getEffect() == Statement.Effect.Allow &&
+                                    statementIncludesAction(statement, KMSActions.ScheduleKeyDeletion) &&
+                                    statementIncludesAction(statement, KMSActions.CancelKeyDeletion));
+        } catch (Exception e) {
+            logger.error("Failed to validate that CMS can delete KMS key, there may be something wrong with the policy", e);
+        }
+
+        return false;
+    }
+
+    /**
+     * Overwrite the policy statement for CMS with the standard statement. Add the standard statement for CMS
+     * to the policy if it did not already exist.
+     *
+     * @param policyJson - The KMS key policy in JSON format
+     * @return - The updated JSON KMS policy containing a regenerated statement for CMS
+     */
+    protected String overwriteCMSPolicy(String policyJson) {
+        Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+        removeStatementFromPolicy(policy, CERBERUS_MANAGEMENT_SERVICE_SID);
+        Collection<Statement> statements = policy.getStatements();
+        statements.add(generateStandardCMSPolicyStatement());
+        return policy.toJson();
+    }
+
+    /**
+     * Removes the 'Allow' statement for the consumer IAM principal.
+     *
+     * This is important when updating the KMS policy
+     * because if the IAM principal has been deleted then the KMS policy will contain the principal 'ID' instead of the
+     * ARN, which renders the policy invalid when calling {@link com.amazonaws.services.kms.AWSKMSClient#putKeyPolicy(PutKeyPolicyRequest)}.
+     *
+     * @param policyJson - Key policy JSON from which to remove consumer principal
+     * @return - The updated key policy JSON
+     */
+    protected String removeConsumerPrincipalFromPolicy(String policyJson) {
+        Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+        removeStatementFromPolicy(policy, CERBERUS_CONSUMER_SID);
+        return policy.toJson();
+    }
+
+    protected void removeStatementFromPolicy(Policy policy, String statementId) {
+        Collection<Statement> existingStatements = policy.getStatements();
+        List<Statement> policyStatementsExcludingConsumer = existingStatements.stream()
+                .filter(statement -> ! StringUtils.equals(statement.getId(), statementId))
+                .collect(Collectors.toList());
+        policyStatementsExcludingConsumer.add(generateStandardCMSPolicyStatement());
+        policy.setStatements(policyStatementsExcludingConsumer);
+    }
+
+    /**
+     * Validates that the given KMS key policy statement applies to the given principal
+     */
+    protected boolean statementAppliesToPrincipal(Statement statement, String principalArn) {
+
+        return statement.getPrincipals()
+                .stream()
+                .anyMatch(principal ->
+                        StringUtils.equals(principal.getId(), principalArn));
+    }
+
+    /**
+     * Validates that the given KMS key policy statement includes the given action
+     */
+    protected boolean statementIncludesAction(Statement statement, Action action) {
+
+        return statement.getActions()
+                .stream()
+                .anyMatch(statementAction ->
+                        StringUtils.equals(statementAction.getActionName(), action.getActionName()));
+    }
+
+    /**
+     * Generates the standard KMS key policy statement for the Cerberus Management Service
+     */
+    protected Statement generateStandardCMSPolicyStatement() {
+        Statement cmsStatement = new Statement(Statement.Effect.Allow);
+        cmsStatement.withId(CERBERUS_MANAGEMENT_SERVICE_SID);
+        cmsStatement.withPrincipals(new Principal(AWS_PROVIDER, cmsRoleArn, false));
+        cmsStatement.withActions(
+                KMSActions.Encrypt,
+                KMSActions.Decrypt,
+                KMSActions.ReEncryptFrom,
+                KMSActions.ReEncryptTo,
+                KMSActions.GenerateDataKey,
+                KMSActions.GenerateDataKeyWithoutPlaintext,
+                KMSActions.GenerateRandom,
+                KMSActions.DescribeKey,
+                KMSActions.ScheduleKeyDeletion,
+                KMSActions.CancelKeyDeletion);
+        cmsStatement.withResources(new Resource("*"));
+
+        return cmsStatement;
+    }
+
     public String generateStandardKmsPolicy(String iamRoleArn) {
         Policy kmsPolicy = new Policy();
 
         Statement rootUserStatement = new Statement(Statement.Effect.Allow);
         rootUserStatement.withId("Root User Has All Actions");
         rootUserStatement.withPrincipals(new Principal(AWS_PROVIDER, rootUserArn, false));
-        rootUserStatement.withActions(KmsActions.AllKmsActions);
+        rootUserStatement.withActions(KMSActions.AllKMSActions);
         rootUserStatement.withResources(new Resource("*"));
 
         Statement keyAdministratorStatement = new Statement(Statement.Effect.Allow);
         keyAdministratorStatement.withId("Admin Role Has All Actions");
         keyAdministratorStatement.withPrincipals(new Principal(AWS_PROVIDER, adminRoleArn, false));
-        keyAdministratorStatement.withActions(KmsActions.AllKmsActions);
+        keyAdministratorStatement.withActions(KMSActions.AllKMSActions);
         keyAdministratorStatement.withResources(new Resource("*"));
 
-        Statement instanceUsageStatement = new Statement(Statement.Effect.Allow);
-        instanceUsageStatement.withId("CMS Role Key Access");
-        instanceUsageStatement.withPrincipals(new Principal(AWS_PROVIDER, cmsRoleArn, false));
-        instanceUsageStatement.withActions(KmsActions.EncryptAction,
-                KmsActions.DecryptAction,
-                KmsActions.AllReEncryptActions,
-                KmsActions.AllGenerateDataKeyActions,
-                KmsActions.DescribeKey);
-        instanceUsageStatement.withResources(new Resource("*"));
+        Statement instanceUsageStatement = generateStandardCMSPolicyStatement();
 
         Statement iamRoleUsageStatement = new Statement(Statement.Effect.Allow);
         iamRoleUsageStatement.withId(CERBERUS_CONSUMER_SID);
         iamRoleUsageStatement.withPrincipals(
                 new Principal(AWS_PROVIDER, iamRoleArn, false));
-        iamRoleUsageStatement.withActions(KmsActions.DecryptAction);
+        iamRoleUsageStatement.withActions(KMSActions.Decrypt);
         iamRoleUsageStatement.withResources(new Resource("*"));
 
         kmsPolicy.withStatements(rootUserStatement,
@@ -138,30 +252,5 @@ public class KmsPolicyService {
                 iamRoleUsageStatement);
 
         return kmsPolicy.toJson();
-    }
-
-    private enum KmsActions implements Action {
-        AllKmsActions("kms:*"),
-
-        EncryptAction("kms:Encrypt"),
-
-        DecryptAction("kms:Decrypt"),
-
-        AllReEncryptActions("kms:ReEncrypt*"),
-
-        AllGenerateDataKeyActions("kms:GenerateDataKey*"),
-
-        DescribeKey("kms:DescribeKey");
-
-        private final String action;
-
-        KmsActions(String action) {
-            this.action = action;
-        }
-
-        @Override
-        public String getActionName() {
-            return action;
-        }
     }
 }
