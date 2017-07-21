@@ -169,7 +169,7 @@ public class AuthenticationServiceTest {
 
         // verify validate is called once interval has passed
         assertEquals(cmkId, result);
-        verify(kmsService, times(1)).validatePolicy(awsIamRoleKmsKeyRecord, principalArn);
+        verify(kmsService, times(1)).validateKeyAndPolicy(awsIamRoleKmsKeyRecord, principalArn);
     }
 
     @Test

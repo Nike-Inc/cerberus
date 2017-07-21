@@ -125,6 +125,12 @@ public class KmsServiceTest {
         OffsetDateTime now = OffsetDateTime.now();
 
         AWSKMSClient client = mock(AWSKMSClient.class);
+        when(client.describeKey(anyObject())).thenReturn(
+                new DescribeKeyResult()
+                        .withKeyMetadata(
+                                new KeyMetadata()
+                                        .withKeyState(KeyState.Enabled)));
+
         when(kmsClientFactory.getClient(kmsCMKRegion)).thenReturn(client);
 
         GetKeyPolicyResult result = mock(GetKeyPolicyResult.class);
@@ -141,7 +147,7 @@ public class KmsServiceTest {
         when(awsIamRoleDao.getKmsKey(awsIamRoleRecordId, kmsCMKRegion)).thenReturn(Optional.of(kmsKey));
 
         when(dateTimeSupplier.get()).thenReturn(now);
-        kmsService.validatePolicy(kmsKey, kmsKeyArn);
+        kmsService.validateKeyAndPolicy(kmsKey, kmsKeyArn);
 
         verify(client, times(1)).getKeyPolicy(new GetKeyPolicyRequest().withKeyId(kmsKeyArn)
                 .withPolicyName("default"));
@@ -149,7 +155,7 @@ public class KmsServiceTest {
     }
 
     @Test
-    public void test_validatePolicy_validates_policy_when_validate_interval_has_not_passed() {
+    public void test_validateKeyAndPolicy_validates_policy_when_validate_interval_has_not_passed() {
         String awsKmsKeyArn = "aws kms key arn";
         String iamPrincipalArn = "arn";
         String awsIamRoleRecordId = "aws iam role record id";
@@ -163,14 +169,14 @@ public class KmsServiceTest {
         when(kmsKey.getLastValidatedTs()).thenReturn(now);
 
         when(dateTimeSupplier.get()).thenReturn(now);
-        kmsService.validatePolicy(kmsKey, iamPrincipalArn);
+        kmsService.validateKeyAndPolicy(kmsKey, iamPrincipalArn);
 
         verify(kmsClientFactory, never()).getClient(anyString());
         verify(kmsPolicyService, never()).isPolicyValid(anyString(), anyString());
     }
 
     @Test
-    public void test_validatePolicy_does_not_throw_error_when_cannot_validate() {
+    public void test_validateKeyAndPolicy_does_not_throw_error_when_cannot_validate() {
         String keyId = "key-id";
         String iamPrincipalArn = "arn";
         String kmsCMKRegion = "kmsCMKRegion";
@@ -193,7 +199,7 @@ public class KmsServiceTest {
         when(result.getPolicy()).thenReturn(policy);
         when(client.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(keyId).withPolicyName("default"))).thenThrow(AmazonServiceException.class);
 
-        kmsService.validatePolicy(kmsKey, iamPrincipalArn);
+        kmsService.validateKeyAndPolicy(kmsKey, iamPrincipalArn);
 
         verify(kmsPolicyService, never()).isPolicyValid(policy, iamPrincipalArn);
         verify(client, never()).putKeyPolicy(anyObject());
@@ -311,7 +317,7 @@ public class KmsServiceTest {
         assertFalse(result);
     }
 
-    @Test
+    @Test(expected = ApiException.class)
     public void test_validateKmsKeyIsUsable_deletes_kms_key_when_not_usable() {
 
         String id = "id";
@@ -333,8 +339,6 @@ public class KmsServiceTest {
                                         .withKeyState(KeyState.PendingDeletion)));
 
         kmsService.validateKmsKeyIsUsable(kmsKey, iamPrincipalArn);
-
-        verify(awsIamRoleDao, times(1)).deleteKmsKeyById(id);
     }
 
     @Test

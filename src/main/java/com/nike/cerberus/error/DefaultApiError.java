@@ -233,6 +233,11 @@ public enum DefaultApiError implements ApiError {
     IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE(99231, "The requested resource is for User Principals only.", HttpServletResponse.SC_FORBIDDEN),
 
     /**
+     * KMS key is scheduled for deletion or disabled
+     */
+    KMS_KEY_IS_SCHEDULED_FOR_DELETION_OR_DISABLED(99232, "KMS key is scheduled for deletion or disabled", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", HttpServletResponse.SC_NOT_FOUND),
