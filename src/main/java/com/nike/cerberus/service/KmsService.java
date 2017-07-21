@@ -186,6 +186,8 @@ public class KmsService {
     }
 
     /**
+     * Perform validation and fix some issues.
+     *
      * When a KMS key policy statement is created and an AWS ARN is specified as a principal,
      * AWS behind the scene binds that ARNs ID to the statement and not the ARN.
      *
@@ -201,9 +203,10 @@ public class KmsService {
      * @param kmsKeyRecord - The CMK record to validate policy on
      * @param iamPrincipalArn - The principal ARN that should have decrypt permission
      */
-    public void validatePolicy(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
+    public void validateKeyAndPolicy(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
 
         if (! kmsPolicyNeedsValidation(kmsKeyRecord)) {
+            // Avoiding extra calls to AWS so that we don't get rate limited.
             return;
         }
 
@@ -220,6 +223,8 @@ public class KmsService {
 
                 updateKmsKeyPolicy(updatedPolicy, awsKmsKeyArn, kmsCMKRegion);
             }
+
+            validateKmsKeyIsUsable(kmsKeyRecord, iamPrincipalArn);
 
             // update last validated timestamp
             OffsetDateTime now = dateTimeSupplier.get();
@@ -281,10 +286,14 @@ public class KmsService {
         String awsKmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
 
         if (kmsKeyIsDisabledOrScheduledForDeletion(awsKmsKeyArn, kmsCMKRegion)) {
+            // This shouldn't happen unless there is a bug in CMS or if someone modified the key outside of Cerberus
             logger.warn("The KMS key ID: {} for IAM principal: {} is disabled or scheduled for deletion. Deleting the" +
                             "key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}.",
                     awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion);
             deleteKmsKeyById(kmsKeyRecord.getId());
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.KMS_KEY_IS_SCHEDULED_FOR_DELETION_OR_DISABLED)
+                    .build();
         }
     }
 

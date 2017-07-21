@@ -497,8 +497,7 @@ public class AuthenticationService {
         } else {
             kmsKeyRecord = kmsKey.get();
             kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
-            kmsService.validatePolicy(kmsKeyRecord, iamPrincipalArn);
-            kmsService.validateKmsKeyIsUsable(kmsKeyRecord, iamPrincipalArn);
+            kmsService.validateKeyAndPolicy(kmsKeyRecord, iamPrincipalArn);
         }
 
         return kmsKeyId;
