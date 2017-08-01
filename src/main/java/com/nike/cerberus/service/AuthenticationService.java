@@ -118,6 +118,10 @@ public class AuthenticationService {
     @Named(IAM_TOKEN_TTL_OVERRIDE)
     String iamTokenTTL = DEFAULT_TOKEN_TTL;
 
+    @Inject
+    @Named(AuthenticationCacheService.IAM_TOKEN_CACHE_TTL)
+    int iamTokenCacheTTL; // in seconds
+
     private final int maxTokenRefreshCount;
 
     @Inject
@@ -218,6 +222,7 @@ public class AuthenticationService {
         return authenticate(credentials, vaultAuthPrincipalMetadata);
     }
 
+
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> vaultAuthPrincipalMetadata) {
         final String keyId;
         try {
@@ -245,6 +250,9 @@ public class AuthenticationService {
 
         VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
 
+        // reduce lease duration by the cache time
+        reduceLeaseDuration(authResponse);
+
         byte[] authResponseJson;
         try {
             authResponseJson = objectMapper.writeValueAsBytes(authResponse);
@@ -264,6 +272,19 @@ public class AuthenticationService {
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
         return iamRoleAuthResponse;
+    }
+
+    /**
+     * Slight hack where we reduce the lease on the token so that we can cache it a short while.
+     *
+     * E.g. if token lease is 60 minutes, we'll report it as 59 minutes so that we can keep it cached for up to 1 minute.
+     */
+    private void reduceLeaseDuration(VaultAuthResponse responseToModify) {
+        int shortenedLease = responseToModify.getLeaseDuration() - iamTokenCacheTTL;
+        if (shortenedLease <= 0) {
+            logger.error("bad configuration: iamTokenCacheTTL value is set too high! iamTokenTTL:{},  iamTokenCacheTTL:{}, shortendedLease:{}", iamTokenTTL, iamTokenCacheTTL, shortenedLease);
+        }
+        responseToModify.setLeaseDuration(shortenedLease);
     }
 
     /**

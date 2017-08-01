@@ -61,4 +61,25 @@ public class IamRoleCredentials {
     public void setRegion(String region) {
         this.region = region;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IamRoleCredentials that = (IamRoleCredentials) o;
+
+        if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null) return false;
+        if (roleName != null ? !roleName.equals(that.roleName) : that.roleName != null) return false;
+        return region != null ? region.equals(that.region) : that.region == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = accountId != null ? accountId.hashCode() : 0;
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (region != null ? region.hashCode() : 0);
+        return result;
+    }
 }

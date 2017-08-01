@@ -49,4 +49,24 @@ public class IamPrincipalCredentials {
     public void setRegion(String region) {
         this.region = region;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IamPrincipalCredentials that = (IamPrincipalCredentials) o;
+
+        if (iamPrincipalArn != null ? !iamPrincipalArn.equals(that.iamPrincipalArn) : that.iamPrincipalArn != null)
+            return false;
+        return region != null ? region.equals(that.region) : that.region == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = iamPrincipalArn != null ? iamPrincipalArn.hashCode() : 0;
+        result = 31 * result + (region != null ? region.hashCode() : 0);
+        return result;
+    }
 }
