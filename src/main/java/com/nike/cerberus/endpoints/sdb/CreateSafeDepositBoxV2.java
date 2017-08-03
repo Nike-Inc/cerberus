@@ -17,9 +17,7 @@
 
 package com.nike.cerberus.endpoints.sdb;
 
-import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
@@ -34,10 +32,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -49,9 +48,13 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
  */
 public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     public static final String BASE_PATH = "/v2/safe-deposit-box";
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
+
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final SafeDepositBoxService safeDepositBoxService;
 
@@ -77,11 +80,16 @@ public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            log.info("{}: {}, Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    request.getContent().getName());
+
             final SafeDepositBoxV2 safeDepositBox =
                     safeDepositBoxService.createSafeDepositBoxV2(request.getContent(), vaultAuthPrincipal.getName());
-
             final String location = basePath + "/" + safeDepositBox.getId();
-
             return ResponseInfo.newBuilder(safeDepositBox)
                     .withHeaders(new DefaultHttpHeaders()
                             .set(LOCATION, location)

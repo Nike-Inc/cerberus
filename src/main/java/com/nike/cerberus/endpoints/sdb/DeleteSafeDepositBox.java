@@ -50,6 +50,8 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
@@ -74,10 +76,14 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
-                    String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Delete SDB Event: the principal: {} is attempting to delete sdb name: '{}' and id: '{}'",
-                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+            String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get("X-Cerberus-Client"));
+            log.info("{}: {}, Delete SDB Event: the principal: {} is attempting to delete sdb name: '{}' and id: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    sdbName,
+                    sdbId);
 
             safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal, sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())

@@ -56,6 +56,8 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
@@ -80,9 +82,13 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
 
-            log.info("Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
-                    vaultAuthPrincipal.getName(), request.getContent().getName());
+            log.info("{}: {}, Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    request.getContent().getName());
 
             final String id =
                     safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), vaultAuthPrincipal.getName());

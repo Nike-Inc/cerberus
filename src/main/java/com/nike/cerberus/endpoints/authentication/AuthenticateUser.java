@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
 import java.nio.charset.Charset;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -45,6 +46,8 @@ import java.util.concurrent.Executor;
 public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final AuthenticationService authenticationService;
 
@@ -65,8 +68,11 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
     private ResponseInfo<AuthResponse> authenticate(RequestInfo<Void> request) {
         final UserCredentials credentials = extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
-
-        log.info("User Auth Event: the principal: {} is attempting to authenticate", credentials.getUsername());
+        final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+        log.info("{}: {}, User Auth Event: the principal: {} is attempting to authenticate",
+                HEADER_X_CERBERUS_CLIENT,
+                clientHeader.orElse("Unknown"),
+                credentials.getUsername());
 
         return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
     }

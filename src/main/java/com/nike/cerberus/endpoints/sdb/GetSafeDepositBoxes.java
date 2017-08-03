@@ -49,6 +49,8 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
@@ -72,8 +74,10 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-
-            log.info("List SDB Event: the principal: {} is attempting to list the SDBs that it has access to",
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            log.info("{}: {}, List SDB Event: the principal: {} is attempting to list the SDBs that it has access to",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
                     vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(

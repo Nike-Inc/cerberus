@@ -45,6 +45,8 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final AuthenticationService authenticationService;
 
     @Inject
@@ -69,8 +71,11 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-
-            log.info("Delete Token Auth Event: the principal: {} is attempting to delete a token", vaultAuthPrincipal.getName());
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            log.info("{}: {}, Delete Token Auth Event: the principal: {} is attempting to delete a token",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName());
 
             authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();

@@ -45,6 +45,8 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final AuthenticationService authenticationService;
 
     @Inject
@@ -69,7 +71,11 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            log.info("Refresh User Token Auth Event: the principal: {} is attempting to refresh its token", vaultAuthPrincipal.getName());
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            log.info("{}: {}, Refresh User Token Auth Event: the principal: {} is attempting to refresh its token",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
                     authenticationService.refreshUserToken(

@@ -51,6 +51,8 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
 
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
@@ -74,12 +76,17 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
             String sdbName = sdbNameOptional.orElseGet(() -> String.format("(Failed to lookup name from id: %s)", sdbId));
-            log.info("Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
-                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+            log.info("{}: {}, Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    sdbName,
+                    sdbId);
 
             safeDepositBoxService.updateSafeDepositBoxV1(request.getContent(),
                     vaultAuthPrincipal,

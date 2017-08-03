@@ -47,6 +47,8 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
+
     private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
@@ -70,13 +72,17 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
-                    String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
-                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+            String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+            log.info("{}: {}, Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    sdbName,
+                    sdbId);
 
             final SafeDepositBoxV1 safeDepositBox =
                     safeDepositBoxService.getSDBAndValidatePrincipalAssociationV1(

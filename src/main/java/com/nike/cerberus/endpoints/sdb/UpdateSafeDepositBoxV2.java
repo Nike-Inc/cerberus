@@ -33,6 +33,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -45,7 +47,11 @@ import java.util.concurrent.Executor;
  */
 public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
+
+    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final SafeDepositBoxService safeDepositBoxService;
 
@@ -70,6 +76,17 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+
+            String sdbId = request.getPathParam("id");
+            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+            String sdbName = sdbNameOptional.orElseGet(() -> String.format("(Failed to lookup name from id: %s)", sdbId));
+            log.info("{}: {}, Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader.orElse("Unknown"),
+                    vaultAuthPrincipal.getName(),
+                    sdbName,
+                    sdbId);
             SafeDepositBoxV2 safeDepositBoxV2 = safeDepositBoxService.updateSafeDepositBoxV2(request.getContent(),
                     vaultAuthPrincipal,
                     request.getPathParam("id"));
