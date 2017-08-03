@@ -35,6 +35,8 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+
 /**
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
@@ -43,8 +45,6 @@ import java.util.concurrent.Executor;
 public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final AuthenticationService authenticationService;
 

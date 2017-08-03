@@ -42,16 +42,15 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_REFRESH_TOKEN;
+
 /**
  * Endpoint for deleting a safe deposit box.
  */
 public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
-
-    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final SafeDepositBoxService safeDepositBoxService;
 

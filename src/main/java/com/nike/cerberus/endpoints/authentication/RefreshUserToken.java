@@ -39,14 +39,14 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+
 /**
  * Authentication endpoint that allows refreshing the user token to pickup any permission changes.
  */
 public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final AuthenticationService authenticationService;
 

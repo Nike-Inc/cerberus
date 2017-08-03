@@ -42,6 +42,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+
 /**
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
@@ -49,8 +51,6 @@ import java.util.concurrent.Executor;
 public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDepositBoxSummary>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
 
     private final SafeDepositBoxService safeDepositBoxService;
 
