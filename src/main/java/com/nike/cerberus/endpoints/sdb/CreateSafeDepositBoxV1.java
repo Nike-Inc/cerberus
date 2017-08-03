@@ -30,6 +30,7 @@ import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -82,11 +83,13 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            final HttpHeaders headers = request.getHeaders();
+            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
+            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
             log.info("{}: {}, Create SDB Event: the principal: {} is attempting to create sdb name: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
-                    clientHeader.orElse("Unknown"),
+                    clientHeader,
                     vaultAuthPrincipal.getName(),
                     request.getContent().getName());
 

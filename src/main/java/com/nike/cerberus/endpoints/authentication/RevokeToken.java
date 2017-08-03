@@ -27,6 +27,7 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -71,10 +72,13 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+            final HttpHeaders headers = request.getHeaders();
+            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
+            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
+
             log.info("{}: {}, Delete Token Auth Event: the principal: {} is attempting to delete a token",
                     HEADER_X_CERBERUS_CLIENT,
-                    clientHeader.orElse("Unknown"),
+                    clientHeader,
                     vaultAuthPrincipal.getName());
 
             authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());

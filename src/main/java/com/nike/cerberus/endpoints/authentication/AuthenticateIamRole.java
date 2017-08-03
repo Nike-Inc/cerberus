@@ -26,12 +26,12 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -66,10 +66,13 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
 
     private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamRoleCredentials> request) {
         final IamRoleCredentials credentials = request.getContent();
-        final Optional<String> clientHeader = Optional.of(request.getHeaders().get(HEADER_X_CERBERUS_CLIENT));
+        final HttpHeaders headers = request.getHeaders();
+        final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
+        final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
+
         log.info("{}: {}, IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
                 HEADER_X_CERBERUS_CLIENT,
-                clientHeader.orElse("Unknown"),
+                clientHeader,
                 String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                         credentials.getAccountId(),
                         credentials.getRoleName()),
