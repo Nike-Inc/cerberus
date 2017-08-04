@@ -17,8 +17,8 @@
 
 package com.nike.cerberus.endpoints.authentication;
 
-import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;

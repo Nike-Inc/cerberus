@@ -28,6 +28,7 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 
 /**
  * Authentication endpoint that allows refreshing the user token to pickup any permission changes.
@@ -69,7 +72,14 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            log.info("Refresh User Token Auth Event: the principal: {} is attempting to refresh its token", vaultAuthPrincipal.getName());
+            final HttpHeaders headers = request.getHeaders();
+            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
+            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
+
+            log.info("{}: {}, Refresh User Token Auth Event: the principal: {} is attempting to refresh its token",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader,
+                    vaultAuthPrincipal.getName());
 
             return ResponseInfo.newBuilder(
                     authenticationService.refreshUserToken(
