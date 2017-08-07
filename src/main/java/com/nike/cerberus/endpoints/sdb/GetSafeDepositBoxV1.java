@@ -28,6 +28,7 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 
 /**
  * Extracts the user groups from the security context for the request and attempts to get details about the safe
@@ -70,13 +73,19 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final HttpHeaders headers = request.getHeaders();
+            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
+            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.isPresent() ? sdbNameOptional.get() :
-                    String.format("(Failed to lookup name from id: %s)", sdbId);
-            log.info("Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
-                    vaultAuthPrincipal.getName(), sdbName, sdbId);
+            String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+            log.info("{}: {}, Read SDB Event: the principal: {} is attempting to read sdb name: '{}' and id: '{}'",
+                    HEADER_X_CERBERUS_CLIENT,
+                    clientHeader,
+                    vaultAuthPrincipal.getName(),
+                    sdbName,
+                    sdbId);
 
             final SafeDepositBoxV1 safeDepositBox =
                     safeDepositBoxService.getSDBAndValidatePrincipalAssociationV1(
