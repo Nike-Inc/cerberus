@@ -7,6 +7,8 @@ import com.google.inject.name.Named;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Cache wrapper for AuthenticationService.
@@ -28,6 +30,8 @@ public class AuthenticationCacheService {
      */
     public static final String IAM_TOKEN_CACHE_TTL = "cms.iam.token.cache.ttl";
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final AuthenticationService authenticationService;
     private final Cache<Object, IamRoleAuthResponse> authCache;
 
@@ -45,7 +49,10 @@ public class AuthenticationCacheService {
      */
     public IamRoleAuthResponse authenticate(IamRoleCredentials credentials) {
         IamRoleAuthResponse response = authCache.getIfPresent(credentials);
-        if (response == null) {
+        if (response != null) {
+            logger.info("auth cache hit for {}", credentials.getRoleName());
+        }
+        else {
             response = authenticationService.authenticate(credentials);
             authCache.put(credentials, response);
         }
@@ -57,7 +64,10 @@ public class AuthenticationCacheService {
      */
     public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
         IamRoleAuthResponse response = authCache.getIfPresent(credentials);
-        if (response == null) {
+        if (response != null) {
+            logger.info("auth cache hit for {}", credentials.getIamPrincipalArn());
+        }
+        else {
             response = authenticationService.authenticate(credentials);
             authCache.put(credentials, response);
         }
