@@ -26,6 +26,8 @@ import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
@@ -42,6 +44,8 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
     public static final String SECURITY_CONTEXT_ATTR_KEY = "vaultSecurityContext";
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     private final Collection<Endpoint<?>> endpointsToValidate;
 
     private final VaultAdminClient vaultAdminClient;
@@ -50,6 +54,7 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
                                        final VaultAdminClient vaultAdminClient) {
         this.endpointsToValidate = endpointsToValidate;
         this.vaultAdminClient = vaultAdminClient;
+        this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
     }
 
     @Override
