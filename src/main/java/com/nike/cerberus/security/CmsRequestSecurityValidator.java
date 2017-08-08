@@ -85,6 +85,19 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
         return endpointsToValidate;
     }
 
+    /**
+     * @return true if this security validator is fast enough that {@link #validateSecureRequestForEndpoint(RequestInfo, * Endpoint)} can run without unnecessarily blocking Netty worker threads to the point it becomes a bottleneck and
+     * adversely affecting throughput, false otherwise when {@link #validateSecureRequestForEndpoint(RequestInfo, * Endpoint)} should be run asynchronously off the Netty worker thread. Defaults to true because security validators
+     * are usually actively crunching numbers and the cost of context switching to an async thread is often worse than
+     * just doing the work on the Netty worker thread. <b>Bottom line: This is affected heavily by numerous factors and
+     * your specific use case - you should test under high load with this turned on and off for your security validator
+     * and see which one causes better behavior.</b>
+     */
+    @Override
+    public boolean isFastEnoughToRunOnNettyWorkerThread() {
+        return false;
+    }
+
     public static Optional<SecurityContext> getSecurityContextForRequest(RequestInfo<?> requestInfo) {
         final Object securityContext = requestInfo.getRequestAttributes().get(SECURITY_CONTEXT_ATTR_KEY);
 
