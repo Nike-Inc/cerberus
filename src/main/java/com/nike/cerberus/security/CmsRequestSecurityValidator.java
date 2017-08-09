@@ -26,6 +26,8 @@ import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
@@ -42,6 +44,8 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
     public static final String SECURITY_CONTEXT_ATTR_KEY = "vaultSecurityContext";
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     private final Collection<Endpoint<?>> endpointsToValidate;
 
     private final VaultAdminClient vaultAdminClient;
@@ -50,6 +54,7 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
                                        final VaultAdminClient vaultAdminClient) {
         this.endpointsToValidate = endpointsToValidate;
         this.vaultAdminClient = vaultAdminClient;
+        this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
     }
 
     @Override
@@ -83,6 +88,19 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
     @Override
     public Collection<Endpoint<?>> endpointsToValidate() {
         return endpointsToValidate;
+    }
+
+    /**
+     * @return true if this security validator is fast enough that {@link #validateSecureRequestForEndpoint(RequestInfo, * Endpoint)} can run without unnecessarily blocking Netty worker threads to the point it becomes a bottleneck and
+     * adversely affecting throughput, false otherwise when {@link #validateSecureRequestForEndpoint(RequestInfo, * Endpoint)} should be run asynchronously off the Netty worker thread. Defaults to true because security validators
+     * are usually actively crunching numbers and the cost of context switching to an async thread is often worse than
+     * just doing the work on the Netty worker thread. <b>Bottom line: This is affected heavily by numerous factors and
+     * your specific use case - you should test under high load with this turned on and off for your security validator
+     * and see which one causes better behavior.</b>
+     */
+    @Override
+    public boolean isFastEnoughToRunOnNettyWorkerThread() {
+        return false;
     }
 
     public static Optional<SecurityContext> getSecurityContextForRequest(RequestInfo<?> requestInfo) {
