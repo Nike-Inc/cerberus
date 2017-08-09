@@ -170,26 +170,30 @@ You'll need a few pieces of information before you can run the application:
 
 ### Using Gradle and embedded dependencies (Vault, MySql and the reverse proxy and Dashboard)
 
-If you wish to use embedded Vault, MySQL and run the Dashboard with reverse proxy run each of the following tasks in new command line terminals as they each are blocking tasks
+This option is for running locally uses embedded Vault, MySQL, and runs the Dashboard with reverse proxy.
 
- - `gradlew runVaultAndMySQL`
-    - Works on Windows, Mac, Unix
-    - Downloads and configures embedded MySQL.
-    - Downloads configures and runs Vault,
+Run each of the following tasks in new command line terminals (each are blocking tasks).
+
+Steps:
+
+1. `gradlew runVaultAndMySQL`
+    - Downloads and configures embedded MySQL and Vault,
     - You can control Vault version with `vaultVersion` in `gradle/develop.gradle`
     - This task needs to be run as Admin in Windows, ensure that you start the IDE or Terminals as Admin
- - `gradlew runCMS`
-    - Works on Windows, Mac, Unix
-    - Auto-sets the Vault system props and starts CMS
+    - Once you see `core: post-unseal setup complete` proceed to next step
+2. `gradlew runCMS`
+    - Auto-sets the Vault system props from `runVaultAndMySQL` and starts CMS
     - To debug attach remote debugger to port 5005
     - If you wish to do IAM auth in dev mode you will need to make sure you set your env as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
- - `gradlew runDashboardAndReverseProxy`
-    - OPTIONAL TASK, Works on Windows, Mac, Unix
+    - Now you should have a complete CMS system running locally.  The next steps are optional.
+3. `gradlew runDashboardAndReverseProxy` (optional)
     - Runs the dashboard and reverse into interact with CMS, sometimes better than curling or using postman.
     - Downloads the dashboard from GitHub releases and runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
     - You can change dashboard version with `dashboardRelease` in `gradle/develop.gradle`
- - `gradlew bootstrapData`
-    - OPTIONAL TASK, Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
+4. `gradlew bootstrapData` (optional)
+    - Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
+
+Above should work on Windows, Mac, and Linux.
 
 ### From the IDE
 
