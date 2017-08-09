@@ -18,9 +18,12 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
@@ -48,6 +51,7 @@ import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.AuthenticationCacheService;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -83,6 +87,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Named;
@@ -101,6 +106,13 @@ public class CmsGuiceModule extends AbstractModule {
     private static final String CMS_DISABLE_ENV_LOAD_FLAG = "cms.env.load.disable";
 
     private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
+
+    /**
+     * Since items are expected to expire quickly from the cache we are unlikely to ever hit this limit.
+     *
+     * But providing any maximum size seemed better than no limit (mainly in case of misconfiguration or bug).
+     */
+    private static final long MAXIMUM_AUTH_CACHE_SIZE = 2000;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -310,4 +322,19 @@ public class CmsGuiceModule extends AbstractModule {
     public CompletableFuture<AppInfo> appInfoFuture(AsyncHttpClientHelper asyncHttpClientHelper) {
         return AwsUtil.getAppInfoFutureWithAwsInfo(asyncHttpClientHelper);
     }
+
+    /**
+     * Guava cache for IAM auth
+     * @param iamTokenCacheTTL in seconds
+     */
+    @Provides
+    @Singleton
+    @Named("iamAuthCache")
+    public Cache<Object,IamRoleAuthResponse> getAuthCache(@Named(AuthenticationCacheService.IAM_TOKEN_CACHE_TTL) int iamTokenCacheTTL) {
+        return CacheBuilder.newBuilder()
+                .expireAfterWrite(iamTokenCacheTTL, TimeUnit.SECONDS)
+                .maximumSize(MAXIMUM_AUTH_CACHE_SIZE)
+                .build();
+    }
+
 }

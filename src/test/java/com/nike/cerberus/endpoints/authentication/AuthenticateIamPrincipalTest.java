@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.AuthenticationCacheService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
@@ -39,13 +39,13 @@ public class AuthenticateIamPrincipalTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
-    private AuthenticationService authenticationService;
+    private AuthenticationCacheService authenticationService;
 
     private AuthenticateIamPrincipal subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationService.class);
+        authenticationService = mock(AuthenticationCacheService.class);
         subject = new AuthenticateIamPrincipal(authenticationService);
     }
 

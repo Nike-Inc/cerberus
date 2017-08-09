@@ -18,7 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
-import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.AuthenticationCacheService;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -46,10 +46,10 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final AuthenticationService authenticationService;
+    private final AuthenticationCacheService authenticationService;
 
     @Inject
-    public AuthenticateIamRole(final AuthenticationService authenticationService) {
+    public AuthenticateIamRole(final AuthenticationCacheService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
