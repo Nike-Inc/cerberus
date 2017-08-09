@@ -176,21 +176,21 @@ Run each of the following tasks in new command line terminals (each are blocking
 
 Steps:
 
-1. `./gradlew runVaultAndMySQL`
+1. `gradlew runVaultAndMySQL`
     - Downloads and configures embedded MySQL and Vault,
     - You can control Vault version with `vaultVersion` in `gradle/develop.gradle`
     - This task needs to be run as Admin in Windows, ensure that you start the IDE or Terminals as Admin
     - Once you see `core: post-unseal setup complete` proceed to next step
-2. `./gradlew runCMS`
+2. `gradlew runCMS`
     - Auto-sets the Vault system props from `runVaultAndMySQL` and starts CMS
     - To debug attach remote debugger to port 5005
     - If you wish to do IAM auth in dev mode you will need to make sure you set your env as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
     - Now you should have a complete CMS system running locally.  The next steps are optional.
-3. `./gradlew runDashboardAndReverseProxy` (optional)
+3. `gradlew runDashboardAndReverseProxy` (optional)
     - Runs the dashboard and reverse into interact with CMS, sometimes better than curling or using postman.
     - Downloads the dashboard from GitHub releases and runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
     - You can change dashboard version with `dashboardRelease` in `gradle/develop.gradle`
-4. `./gradlew bootstrapData` (optional)
+4. `gradlew bootstrapData` (optional)
     - Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
 
 Above should work on Windows, Mac, and Linux.
