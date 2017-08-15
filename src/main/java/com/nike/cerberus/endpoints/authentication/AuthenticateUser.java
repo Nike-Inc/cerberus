@@ -40,6 +40,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Authentication endpoint for user credentials.  If valid, a client token will be returned.
@@ -67,14 +69,12 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
     private ResponseInfo<AuthResponse> authenticate(RequestInfo<Void> request) {
         final UserCredentials credentials = extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
-        final io.netty.handler.codec.http.HttpHeaders headers = request.getHeaders();
-        final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
-        final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
-        log.info("{}: {}, User Auth Event: the principal: {} is attempting to authenticate",
+        log.info("{}: {}, User Auth Event: the principal: {}  with ip: {} is attempting to authenticate",
                 HEADER_X_CERBERUS_CLIENT,
-                clientHeader,
-                credentials.getUsername());
+                getClientVersion(request),
+                credentials.getUsername(),
+                getXForwardedClientIp(request));
 
         return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
     }

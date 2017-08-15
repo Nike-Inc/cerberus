@@ -26,7 +26,6 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
@@ -66,16 +67,14 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
 
     private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamRoleCredentials> request) {
         final IamRoleCredentials credentials = request.getContent();
-        final HttpHeaders headers = request.getHeaders();
-        final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
-        final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
-        log.info("{}: {}, IAM Auth Event: the IAM principal {} in attempting to authenticate in region {}",
+        log.info("{}: {}, IAM Auth Event: the IAM principal {} with ip: {} is attempting to authenticate in region {}",
                 HEADER_X_CERBERUS_CLIENT,
-                clientHeader,
+                getClientVersion(request),
                 String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
                         credentials.getAccountId(),
                         credentials.getRoleName()),
+                getXForwardedClientIp(request),
                 credentials.getRegion());
 
         return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();

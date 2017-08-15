@@ -27,7 +27,6 @@ import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -40,6 +39,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Revokes the token supplied in the Vault token header.
@@ -72,14 +73,12 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal =
                     (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final HttpHeaders headers = request.getHeaders();
-            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
-            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
-            log.info("{}: {}, Delete Token Auth Event: the principal: {} is attempting to delete a token",
+            log.info("{}: {}, Delete Token Auth Event: the principal: {} with ip: {} is attempting to delete a token",
                     HEADER_X_CERBERUS_CLIENT,
-                    clientHeader,
-                    vaultAuthPrincipal.getName());
+                    getClientVersion(request),
+                    vaultAuthPrincipal.getName(),
+                    getXForwardedClientIp(request));
 
             authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();

@@ -32,6 +32,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
+
 /**
  * Extension endpoint class for validating caller is admin before executing.
  */
@@ -51,9 +53,9 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
                         securityContext.get().getUserPrincipal().getName() :
                         "( Principal is not a Vault auth principal. )" : "( Principal name is empty. )";
 
-        log.info("Admin Endpoint Event: the principal {} is attempting to access admin endpoint: {}", principal, this.getClass().getName());
+        log.info("Admin Endpoint Event: the principal {} from ip: {} is attempting to access admin endpoint: {}", principal, getXForwardedClientIp(request), this.getClass().getName());
         if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipal.ROLE_ADMIN)) {
-            log.error("Admin Endpoint Event: the principal {} is attempted to access {}, an admin endpoint but was not an admin", principal,
+            log.error("Admin Endpoint Event: the principal {} from ip: {} attempted to access {}, an admin endpoint but was not an admin", principal, getXForwardedClientIp(request),
                     this.getClass().getName());
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }

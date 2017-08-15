@@ -30,7 +30,6 @@ import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +42,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
+import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
@@ -75,14 +76,12 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final HttpHeaders headers = request.getHeaders();
-            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
-            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
-            log.info("{}: {}, List SDB Event: the principal: {} is attempting to list the SDBs that it has access to",
+            log.info("{}: {}, List SDB Event: the principal: {} from ip: {} is attempting to list the SDBs that it has access to",
                     HEADER_X_CERBERUS_CLIENT,
-                    clientHeader,
-                    vaultAuthPrincipal.getName());
+                    getClientVersion(request),
+                    vaultAuthPrincipal.getName(),
+                    getXForwardedClientIp(request));
 
             return ResponseInfo.newBuilder(
                     safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal)).build();
