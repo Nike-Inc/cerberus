@@ -30,7 +30,7 @@ public class CerberusHttpHeadersTest {
     }
 
     @Test
-    public void test_getXForwardedClientIp() {
+    public void test_getXForwardedClientIp_with_three() {
         String value = "ip1, ip2, ip3";
         HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(CerberusHttpHeaders.HEADER_X_FORWARDED_FOR, value);
@@ -38,5 +38,23 @@ public class CerberusHttpHeadersTest {
         when(request.getHeaders()).thenReturn(headers);
 
         Assert.assertEquals("ip1", CerberusHttpHeaders.getXForwardedClientIp(request));
+    }
+
+    @Test
+    public void test_getXForwardedClientIp_with_one() {
+        String value = "ip1";
+        HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(CerberusHttpHeaders.HEADER_X_FORWARDED_FOR, value);
+        RequestInfo request = mock(RequestInfo.class);
+        when(request.getHeaders()).thenReturn(headers);
+
+        Assert.assertEquals("ip1", CerberusHttpHeaders.getXForwardedClientIp(request));
+    }
+
+    @Test
+    public void test_getXForwardedClientIp_with_null() {
+        RequestInfo request = mock(RequestInfo.class);
+
+        Assert.assertNull(CerberusHttpHeaders.getXForwardedClientIp(request));
     }
 }
