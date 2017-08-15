@@ -35,12 +35,7 @@ public final class CerberusHttpHeaders {
         if (headers != null) {
             String value = headers.get(HEADER_X_FORWARDED_FOR);
             if (value != null) {
-                if(value.contains(",")) {
-                    return StringUtils.substringBefore(value, ",").trim();
-                }
-                else {
-                    return value.trim();
-                }
+                return StringUtils.substringBefore(value, ",").trim();
             }
         }
         return null;
