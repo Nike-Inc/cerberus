@@ -30,7 +30,6 @@ import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
@@ -42,6 +41,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
+import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_REFRESH_TOKEN;
 
@@ -76,18 +77,16 @@ public class UpdateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, V
 
         if (securityContext.isPresent()) {
             final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-            final HttpHeaders headers = request.getHeaders();
-            final boolean clientHeaderExists = headers != null && headers.get(HEADER_X_CERBERUS_CLIENT) != null;
-            final String clientHeader = clientHeaderExists ? headers.get(HEADER_X_CERBERUS_CLIENT) : "Unknown";
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
             String sdbName = sdbNameOptional.orElseGet(() -> String.format("(Failed to lookup name from id: %s)", sdbId));
 
-            log.info("{}: {}, Update SDB Event: the principal: {} is attempting to update sdb name: '{}' and id: '{}'",
+            log.info("{}: {}, Update SDB Event: the principal: {} from ip: {} is attempting to update sdb name: '{}' and id: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
-                    clientHeader,
+                    getClientVersion(request),
                     vaultAuthPrincipal.getName(),
+                    getXForwardedClientIp(request),
                     sdbName,
                     sdbId);
 
