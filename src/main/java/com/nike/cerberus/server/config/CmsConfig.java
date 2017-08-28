@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.server.config;
 
+import com.google.common.collect.Lists;
 import com.google.inject.util.Modules;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
 import com.nike.cerberus.server.config.guice.*;
@@ -29,6 +30,7 @@ import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.error.validation.RequestValidator;
 import com.nike.riposte.server.http.Endpoint;
+import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 import com.nike.riposte.server.logging.AccessLogger;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -205,5 +207,10 @@ public class CmsConfig implements ServerConfig {
     @Override
     public int maxRequestSizeInBytes() {
         return guiceValues.maxRequestSizeInBytes;
+    }
+
+    @Override
+    public List<RequestAndResponseFilter> requestAndResponseFilters() {
+        return guiceValues.requestAndResponseFilters;
     }
 }

@@ -37,6 +37,7 @@ dependencies {
             "com.nike.riposte:riposte-async-http-client:$riposteVersion",
             "com.nike.riposte:riposte-metrics-codahale:$riposteVersion",
 
+            "com.netflix.hystrix:hystrix-core:1.5.12",
             "javax:javaee-api:7.0",
             "org.codehaus.groovy:groovy-all:$groovyVersion", // For logback groovy config processing
             "ch.qos.logback:logback-classic:$logbackVersion",
