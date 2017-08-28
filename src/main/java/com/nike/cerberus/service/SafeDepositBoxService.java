@@ -30,6 +30,7 @@ import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
@@ -38,7 +39,6 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
-import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.model.VaultListResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +73,7 @@ public class SafeDepositBoxService {
 
     private final RoleService roleService;
 
-    private final VaultAdminClient vaultAdminClient;
+    private final HystrixVaultAdminClient vaultAdminClient;
 
     private final VaultPolicyService vaultPolicyService;
 
@@ -93,7 +93,7 @@ public class SafeDepositBoxService {
                                  final UuidSupplier uuidSupplier,
                                  final CategoryService categoryService,
                                  final RoleService roleService,
-                                 final VaultAdminClient vaultAdminClient,
+                                 final HystrixVaultAdminClient vaultAdminClient,
                                  final VaultPolicyService vaultPolicyService,
                                  final UserGroupPermissionService userGroupPermissionService,
                                  final IamPrincipalPermissionService iamPrincipalPermissionService,

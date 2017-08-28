@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.google.common.collect.Lists;
+import com.nike.cerberus.hystrix.HystrixRequestAndResponseFilter;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsListener;
@@ -25,7 +27,9 @@ import com.nike.riposte.server.error.handler.RiposteErrorHandler;
 import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestValidator;
 import com.nike.riposte.server.http.Endpoint;
+import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,6 +51,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
     public final CodahaleMetricsListener metricsListener;
     public final CompletableFuture<AppInfo> appInfoFuture;
     public final CmsRequestSecurityValidator cmsRequestSecurityValidator;
+    public final List<RequestAndResponseFilter> requestAndResponseFilters;
 
     @Inject
     public GuiceProvidedServerConfigValues(@Named("endpoints.port") Integer endpointsPort,
@@ -63,7 +68,8 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
                                            RequestValidator validationService,
                                            @Nullable CodahaleMetricsListener metricsListener,
                                            @Named("appInfoFuture") CompletableFuture<AppInfo> appInfoFuture,
-                                           CmsRequestSecurityValidator cmsRequestSecurityValidator
+                                           CmsRequestSecurityValidator cmsRequestSecurityValidator,
+                                           HystrixRequestAndResponseFilter hystrixRequestAndResponseFilter
     ) {
         super(endpointsPort, endpointsSslPort, endpointsUseSsl, numBossThreads, numWorkerThreads, maxRequestSizeInBytes, appEndpoints,
               debugActionsEnabled, debugChannelLifecycleLoggingEnabled);
@@ -74,5 +80,6 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
         this.metricsListener = metricsListener;
         this.appInfoFuture = appInfoFuture;
         this.cmsRequestSecurityValidator = cmsRequestSecurityValidator;
+        this.requestAndResponseFilters = Lists.newArrayList(hystrixRequestAndResponseFilter);
     }
 }

@@ -1,5 +1,6 @@
 package com.nike.cerberus.service;
 
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.util.Slugger;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.model.VaultPolicy;
@@ -17,12 +18,12 @@ public class VaultPolicyServiceTest {
 
 
     private Slugger slugger = new Slugger();
-    private VaultAdminClient vaultAdminClient;
+    private HystrixVaultAdminClient vaultAdminClient;
     private VaultPolicyService vaultPolicyService;
 
     @Before
     public void setup() {
-        vaultAdminClient = mock(VaultAdminClient.class);
+        vaultAdminClient = mock(HystrixVaultAdminClient.class);
         vaultPolicyService = new VaultPolicyService(vaultAdminClient, slugger);
     }
 
