@@ -18,8 +18,8 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v1.3.0'
-def vaultVersion = "0.7.3"
+def dashboardRelease = 'v1.6.0'
+def vaultVersion = "0.8.1"
 
 def reverseProxyPort = 9001
 def nodeServerPort = 8000

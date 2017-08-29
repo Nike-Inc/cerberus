@@ -46,6 +46,7 @@ import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
@@ -97,7 +98,7 @@ public class AuthenticationService {
     private final AuthConnector authServiceConnector;
     private final KmsService kmsService;
     private final KmsClientFactory kmsClientFactory;
-    private final VaultAdminClient vaultAdminClient;
+    private final HystrixVaultAdminClient vaultAdminClient;
     private final VaultPolicyService vaultPolicyService;
     private final ObjectMapper objectMapper;
     private final String adminGroup;
@@ -126,7 +127,7 @@ public class AuthenticationService {
                                  final AuthConnector authConnector,
                                  final KmsService kmsService,
                                  final KmsClientFactory kmsClientFactory,
-                                 final VaultAdminClient vaultAdminClient,
+                                 final HystrixVaultAdminClient vaultAdminClient,
                                  final VaultPolicyService vaultPolicyService,
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
@@ -242,6 +243,7 @@ public class AuthenticationService {
                 .setMeta(vaultAuthPrincipalMetadata)
                 .setTtl(iamTokenTTL)
                 .setNoDefaultPolicy(true);
+
 
         VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
 

@@ -20,6 +20,7 @@ package com.nike.cerberus.server.config.guice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
+import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
@@ -47,6 +48,9 @@ import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.auth.connector.AuthConnector;
+import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
+import com.nike.cerberus.hystrix.HystrixMetricsLogger;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
@@ -83,6 +87,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.inject.Named;
@@ -135,6 +141,8 @@ public class CmsGuiceModule extends AbstractModule {
         } catch(ClassCastException cce) {
             throw new IllegalArgumentException("class: " + className + " is the wrong type", cce);
         }
+
+        bind(HystrixMetricsLogger.class).asEagerSingleton();
     }
 
     private void loadEnvProperties() {
@@ -300,7 +308,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            VaultAdminClient vaultAdminClient) {
+            HystrixVaultAdminClient vaultAdminClient) {
         return new CmsRequestSecurityValidator(authProtectedEndpoints, vaultAdminClient);
     }
 
@@ -309,5 +317,18 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appInfoFuture")
     public CompletableFuture<AppInfo> appInfoFuture(AsyncHttpClientHelper asyncHttpClientHelper) {
         return AwsUtil.getAppInfoFutureWithAwsInfo(asyncHttpClientHelper);
+    }
+
+    @Provides
+    @Singleton
+    @Named("hystrixExecutor")
+    public ScheduledExecutorService executor() {
+        return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    @Provides
+    @Singleton
+    public KmsClientFactory hystrixKmsClientFactory() {
+        return new HystrixKmsClientFactory(new KmsClientFactory());
     }
 }
