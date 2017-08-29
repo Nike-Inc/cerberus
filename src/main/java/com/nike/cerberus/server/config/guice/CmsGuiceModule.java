@@ -19,6 +19,7 @@ package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Names;
+import com.netflix.config.ConfigurationManager;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
@@ -52,6 +53,7 @@ import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.hystrix.HystrixMetricsLogger;
 import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -158,6 +160,9 @@ public class CmsGuiceModule extends AbstractModule {
 
             // bind the props to named props for guice
             Names.bindProperties(binder(), properties);
+
+            // properties from cms.conf may be overridden in environment.properties
+            ArchaiusUtils.loadProperties(properties);
 
             for (String propertyName : properties.stringPropertyNames()) {
                 logger.info("Successfully loaded: {} from the env data stored in S3", propertyName);

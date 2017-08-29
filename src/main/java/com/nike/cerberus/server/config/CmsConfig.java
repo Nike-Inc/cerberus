@@ -25,6 +25,7 @@ import com.nike.cerberus.server.config.guice.CmsGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsMyBatisModule;
 import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
 import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
+import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
 import com.nike.guice.typesafeconfig.TypesafeConfigPropertiesRegistrationGuiceModule;
 import com.nike.riposte.metrics.MetricsListener;
@@ -90,7 +91,7 @@ public class CmsConfig implements ServerConfig {
         this.appConfig = appConfig;
         this.objectMapper = configureObjectMapper();
 
-        initializeArchiaus(appConfig);
+        ArchaiusUtils.initializeArchiaus(appConfig);
 
         // Create a Guice Injector for this app.
         List<Module> appGuiceModules = new ArrayList<>();
@@ -128,26 +129,6 @@ public class CmsConfig implements ServerConfig {
         om.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         om.enable(SerializationFeature.INDENT_OUTPUT);
         return om;
-    }
-
-    /**
-     * Hystrix expects configuration via Archaius so we initialize it here
-     */
-    public static void initializeArchiaus(Config appConfig) {
-        // Initialize Archaius
-        DynamicPropertyFactory.getInstance();
-        // Load properties from Typesafe config for Hystrix, etc.
-        ConfigurationManager.loadProperties(toProperties(appConfig));
-    }
-
-    /**
-     * Convert Typesafe config to Properties
-     * From https://github.com/typesafehub/config/issues/357
-     */
-    public static Properties toProperties(Config config) {
-        Properties properties = new Properties();
-        config.entrySet().forEach(e -> properties.setProperty(e.getKey(), config.getString(e.getKey())));
-        return properties;
     }
 
     @Override
