@@ -90,7 +90,8 @@ public class CmsConfig implements ServerConfig {
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule(),
-                new OneLoginGuiceModule()
+                new OneLoginGuiceModule(),
+                new MetricsGuiceModule()
         ));
 
         // bind the CMS Guice module last allowing the S3 props file to override any given application property
