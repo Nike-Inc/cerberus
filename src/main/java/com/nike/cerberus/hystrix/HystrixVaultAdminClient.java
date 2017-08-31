@@ -11,6 +11,8 @@ import com.nike.vault.client.model.VaultClientTokenResponse;
 import com.nike.vault.client.model.VaultListResponse;
 import com.nike.vault.client.model.VaultPolicy;
 import com.nike.vault.client.model.VaultTokenAuthRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
@@ -23,6 +25,7 @@ public class HystrixVaultAdminClient {
 
     private static final String VAULT = "Vault";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HystrixVaultAdminClient.class);
     private final VaultAdminClient vaultAdminClient;
 
     @Inject
@@ -31,7 +34,15 @@ public class HystrixVaultAdminClient {
     }
 
     public VaultAuthResponse createOrphanToken(VaultTokenAuthRequest vaultTokenAuthRequest) {
-        return execute("VaultCreateOrphanToken", () -> vaultAdminClient.createOrphanToken(vaultTokenAuthRequest));
+        return execute("VaultCreateOrphanToken", () -> {
+            try {
+                return vaultAdminClient.createOrphanToken(vaultTokenAuthRequest);
+            }
+            catch (Exception e) {
+                LOGGER.warn("createOrphanToken failed, retrying...", e);
+                return vaultAdminClient.createOrphanToken(vaultTokenAuthRequest);
+            }
+        });
     }
 
     public VaultClientTokenResponse lookupToken(String vaultToken) {
