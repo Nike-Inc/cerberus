@@ -19,8 +19,6 @@ import com.nike.riposte.server.http.ResponseInfo;
 import com.signalfx.codahale.reporter.SignalFxReporter;
 import com.signalfx.codahale.reporter.SignalFxReporter.Builder;
 import com.signalfx.codahale.reporter.SignalFxReporter.MetricDetails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,8 +33,6 @@ import static com.nike.riposte.metrics.codahale.impl.SignalFxEndpointMetricsHand
  */
 @SuppressWarnings({})
 public class MetricsConfigurationHelper {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String EC2_HOSTNAME_PREFIX = "ip-";
 
@@ -60,7 +56,7 @@ public class MetricsConfigurationHelper {
 
         @Inject(optional=true)
         @com.google.inject.name.Named("metrics.signalfx.dimension.app_env")
-        String signalFxAppEnvDim = "app environment dimension injection failed";  // set default value so key is never null
+        String signalFxAppEnvDim = "empty";  // set default value so 'env' dimension is never null
     }
 
     @Inject
@@ -101,8 +97,6 @@ public class MetricsConfigurationHelper {
 
             if (customReporterConfigurator == null)
                 customReporterConfigurator = Function.identity();
-
-            logger.info("XXX MetricsConfigurationHelper - app env: {}", signalFxAppEnvDim);
 
             return new SignalFxReporterFactory(
                     signalFxApiKey,

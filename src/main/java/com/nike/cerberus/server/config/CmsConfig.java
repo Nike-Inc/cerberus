@@ -106,11 +106,8 @@ public class CmsConfig implements ServerConfig {
         this.guiceValues = appInjector.getProvider(GuiceProvidedServerConfigValues.class).get();
 
         // Now that everything else is setup, we can initialize the metrics listener.
-        if (guiceValues.metricsListener != null) {
-            logger.info("XXX CmsConfig#constructor - guiceValues.metricsListener not null!");
-            logger.info("XXX CmsConfig#constructor - guiceValues.metricsListener: {}", guiceValues.metricsListener);
+        if (guiceValues.metricsListener != null)
             guiceValues.metricsListener.initEndpointAndServerConfigMetrics(this);
-        }
     }
 
     public CmsConfig(Config appConfig) {

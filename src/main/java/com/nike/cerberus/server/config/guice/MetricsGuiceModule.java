@@ -67,9 +67,6 @@ public class MetricsGuiceModule extends AbstractModule {
                                                    @Nullable CodahaleMetricsEngine engine,
                                                    @Nullable SignalFxReporterFactory signalFxReporterFactory,
                                                    MetricsConfigurationHelper metricsConfigurationHelper) {
-        logger.info("XXX codahaleMetricsCollector - metricsCollector: {}", metricsCollector);
-        logger.info("XXX codahaleMetricsCollector - signalfx reporter factory: {}", signalFxReporterFactory);
-
         if (metricsCollector == null)
             return null;
 
@@ -89,7 +86,8 @@ public class MetricsGuiceModule extends AbstractModule {
     @Provides
     @Singleton
     public CodahaleMetricsEngine codahaleMetricsEngine(@Nullable CodahaleMetricsCollector cmc,
-                                                       @Nullable List<ReporterFactory> reporters) {
+                                                       @Nullable List<ReporterFactory> reporters,
+                                                       @Named("metrics.reportJvmMetrics") boolean reportJvmMetrics) {
         if (cmc == null)
             return null;
 
@@ -97,9 +95,9 @@ public class MetricsGuiceModule extends AbstractModule {
             reporters = Collections.emptyList();
 
         CodahaleMetricsEngine engine = new CodahaleMetricsEngine(cmc, reporters);
-        logger.info("XXX codahaleMetricsEngine - starting metrics engine");
         engine.start();
-        logger.info("XXX codahaleMetricsEngine - metrics engine started");
+        if (reportJvmMetrics)
+            engine.reportJvmMetrics();
         return engine;
     }
 
@@ -108,8 +106,6 @@ public class MetricsGuiceModule extends AbstractModule {
     public CodahaleMetricsCollector codahaleMetricsCollector(
             @Nullable List<ReporterFactory> reporters, @Nullable SignalFxReporterFactory signalFxReporterFactory
     ) {
-        logger.info("XXX codahaleMetricsCollector - reporters: {}", reporters);
-        logger.info("XXX codahaleMetricsCollector - signalfx reporter factory: {}", signalFxReporterFactory);
         if (reporters == null) {
             return null;
         }
@@ -128,8 +124,6 @@ public class MetricsGuiceModule extends AbstractModule {
     public SignalFxAwareCodahaleMetricsCollector sfxAwareCodahaleMetricsCollector(
             @Nullable CodahaleMetricsCollector configuredAppCollector
     ) {
-        logger.info("XXX sfxAwareCodahaleMetricsCollector - unexpectedly inside method");
-
         // If metrics are completely disabled then return null.
         if (configuredAppCollector == null)
             return null;
@@ -166,14 +160,8 @@ public class MetricsGuiceModule extends AbstractModule {
         if (jmxReportingEnabled)
             reporters.add(new DefaultJMXReporterFactory());
 
-        logger.info("XXX metricsReporters - signalfx enabled: {}", signalFxEnabled);
-        logger.info("XXX metricsReporters - signalfx reporter factory: {}", signalFxReporterFactory);
-
-        if (signalFxEnabled && signalFxReporterFactory != null) {
-            logger.info("XXX metricsReporters - adding signalfx factory");
-            logger.info("XXX metricsReporters - reporter factory: {}", signalFxReporterFactory);
+        if (signalFxEnabled && signalFxReporterFactory != null)
             reporters.add(signalFxReporterFactory);
-        }
 
         if (graphiteEnabled) {
             AppInfo appInfo = appInfoFuture.join();
@@ -204,8 +192,6 @@ public class MetricsGuiceModule extends AbstractModule {
             MetricsConfigurationHelper metricsConfigurationHelper
     ) {
         if (signalFxEnabled) {
-            logger.info("XXX signalFxReporterFactory - generating reporter factory");
-
             return metricsConfigurationHelper.generateSignalFxReporterFactory(
                     serviceVersion,
                     appName,
