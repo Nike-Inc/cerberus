@@ -5,6 +5,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SlidingTimeWindowReservoir;
 import com.codahale.metrics.Timer;
+import com.google.inject.Inject;
 import com.nike.internal.util.Pair;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsListener;
@@ -18,6 +19,8 @@ import com.nike.riposte.server.http.ResponseInfo;
 import com.signalfx.codahale.reporter.SignalFxReporter;
 import com.signalfx.codahale.reporter.SignalFxReporter.Builder;
 import com.signalfx.codahale.reporter.SignalFxReporter.MetricDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -30,25 +33,52 @@ import static com.nike.riposte.metrics.codahale.impl.SignalFxEndpointMetricsHand
 /**
  * A set of methods used to help instantiate the necessary metrics objects in the Guice module
  */
+@SuppressWarnings({})
 public class MetricsConfigurationHelper {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private static final String EC2_HOSTNAME_PREFIX = "ip-";
+
+    private final String signalFxApiKey;
+
+    private final String signalFxAppEnvDim;
+
+    /**
+     * This 'holder' class allows optional injection of SignalFx-specific properties that are only necessary when
+     * SignalFx metrics reporting is enabled.
+     *
+     * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
+     * or with constructor injection.
+     *
+     * https://github.com/google/guice/wiki/FrequentlyAskedQuestions
+     */
+    static class SignalFxOptionalPropertyHolder {
+        @Inject(optional=true)
+        @com.google.inject.name.Named("metrics.signalfx.api_key")
+        String signalFxApiKey = "signalfx api key injection failed";  // set default value so key is never null
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("metrics.signalfx.dimension.app_env")
+        String signalFxAppEnvDim = "app environment dimension injection failed";  // set default value so key is never null
+    }
+
+    @Inject
+    public MetricsConfigurationHelper(SignalFxOptionalPropertyHolder signalFxPropertyHolder) {
+        signalFxApiKey = signalFxPropertyHolder.signalFxApiKey;
+        signalFxAppEnvDim = signalFxPropertyHolder.signalFxAppEnvDim;
+    }
 
     /**
      * Generates the SignalFx metrics reporter
      * @param serviceVersionDim           The version number for this service/app
-     * @param apiKey                      The SignalFx API key
-     * @param appNameDim                  'app' SignalFx dimension
-     * @param appEnvDim                   'env' SignalFx dimension
      * @param customReporterConfigurator  Allows custom SignalFx dimensions or configuration to be sent to SignalFx
      * @param metricDetailsToReport       The set of metric details that should be reported to SignalFx
      * @return  The SignalFxReporterFactory
      */
-    public static SignalFxReporterFactory generateSignalFxReporterFactory(
-            String apiKey,
+    public SignalFxReporterFactory generateSignalFxReporterFactory(
             String serviceVersionDim,
             String appNameDim,
-            String appEnvDim,
             Function<Builder, Builder> customReporterConfigurator,
             Set<MetricDetails> metricDetailsToReport
     ) {
@@ -64,7 +94,7 @@ public class MetricsConfigurationHelper {
                             .addUniqueDimension("host", host)
                             .addUniqueDimension("ec2_hostname", ec2Hostname)
                             .addUniqueDimension("app", appNameDim)
-                            .addUniqueDimension("env", appEnvDim)
+                            .addUniqueDimension("env", signalFxAppEnvDim)
                             .addUniqueDimension("framework", "riposte")
                             .addUniqueDimension("app_version", serviceVersionDim)
                             .setDetailsToAdd(finalMetricDetailsToReport);
@@ -72,15 +102,17 @@ public class MetricsConfigurationHelper {
             if (customReporterConfigurator == null)
                 customReporterConfigurator = Function.identity();
 
+            logger.info("XXX MetricsConfigurationHelper - app env: {}", signalFxAppEnvDim);
+
             return new SignalFxReporterFactory(
-                    apiKey,
+                    signalFxApiKey,
                     defaultReporterConfigurator.andThen(customReporterConfigurator),
                     // Report metrics at a 10 second interval
                     Pair.of(10L, TimeUnit.SECONDS)
             );
     }
 
-    public static CodahaleMetricsListener generateCodahaleMetricsListenerWithSignalFxSupport(
+    public CodahaleMetricsListener generateCodahaleMetricsListenerWithSignalFxSupport(
             SignalFxReporterFactory signalFxReporterFactory,
             CodahaleMetricsCollector metricsCollector,
             MetricDimensionConfigurator<Timer> customRequestTimerDimensionConfigurator,

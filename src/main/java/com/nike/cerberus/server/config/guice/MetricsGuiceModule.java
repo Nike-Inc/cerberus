@@ -58,13 +58,18 @@ public class MetricsGuiceModule extends AbstractModule {
     }
 
     /**
-     * Note: The CodahaleMetricsEngine is not required, but is passed here to ensure it is created and started
+     * Note: The CodahaleMetricsEngine is not required in this provider, but is passed here to ensure the engine
+     *       is created and started
      */
     @Provides
     @Singleton
     public CodahaleMetricsListener metricsListener(@Nullable CodahaleMetricsCollector metricsCollector,
                                                    @Nullable CodahaleMetricsEngine engine,
-                                                   @Nullable SignalFxReporterFactory signalFxReporterFactory) {
+                                                   @Nullable SignalFxReporterFactory signalFxReporterFactory,
+                                                   MetricsConfigurationHelper metricsConfigurationHelper) {
+        logger.info("XXX codahaleMetricsCollector - metricsCollector: {}", metricsCollector);
+        logger.info("XXX codahaleMetricsCollector - signalfx reporter factory: {}", signalFxReporterFactory);
+
         if (metricsCollector == null)
             return null;
 
@@ -75,7 +80,7 @@ public class MetricsGuiceModule extends AbstractModule {
         else {
             // SignalFx is being used - make sure we use a CodahaleMetricsListener that sets everything up
             //      properly for SignalFx.
-            return MetricsConfigurationHelper.generateCodahaleMetricsListenerWithSignalFxSupport(
+            return metricsConfigurationHelper.generateCodahaleMetricsListenerWithSignalFxSupport(
                     signalFxReporterFactory,  metricsCollector, null, null
             );
         }
@@ -92,7 +97,9 @@ public class MetricsGuiceModule extends AbstractModule {
             reporters = Collections.emptyList();
 
         CodahaleMetricsEngine engine = new CodahaleMetricsEngine(cmc, reporters);
+        logger.info("XXX codahaleMetricsEngine - starting metrics engine");
         engine.start();
+        logger.info("XXX codahaleMetricsEngine - metrics engine started");
         return engine;
     }
 
@@ -101,6 +108,8 @@ public class MetricsGuiceModule extends AbstractModule {
     public CodahaleMetricsCollector codahaleMetricsCollector(
             @Nullable List<ReporterFactory> reporters, @Nullable SignalFxReporterFactory signalFxReporterFactory
     ) {
+        logger.info("XXX codahaleMetricsCollector - reporters: {}", reporters);
+        logger.info("XXX codahaleMetricsCollector - signalfx reporter factory: {}", signalFxReporterFactory);
         if (reporters == null) {
             return null;
         }
@@ -119,6 +128,8 @@ public class MetricsGuiceModule extends AbstractModule {
     public SignalFxAwareCodahaleMetricsCollector sfxAwareCodahaleMetricsCollector(
             @Nullable CodahaleMetricsCollector configuredAppCollector
     ) {
+        logger.info("XXX sfxAwareCodahaleMetricsCollector - unexpectedly inside method");
+
         // If metrics are completely disabled then return null.
         if (configuredAppCollector == null)
             return null;
@@ -155,8 +166,14 @@ public class MetricsGuiceModule extends AbstractModule {
         if (jmxReportingEnabled)
             reporters.add(new DefaultJMXReporterFactory());
 
-        if (signalFxEnabled && signalFxReporterFactory != null)
+        logger.info("XXX metricsReporters - signalfx enabled: {}", signalFxEnabled);
+        logger.info("XXX metricsReporters - signalfx reporter factory: {}", signalFxReporterFactory);
+
+        if (signalFxEnabled && signalFxReporterFactory != null) {
+            logger.info("XXX metricsReporters - adding signalfx factory");
+            logger.info("XXX metricsReporters - reporter factory: {}", signalFxReporterFactory);
             reporters.add(signalFxReporterFactory);
+        }
 
         if (graphiteEnabled) {
             AppInfo appInfo = appInfoFuture.join();
@@ -183,16 +200,15 @@ public class MetricsGuiceModule extends AbstractModule {
     public SignalFxReporterFactory signalFxReporterFactory(
             @Named("metrics.signalfx.reporting.enabled") boolean signalFxEnabled,
             @Named("service.version") String serviceVersion,
-            @Named("metrics.signalfx.api_key") String apiKey,
             @Named("cms.app.name") String appName,
-            @Named("cms.app.env") String appEnv
+            MetricsConfigurationHelper metricsConfigurationHelper
     ) {
         if (signalFxEnabled) {
-            MetricsConfigurationHelper.generateSignalFxReporterFactory(
+            logger.info("XXX signalFxReporterFactory - generating reporter factory");
+
+            return metricsConfigurationHelper.generateSignalFxReporterFactory(
                     serviceVersion,
-                    apiKey,
                     appName,
-                    appEnv,
                     null,
                     DEFAULT_METRIC_DETAILS_TO_SEND_TO_SIGNALFX);
         }
