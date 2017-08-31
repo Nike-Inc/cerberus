@@ -31,7 +31,6 @@ import static com.nike.riposte.metrics.codahale.impl.SignalFxEndpointMetricsHand
 /**
  * A set of methods used to help instantiate the necessary metrics objects in the Guice module
  */
-@SuppressWarnings({})
 public class MetricsConfigurationHelper {
 
     private static final String EC2_HOSTNAME_PREFIX = "ip-";
