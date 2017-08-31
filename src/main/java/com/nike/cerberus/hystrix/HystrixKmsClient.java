@@ -39,30 +39,37 @@ public class HystrixKmsClient extends AWSKMSClient {
     }
 
     public EncryptResult encrypt(EncryptRequest request) {
+        // Default AWS limit was 1200 shared as of Aug 2017
         return execute("KmsEncryptDecrypt", "KmsEncrypt", () -> client.encrypt(request));
     }
 
     public CreateKeyResult createKey(CreateKeyRequest request) {
+        // Default AWS limit was 5 as of Aug 2017
         return execute("KmsCreateKey", () -> client.createKey(request));
     }
 
     public CreateAliasResult createAlias(CreateAliasRequest request) {
+        // Default AWS limit was 5 as of Aug 2017
         return execute("KmsCreateAlias", () -> client.createAlias(request));
     }
 
     public DescribeKeyResult describeKey(DescribeKeyRequest request) {
+        // Default AWS limit was 30 as of Aug 2017
         return execute("KmsDescribeKey", () -> client.describeKey(request));
     }
 
     public ScheduleKeyDeletionResult scheduleKeyDeletion(ScheduleKeyDeletionRequest request) {
+        // Default AWS limit was 5 as of Aug 2017
         return execute("KmsScheduleKeyDeletion", () -> client.scheduleKeyDeletion(request));
     }
 
     public GetKeyPolicyResult getKeyPolicy(GetKeyPolicyRequest request) {
+        // Default AWS limit was 30 as of Aug 2017
         return execute("KmsGetKeyPolicy", () -> client.getKeyPolicy(request));
     }
 
     public PutKeyPolicyResult putKeyPolicy(PutKeyPolicyRequest request) {
+        // Default AWS limit was 5 as of Aug 2017
         return execute("KmsPutKeyPolicy", () -> client.putKeyPolicy(request));
     }
 
