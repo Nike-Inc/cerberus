@@ -84,8 +84,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -97,6 +99,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
+
+import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -293,9 +297,31 @@ public class CmsGuiceModule extends AbstractModule {
     @Provides
     public VaultAdminClient vaultAdminClient(UrlResolver urlResolver,
                                              VaultCredentialsProvider vaultCredentialsProvider,
-                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost) {
-        logger.info("Vault clientVersion={}, maxRequestsPerHost={}, url={}", ClientVersion.getVersion(), vaultMaxRequestsPerHost, urlResolver.resolve());
-        return VaultClientFactory.getAdminClient(urlResolver, vaultCredentialsProvider, vaultMaxRequestsPerHost);
+                                             @Named("vault.maxRequests") int vaultMaxRequests,
+                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost,
+                                             @Named("vault.connectTimeoutMillis") int vaultConnectTimeoutMillis,
+                                             @Named("vault.readTimeoutMillis")int vaultReadTimeoutMillis,
+                                             @Named("vault.writeTimeoutMillis") int vaultWriteTimeoutMillis,
+                                             @Named("service.version") String cmsVersion) {
+        String version = ClientVersion.getVersion();
+        logger.info("Vault clientVersion={}, maxRequests={}, maxRequestsPerHost={}, connectTimeoutMillis={}, readTimeoutMillis={}, writeTimeoutMillis={}, url={}",
+                version,
+                vaultMaxRequests,
+                vaultMaxRequestsPerHost,
+                vaultConnectTimeoutMillis,
+                vaultReadTimeoutMillis,
+                vaultWriteTimeoutMillis,
+                urlResolver.resolve());
+
+        return VaultClientFactory.getAdminClient(urlResolver,
+                vaultCredentialsProvider,
+                vaultMaxRequests,
+                vaultMaxRequestsPerHost,
+                vaultConnectTimeoutMillis,
+                vaultReadTimeoutMillis,
+                vaultWriteTimeoutMillis,
+                new HashMap<>()
+        );
     }
 
     @Provides
