@@ -100,8 +100,6 @@ import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-
 public class CmsGuiceModule extends AbstractModule {
 
     private static final String KMS_KEY_ID_KEY = "CONFIG_KEY_ID";
