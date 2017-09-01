@@ -38,11 +38,13 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 
 /**
- * Polls the vault properties from the Cerberus config bucket and loads them into Archaius.
+ * Reads configuration from the Cerberus config bucket in S3
  */
-public class CmsEnvPropertiesLoader {
+public class CmsEnvConfigLoader {
 
     private static final String ENV_PATH = "data/cms/environment.properties";
+    private static final String CERTIFICATE_PATH = "data/cms/cms-cert.pem";
+    private static final String PRIVATE_KEY_PATH = "data/cms/cms-key.pem";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,7 +52,7 @@ public class CmsEnvPropertiesLoader {
 
     private final String bucketName;
 
-    public CmsEnvPropertiesLoader(final String bucketName, final String region, final String kmsKeyId) {
+    public CmsEnvConfigLoader(final String bucketName, final String region, final String kmsKeyId) {
         final KMSEncryptionMaterialsProvider materialProvider =
                 new KMSEncryptionMaterialsProvider(kmsKeyId);
 
@@ -67,20 +69,34 @@ public class CmsEnvPropertiesLoader {
     }
 
     public Properties getProperties() {
-        final String vaultPropertiesContents = getObject(ENV_PATH);
+        final String propertyContents = getObject(ENV_PATH);
 
-        if (StringUtils.isBlank(vaultPropertiesContents)) {
-            throw new IllegalStateException("Vault properties file was blank!");
+        if (StringUtils.isBlank(propertyContents)) {
+            throw new IllegalStateException(ENV_PATH + " file was blank!");
         }
 
-        final Properties vaultProperties = new Properties();
+        final Properties props = new Properties();
         try {
-            vaultProperties.load(new StringReader(vaultPropertiesContents));
+            props.load(new StringReader(propertyContents));
         } catch (IOException e) {
-            throw new ServerInitializationError("Failed to read the vault properties contents!", e);
+            throw new ServerInitializationError("Failed to read " + ENV_PATH + " contents!", e);
         }
 
-        return vaultProperties;
+        return props;
+    }
+
+    /**
+     * Get the value of the Certificate from S3
+     */
+    public String getCertificate() {
+        return getObject(CERTIFICATE_PATH);
+    }
+
+    /**
+     * Get the value of the Private Key from S3
+     */
+    public String getPrivateKey() {
+        return getObject(PRIVATE_KEY_PATH);
     }
 
     private String getObject(String path) {

@@ -20,7 +20,7 @@ package com.nike.cerberus.server.config.guice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
-import com.nike.cerberus.config.CmsEnvPropertiesLoader;
+import com.nike.cerberus.config.CmsEnvConfigLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
@@ -73,9 +73,17 @@ import com.google.inject.Provides;
 import com.typesafe.config.Config;
 
 import com.typesafe.config.ConfigValueFactory;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -87,6 +95,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.net.ssl.SSLException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
@@ -106,6 +115,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     private Config appConfig;
     private final ObjectMapper objectMapper;
+    private CmsEnvConfigLoader cmsEnvConfigLoader;
 
     public CmsGuiceModule(Config appConfig, ObjectMapper objectMapper) {
         if (appConfig == null)
@@ -141,12 +151,12 @@ public class CmsGuiceModule extends AbstractModule {
         if (appConfig.hasPath(CMS_DISABLE_ENV_LOAD_FLAG) && appConfig.getBoolean(CMS_DISABLE_ENV_LOAD_FLAG)) {
             logger.warn("CMS environment property loading disabled.");
         } else {
-            final CmsEnvPropertiesLoader cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
+            cmsEnvConfigLoader = new CmsEnvConfigLoader(
                     System.getenv(BUCKET_NAME_KEY),
                     System.getenv(REGION_KEY),
                     System.getenv(KMS_KEY_ID_KEY)
             );
-            Properties properties = cmsEnvPropertiesLoader.getProperties();
+            Properties properties = cmsEnvConfigLoader.getProperties();
 
             // bind the props to named props for guice
             Names.bindProperties(binder(), properties);
@@ -309,5 +319,21 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appInfoFuture")
     public CompletableFuture<AppInfo> appInfoFuture(AsyncHttpClientHelper asyncHttpClientHelper) {
         return AwsUtil.getAppInfoFutureWithAwsInfo(asyncHttpClientHelper);
+    }
+
+    @Provides
+    @Singleton
+    public SslContext sslContext() throws SSLException, CertificateException {
+        if (cmsEnvConfigLoader == null) {
+            logger.info("initializing SslContext by creating a self-signed certificate");
+            SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+        }
+        else {
+            logger.info("initializing SslContext using certificate from S3");
+            InputStream certificate = IOUtils.toInputStream(cmsEnvConfigLoader.getCertificate(), Charset.defaultCharset());
+            InputStream privateKey = IOUtils.toInputStream(cmsEnvConfigLoader.getPrivateKey(), Charset.defaultCharset());
+            return SslContextBuilder.forServer(certificate, privateKey).build();
+        }
     }
 }

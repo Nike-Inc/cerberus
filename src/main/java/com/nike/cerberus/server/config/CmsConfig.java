@@ -39,6 +39,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,6 +191,11 @@ public class CmsConfig implements ServerConfig {
     @Override
     public boolean isEndpointsUseSsl() {
         return guiceValues.endpointsUseSsl;
+    }
+
+    @Override
+    public SslContext createSslContext() {
+        return guiceValues.sslContext;
     }
 
     @Override
