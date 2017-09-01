@@ -95,9 +95,9 @@ public class MetricsGuiceModule extends AbstractModule {
             reporters = Collections.emptyList();
 
         CodahaleMetricsEngine engine = new CodahaleMetricsEngine(cmc, reporters);
-        engine.start();
         if (reportJvmMetrics)
             engine.reportJvmMetrics();
+        engine.start();
         return engine;
     }
 
