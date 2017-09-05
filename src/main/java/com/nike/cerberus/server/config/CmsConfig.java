@@ -39,6 +39,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +59,8 @@ import java.util.concurrent.CompletableFuture;
  * @author Nic Munroe
  */
 public class CmsConfig implements ServerConfig {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /*
          We use a GuiceProvidedServerConfigValues to generate most of the values we need to return for ServerConfig's methods.
@@ -90,7 +94,8 @@ public class CmsConfig implements ServerConfig {
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule(),
-                new OneLoginGuiceModule()
+                new OneLoginGuiceModule(),
+                new MetricsGuiceModule()
         ));
 
         // bind the CMS Guice module last allowing the S3 props file to override any given application property

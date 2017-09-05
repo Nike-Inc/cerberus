@@ -18,15 +18,18 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
+import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
+import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
 import com.nike.cerberus.endpoints.authentication.MfaCheck;
 import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
@@ -46,37 +49,28 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
+import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
+import com.nike.riposte.server.config.AppInfo;
+import com.nike.riposte.server.http.Endpoint;
+import com.nike.riposte.util.AwsUtil;
 import com.nike.vault.client.ClientVersion;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultClientFactory;
 import com.nike.vault.client.auth.VaultCredentialsProvider;
-import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
-import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
-import com.nike.riposte.metrics.codahale.CodahaleMetricsEngine;
-import com.nike.riposte.metrics.codahale.CodahaleMetricsListener;
-import com.nike.riposte.metrics.codahale.ReporterFactory;
-import com.nike.riposte.metrics.codahale.contrib.DefaultGraphiteReporterFactory;
-import com.nike.riposte.metrics.codahale.contrib.DefaultJMXReporterFactory;
-import com.nike.riposte.metrics.codahale.contrib.DefaultSLF4jReporterFactory;
-import com.nike.riposte.server.config.AppInfo;
-import com.nike.riposte.server.http.Endpoint;
-import com.nike.riposte.util.AwsUtil;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.typesafe.config.Config;
-
 import com.typesafe.config.ConfigValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -84,11 +78,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
-import javax.validation.Validation;
-import javax.validation.Validator;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -216,52 +205,6 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public AsyncHttpClientHelper asyncHttpClientHelper() {
         return new AsyncHttpClientHelper();
-    }
-
-    @Provides
-    @Singleton
-    public CodahaleMetricsListener metricsListener(
-            @Named("metrics.slf4j.reporting.enabled") boolean slf4jReportingEnabled,
-            @Named("metrics.jmx.reporting.enabled") boolean jmxReportingEnabled,
-            @Named("graphite.url") String graphiteUrl,
-            @Named("graphite.port") int graphitePort,
-            @Named("graphite.reporting.enabled") boolean graphiteEnabled,
-            @Named("appInfoFuture") CompletableFuture<AppInfo> appInfoFuture,
-            CodahaleMetricsCollector metricsCollector) {
-        List<ReporterFactory> reporters = new ArrayList<>();
-
-        if (slf4jReportingEnabled)
-            reporters.add(new DefaultSLF4jReporterFactory());
-
-        if (jmxReportingEnabled)
-            reporters.add(new DefaultJMXReporterFactory());
-
-        if (graphiteEnabled) {
-            AppInfo appInfo = appInfoFuture.join();
-            String graphitePrefix = appInfo.appId() + "." + appInfo.dataCenter() + "." + appInfo.environment()
-                                    + "." + appInfo.instanceId();
-            reporters.add(new DefaultGraphiteReporterFactory(graphitePrefix, graphiteUrl, graphitePort));
-        }
-
-        if (reporters.isEmpty()) {
-            logger.info("No metrics reporters enabled - disabling metrics entirely.");
-            return null;
-        }
-
-        String metricReporterTypes = reporters.stream()
-                                              .map(rf -> rf.getClass().getSimpleName())
-                                              .collect(Collectors.joining(",", "[", "]"));
-        logger.info("Metrics enabled. metric_reporter_types={}", metricReporterTypes);
-
-        CodahaleMetricsEngine metricsEngine = new CodahaleMetricsEngine(metricsCollector, reporters);
-        metricsEngine.start();
-        return new CodahaleMetricsListener(metricsCollector);
-    }
-
-    @Provides
-    @Singleton
-    public CodahaleMetricsCollector codahaleMetricsCollector() {
-        return new CodahaleMetricsCollector();
     }
 
     @Singleton
