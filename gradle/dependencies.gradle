@@ -36,6 +36,7 @@ dependencies {
             "com.nike.riposte:riposte-guice-typesafe-config:$riposteVersion",
             "com.nike.riposte:riposte-async-http-client:$riposteVersion",
             "com.nike.riposte:riposte-metrics-codahale:$riposteVersion",
+            "com.nike.riposte:riposte-metrics-codahale-signalfx:$riposteVersion",
 
             "com.netflix.hystrix:hystrix-core:1.5.12",
             "javax:javaee-api:7.0",
