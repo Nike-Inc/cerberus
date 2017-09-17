@@ -55,6 +55,6 @@ public class CerberusHttpHeadersTest {
     public void test_getXForwardedClientIp_with_null() {
         RequestInfo request = mock(RequestInfo.class);
 
-        Assert.assertNull(CerberusHttpHeaders.getXForwardedClientIp(request));
+        Assert.assertEquals("Unknown", CerberusHttpHeaders.getXForwardedClientIp(request));
     }
 }

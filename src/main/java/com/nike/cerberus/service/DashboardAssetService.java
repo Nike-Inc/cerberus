@@ -5,13 +5,12 @@ import com.google.common.primitives.Bytes;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.DashboardResourceFile;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.util.DashboardResourceFileHelper;
+import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.riposte.server.http.RequestInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Map;
 
@@ -52,13 +51,14 @@ public class DashboardAssetService {
 
     }
 
-    private DashboardResourceFile getDashboardVersionContents() {
+    public DashboardResourceFile getDashboardVersionContents() {
         String versionJson = String.format(VERSION_RESPONSE_FORMAT, cmsVersion);
         byte[] versionJsonInBytes = versionJson.getBytes(Charset.defaultCharset());
 
         return new DashboardResourceFile(
-                new File(VERSION_FILE_NAME),
-                DashboardResourceFileHelper.FILE_EXT_TO_MIME_TYPE_MAP.get("json"),
+                VERSION_FILE_NAME,
+                VERSION_FILE_NAME,
+                DashboardResourceFileFactory.FILE_EXT_TO_MIME_TYPE_MAP.get("json"),
                 ImmutableList.<Byte>builder()
                         .addAll(Bytes.asList(versionJsonInBytes))
                         .build());

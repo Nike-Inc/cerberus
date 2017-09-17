@@ -64,8 +64,8 @@ public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
             /*
              Redirect requests from '/dashboard' to '/dashboard/'
 
-             This is done to ensure that dashboard assets are loaded from this endpoint. Without this redirect,
-              assets would be requested from the Dashboard with path '/asset.ext' instead of path '/dashboard/asset.ext'
+             Without this redirect, assets would be requested with URI '/asset.ext' instead of '/dashboard/asset.ext'.
+             This is important because the '/dashboard' prefix is needed in order to match this endpoint.
             */
             return CompletableFuture.completedFuture(
                     ResponseInfo.<ImmutableList<Byte>>newBuilder()

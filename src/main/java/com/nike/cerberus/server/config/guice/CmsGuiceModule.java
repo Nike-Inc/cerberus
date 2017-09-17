@@ -18,9 +18,8 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -64,7 +63,7 @@ import com.nike.cerberus.hystrix.HystrixMetricsLogger;
 import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.util.ArchaiusUtils;
-import com.nike.cerberus.util.DashboardResourceFileHelper;
+import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -337,14 +336,12 @@ public class CmsGuiceModule extends AbstractModule {
                 .breadthFirstTraversal(dashboardDir)
                 .filter(File::isFile)
                 .forEach(f -> {
-                    ImmutableList<Byte> fileContents = DashboardResourceFileHelper.getFileContents(f);
-                    String mimeType = DashboardResourceFileHelper.getMimeTypeForFileFromName(f.getName());
-                    DashboardResourceFile resource = new DashboardResourceFile(f, mimeType, fileContents);
-
-                    String relativePath = DashboardResourceFileHelper.getRelativePath(f.getPath(), dashboardDir.getPath());
-                    dashboardAssets.put(relativePath, resource);
+                    DashboardResourceFile resource = DashboardResourceFileFactory.create(f, dashboardDir.getAbsolutePath());
+                    dashboardAssets.put(resource.getRelativePath(), resource);
                 });
 
-        return dashboardAssets;
+        return ImmutableMap.<String, DashboardResourceFile>builder()
+                .putAll(dashboardAssets)
+                .build();
     }
 }

@@ -2,27 +2,35 @@ package com.nike.cerberus.domain;
 
 import com.google.common.collect.ImmutableList;
 
-import java.io.File;
-
 /**
  * Cerberus Dashboard file object (e.g. image file, HTML file, JSON, etc.)
  */
 public class DashboardResourceFile {
 
-    private final File file;
+    private String fileName;
 
-    private final String mimeType;
+    private String relativePath;
 
-    private final ImmutableList<Byte> fileContents;
+    private String mimeType;
 
-    public DashboardResourceFile(File file, String mimeType, ImmutableList<Byte> fileContents) {
-        this.file = file;
+    private ImmutableList<Byte> fileContents;
+
+    public DashboardResourceFile(String fileName,
+                                 String relativePath,
+                                 String mimeType,
+                                 ImmutableList<Byte> fileContents) {
+        this.fileName = fileName;
+        this.relativePath = relativePath;
         this.mimeType = mimeType;
         this.fileContents = fileContents;
     }
 
     public String getFileName() {
-        return file.getName();
+        return fileName;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
     }
 
     public String getMimeType() {
