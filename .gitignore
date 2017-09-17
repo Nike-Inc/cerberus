@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Gradle template
 .gradle
-build/
+/build/
 classes/
 
 # Ignore Gradle GUI config
@@ -180,7 +180,23 @@ cms-local-overrides.conf
 /cms_login_tester.sh
 
 # node plugin stuffs
-/reverse_proxy/node_modules/
+node_modules
+
+# dashboard build artifacts
+/src/main/resources/dashboard/*
+/dashboard/build/*
+!/dashboard/build/index.html
+!/dashboard/build/help
+!/dashboard/build/favicon.ico
+
+# other dashboard files
+Starting Cerberus Dashboard local dev env
+*~
+npm-debug.log
+/dashboard/reports
+/dashboard/logs
+/dashboard/vault
+/dashboard/*.tar.gz
 
 # embedded mysql stuff
 /target/

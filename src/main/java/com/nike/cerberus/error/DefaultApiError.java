@@ -238,6 +238,12 @@ public enum DefaultApiError implements ApiError {
     KMS_KEY_IS_SCHEDULED_FOR_DELETION_OR_DISABLED(99232, "KMS key is scheduled for deletion or disabled", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
 
     /**
+     * Error reading the file contents of the requested dashboard asset
+     */
+    FAILED_TO_READ_DASHBOARD_ASSET_CONTENT(99232, "The requested dashboard asset file could not be read", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", HttpServletResponse.SC_NOT_FOUND),

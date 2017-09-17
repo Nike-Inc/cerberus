@@ -18,6 +18,8 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
@@ -26,6 +28,9 @@ import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
+import com.nike.cerberus.domain.DashboardResourceFile;
+import com.nike.cerberus.endpoints.GetDashboard;
+import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
@@ -57,6 +62,7 @@ import com.nike.cerberus.hystrix.HystrixMetricsLogger;
 import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.util.ArchaiusUtils;
+import com.nike.cerberus.util.DashboardResourceFileHelper;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -78,6 +84,8 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -101,6 +109,8 @@ public class CmsGuiceModule extends AbstractModule {
     private static final String CMS_DISABLE_ENV_LOAD_FLAG = "cms.env.load.disable";
 
     private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
+
+    private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "dashboard/";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -191,7 +201,9 @@ public class CmsGuiceModule extends AbstractModule {
             CreateSafeDepositBoxV2 createSafeDepositBoxV2,
             GetSDBMetadata getSDBMetadata,
             PutSDBMetadata putSDBMetadata,
-            CleanUpInactiveOrOrphanedRecords cleanUpInactiveOrOrphanedRecords
+            CleanUpInactiveOrOrphanedRecords cleanUpInactiveOrOrphanedRecords,
+            GetDashboardRedirect getDashboardRedirect,
+            GetDashboard getDashboard
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -201,7 +213,8 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords
+                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords,
+                getDashboardRedirect, getDashboard
         ));
     }
 
@@ -274,7 +287,9 @@ public class CmsGuiceModule extends AbstractModule {
                 || i instanceof AuthenticateUser
                 || i instanceof MfaCheck
                 || i instanceof AuthenticateIamRole
-                || i instanceof AuthenticateIamPrincipal)).collect(Collectors.toList());
+                || i instanceof AuthenticateIamPrincipal
+                || i instanceof GetDashboardRedirect
+                || i instanceof GetDashboard)).collect(Collectors.toList());
     }
 
     @Provides
@@ -303,5 +318,31 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public KmsClientFactory hystrixKmsClientFactory() {
         return new HystrixKmsClientFactory(new KmsClientFactory());
+    }
+
+    @Provides
+    @Singleton
+    @Named("dashboardAssetMap")
+    public Map<String, DashboardResourceFile> dashboardAssetMap() {
+        URL dashboardFilePath = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
+        if (dashboardFilePath == null) {
+            throw new IllegalStateException("Failed to load dashboard resources, relative path: " + DASHBOARD_DIRECTORY_RELATIVE_PATH);
+        }
+
+        File dashboardDir = new File(dashboardFilePath.getPath());
+        Map<String, DashboardResourceFile> dashboardAssets = Maps.newHashMap();
+        Files.fileTreeTraverser()
+                .breadthFirstTraversal(dashboardDir)
+                .filter(File::isFile)
+                .forEach(f -> {
+                    byte[] fileContents = DashboardResourceFileHelper.getFileContents(f);
+                    String mimeType = DashboardResourceFileHelper.getMimeTypeForFileFromName(f.getName());
+                    DashboardResourceFile resource = new DashboardResourceFile(f, mimeType, fileContents);
+
+                    String relativePath = DashboardResourceFileHelper.getRelativePath(f.getPath(), dashboardDir.getPath());
+                    dashboardAssets.put(relativePath, resource);
+                });
+
+        return dashboardAssets;
     }
 }
