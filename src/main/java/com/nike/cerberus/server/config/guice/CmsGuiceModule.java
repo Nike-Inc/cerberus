@@ -18,7 +18,9 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -335,7 +337,7 @@ public class CmsGuiceModule extends AbstractModule {
                 .breadthFirstTraversal(dashboardDir)
                 .filter(File::isFile)
                 .forEach(f -> {
-                    byte[] fileContents = DashboardResourceFileHelper.getFileContents(f);
+                    ImmutableList<Byte> fileContents = DashboardResourceFileHelper.getFileContents(f);
                     String mimeType = DashboardResourceFileHelper.getMimeTypeForFileFromName(f.getName());
                     DashboardResourceFile resource = new DashboardResourceFile(f, mimeType, fileContents);
 

@@ -1,6 +1,8 @@
 package com.nike.cerberus.util;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.primitives.Bytes;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +32,12 @@ public class DashboardResourceFileHelper {
     /**
      * @return The contents of the given file in bytes
      */
-    public static byte[] getFileContents(File file) {
+    public static ImmutableList<Byte> getFileContents(File file) {
         try {
-            return Files.readAllBytes(file.toPath());
+            byte[] contents = Files.readAllBytes(file.toPath());
+            return ImmutableList.<Byte>builder()
+                    .addAll(Bytes.asList(contents))
+                    .build();
         } catch (IOException ioe) {
             throw new IllegalArgumentException("Could not read contents of file: " + file.getName(), ioe);
         }

@@ -1,5 +1,7 @@
 package com.nike.cerberus.domain;
 
+import com.google.common.collect.ImmutableList;
+
 import java.io.File;
 
 /**
@@ -11,9 +13,9 @@ public class DashboardResourceFile {
 
     private final String mimeType;
 
-    private final byte[] fileContents;
+    private final ImmutableList<Byte> fileContents;
 
-    public DashboardResourceFile(File file, String mimeType, byte[] fileContents) {
+    public DashboardResourceFile(File file, String mimeType, ImmutableList<Byte> fileContents) {
         this.file = file;
         this.mimeType = mimeType;
         this.fileContents = fileContents;
@@ -27,7 +29,7 @@ public class DashboardResourceFile {
         return mimeType;
     }
 
-    public byte[] getFileContents() {
+    public ImmutableList<Byte> getFileContents() {
         return fileContents;
     }
 }

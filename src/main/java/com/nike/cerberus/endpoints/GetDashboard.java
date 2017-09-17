@@ -16,11 +16,9 @@
 
 package com.nike.cerberus.endpoints;
 
-import com.google.inject.name.Named;
-import com.nike.backstopper.exception.ApiException;
+import com.google.common.collect.ImmutableList;
 import com.nike.cerberus.domain.DashboardResourceFile;
-import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.util.DashboardResourceFileHelper;
+import com.nike.cerberus.service.DashboardAssetService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -35,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -46,36 +43,24 @@ import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 /**
  * Returns the dashboard.
  */
-public class GetDashboard extends StandardEndpoint<Void, byte[]> {
+public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String DASHBOARD_URI_NO_TRAILING_SLASH = "/dashboard";
+    private static final String DASHBOARD_ENDPOINT_NO_TRAILING_SLASH = "/dashboard";
 
-    private static final String DEFAULT_DASHBOARD_ASSET_FILE_NAME = "index.html";
-
-    private static final String RESOURCE_FILENAME_SEPARATOR = "dashboard/";
-
-    private static final String VERSION_ENDPOINT_NAME = "version";
-
-    private static final String VERSION_RESPONSE_FORMAT = "{\"version\": \"%s\"}";
-
-    private final  Map<String, DashboardResourceFile> dashboardAssetMap;
-
-    private final String cmsVersion;
+    private final DashboardAssetService dashboardAssetService;
 
     @Inject
-    public GetDashboard(@Named("dashboardAssetMap") Map<String, DashboardResourceFile> dashboardAssetMap,
-                        @Named("service.version") String cmsVersion) {
-        this.dashboardAssetMap = dashboardAssetMap;
-        this.cmsVersion = cmsVersion;
+    public GetDashboard(DashboardAssetService dashboardAssetService) {
+        this.dashboardAssetService = dashboardAssetService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<byte[]>> execute(RequestInfo<Void> request,
-                                                           Executor longRunningTaskExecutor,
-                                                           ChannelHandlerContext ctx) {
-        if (StringUtils.endsWith(request.getPath(), DASHBOARD_URI_NO_TRAILING_SLASH)) {
+    public CompletableFuture<ResponseInfo<ImmutableList<Byte>>> execute(RequestInfo<Void> request,
+                                                                        Executor longRunningTaskExecutor,
+                                                                        ChannelHandlerContext ctx) {
+        if (StringUtils.endsWith(request.getPath(), DASHBOARD_ENDPOINT_NO_TRAILING_SLASH)) {
             /*
              Redirect requests from '/dashboard' to '/dashboard/'
 
@@ -83,44 +68,29 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
               assets would be requested from the Dashboard with path '/asset.ext' instead of path '/dashboard/asset.ext'
             */
             return CompletableFuture.completedFuture(
-                    ResponseInfo.<byte[]>newBuilder()
+                    ResponseInfo.<ImmutableList<Byte>>newBuilder()
                             .withHttpStatusCode(HttpResponseStatus.MOVED_PERMANENTLY.code())
                             .withHeaders(new DefaultHttpHeaders().add("Location", "/dashboard/"))
                             .build());
         }
 
-        String filename = StringUtils.substringAfterLast(request.getPath(), RESOURCE_FILENAME_SEPARATOR);
-        filename = filename.isEmpty() ? DEFAULT_DASHBOARD_ASSET_FILE_NAME : filename;
-
-        return CompletableFuture.completedFuture(getDashboardAsset(request, filename));
+        return CompletableFuture.completedFuture(getDashboardAsset(request));
     }
 
-    private FullResponseInfo<byte[]> getDashboardAsset(RequestInfo<Void> request, String filename) {
-        logger.info("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
+    private FullResponseInfo<ImmutableList<Byte>> getDashboardAsset(RequestInfo<Void> request) {
+        DashboardResourceFile dashboardResource = dashboardAssetService.getFileContents(request);
+
+        logger.debug("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
                 HEADER_X_CERBERUS_CLIENT,
                 getClientVersion(request),
                 getXForwardedClientIp(request),
-                filename);
+                dashboardResource.getFileName());
 
-        if (filename.equals(VERSION_ENDPOINT_NAME)) {
-            String versionJson = String.format(VERSION_RESPONSE_FORMAT, cmsVersion);
-            return ResponseInfo.<byte[]>newBuilder()
-                    .withContentForFullResponse(versionJson.getBytes())
-                    .withDesiredContentWriterMimeType(DashboardResourceFileHelper.FILE_EXT_TO_MIME_TYPE_MAP.get("json"))
-                    .withHttpStatusCode(HttpResponseStatus.OK.code())
-                    .build();
-        } else if (dashboardAssetMap.containsKey(filename)){
-            DashboardResourceFile resource = dashboardAssetMap.get(filename);
-            return ResponseInfo.<byte[]>newBuilder()
-                    .withContentForFullResponse(resource.getFileContents())
-                    .withDesiredContentWriterMimeType(resource.getMimeType())
-                    .withHttpStatusCode(HttpResponseStatus.OK.code())
-                    .build();
-        } else {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.FAILED_TO_READ_DASHBOARD_ASSET_CONTENT)
-                    .build();
-        }
+        return ResponseInfo.<ImmutableList<Byte>>newBuilder()
+                .withContentForFullResponse(dashboardResource.getFileContents())
+                .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
+                .withHttpStatusCode(HttpResponseStatus.OK.code())
+                .build();
     }
 
     @Override
