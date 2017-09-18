@@ -20,7 +20,6 @@ import static groovyx.net.http.ContentType.*
 
 def vaultVersion = "0.8.1"
 
-def reverseProxyPort = 9001
 def nodeServerPort = 8000
 def cmsPort = 8080
 def vaultPort = 8200
@@ -65,6 +64,9 @@ task stopVaultAndMySQLBackgroundThread(type: KillProcessTask) {
 }
 
 task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
+    doFirst {
+        project.buildDir.mkdirs()
+    }
     group 'build'
     args = ['run', 'build']
 }
@@ -161,18 +163,20 @@ task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql])
     group 'local development'
     description 'Runs Vault and MySQL locally in memory in dev mod, with out requiring either to be installed'
 
-    def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-    workingDir "${project.getBuildDir().absolutePath}${File.separator}"
+    doLast {
+        def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
+        workingDir "${project.getBuildDir().absolutePath}${File.separator}"
 
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine "${workingDir}${File.separator}vault.exe"
-    } else {
-        executable "vault"
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            commandLine "${workingDir}${File.separator}vault.exe"
+        } else {
+            executable "vault"
+        }
+
+        args 'server', '--dev'
+
+        standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
     }
-
-    args 'server', '--dev'
-
-    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
 }
 
 /**
