@@ -133,23 +133,27 @@ task extractVault(type: Copy, dependsOn: downloadVault) {
 /**
  * Runs vault and MySQL locally in memory in dev mod
  */
-task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql]) {
+task runVaultAndMySQL(dependsOn: [extractVault, startEmbeddedMysql]) {
     group 'local development'
     description 'Runs Vault and MySQL locally in memory in dev mod, with out requiring either to be installed'
 
-    def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-    workingDir "${project.getBuildDir().absolutePath}${File.separator}"
+    doLast {
+        // this fails when in a 'doLast' block with task type 'Exec', so make manual 'exec' call
+        exec {
+            def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
+            workingDir "${project.getBuildDir().absolutePath}${File.separator}"
 
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine "${workingDir}${File.separator}vault.exe"
-    } else {
-        executable "vault"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine "${workingDir}${File.separator}vault.exe"
+            } else {
+                executable "vault"
+            }
+
+            args 'server', '--dev'
+
+            standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
+        }
     }
-
-    args 'server', '--dev'
-
-    vaultStdoutVaultLog.createNewFile()
-    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
 }
 
 /**
