@@ -148,12 +148,8 @@ task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql])
 
     args 'server', '--dev'
 
-    doLast {
-        standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
-    }
-
-
-
+    vaultStdoutVaultLog.createNewFile()
+    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
 }
 
 /**
