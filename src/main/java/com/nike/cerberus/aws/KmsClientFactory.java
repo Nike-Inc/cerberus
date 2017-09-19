@@ -29,7 +29,6 @@ import java.util.Map;
 /**
  * Factory for AWS KMS clients.  Caches clients by region as they are requested.
  */
-@Singleton
 public class KmsClientFactory {
 
     private final Map<Region, AWSKMSClient> kmsClientMap = Maps.newConcurrentMap();

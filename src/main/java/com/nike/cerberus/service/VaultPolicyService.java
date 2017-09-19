@@ -19,9 +19,9 @@ package com.nike.cerberus.service;
 import com.google.common.base.Preconditions;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.util.Slugger;
-import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.model.VaultPolicy;
 import org.apache.commons.lang3.StringUtils;
@@ -49,12 +49,12 @@ public class VaultPolicyService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final VaultAdminClient vaultAdminClient;
+    private final HystrixVaultAdminClient vaultAdminClient;
 
     private final Slugger slugger;
 
     @Inject
-    public VaultPolicyService(final VaultAdminClient vaultAdminClient, final Slugger slugger) {
+    public VaultPolicyService(final HystrixVaultAdminClient vaultAdminClient, final Slugger slugger) {
         this.vaultAdminClient = vaultAdminClient;
         this.slugger = slugger;
     }

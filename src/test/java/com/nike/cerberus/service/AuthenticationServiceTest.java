@@ -26,6 +26,7 @@ import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
@@ -88,7 +89,7 @@ public class AuthenticationServiceTest {
     private KmsClientFactory kmsClientFactory;
 
     @Mock
-    private VaultAdminClient vaultAdminClient;
+    private HystrixVaultAdminClient vaultAdminClient;
 
     @Mock
     private VaultPolicyService vaultPolicyService;

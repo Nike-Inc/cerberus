@@ -21,8 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
+import com.netflix.config.ConfigurationManager;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
+import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
@@ -49,7 +51,12 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
+import com.nike.cerberus.auth.connector.AuthConnector;
+import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
+import com.nike.cerberus.hystrix.HystrixMetricsLogger;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -72,11 +79,15 @@ import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 public class CmsGuiceModule extends AbstractModule {
@@ -124,6 +135,8 @@ public class CmsGuiceModule extends AbstractModule {
         } catch(ClassCastException cce) {
             throw new IllegalArgumentException("class: " + className + " is the wrong type", cce);
         }
+
+        bind(HystrixMetricsLogger.class).asEagerSingleton();
     }
 
     private void loadEnvProperties() {
@@ -139,6 +152,9 @@ public class CmsGuiceModule extends AbstractModule {
 
             // bind the props to named props for guice
             Names.bindProperties(binder(), properties);
+
+            // properties from cms.conf may be overridden in environment.properties
+            ArchaiusUtils.loadProperties(properties);
 
             for (String propertyName : properties.stringPropertyNames()) {
                 logger.info("Successfully loaded: {} from the env data stored in S3", propertyName);
@@ -223,9 +239,31 @@ public class CmsGuiceModule extends AbstractModule {
     @Provides
     public VaultAdminClient vaultAdminClient(UrlResolver urlResolver,
                                              VaultCredentialsProvider vaultCredentialsProvider,
-                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost) {
-        logger.info("Vault clientVersion={}, maxRequestsPerHost={}, url={}", ClientVersion.getVersion(), vaultMaxRequestsPerHost, urlResolver.resolve());
-        return VaultClientFactory.getAdminClient(urlResolver, vaultCredentialsProvider, vaultMaxRequestsPerHost);
+                                             @Named("vault.maxRequests") int vaultMaxRequests,
+                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost,
+                                             @Named("vault.connectTimeoutMillis") int vaultConnectTimeoutMillis,
+                                             @Named("vault.readTimeoutMillis")int vaultReadTimeoutMillis,
+                                             @Named("vault.writeTimeoutMillis") int vaultWriteTimeoutMillis,
+                                             @Named("service.version") String cmsVersion) {
+        String version = ClientVersion.getVersion();
+        logger.info("Vault clientVersion={}, maxRequests={}, maxRequestsPerHost={}, connectTimeoutMillis={}, readTimeoutMillis={}, writeTimeoutMillis={}, url={}",
+                version,
+                vaultMaxRequests,
+                vaultMaxRequestsPerHost,
+                vaultConnectTimeoutMillis,
+                vaultReadTimeoutMillis,
+                vaultWriteTimeoutMillis,
+                urlResolver.resolve());
+
+        return VaultClientFactory.getAdminClient(urlResolver,
+                vaultCredentialsProvider,
+                vaultMaxRequests,
+                vaultMaxRequestsPerHost,
+                vaultConnectTimeoutMillis,
+                vaultReadTimeoutMillis,
+                vaultWriteTimeoutMillis,
+                new HashMap<>()
+        );
     }
 
     @Provides
@@ -243,7 +281,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            VaultAdminClient vaultAdminClient) {
+            HystrixVaultAdminClient vaultAdminClient) {
         return new CmsRequestSecurityValidator(authProtectedEndpoints, vaultAdminClient);
     }
 
@@ -252,5 +290,18 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appInfoFuture")
     public CompletableFuture<AppInfo> appInfoFuture(AsyncHttpClientHelper asyncHttpClientHelper) {
         return AwsUtil.getAppInfoFutureWithAwsInfo(asyncHttpClientHelper);
+    }
+
+    @Provides
+    @Singleton
+    @Named("hystrixExecutor")
+    public ScheduledExecutorService executor() {
+        return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    @Provides
+    @Singleton
+    public KmsClientFactory hystrixKmsClientFactory() {
+        return new HystrixKmsClientFactory(new KmsClientFactory());
     }
 }
