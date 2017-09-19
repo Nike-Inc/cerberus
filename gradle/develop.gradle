@@ -63,32 +63,6 @@ task stopVaultAndMySQLBackgroundThread(type: KillProcessTask) {
     pidLockFileName '.vault-sql.pid.lock'
 }
 
-task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
-    doFirst {
-        project.buildDir.mkdirs()
-    }
-    group 'build'
-    args = ['run', 'build']
-}
-
-task copyDashboardResources(type: Copy, dependsOn: buildDashboard) {
-    def dashboardBuildDirectory = "${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}build"
-    def dashboardResourceFolder = "${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}dashboard"
-
-    from dashboardBuildDirectory
-    into dashboardResourceFolder
-}
-
-task runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
-    group 'local development'
-    description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
-
-    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
-    execOverrides {
-        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
-    }
-}
-
 /**
  * Configure the Node plugin to run out of the dashboard dir
  */
@@ -163,20 +137,18 @@ task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql])
     group 'local development'
     description 'Runs Vault and MySQL locally in memory in dev mod, with out requiring either to be installed'
 
-    doLast {
-        def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-        workingDir "${project.getBuildDir().absolutePath}${File.separator}"
+    def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
+    workingDir "${project.getBuildDir().absolutePath}${File.separator}"
 
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            commandLine "${workingDir}${File.separator}vault.exe"
-        } else {
-            executable "vault"
-        }
-
-        args 'server', '--dev'
-
-        standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine "${workingDir}${File.separator}vault.exe"
+    } else {
+        executable "vault"
     }
+
+    args 'server', '--dev'
+
+    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
 }
 
 /**

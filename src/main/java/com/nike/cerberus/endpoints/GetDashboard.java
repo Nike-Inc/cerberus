@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.endpoints;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Bytes;
 import com.nike.cerberus.domain.DashboardResourceFile;
 import com.nike.cerberus.service.DashboardAssetService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -43,7 +43,7 @@ import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 /**
  * Returns the dashboard.
  */
-public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
+public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,7 +57,7 @@ public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<ImmutableList<Byte>>> execute(RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<byte[]>> execute(RequestInfo<Void> request,
                                                                         Executor longRunningTaskExecutor,
                                                                         ChannelHandlerContext ctx) {
         if (StringUtils.endsWith(request.getPath(), DASHBOARD_ENDPOINT_NO_TRAILING_SLASH)) {
@@ -68,7 +68,7 @@ public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
              This is important because the '/dashboard' prefix is needed in order to match this endpoint.
             */
             return CompletableFuture.completedFuture(
-                    ResponseInfo.<ImmutableList<Byte>>newBuilder()
+                    ResponseInfo.<byte[]>newBuilder()
                             .withHttpStatusCode(HttpResponseStatus.MOVED_PERMANENTLY.code())
                             .withHeaders(new DefaultHttpHeaders().add("Location", "/dashboard/"))
                             .build());
@@ -77,7 +77,7 @@ public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
         return CompletableFuture.completedFuture(getDashboardAsset(request));
     }
 
-    private FullResponseInfo<ImmutableList<Byte>> getDashboardAsset(RequestInfo<Void> request) {
+    private FullResponseInfo<byte[]> getDashboardAsset(RequestInfo<Void> request) {
         DashboardResourceFile dashboardResource = dashboardAssetService.getFileContents(request);
 
         logger.debug("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
@@ -86,8 +86,8 @@ public class GetDashboard extends StandardEndpoint<Void, ImmutableList<Byte>> {
                 getXForwardedClientIp(request),
                 dashboardResource.getFileName());
 
-        return ResponseInfo.<ImmutableList<Byte>>newBuilder()
-                .withContentForFullResponse(dashboardResource.getFileContents())
+        return ResponseInfo.<byte[]>newBuilder()
+                .withContentForFullResponse(Bytes.toArray(dashboardResource.getFileContents()))
                 .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
                 .build();

@@ -46,6 +46,7 @@ public class DashboardAssetService {
         } else {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.FAILED_TO_READ_DASHBOARD_ASSET_CONTENT)
+                    .withExceptionMessage("Could not load dashboard asset: " + filename)
                     .build();
         }
 
