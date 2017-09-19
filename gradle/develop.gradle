@@ -148,7 +148,12 @@ task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql])
 
     args 'server', '--dev'
 
-    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
+    doLast {
+        standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
+    }
+
+
+
 }
 
 /**
