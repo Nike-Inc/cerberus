@@ -8,6 +8,8 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.riposte.server.http.RequestInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,6 +17,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 public class DashboardAssetService {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String REQUEST_PATH_FILENAME_SEPARATOR = "dashboard/";
 
@@ -37,11 +41,16 @@ public class DashboardAssetService {
 
     public DashboardResourceFile getFileContents(RequestInfo<Void> request) {
         String filename = StringUtils.substringAfterLast(request.getPath(), REQUEST_PATH_FILENAME_SEPARATOR);
+        logger.info("Filename (before empty check) is: '{}'", filename);
         filename = filename.isEmpty() ? DEFAULT_DASHBOARD_ASSET_FILE_NAME : filename;
+        logger.info("Filename (after empty check) is: '{}'", filename);
+        logger.info("Map keys: {}", dashboardAssetMap.keySet());
 
         if (filename.equals(VERSION_FILE_NAME)) {
+            logger.info("Getting version file");
             return getDashboardVersionContents();
         } else if (dashboardAssetMap.containsKey(filename)) {
+            logger.info("Map contains key");
             return dashboardAssetMap.get(filename);
         } else {
             throw ApiException.newBuilder()
