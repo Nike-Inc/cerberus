@@ -18,18 +18,13 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
-import com.netflix.config.ConfigurationManager;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
-import com.nike.cerberus.domain.DashboardResourceFile;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
@@ -57,13 +52,12 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.hystrix.HystrixMetricsLogger;
 import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
-import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
 import com.nike.cerberus.vault.CmsVaultUrlResolver;
@@ -85,13 +79,11 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -323,25 +315,16 @@ public class CmsGuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named("dashboardAssetMap")
-    public Map<String, DashboardResourceFile> dashboardAssetMap() {
-        URL dashboardFilePath = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
-        if (dashboardFilePath == null) {
-            throw new IllegalStateException("Failed to load dashboard resources, relative path: " + DASHBOARD_DIRECTORY_RELATIVE_PATH);
+    @Named("dashboardAssetManager")
+    public StaticAssetManager dashboardStaticAssetManager() {
+        URL dashboardFileUrl = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
+        logger.info("XXX dashboardFileUrl: path={}", dashboardFileUrl == null ? "null" : dashboardFileUrl.getPath());
+
+        if (dashboardFileUrl == null) {
+            throw new IllegalStateException("Failed to load dashboard resources, relative path: '" + "'");
         }
+        logger.info("XXXX Dashboard file path: {}", dashboardFileUrl.getPath());
 
-        File dashboardDir = new File(dashboardFilePath.getPath());
-        Map<String, DashboardResourceFile> dashboardAssets = Maps.newHashMap();
-        Files.fileTreeTraverser()
-                .breadthFirstTraversal(dashboardDir)
-                .filter(File::isFile)
-                .forEach(f -> {
-                    DashboardResourceFile resource = DashboardResourceFileFactory.create(f, dashboardDir.getAbsolutePath());
-                    dashboardAssets.put(resource.getRelativePath(), resource);
-                });
-
-        return ImmutableMap.<String, DashboardResourceFile>builder()
-                .putAll(dashboardAssets)
-                .build();
+        return new StaticAssetManager(dashboardFileUrl.getPath());
     }
 }
