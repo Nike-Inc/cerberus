@@ -79,6 +79,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -317,14 +318,14 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     @Named("dashboardAssetManager")
     public StaticAssetManager dashboardStaticAssetManager() {
-        URL dashboardFileUrl = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
-        logger.info("XXX dashboardFileUrl: path={}", dashboardFileUrl == null ? "null" : dashboardFileUrl.getPath());
+        URL dashboardFolderUrl = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
+        logger.info("XXX dashboardFolderUrl: path={}", dashboardFolderUrl == null ? "null" : dashboardFolderUrl.getPath());
 
-        if (dashboardFileUrl == null) {
+        if (dashboardFolderUrl == null) {
             throw new IllegalStateException("Failed to load dashboard resources, relative path: '" + "'");
         }
-        logger.info("XXXX Dashboard file path: {}", dashboardFileUrl.getPath());
+        logger.info("XXXX Dashboard file path: {}", dashboardFolderUrl.getPath());
 
-        return new StaticAssetManager(dashboardFileUrl.getPath());
+        return new StaticAssetManager(new File(dashboardFolderUrl.getPath()));
     }
 }

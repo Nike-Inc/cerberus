@@ -7,12 +7,13 @@ import com.google.common.primitives.Bytes;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.riposte.server.http.RequestInfo;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,13 +43,20 @@ public class StaticAssetManager {
             .put("json", "application/json")
             .build();
 
-    private final String resourceFolder;
+    private final String resourceFolderPath;
+
+    private final String resourceFolderName;
 
     private final ImmutableMap<String, AssetResourceFile> assetFileCache;
 
-    public StaticAssetManager(String resourceFolderAbsolutePath) {
-        this.resourceFolder = resourceFolderAbsolutePath;
-        assetFileCache = init();
+    public StaticAssetManager(File resourceFolderPath) {
+        this.resourceFolderPath = resourceFolderPath.getPath();
+        resourceFolderName = resourceFolderPath.getName();
+        assetFileCache = initCache();
+    }
+
+    public String getResourceFolderPath() {
+        return resourceFolderPath;
     }
 
     public AssetResourceFile get(RequestInfo<Void> request) {
@@ -69,9 +77,9 @@ public class StaticAssetManager {
         }
     }
 
-    private ImmutableMap<String, AssetResourceFile> init() {
+    private ImmutableMap<String, AssetResourceFile> initCache() {
         return ImmutableMap.<String, AssetResourceFile>builder()
-                .putAll(loadFiles(resourceFolder))
+                .putAll(loadFiles(resourceFolderPath))
                 .build();
     }
 
@@ -80,7 +88,6 @@ public class StaticAssetManager {
     }
 
     private Map<String, AssetResourceFile> loadFiles(Map<String, AssetResourceFile> assetFiles, String rootFolder) {
-
         try (DirectoryStream<Path> dashDir = Files.newDirectoryStream(Paths.get(rootFolder))) {
             dashDir.iterator().forEachRemaining(path -> {
                 if (Files.isDirectory(path)) {
@@ -91,7 +98,7 @@ public class StaticAssetManager {
                 AssetResourceFile resource = create(
                         path.getFileName().toString(),
                         path.toAbsolutePath().toString(),
-                        resourceFolder);
+                        resourceFolderPath);
 
                 logger.info("XXXX File relative path: {}", resource.getRelativePath());
                 assetFiles.put(resource.getRelativePath(), resource);
@@ -105,19 +112,20 @@ public class StaticAssetManager {
     }
 
 //    public Optional<AssetResourceFile> get(String absolutePath) {
-//        String relativePath = getRelativePath(absolutePath, resourceFolder);
+//        String relativePath = getRelativePath(absolutePath, resourceFolderPath);
 //        return assetFileCache.containsKey(relativePath) ?
 //                Optional.of(assetFileCache.get(relativePath)) :
 //                Optional.empty();
 //    }
 
     private AssetResourceFile create(String filename, String filePath, String rootDirectoryPath) {
+        String relativePath = getRelativePath(filePath, rootDirectoryPath);
         return new AssetResourceFile(
                 filename,
-                getRelativePath(filePath, rootDirectoryPath),
+                relativePath,
                 getMimeTypeForFileFromName(filename),
                 ImmutableList.<Byte>builder()
-                        .addAll(getFileContents(filePath))
+                        .addAll(getFileContents(relativePath))
                         .build()
         );
     }
@@ -125,20 +133,27 @@ public class StaticAssetManager {
     /**
      * @return The contents of the given file in bytes
      */
-    private static List<Byte> getFileContents(String filePath) {
+    private List<Byte> getFileContents(String relativePath) {
+        logger.info("XXX relativePath: {}", relativePath);
+        logger.info("XXX resourceFolderName: {}", resourceFolderName);
+        logger.info("XXX resourceFolderPath: {}", resourceFolderPath);
+        String formattedFilePath = StringUtils.stripStart(relativePath, "/");
+        logger.info("XXX formattedFilePath: {}", formattedFilePath);
+        String resourcePath = String.format("%s/%s", resourceFolderName, formattedFilePath);
+
         try {
-            byte[] contents = filePath.getBytes(Charset.defaultCharset());
+            byte[] contents = IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream(resourcePath));
 //            byte[] contents = Files.readAllBytes(file.toPath());
             return Bytes.asList(contents);
-        } catch (NullPointerException ioe) {
-            throw new IllegalArgumentException("Could not read contents of file: " + filePath, ioe);
+        } catch (NullPointerException | IOException ioe) {
+            throw new IllegalArgumentException("Could not read contents of file: " + resourcePath, ioe);
         }
     }
 
     /**
      * @return The appropriate MIME type for the given file
      */
-    private static String getMimeTypeForFileFromName(String fileName) {
+    private String getMimeTypeForFileFromName(String fileName) {
         String fileExtension = StringUtils.substringAfterLast(fileName, ".");
 
         if (FILE_EXT_TO_MIME_TYPE_MAP.containsKey(fileExtension)) {
@@ -155,9 +170,10 @@ public class StaticAssetManager {
      * @param rootFolderPath    The full path of the root folder, which to remove from the file path
      * @return  The relative path of the file (excluding the given root folder)
      */
-    private static String getRelativePath(String filePath, String rootFolderPath) {
+    private String getRelativePath(String filePath, String rootFolderPath) {
         logger.info("ZZZZ Full file path: {}, rootFolderPath file path: {}", filePath, rootFolderPath);
-        return StringUtils.substringAfterLast(filePath, rootFolderPath);
+        String relativePath = StringUtils.substringAfterLast(filePath, rootFolderPath);
+        return StringUtils.stripStart(relativePath, "/");
     }
 
     /**
