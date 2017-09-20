@@ -7,12 +7,12 @@ import com.google.common.primitives.Bytes;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.riposte.server.http.RequestInfo;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,7 +88,10 @@ public class StaticAssetManager {
                             loadFiles(assetFiles, path.toString()));
                 }
                 logger.info("XXXX Found file: name: {}, path: {}", path.getFileName(), path.toString());
-                AssetResourceFile resource = create(path, resourceFolder);
+                AssetResourceFile resource = create(
+                        path.getFileName().toString(),
+                        path.toAbsolutePath().toString(),
+                        resourceFolder);
 
                 logger.info("XXXX File relative path: {}", resource.getRelativePath());
                 assetFiles.put(resource.getRelativePath(), resource);
@@ -98,7 +101,7 @@ public class StaticAssetManager {
             logger.info("Could not create dashboard directory stream");
         }
 
-        return Maps.newHashMap(assetFiles);
+        return assetFiles;
     }
 
 //    public Optional<AssetResourceFile> get(String absolutePath) {
@@ -108,13 +111,13 @@ public class StaticAssetManager {
 //                Optional.empty();
 //    }
 
-    private AssetResourceFile create(Path path, String rootDirectoryPath) {
+    private AssetResourceFile create(String filename, String filePath, String rootDirectoryPath) {
         return new AssetResourceFile(
-                path.getFileName().toString(),
-                getRelativePath(path.toAbsolutePath().toString(), rootDirectoryPath),
-                getMimeTypeForFileFromName(path.getFileName().toString()),
+                filename,
+                getRelativePath(filePath, rootDirectoryPath),
+                getMimeTypeForFileFromName(filename),
                 ImmutableList.<Byte>builder()
-                        .addAll(getFileContents(path))
+                        .addAll(getFileContents(filePath))
                         .build()
         );
     }
@@ -122,13 +125,13 @@ public class StaticAssetManager {
     /**
      * @return The contents of the given file in bytes
      */
-    private static List<Byte> getFileContents(Path path) {
+    private static List<Byte> getFileContents(String filePath) {
         try {
-            byte[] contents = IOUtils.toByteArray(path.toUri());
+            byte[] contents = filePath.getBytes(Charset.defaultCharset());
 //            byte[] contents = Files.readAllBytes(file.toPath());
             return Bytes.asList(contents);
-        } catch (IOException | NullPointerException ioe) {
-            throw new IllegalArgumentException("Could not read contents of file: " + path.toString(), ioe);
+        } catch (NullPointerException ioe) {
+            throw new IllegalArgumentException("Could not read contents of file: " + filePath, ioe);
         }
     }
 
@@ -160,7 +163,7 @@ public class StaticAssetManager {
     /**
      * Resource file object (e.g. image file, HTML file, JSON, etc.)
      */
-    public class AssetResourceFile {
+    public static class AssetResourceFile {
 
         private String fileName;
 

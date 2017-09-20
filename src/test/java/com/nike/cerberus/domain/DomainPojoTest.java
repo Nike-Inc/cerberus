@@ -20,9 +20,6 @@ public class DomainPojoTest {
 
         List<PojoClass> pojoClasses = PojoClassFactory.getPojoClasses("com.nike.cerberus.domain");
 
-        // exclude this class because it does not need getters and setters for every constructor parameter
-        pojoClasses.remove(PojoClassFactory.getPojoClass(DashboardResourceFile.class));
-
         Assert.assertEquals(19, pojoClasses.size());
 
         Validator validator = ValidatorBuilder.create()
