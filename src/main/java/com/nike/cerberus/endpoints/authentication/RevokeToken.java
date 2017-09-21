@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -71,8 +71,8 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal =
-                    (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal vaultAuthPrincipal =
+                    (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, Delete Token Auth Event: the principal: {} with ip: {} is attempting to delete a token",
                     HEADER_X_CERBERUS_CLIENT,
@@ -80,7 +80,7 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
                     vaultAuthPrincipal.getName(),
                     getXForwardedClientIp(request));
 
-            authenticationService.revoke(vaultAuthPrincipal.getClientToken().getId());
+            authenticationService.revoke(vaultAuthPrincipal.getToken());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
         }
 

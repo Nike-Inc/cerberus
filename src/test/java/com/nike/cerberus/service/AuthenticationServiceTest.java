@@ -30,7 +30,7 @@ import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -61,7 +61,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -88,12 +87,6 @@ public class AuthenticationServiceTest {
     @Mock
     private KmsClientFactory kmsClientFactory;
 
-    @Mock
-    private HystrixVaultAdminClient vaultAdminClient;
-
-    @Mock
-    private VaultPolicyService vaultPolicyService;
-
     private ObjectMapper objectMapper;
 
     @Mock
@@ -112,7 +105,7 @@ public class AuthenticationServiceTest {
         objectMapper = CmsConfig.configureObjectMapper();
         authenticationService = new AuthenticationService(safeDepositBoxDao,
                 awsIamRoleDao, authConnector, kmsService, kmsClientFactory,
-                vaultAdminClient, vaultPolicyService, objectMapper, "foo", MAX_LIMIT,
+                objectMapper, "foo", MAX_LIMIT,
                 dateTimeSupplier, awsIamRoleArnParser);
     }
 
@@ -124,15 +117,15 @@ public class AuthenticationServiceTest {
 
         Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(principalArn, region);
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_USERNAME));
-        assertEquals(principalArn, result.get(VaultAuthPrincipal.METADATA_KEY_USERNAME));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_USERNAME));
+        assertEquals(principalArn, result.get(CerberusPrincipal.METADATA_KEY_USERNAME));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_AWS_REGION));
-        assertEquals(region, result.get(VaultAuthPrincipal.METADATA_KEY_AWS_REGION));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_AWS_REGION));
+        assertEquals(region, result.get(CerberusPrincipal.METADATA_KEY_AWS_REGION));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_GROUPS));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_GROUPS));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
     }
 
     @Test
@@ -302,7 +295,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void tests_that_refreshUserToken_throws_access_denied_when_an_iam_principal_tries_to_call_it() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        CerberusPrincipal principal = mock(CerberusPrincipal.class);
 
         when(principal.isIamPrincipal()).thenReturn(true);
 
@@ -314,12 +307,12 @@ public class AuthenticationServiceTest {
         }
 
         assertTrue(e instanceof ApiException);
-        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE));
+        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.USER_ONLY_RESOURCE));
     }
 
     @Test
     public void tests_that_refreshUserToken_refreshes_token_when_count_is_less_than_limit() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        CerberusPrincipal principal = mock(CerberusPrincipal.class);
 
         when(principal.isIamPrincipal()).thenReturn(false);
         when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT - 1);
@@ -335,7 +328,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void tests_that_refreshUserToken_throws_access_denied_token_when_count_is_eq_or_greater_than_limit() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        CerberusPrincipal principal = mock(CerberusPrincipal.class);
 
         when(principal.isIamPrincipal()).thenReturn(false);
         when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT);

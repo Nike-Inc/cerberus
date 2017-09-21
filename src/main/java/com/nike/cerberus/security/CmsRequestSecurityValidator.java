@@ -17,11 +17,9 @@
 package com.nike.cerberus.security;
 
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.service.AuthTokenService;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
@@ -29,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.Collection;
@@ -40,49 +39,44 @@ import java.util.Optional;
  */
 public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
-    public static final String HEADER_X_VAULT_TOKEN = "X-Vault-Token";
-
-    public static final String SECURITY_CONTEXT_ATTR_KEY = "vaultSecurityContext";
+    public static final String HEADER_X_CERBERUS_TOKEN = "X-Cerberus-Token";
+    public static final String LEGACY_AUTH_TOKN_HEADER = "X-Vault-Token";
+    public static final String SECURITY_CONTEXT_ATTR_KEY = "cerberusSecurityContext";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Collection<Endpoint<?>> endpointsToValidate;
+    private final AuthTokenService authTokenService;
 
-    private final HystrixVaultAdminClient vaultAdminClient;
+    public CmsRequestSecurityValidator(Collection<Endpoint<?>> endpointsToValidate,
+                                       AuthTokenService authTokenService) {
 
-    public CmsRequestSecurityValidator(final Collection<Endpoint<?>> endpointsToValidate,
-                                       final HystrixVaultAdminClient vaultAdminClient) {
         this.endpointsToValidate = endpointsToValidate;
-        this.vaultAdminClient = vaultAdminClient;
         this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
+
+        this.authTokenService = authTokenService;
     }
 
     @Override
     public void validateSecureRequestForEndpoint(RequestInfo<?> requestInfo, Endpoint<?> endpoint) {
-        final String vaultToken = requestInfo.getHeaders().get(HEADER_X_VAULT_TOKEN);
+        String token = parseRequiredAuthHeaderFromRequest(requestInfo.getHeaders());
 
-        if (StringUtils.isBlank(vaultToken)) {
+        CerberusAuthToken authToken = authTokenService.getCerberusAuthToken(token);
+        final CerberusPrincipal principal = new CerberusPrincipal(authToken);
+        final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
+                URI.create(requestInfo.getUri()).getScheme());
+        requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
+    }
+
+    private String parseRequiredAuthHeaderFromRequest(HttpHeaders headers) {
+        final String legacyToken = headers.get(LEGACY_AUTH_TOKN_HEADER);
+        final String cerberusToken = headers.get(HEADER_X_CERBERUS_TOKEN);
+
+        if (StringUtils.isBlank(legacyToken) && StringUtils.isNotBlank(cerberusToken)) {
             throw new ApiException(DefaultApiError.AUTH_VAULT_TOKEN_INVALID);
         }
 
-        try {
-            final VaultClientTokenResponse clientTokenResponse = vaultAdminClient.lookupToken(vaultToken);
-
-            final VaultAuthPrincipal principal = new VaultAuthPrincipal(clientTokenResponse);
-            final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
-                    URI.create(requestInfo.getUri()).getScheme());
-            requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
-        } catch (VaultServerException vse) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_VAULT_TOKEN_INVALID)
-                    .withExceptionCause(vse)
-                    .build();
-        } catch (VaultClientException vce) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
-                    .withExceptionCause(vce)
-                    .build();
-        }
+        return StringUtils.isNotBlank(legacyToken) ? legacyToken : cerberusToken;
     }
 
     @Override

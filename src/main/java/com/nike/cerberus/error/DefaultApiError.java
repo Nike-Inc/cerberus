@@ -59,7 +59,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * X-Vault-Token header is blank.
      */
-    AUTH_VAULT_TOKEN_INVALID(99105, "X-Vault-Token header is malformed.", HttpServletResponse.SC_UNAUTHORIZED),
+    AUTH_VAULT_TOKEN_INVALID(99105, "X-Vault-Token or X-Cerberus-Token header is malformed.", HttpServletResponse.SC_UNAUTHORIZED),
 
     /**
      * Supplied credentials are invalid.
@@ -230,7 +230,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * The token has exceeded the amount of times it can be refreshed
      */
-    IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE(99231, "The requested resource is for User Principals only.", HttpServletResponse.SC_FORBIDDEN),
+    USER_ONLY_RESOURCE(99231, "The requested resource is for User Principals only.", HttpServletResponse.SC_FORBIDDEN),
 
     /**
      * KMS key is scheduled for deletion or disabled

@@ -28,7 +28,6 @@ def groovyVersion = '2.3.9'
 
 dependencies {
     compile (
-            "com.nike:vault-client:1.6.0",
             "com.nike.riposte:riposte-spi:$riposteVersion",
             "com.nike.riposte:riposte-core:$riposteVersion",
             "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
@@ -62,7 +61,10 @@ dependencies {
             "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.2",
             "com.squareup.okhttp3:okhttp:3.3.1",
             "commons-io:commons-io:2.5",
-            "com.okta:okta-sdk:0.0.4"
+            "com.okta:okta-sdk:0.0.4",
+            "com.google.code.findbugs:jsr305:3.0.2"
+
+
     )
 
     testCompile (

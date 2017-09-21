@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -62,7 +62,7 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
     }
 
     private ResponseInfo<Void> restoreSdbMetadata(RequestInfo<SDBMetadata> request, SecurityContext securityContext) {
-        VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
+        CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
 
         String principal = vaultAuthPrincipal.getName();
 

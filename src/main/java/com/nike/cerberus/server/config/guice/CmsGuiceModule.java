@@ -24,7 +24,6 @@ import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
-import com.netflix.config.ConfigurationManager;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
@@ -57,25 +56,18 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.hystrix.HystrixMetricsLogger;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.cerberus.util.UuidSupplier;
-import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
-import com.nike.cerberus.vault.CmsVaultUrlResolver;
 import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
 import com.nike.riposte.server.config.AppInfo;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
-import com.nike.vault.client.ClientVersion;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultAdminClient;
-import com.nike.vault.client.VaultClientFactory;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
 import org.slf4j.Logger;
@@ -88,7 +80,6 @@ import javax.validation.Validator;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -130,8 +121,6 @@ public class CmsGuiceModule extends AbstractModule {
     protected void configure() {
         loadEnvProperties();
 
-        bind(UrlResolver.class).to(CmsVaultUrlResolver.class);
-        bind(VaultCredentialsProvider.class).to(CmsVaultCredentialsProvider.class);
         bind(ObjectMapper.class).toInstance(objectMapper);
 
         String className = this.appConfig.getString(AUTH_CONNECTOR_IMPL_KEY);
@@ -243,43 +232,6 @@ public class CmsGuiceModule extends AbstractModule {
         return new UuidSupplier();
     }
 
-    /**
-     * Binds a Vault admin client to the Guice context.  The expectation is that the VAULT_ADDR and VAULT_TOKEN
-     * properties have been set and are accessible, otherwise it will attempt to fail fast.
-     *
-     * @return Vault admin client
-     */
-    @Singleton
-    @Provides
-    public VaultAdminClient vaultAdminClient(UrlResolver urlResolver,
-                                             VaultCredentialsProvider vaultCredentialsProvider,
-                                             @Named("vault.maxRequests") int vaultMaxRequests,
-                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost,
-                                             @Named("vault.connectTimeoutMillis") int vaultConnectTimeoutMillis,
-                                             @Named("vault.readTimeoutMillis")int vaultReadTimeoutMillis,
-                                             @Named("vault.writeTimeoutMillis") int vaultWriteTimeoutMillis,
-                                             @Named("service.version") String cmsVersion) {
-        String version = ClientVersion.getVersion();
-        logger.info("Vault clientVersion={}, maxRequests={}, maxRequestsPerHost={}, connectTimeoutMillis={}, readTimeoutMillis={}, writeTimeoutMillis={}, url={}",
-                version,
-                vaultMaxRequests,
-                vaultMaxRequestsPerHost,
-                vaultConnectTimeoutMillis,
-                vaultReadTimeoutMillis,
-                vaultWriteTimeoutMillis,
-                urlResolver.resolve());
-
-        return VaultClientFactory.getAdminClient(urlResolver,
-                vaultCredentialsProvider,
-                vaultMaxRequests,
-                vaultMaxRequestsPerHost,
-                vaultConnectTimeoutMillis,
-                vaultReadTimeoutMillis,
-                vaultWriteTimeoutMillis,
-                new HashMap<>()
-        );
-    }
-
     @Provides
     @Singleton
     @Named("authProtectedEndpoints")
@@ -297,8 +249,9 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            HystrixVaultAdminClient vaultAdminClient) {
-        return new CmsRequestSecurityValidator(authProtectedEndpoints, vaultAdminClient);
+            AuthTokenService authTokenService) {
+
+        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService);
     }
 
     @Provides

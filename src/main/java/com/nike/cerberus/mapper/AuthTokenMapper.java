@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,15 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.vault;
+package com.nike.cerberus.mapper;
 
-import com.nike.vault.client.UrlResolver;
+import com.nike.cerberus.record.AuthTokenRecord;
+import org.apache.ibatis.annotations.Param;
 
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
+public interface AuthTokenMapper {
 
-/**
- * Resolves the vault URL from Guice.
- */
-public class CmsVaultUrlResolver implements UrlResolver {
+    int createAuthToken(@Param("record") AuthTokenRecord record);
 
-    private final String vaultAddr;
+    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
 
-    @Inject
-    public CmsVaultUrlResolver(@Named("vault.addr") final String vaultAddr) {
-        this.vaultAddr = vaultAddr;
-    }
-
-    @Nullable
-    @Override
-    public String resolve() {
-        return vaultAddr;
-    }
 }

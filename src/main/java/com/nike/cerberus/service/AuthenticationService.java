@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -33,6 +34,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
@@ -40,31 +42,32 @@ import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
+import com.nike.cerberus.domain.AuthTokenResponse;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.vault.client.VaultAdminClient;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.model.VaultAuthResponse;
-import com.nike.vault.client.model.VaultTokenAuthRequest;
+import com.nike.cerberus.util.Slugger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -73,6 +76,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_GROUPS;
+import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_IS_ADMIN;
+import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT;
+import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
 
 /**
@@ -98,12 +105,12 @@ public class AuthenticationService {
     private final AuthConnector authServiceConnector;
     private final KmsService kmsService;
     private final KmsClientFactory kmsClientFactory;
-    private final HystrixVaultAdminClient vaultAdminClient;
-    private final VaultPolicyService vaultPolicyService;
     private final ObjectMapper objectMapper;
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
     private final AwsIamRoleArnParser awsIamRoleArnParser;
+    private final Slugger slugger;
+    private final AuthTokenService authTokenService;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -127,26 +134,26 @@ public class AuthenticationService {
                                  final AuthConnector authConnector,
                                  final KmsService kmsService,
                                  final KmsClientFactory kmsClientFactory,
-                                 final HystrixVaultAdminClient vaultAdminClient,
-                                 final VaultPolicyService vaultPolicyService,
                                  final ObjectMapper objectMapper,
                                  @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
                                  @Named(MAX_TOKEN_REFRESH_COUNT) final int maxTokenRefreshCount,
                                  final DateTimeSupplier dateTimeSupplier,
-                                 final AwsIamRoleArnParser awsIamRoleArnParser) {
+                                 final AwsIamRoleArnParser awsIamRoleArnParser,
+                                 final Slugger slugger,
+                                 final AuthTokenService authTokenService) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
         this.authServiceConnector = authConnector;
         this.kmsService = kmsService;
         this.kmsClientFactory = kmsClientFactory;
-        this.vaultAdminClient = vaultAdminClient;
-        this.vaultPolicyService = vaultPolicyService;
         this.objectMapper = objectMapper;
         this.adminGroup = adminGroup;
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.maxTokenRefreshCount = maxTokenRefreshCount;
+        this.slugger = slugger;
+        this.authTokenService = authTokenService;
     }
 
     /**
@@ -204,8 +211,8 @@ public class AuthenticationService {
         iamPrincipalCredentials.setRegion(region);
 
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, region);
-        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
-        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
         return authenticate(iamPrincipalCredentials, vaultAuthPrincipalMetadata);
     }
@@ -214,7 +221,7 @@ public class AuthenticationService {
 
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
         final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
-        vaultAuthPrincipalMetadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
+        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
         return authenticate(credentials, vaultAuthPrincipalMetadata);
     }
@@ -238,14 +245,13 @@ public class AuthenticationService {
 
         final Set<String> policies = buildCompleteSetOfPolicies(credentials.getIamPrincipalArn());
 
-        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
-                .setPolicies(policies)
-                .setMeta(vaultAuthPrincipalMetadata)
-                .setTtl(iamTokenTTL)
-                .setNoDefaultPolicy(true);
-
-
-        VaultAuthResponse authResponse = vaultAdminClient.createOrphanToken(tokenAuthRequest);
+        AuthTokenResponse authResponse = createToken(
+                credentials.getIamPrincipalArn(),
+                PrincipalType.IAM,
+                policies,
+                vaultAuthPrincipalMetadata,
+                iamTokenTTL
+        );
 
         byte[] authResponseJson;
         try {
@@ -268,19 +274,50 @@ public class AuthenticationService {
         return iamRoleAuthResponse;
     }
 
+    private AuthTokenResponse createToken(String principal,
+                                          PrincipalType principalType,
+                                          Set<String> policies,
+                                          Map<String, String> metadata,
+                                          String vaultStyleTTL) {
+
+        PeriodFormatter formatter = new PeriodFormatterBuilder()
+                .appendHours().appendSuffix("h")
+                .appendMinutes().appendSuffix("m")
+                .toFormatter();
+
+        Period ttl = formatter.parsePeriod(vaultStyleTTL);
+        long ttlInMinutes = ttl.toStandardMinutes().getMinutes();
+
+        // todo eliminate this data coming from a map which may or may not contain the data and force the data to be
+        // required as method parameters
+        boolean isAdmin = Boolean.valueOf(metadata.get(METADATA_KEY_IS_ADMIN));
+        String groups = metadata.get(METADATA_KEY_GROUPS);
+        int refreshCount = Integer.valueOf(metadata.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
+
+        CerberusAuthToken tokenResult = authTokenService
+                .generateToken(principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount);
+
+        return new AuthTokenResponse()
+                .setClientToken(tokenResult.getToken())
+                .setPolicies(policies)
+                .setMetadata(metadata)
+                .setLeaseDuration(Duration.between(tokenResult.getCreated(), tokenResult.getExpires()).getSeconds())
+                .setRenewable(PrincipalType.USER.equals(principalType));
+    }
+
     /**
-     * if the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata
+     * If the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata
      * and policies from the token.
      *
      * This information is stored in Vault and can be fetched by the client with a look-up self call
      *
      * @param authResponseJson The current serialized auth payload
-     * @param authResponse The response object, with the original policies and metadata
+     * @param authToken The auth payload, with the original policies and metadata
      * @param iamPrincipal The calling iam principal
      * @return a serialized auth payload that KMS can encrypt
      */
     protected byte[] validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(byte[] authResponseJson,
-                                                                                     VaultAuthResponse authResponse,
+                                                                                     AuthTokenResponse authToken,
                                                                                      String iamPrincipal) {
 
         if (authResponseJson.length <= KMS_SIZE_LIMIT) {
@@ -290,14 +327,14 @@ public class AuthenticationService {
         String originalMetadata = "unknown";
         String originalPolicies = "unknown";
         try {
-            originalMetadata = objectMapper.writeValueAsString(authResponse.getMetadata());
-            originalPolicies = objectMapper.writeValueAsString(authResponse.getPolicies());
+            originalMetadata = objectMapper.writeValueAsString(authToken.getMetadata());
+            originalPolicies = objectMapper.writeValueAsString(authToken.getPolicies());
         } catch (JsonProcessingException e) {
             logger.warn("Failed to serialize original metadata or policies for token generated for IAM Principal: {}", iamPrincipal, e);
         }
 
-        authResponse.setMetadata(ImmutableMap.of("_truncated", "true"));
-        authResponse.setPolicies(ImmutableSet.of("_truncated"));
+        authToken.setMetadata(ImmutableMap.of("_truncated", "true"));
+        authToken.setPolicies(ImmutableSet.of("_truncated"));
 
         logger.warn(
                 "The auth token has length: {} which is > {} KMS cannot encrypt it, truncating auth payload by removing policies and metadata " +
@@ -310,7 +347,7 @@ public class AuthenticationService {
         );
 
         try {
-            return objectMapper.writeValueAsBytes(authResponse);
+            return objectMapper.writeValueAsBytes(authToken);
         } catch (JsonProcessingException e) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
@@ -328,12 +365,12 @@ public class AuthenticationService {
      * @param authPrincipal The principal for the caller
      * @return The auth response directly from Vault with the token and metadata
      */
-    public AuthResponse refreshUserToken(final VaultAuthPrincipal authPrincipal) {
+    public AuthResponse refreshUserToken(final CerberusPrincipal authPrincipal) {
 
-        if (authPrincipal.isIamPrincipal()) {
+        if (! PrincipalType.USER.equals(authPrincipal.getPrincipalType())) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE)
-                    .withExceptionMessage("The iam principal: %s attempted to use the user token refresh method")
+                    .withApiErrors(DefaultApiError.USER_ONLY_RESOURCE)
+                    .withExceptionMessage("The principal: %s attempted to use the user token refresh method")
                     .build();
         }
 
@@ -346,7 +383,7 @@ public class AuthenticationService {
                     .build();
         }
 
-        revoke(authPrincipal.getClientToken().getId());
+        revoke(authPrincipal.getToken());
 
         final AuthResponse authResponse = new AuthResponse();
         authResponse.setStatus(AuthStatus.SUCCESS);
@@ -366,17 +403,8 @@ public class AuthenticationService {
      * @param vaultToken Token to be revoked
      */
     public void revoke(final String vaultToken) {
-        try {
-            vaultAdminClient.revokeOrphanToken(vaultToken);
-        } catch (VaultServerException vse) {
-            if (vse.getCode() != HttpStatus.SC_BAD_REQUEST) {
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                        .withExceptionCause(vse)
-                        .withExceptionMessage("Unexpected response from Vault when revoking a token!")
-                        .build();
-            }
-        }
+        // TODO Implement
+        throw new RuntimeException("NOT IMPLEMENTED");
     }
 
     /**
@@ -386,29 +414,22 @@ public class AuthenticationService {
      * @param userGroups The user's groups
      * @return The auth response directly from Vault with the token and metadata
      */
-    private VaultAuthResponse generateToken(final String username, final Set<String> userGroups, int refreshCount) {
+    private AuthTokenResponse generateToken(final String username, final Set<String> userGroups, int refreshCount) {
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, username);
+        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, username);
 
         boolean isAdmin = false;
         if (userGroups.contains(this.adminGroup)) {
             isAdmin = true;
         }
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
-        meta.put(VaultAuthPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT, String.valueOf(refreshCount));
-        meta.put(VaultAuthPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT, String.valueOf(maxTokenRefreshCount));
+        meta.put(METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
+        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
+        meta.put(CerberusPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT, String.valueOf(refreshCount));
+        meta.put(CerberusPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT, String.valueOf(maxTokenRefreshCount));
 
         final Set<String> policies = buildPolicySet(userGroups);
 
-        final VaultTokenAuthRequest tokenAuthRequest = new VaultTokenAuthRequest()
-                .setDisplayName(username)
-                .setPolicies(policies)
-                .setMeta(meta)
-                .setTtl(userTokenTTL)
-                .setNoDefaultPolicy(true);
-
-        return vaultAdminClient.createOrphanToken(tokenAuthRequest);
+        return createToken(username, PrincipalType.USER, policies, meta, userTokenTTL);
     }
 
     /**
@@ -423,7 +444,7 @@ public class AuthenticationService {
         final List<SafeDepositBoxRoleRecord> sdbRoles = safeDepositBoxDao.getUserAssociatedSafeDepositBoxRoles(groups);
 
         sdbRoles.forEach(i -> {
-            policies.add(vaultPolicyService.buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
+            policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
         });
 
         return policies;
@@ -464,7 +485,7 @@ public class AuthenticationService {
                 safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn);
 
         sdbRoles.forEach(i -> {
-            policies.add(vaultPolicyService.buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
+            policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
         });
 
         return policies;
@@ -564,21 +585,21 @@ public class AuthenticationService {
      */
     protected Map<String, String> generateCommonIamPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
         Map<String, String> metadata = Maps.newHashMap();
-        metadata.put(VaultAuthPrincipal.METADATA_KEY_AWS_REGION, region);
-        metadata.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
-        metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_IAM_PRINCIPAL, Boolean.TRUE.toString());
+        metadata.put(CerberusPrincipal.METADATA_KEY_AWS_REGION, region);
+        metadata.put(CerberusPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
+        metadata.put(CerberusPrincipal.METADATA_KEY_IS_IAM_PRINCIPAL, Boolean.TRUE.toString());
 
         Set<String> groups = new HashSet<>();
         groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
         if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
-            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(true));
+            metadata.put(METADATA_KEY_IS_ADMIN, Boolean.toString(true));
             groups.add("admin-iam-principals");
         } else {
-            metadata.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.toString(false));
+            metadata.put(METADATA_KEY_IS_ADMIN, Boolean.toString(false));
         }
-        metadata.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
+        metadata.put(CerberusPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
         return metadata;
     }
@@ -602,5 +623,23 @@ public class AuthenticationService {
         }
 
         return iamRole;
+    }
+
+    /**
+     * Outputs the expected policy name format used in Vault.
+     *
+     * @param sdbName Safe deposit box name.
+     * @param roleName Role for safe deposit box.
+     * @return Formatted policy name.
+     */
+    public String buildPolicyName(final String sdbName, final String roleName) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(sdbName), "sdbName cannot be blank!");
+        Preconditions.checkArgument(StringUtils.isNotBlank(roleName), "roleName cannot be blank!");
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slugger.toSlug(sdbName));
+        sb.append('-');
+        sb.append(StringUtils.lowerCase(roleName));
+        return sb.toString();
     }
 }

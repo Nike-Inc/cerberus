@@ -70,9 +70,9 @@ public class CmsRequestSecurityValidatorTest {
         when(requestInfo.getHeaders()).thenReturn(httpHeaders);
 
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
+        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
+        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
+        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
         final VaultClientTokenResponse clientTokenResponse = new VaultClientTokenResponse()
                 .setId(vaultToken)
                 .setMeta(meta);
@@ -121,10 +121,10 @@ public class CmsRequestSecurityValidatorTest {
         final RequestInfo<?> requestInfo = mock(RequestInfo.class);
         final Map<String, Object> requestAttributes = Maps.newHashMap();
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
+        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
+        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(SECURITY_CONTEXT_ATTR_KEY,
                 new VaultSecurityContext(authPrincipal, "https"));
 

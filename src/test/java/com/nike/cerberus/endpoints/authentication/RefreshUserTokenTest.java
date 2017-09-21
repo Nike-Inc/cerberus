@@ -22,7 +22,7 @@ import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.VaultSecurityContext;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.vault.client.model.VaultAuthResponse;
@@ -71,10 +71,10 @@ public class RefreshUserTokenTest {
     public void execute_returns_new_token_if_replacing_valid_one() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
         final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
+        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
+        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
                 new VaultSecurityContext(authPrincipal, "https"));
         final VaultAuthResponse vaultAuthResponse = new VaultAuthResponse();
