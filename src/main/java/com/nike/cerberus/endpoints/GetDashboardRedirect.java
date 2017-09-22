@@ -24,9 +24,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.http.HttpHeaders;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+
+import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
 
 /**
  * Returns the dashboard.
@@ -40,7 +43,7 @@ public class GetDashboardRedirect extends StandardEndpoint<Void, Void> {
         return CompletableFuture.completedFuture(
                 ResponseInfo.<Void>newBuilder()
                         .withHttpStatusCode(HttpResponseStatus.MOVED_PERMANENTLY.code())
-                        .withHeaders(new DefaultHttpHeaders().add("Location", "/dashboard/"))
+                        .withHeaders(new DefaultHttpHeaders().add(HttpHeaders.LOCATION, DASHBOARD_ENDPOINT))
                         .build());
     }
 

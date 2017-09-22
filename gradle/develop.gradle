@@ -177,6 +177,40 @@ def getTokenFromVaultLog() {
     }
 }
 
+task debugCMS(dependsOn: [antReplace, assemble]) {
+    group 'local development'
+    description 'Runs CMS from it\'s JAR (assuming that the runVaultAndMySQL task has been executed and is running in a' +
+            'seperate thread) and configures CMS to automatically integrate with the local in memory instance of Vault.'
+
+    doLast {
+        javaexec {
+            // copy aws creds if they exist as sys props
+            def accessKey = 'aws.accessKeyId'
+            if (System.hasProperty(accessKey)) {
+                systemProperty accessKey, System.getProperty(accessKey)
+            }
+            def secretKey = 'aws.secretKey'
+            if (System.hasProperty(accessKey)) {
+                systemProperty secretKey, System.getProperty(secretKey)
+            }
+
+            def buildDir = "${project.getBuildDir().absolutePath}"
+
+            systemProperty 'vault.addr', "http://127.0.0.1:$vaultPort"
+            systemProperty 'vault.token', getTokenFromVaultLog()
+            systemProperty '@appId', 'cms'
+            systemProperty '@environment', 'local'
+
+            main = "-jar"
+            args = [
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$cmsRemoteDebugPort",
+                "$buildDir${File.separator}libs${File.separator}${rootProject.name}.jar"
+            ]
+        }
+
+    }
+}
+
 /**
  * Runs the CMS web server
  */

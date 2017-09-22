@@ -79,8 +79,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.io.File;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -104,7 +102,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
 
-    private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "dashboard/";
+    private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "/dashboard/";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -318,14 +316,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     @Named("dashboardAssetManager")
     public StaticAssetManager dashboardStaticAssetManager() {
-        URL dashboardFolderUrl = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
-        logger.info("XXX dashboardFolderUrl: path={}", dashboardFolderUrl == null ? "null" : dashboardFolderUrl.getPath());
-
-        if (dashboardFolderUrl == null) {
-            throw new IllegalStateException("Failed to load dashboard resources, relative path: '" + "'");
-        }
-        logger.info("XXXX Dashboard file path: {}", dashboardFolderUrl.getPath());
-
-        return new StaticAssetManager(new File(dashboardFolderUrl.getPath()));
+        int maxDepthOfFileTraversal = 2;
+        return new StaticAssetManager(DASHBOARD_DIRECTORY_RELATIVE_PATH, maxDepthOfFileTraversal);
     }
 }

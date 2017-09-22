@@ -16,7 +16,9 @@
 
 package com.nike.cerberus.endpoints;
 
-import com.google.common.primitives.Bytes;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.AssetResourceFile;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -28,6 +30,7 @@ import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +51,13 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    public static final String DASHBOARD_ENDPOINT = "/dashboard/";
+
     private static final String DASHBOARD_ENDPOINT_NO_TRAILING_SLASH = "/dashboard";
 
     private static final String VERSION_RESPONSE_FORMAT = "{\"version\": \"%s\"}";
+
+    private static final String DEFAULT_DASHBOARD_ASSET_FILE_NAME = "index.html";
 
     private static final String VERSION_FILE_NAME = "version";
 
@@ -79,7 +86,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
             return CompletableFuture.completedFuture(
                     ResponseInfo.<byte[]>newBuilder()
                             .withHttpStatusCode(HttpResponseStatus.MOVED_PERMANENTLY.code())
-                            .withHeaders(new DefaultHttpHeaders().add("Location", "/dashboard/"))
+                            .withHeaders(new DefaultHttpHeaders().add(HttpHeaders.LOCATION, DASHBOARD_ENDPOINT))
                             .build());
         } else if (StringUtils.endsWith(request.getPath(), VERSION_FILE_NAME)) {
             String versionJson = String.format(VERSION_RESPONSE_FORMAT, cmsVersion);
@@ -102,19 +109,25 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
                 getXForwardedClientIp(request),
                 request.getPath());
 
-        StaticAssetManager.AssetResourceFile dashboardResource = dashboardAssetManager.get(request);
-
-        logger.info("{}: {}, Got Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
-                HEADER_X_CERBERUS_CLIENT,
-                getClientVersion(request),
-                getXForwardedClientIp(request),
-                dashboardResource.getFileName());
+        String filePath = getFilePath(request);
+        AssetResourceFile dashboardResource = dashboardAssetManager.get(filePath).orElseThrow(() ->
+                ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.FAILED_TO_READ_DASHBOARD_ASSET_CONTENT)
+                        .withExceptionMessage("Could not load dashboard asset: " + filePath)
+                        .build());
 
         return ResponseInfo.<byte[]>newBuilder()
-                .withContentForFullResponse(Bytes.toArray(dashboardResource.getFileContents()))
+                .withContentForFullResponse(dashboardResource.getFileContents())
                 .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
                 .build();
+    }
+
+    private String getFilePath(RequestInfo<Void> request) {
+        String filename = StringUtils.substringAfterLast(request.getPath(), DASHBOARD_ENDPOINT);
+        filename = filename.isEmpty() ? DEFAULT_DASHBOARD_ASSET_FILE_NAME : filename;
+
+        return filename;
     }
 
     @Override
