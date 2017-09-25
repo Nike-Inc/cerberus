@@ -63,8 +63,8 @@ public class AssetResourceFileFactory {
         try {
             ClassLoader loader = AssetResourceFileFactory.class.getClassLoader();
             return IOUtils.toByteArray(loader.getResourceAsStream(filePath));
-        } catch (NullPointerException | IOException ioe) {
-            throw new IllegalArgumentException("Could not read contents of file: " + filePath, ioe);
+        } catch (NullPointerException | IOException e) {
+            throw new IllegalArgumentException("Could not read contents of file: " + filePath, e);
         }
     }
 
