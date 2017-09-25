@@ -51,7 +51,7 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
         String principal = securityContext.isPresent() ?
                 securityContext.get().getUserPrincipal() instanceof CerberusPrincipal ?
                         securityContext.get().getUserPrincipal().getName() :
-                        "( Principal is not a Vault auth principal. )" : "( Principal name is empty. )";
+                        "( Principal is not a Cerberus auth principal. )" : "( Principal name is empty. )";
 
         log.info("Admin Endpoint Event: the principal {} from ip: {} is attempting to access admin endpoint: {}", principal, getXForwardedClientIp(request), this.getClass().getName());
         if (!securityContext.isPresent() || !securityContext.get().isUserInRole(CerberusPrincipal.ROLE_ADMIN)) {

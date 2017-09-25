@@ -41,16 +41,16 @@ public class DashboardAssetService {
 
     public DashboardResourceFile getFileContents(RequestInfo<Void> request) {
         String filename = StringUtils.substringAfterLast(request.getPath(), REQUEST_PATH_FILENAME_SEPARATOR);
-        logger.info("Filename (before empty check) is: '{}'", filename);
+        logger.debug("Filename (before empty check) is: '{}'", filename);
         filename = filename.isEmpty() ? DEFAULT_DASHBOARD_ASSET_FILE_NAME : filename;
-        logger.info("Filename (after empty check) is: '{}'", filename);
-        logger.info("Map keys: {}", dashboardAssetMap.keySet());
+        logger.debug("Filename (after empty check) is: '{}'", filename);
+        logger.debug("Map keys: {}", dashboardAssetMap.keySet());
 
         if (filename.equals(VERSION_FILE_NAME)) {
-            logger.info("Getting version file");
+            logger.debug("Getting version file");
             return getDashboardVersionContents();
         } else if (dashboardAssetMap.containsKey(filename)) {
-            logger.info("Map contains key");
+            logger.debug("Map contains key");
             return dashboardAssetMap.get(filename);
         } else {
             throw ApiException.newBuilder()

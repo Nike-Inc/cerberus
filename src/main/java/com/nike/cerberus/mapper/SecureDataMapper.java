@@ -16,15 +16,11 @@
 
 package com.nike.cerberus.mapper;
 
-import com.nike.cerberus.record.AuthTokenRecord;
+import com.nike.cerberus.record.SecureDataRecord;
 import org.apache.ibatis.annotations.Param;
 
-public interface AuthTokenMapper {
+public interface SecureDataMapper {
 
-    int createAuthToken(@Param("record") AuthTokenRecord record);
-
-    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
-
-    void deleteAuthTokenFromHash(@Param("hash") String hash);
+    int writeSecureData(@Param("record") SecureDataRecord record);
 
 }

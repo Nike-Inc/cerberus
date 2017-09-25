@@ -78,7 +78,6 @@ import java.util.Set;
 
 import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_GROUPS;
 import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_IS_ADMIN;
-import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT;
 import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
 
@@ -398,13 +397,10 @@ public class AuthenticationService {
     }
 
     /**
-     * Requests Vault revoke the specified token.  If the token doesn't exist, we simply ignore and move along.
-     *
-     * @param vaultToken Token to be revoked
+     * @param authToken Auth Token to be revoked
      */
-    public void revoke(final String vaultToken) {
-        // TODO Implement
-        throw new RuntimeException("NOT IMPLEMENTED");
+    public void revoke(final String authToken) {
+        authTokenService.revokeToken(authToken);
     }
 
     /**

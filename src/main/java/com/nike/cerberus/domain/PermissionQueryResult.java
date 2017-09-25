@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.mapper;
+package com.nike.cerberus.domain;
 
-import com.nike.cerberus.record.AuthTokenRecord;
-import org.apache.ibatis.annotations.Param;
+import java.util.Optional;
 
-public interface AuthTokenMapper {
+public class PermissionQueryResult {
 
-    int createAuthToken(@Param("record") AuthTokenRecord record);
+    private final Optional<String> sdbId;
 
-    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
+    public PermissionQueryResult(Optional<String> sdbId) {
+        this.sdbId = sdbId;
+    }
 
-    void deleteAuthTokenFromHash(@Param("hash") String hash);
+    public String getSdbId() {
+        return sdbId.get();
+    }
 
+    public boolean principalHadPermission() {
+        return sdbId.isPresent();
+    }
 }

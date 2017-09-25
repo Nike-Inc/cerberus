@@ -36,7 +36,7 @@ public enum PrincipalType {
 
     public static PrincipalType fromName(String name) {
         PrincipalType type = Arrays.stream(values())
-                .filter(bl -> bl.name.equalsIgnoreCase(name))
+                .filter(e -> e.name.equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
 

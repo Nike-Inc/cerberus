@@ -62,4 +62,11 @@
       TOKEN_HASH = #{hash}
   </select>
 
+  <delete id="deleteAuthTokenFromHash">
+    DELETE FROM
+      AUTH_TOKENS
+    WHERE
+      TOKEN_HASH = #{hash}
+  </delete>
+
 </mapper>

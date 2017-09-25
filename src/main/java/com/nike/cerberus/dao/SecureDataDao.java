@@ -16,29 +16,28 @@
 
 package com.nike.cerberus.dao;
 
-import com.nike.cerberus.mapper.AuthTokenMapper;
-import com.nike.cerberus.record.AuthTokenRecord;
+import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.mapper.SecureDataMapper;
 
 import javax.inject.Inject;
 
-public class AuthTokenDao {
+public class SecureDataDao {
 
-    private final AuthTokenMapper authTokenMapper;
+    private final SecureDataMapper secureDataMapper;
 
     @Inject
-    public AuthTokenDao(AuthTokenMapper authTokenMapper) {
-        this.authTokenMapper = authTokenMapper;
+    public SecureDataDao(SecureDataMapper secureDataMapper) {
+        this.secureDataMapper = secureDataMapper;
     }
 
-    public int createAuthToken(AuthTokenRecord record) {
-        return authTokenMapper.createAuthToken(record);
-    }
-
-    public AuthTokenRecord getAuthTokenFromHash(String hash) {
-        return authTokenMapper.getAuthTokenFromHash(hash);
-    }
-
-    public void deleteAuthTokenFromHash(String hash) {
-        authTokenMapper.deleteAuthTokenFromHash(hash);
+    public void writeSecureData(String sdbId, String path, String encryptedPayload) {
+        secureDataMapper.writeSecureData(
+                new SecureDataRecord.SecureDataRecordBuilder()
+                .withId(path.hashCode())
+                .withPath(path)
+                .withSdbId(sdbId)
+                .withEncryptedBlob(encryptedPayload)
+                .build()
+        );
     }
 }

@@ -78,7 +78,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
     }
 
     private FullResponseInfo<byte[]> getDashboardAsset(RequestInfo<Void> request) {
-        logger.info("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
+        logger.debug("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
                 HEADER_X_CERBERUS_CLIENT,
                 getClientVersion(request),
                 getXForwardedClientIp(request),
@@ -86,7 +86,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
         DashboardResourceFile dashboardResource = dashboardAssetService.getFileContents(request);
 
-        logger.info("{}: {}, Got Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
+        logger.debug("{}: {}, Got Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
                 HEADER_X_CERBERUS_CLIENT,
                 getClientVersion(request),
                 getXForwardedClientIp(request),

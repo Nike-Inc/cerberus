@@ -22,12 +22,18 @@ import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.record.AuthTokenRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.nike.cerberus.util.RandomString;
 import com.nike.cerberus.util.UuidSupplier;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
 
@@ -70,12 +76,12 @@ public class AuthTokenService {
         checkArgument(StringUtils.isNotBlank(principal), "The principal must be set and not empty");
 
         String id = uuidSupplier.get();
-        String token = uuidSupplier.get();
+        String token = new RandomString().nextString();
         OffsetDateTime now = dateTimeSupplier.get();
 
         AuthTokenRecord tokenRecord = new AuthTokenRecord()
                 .setId(id)
-                .setTokenHash(getHashFromToken(token))
+                .setTokenHash(hashToken(token))
                 .setCreatedTs(now)
                 .setExpiresTs(now.plusMinutes(ttlInMinutes))
                 .setPrincipal(principal)
@@ -104,17 +110,32 @@ public class AuthTokenService {
 
     /**
      * https://www.owasp.org/index.php/Hashing_Java
+     *
      * @param token The token to hash
      * @return The hashed token
      */
-    private String getHashFromToken(String token) {
-        // TODO IMPLEMENT
-//        throw new RuntimeException("NOT IMPLEMENTED");
-        return token;
+    private String hashToken(String token) {
+        int keyLength = 256;
+
+        // https://stackoverflow.com/questions/29431884/java-security-pbekeyspec-how-many-iterations-are-enough
+        int iterations = 50000;
+        try {
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes(), iterations, keyLength);
+            SecretKey key = skf.generateSecret(spec);
+            return Hex.encodeHexString(key.getEncoded());
+        } catch (Exception e) {
+            throw new RuntimeException("There was a problem hashing the token", e);
+        }
     }
 
     public CerberusAuthToken getCerberusAuthToken(String token) {
-        AuthTokenRecord tokenRecord = authTokenDao.getAuthTokenFromHash(getHashFromToken(token));
+        AuthTokenRecord tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
         return getCerberusAuthTokenFromRecord(token, tokenRecord);
+    }
+
+    public void revokeToken(String token) {
+        String hash = hashToken(token);
+        authTokenDao.deleteAuthTokenFromHash(hash);
     }
 }

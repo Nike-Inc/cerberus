@@ -70,6 +70,8 @@ public class SafeDepositBoxService {
 
     private final RoleService roleService;
 
+    private final PermissionsService sdbPermissionService;
+
     private final UserGroupPermissionService userGroupPermissionService;
 
     private final IamPrincipalPermissionService iamPrincipalPermissionService;
@@ -81,22 +83,24 @@ public class SafeDepositBoxService {
     private final AwsIamRoleArnParser awsIamRoleArnParser;
 
     @Inject
-    public SafeDepositBoxService(final SafeDepositBoxDao safeDepositBoxDao,
-                                 final UserGroupDao userGroupDao,
-                                 final UuidSupplier uuidSupplier,
-                                 final CategoryService categoryService,
-                                 final RoleService roleService,
-                                 final UserGroupPermissionService userGroupPermissionService,
-                                 final IamPrincipalPermissionService iamPrincipalPermissionService,
-                                 final Slugger slugger,
-                                 final DateTimeSupplier dateTimeSupplier,
-                                 final AwsIamRoleArnParser awsIamRoleArnParser) {
+    public SafeDepositBoxService(SafeDepositBoxDao safeDepositBoxDao,
+                                 UserGroupDao userGroupDao,
+                                 UuidSupplier uuidSupplier,
+                                 CategoryService categoryService,
+                                 RoleService roleService,
+                                 PermissionsService sdbPermissionService,
+                                 UserGroupPermissionService userGroupPermissionService,
+                                 IamPrincipalPermissionService iamPrincipalPermissionService,
+                                 Slugger slugger,
+                                 DateTimeSupplier dateTimeSupplier,
+                                 AwsIamRoleArnParser awsIamRoleArnParser) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
         this.uuidSupplier = uuidSupplier;
         this.categoryService = categoryService;
         this.roleService = roleService;
+        this.sdbPermissionService = sdbPermissionService;
         this.userGroupPermissionService = userGroupPermissionService;
         this.iamPrincipalPermissionService = iamPrincipalPermissionService;
         this.slugger = slugger;
@@ -169,27 +173,10 @@ public class SafeDepositBoxService {
 
         SafeDepositBoxRecord safeDepositBoxRecord = safeDepositBoxRecordOptional.get();
 
-        boolean principalHasPermissionAssociationWithSdb = false;
+        boolean doesPrincipalHaveReadPerms = sdbPermissionService
+                .doesPrincipalHaveReadPermission(principal, sdbId);
 
-        switch (principal.getPrincipalType()) {
-            case IAM:
-                // if the authenticated principal is an IAM Principal check to see that the iam principal is associated with the requested sdb
-                principalHasPermissionAssociationWithSdb = iamPrincipalPermissionService.getIamPrincipalPermissions(sdbId)
-                        .stream()
-                        .filter(perm -> perm.getIamPrincipalArn().equals(principal.getName())) // filter for permissions on the SDB that match the principals arn
-                        .count() > 0; // if there is more than one, then the SDB is associated with the principal arn.
-                break;
-            case USER:
-                // if the the principal is a user principal ensure that one of the users groups is associated with the sdb
-                Set<UserGroupPermission> userGroupPermissions = userGroupPermissionService.getUserGroupPermissions(sdbId);
-                principalHasPermissionAssociationWithSdb = userGroupPermissions
-                        .stream()
-                        .filter(perm -> principal.getUserGroups().contains(perm.getName())) // filter for permissions on the sdb that have groups that the authenticated user belongs too.
-                        .count() > 0;
-                break;
-        }
-
-        if (! principalHasPermissionAssociationWithSdb) {
+        if (! doesPrincipalHaveReadPerms) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.ACCESS_DENIED)
                     .build();
@@ -326,7 +313,7 @@ public class SafeDepositBoxService {
 
         final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, currentBox);
+        sdbPermissionService.assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, currentBox);
 
         String principalName = vaultAuthPrincipal.getName();
         final OffsetDateTime now = dateTimeSupplier.get();
@@ -354,7 +341,7 @@ public class SafeDepositBoxService {
     public void deleteSafeDepositBox(CerberusPrincipal vaultAuthPrincipal, final String id) {
         final SafeDepositBoxV2 box = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
 
-        assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, box);
+        sdbPermissionService.assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, box);
 
         // 1. Remove permissions and metadata from database.
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
@@ -383,39 +370,6 @@ public class SafeDepositBoxService {
 
         userGroupPermissions.remove(ownerPermission.get());
         return Optional.of(ownerPermission.get().getName());
-    }
-
-    /**
-     * Asserts that the given principal has owner permissions on the given SDB
-     * @param principal The authenticated principal
-     * @param sdb The SDB that the principal is trying to access
-     */
-    private void assertPrincipalHasOwnerPermissions(final CerberusPrincipal principal, final SafeDepositBoxV2 sdb) {
-
-        boolean principalHasOwnerPermissions = false;
-        switch (principal.getPrincipalType()) {
-            case IAM:
-                Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
-                for (IamPrincipalPermission perm : sdb.getIamPrincipalPermissions()) {
-                    String roleId = perm.getRoleId();
-                    Optional<Role> attachedRole = roleService.getRoleById(roleId);
-                    if (attachedRole.get().getId().equals(ownerRole.get().getId())) {
-                        principalHasOwnerPermissions = true;
-                    }
-                }
-                break;
-            case USER:
-                if (principal.getUserGroups().contains(sdb.getOwner())) {
-                    principalHasOwnerPermissions = true;
-                }
-                break;
-        }
-
-        if (! principalHasOwnerPermissions) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SDB_CALLER_OWNERSHIP_REQUIRED)
-                    .build();
-        }
     }
 
     /**
@@ -703,6 +657,16 @@ public class SafeDepositBoxService {
      */
     public Optional<String> getSafeDepositBoxIdByName(String name) {
         return Optional.ofNullable(safeDepositBoxDao.getSafeDepositBoxIdByName(name));
+    }
+
+    /**
+     * Fetches an SDB id from the base path
+     *
+     * @param path The base path for the SDB
+     * @return The SDB's Id
+     */
+    public Optional<String> getSafeDepositBoxIdByPath(String path) {
+        return Optional.ofNullable(safeDepositBoxDao.getSafeDepositBoxIdByPath(path));
     }
 
     /**
