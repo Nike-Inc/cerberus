@@ -1,0 +1,42 @@
+@import '../../assets/styles/common.scss';
+
+.user-group-permissions {
+  margin-top: 15px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: $snkrs_medium_grey;
+  border-width: 1px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-bottom: 7px;
+
+  .user-group-permissions-label {
+    padding-top: 5px;
+  }
+
+  .user-group-permissions-perms-container {
+    margin-top: -7px;
+  }
+
+  .user-group-permissions-permission {
+    padding-top: 10px;
+    display: flex;
+
+    .group-select {
+      flex: .75;
+
+      .simple-select {
+        width: 100%;
+      }
+    }
+
+    .role-select {
+      padding-left: $sectionPadding;
+      flex: .25;
+    }
+
+    .Select-menu-outer {
+      margin-top: -1px;
+    }
+  }
+}

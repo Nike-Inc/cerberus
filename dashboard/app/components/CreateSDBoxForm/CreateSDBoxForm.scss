@@ -1,0 +1,53 @@
+@import '../../assets/styles/common.scss';
+
+#new-sdbox-form {
+  width: 1050px;
+
+  .ncss-label {
+    padding-bottom: 5px;
+    padding-top: 5px;
+    font-weight: bold;
+    font-size: 16px;
+    padding-left: 4px;
+  }
+
+  #form-description {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding-bottom: 10px;
+
+    p {
+      padding-left: 5px;
+    }
+  }
+
+  #top-section {
+    display: flex;
+    padding-top: 3px;
+
+    #owner {
+      flex: .66;
+      padding-top: 5px;
+      padding-left: $sectionPadding;
+
+      .Select-menu-outer {
+        margin-top: -1px;
+      }
+    }
+  }
+
+  #submit-btn-container {
+    padding-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+
+    .btn {
+      margin-left: 10px;
+    }
+  }
+
+  .permissions-add-new-permission-button-container {
+    margin-top: 8px;
+  }
+}

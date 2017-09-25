@@ -1,0 +1,44 @@
+@import '../../assets/styles/common.scss';
+
+html, body {
+  height: 100%;
+}
+
+#main-wrapper {
+  height: 100%;
+}
+
+#content-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: $snkrs_white;
+  height: 100%;
+}
+
+#content {
+  align-content: stretch;
+  flex: 1 0 auto;
+  display: flex;
+  background-color: $snkrs_white;
+}
+
+#workspace {
+  width: 100%;
+  flex: 1;
+  align-content: stretch;
+  background-color: $snkrs_white;
+
+  border-color: $snkrs_light_grey;
+  border-left-style: solid;
+  border-left-width: 1px;
+
+  padding: 15px;
+
+  #workspace-wrapper {
+    display: flex;
+
+    ul {
+      padding-left: 10px;
+    }
+  }
+}

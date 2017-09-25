@@ -1,0 +1,10 @@
+@import '../../assets/styles/common.scss';
+
+#mfa-required-header {
+  text-align: center;
+  color: $snkrs_accent;
+}
+
+#login-mfa-btn {
+  min-width: 125px;
+}

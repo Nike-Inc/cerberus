@@ -1,0 +1,139 @@
+@import '../../assets/styles/common.scss';
+
+#login-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $snkrs_dark_grey;
+  color: $snkrs_off_white;
+  z-index: 1000000000000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  #logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 10px;
+  }
+
+  .cerberus-logo {
+    background: url(../../assets/images/cerberus-logo-narrow-off-white.svg);
+    height: 125px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 250px;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  .ncss-input-container {
+    padding-top: 5px;
+  }
+
+  #messenger-container {
+    .messenger-message {
+      box-shadow: inset 0 1px 0 0 $snkrs_error,inset -1px 0 0 0 $snkrs_error,inset 0 -1px 0 0 $snkrs_error,inset 1px 0 0 0 $snkrs_error;
+      padding: 10px;
+      margin-top: 8px;
+
+      display: flex;
+      .messenger-message-buttons {
+        margin-left: auto;
+        .messenger-message-buttons-acknowledge {
+
+          cursor: pointer;
+          background: url(../../assets/images/remove-red.svg);
+          padding: 10px;
+          background-repeat: no-repeat;
+        }
+      }
+    }
+  }
+}
+
+#login-form-div {
+  margin-top: -100px;
+  width: 560px;
+
+  .pl4-sm {
+    padding-left: 10px;
+  }
+
+  #login-in-h2 {
+    font-weight: 100;
+    font-size: 25px;
+    color: $snkrs_grey;
+    line-height: 1;
+  }
+
+  #login-form {
+    padding-top: 5px;
+  }
+
+  .ncss-form-group {
+    display: flex;
+  }
+
+  #login-form-submit-container {
+    padding-top: 25px;
+    float: right;
+    display: flex;
+
+    #login-help {
+      padding-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      a {
+        color: $snkrs_grey;
+        font-weight: bold;
+        &:hover {
+          color: $snkrs_off_white;
+        }
+      }
+    }
+
+    #login-btn {
+      min-width: 125px;
+    }
+  }
+}
+
+#session-expired-message {
+  font-size: 17px;
+  font-weight: bold;
+  color: $snkrs_error;
+}
+
+.login-error-msg-container {
+
+  .login-error-msg-header {
+    font-size: 20px;
+    font-weight: bold;
+    color: $snkrs_error;
+  }
+
+  .login-error-msg-content-wrapper {
+    display: flex;
+
+    .login-error-msg-label {
+      width: 150px;
+      font-size: 19px;
+      font-weight: 500;
+    }
+
+    .login-error-msg-cms-msg {
+      padding-left: 8px;
+      font-size: 19px;
+      white-space: pre-wrap;
+    }
+  }
+}
