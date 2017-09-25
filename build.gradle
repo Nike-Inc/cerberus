@@ -22,7 +22,7 @@ buildscript {
 
 plugins {
     id "org.flywaydb.flyway" version "4.0.3"
-    id "com.moowork.node" version "1.0.1"
+    id "com.moowork.node" version "1.2.0"
 }
 
 apply plugin: 'java'
@@ -66,6 +66,8 @@ build {
 }
 
 processResources{
+    dependsOn 'copyDashboardResources'
+
     doFirst {
         project.ext.puppetRepository="maven"
         project.ext.packaging="jar"
@@ -86,7 +88,7 @@ artifacts {
 }
 
 jar {
-    dependsOn 'antReplace'
+    dependsOn 'antReplace', 'copyDashboardResources'
     doFirst {
         archiveName 'cms.jar'
     }
@@ -131,6 +133,32 @@ task antReplace() {
             ant.replace(file: fileName, token: "@@SERVICE_NAME@@", value: rootProject.name)
             ant.replace(file: fileName, token: "@@ARCHIVE_NAME@@", value: "${rootProject.name}.jar")
         }
+    }
+}
+
+task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
+    doFirst {
+        project.buildDir.mkdirs()
+    }
+    group 'build'
+    args = ['run', 'build']
+}
+
+task copyDashboardResources(type: Copy, dependsOn: buildDashboard) {
+    def dashboardBuildDirectory = "${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}build"
+    def dashboardResourceFolder = "${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}dashboard"
+
+    from dashboardBuildDirectory
+    into dashboardResourceFolder
+}
+
+task  runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
+    group 'local development'
+    description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
+
+    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
+    execOverrides {
+        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
     }
 }
 
