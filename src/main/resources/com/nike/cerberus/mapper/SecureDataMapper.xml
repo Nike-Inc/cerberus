@@ -22,13 +22,15 @@
 
     <insert id="writeSecureData" parameterType="SecureDataRecord">
         INSERT INTO SECURE_DATA (
-          PATH,
+          ID,
           SDBOX_ID,
+          PATH,
           ENCRYPTED_BLOB
         )
         VALUES (
-          #{record.path},
+          #{record.id},
           #{record.sdboxId},
+          #{record.path},
           #{record.encryptedBlob}
         ) ON DUPLICATE KEY UPDATE
           ENCRYPTED_BLOB=VALUES(ENCRYPTED_BLOB)
@@ -36,8 +38,9 @@
 
     <select id="readSecureDataByPath" resultType="SecureDataRecord">
         SELECT
-          PATH,
+          ID,
           SDBOX_ID
+          PATH,
           ENCRYPTED_BLOB
         From
           SECURE_DATA
@@ -46,7 +49,7 @@
     </select>
 
     <select id="getPathsByPartialPath" resultType="String">
-        SELECT PATH From SECURE_DATA WHERE PATH LIKE '#{partialPath}';
+        SELECT PATH From SECURE_DATA WHERE PATH LIKE #{partialPath};
     </select>
 
 </mapper>

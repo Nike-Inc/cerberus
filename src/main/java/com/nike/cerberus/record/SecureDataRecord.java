@@ -18,16 +18,17 @@ package com.nike.cerberus.record;
 
 public class SecureDataRecord {
 
-    private String path;
+    private Integer id;
     private String sdboxId;
+    private String path;
     private String encryptedBlob;
 
-    public String getPath() {
-        return path;
+    public Integer getId() {
+        return id;
     }
 
-    public SecureDataRecord setPath(String path) {
-        this.path = path;
+    public SecureDataRecord setId(Integer id) {
+        this.id = id;
         return this;
     }
 
@@ -37,6 +38,15 @@ public class SecureDataRecord {
 
     public SecureDataRecord setSdboxId(String sdboxId) {
         this.sdboxId = sdboxId;
+        return this;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public SecureDataRecord setPath(String path) {
+        this.path = path;
         return this;
     }
 

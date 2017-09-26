@@ -79,10 +79,11 @@ public class SecureDataService {
 
         for (int i = 0; i < pArray.length; i++) {
             String fullPath = pArray[i];
-            String res = StringUtils.removeStart(fullPath, partialPath);
-
+            keys.add(StringUtils
+                    .removeStart(fullPath, partialPath)
+                    .replaceAll("\\/.*$", "/")
+            );
         }
-
         return keys;
     }
 

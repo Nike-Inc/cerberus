@@ -34,6 +34,7 @@ public class SecureDataDao {
     public void writeSecureData(String sdbId, String path, String encryptedPayload) {
         secureDataMapper.writeSecureData(
                 new SecureDataRecord()
+                .setId(path.hashCode())
                 .setPath(path)
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)
@@ -45,6 +46,6 @@ public class SecureDataDao {
     }
 
     public String[] getPathsByPartialPath(String partialPath) {
-        return secureDataMapper.getPathsByPartialPath(partialPath);
+        return secureDataMapper.getPathsByPartialPath(partialPath + "%");
     }
 }
