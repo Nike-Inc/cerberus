@@ -1,7 +1,7 @@
 package com.nike.cerberus.hystrix;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.AWSKMSException;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateAliasResult;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -98,7 +98,7 @@ public class HystrixKmsClient extends AWSKMSClient {
                 protected T run() {
                     try {
                         return function.get();
-                    } catch (AWSKMSException e) {
+                    } catch (AmazonServiceException e) {
                         if (e.getStatusCode() >= 400 && e.getStatusCode() < 500) {
                             // convert 4xx error codes to bad request
                             throw new HystrixBadRequestException(commandKey + " " + e.toString(), e);
