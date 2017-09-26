@@ -18,7 +18,6 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.SecureDataAction;
-import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
@@ -28,9 +27,7 @@ import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
-import com.nike.riposte.util.AsyncNettyHelper;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +39,11 @@ import java.util.concurrent.Executor;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public abstract class SecureDataEndpointV1<I, Object> extends StandardEndpoint<I, Object> {
+public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected static final String BASE_PATH = "/v1/secret";
-    protected static final String CATEGORY = "category";
-    protected static final String SDB_SLUG = "sdb-slug";
-    protected static final String PATH = "path";
 
     protected final SecureDataService secureDataService;
     protected final PermissionsService permissionService;
@@ -65,7 +59,7 @@ public abstract class SecureDataEndpointV1<I, Object> extends StandardEndpoint<I
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
-    public final CompletableFuture<ResponseInfo<Object>> execute(final RequestInfo<I> request,
+    public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
                                                             final Executor longRunningTaskExecutor,
                                                             final ChannelHandlerContext ctx) {
 
@@ -76,51 +70,99 @@ public abstract class SecureDataEndpointV1<I, Object> extends StandardEndpoint<I
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 
-        String category = request.getPathParam(CATEGORY);
-        String sdbSlug = request.getPathParam(SDB_SLUG);
-        String path = request.getPathParam(PATH);
-        if (! doesRequestHaveRequiredParams(category, sdbSlug, path)) {
-            return CompletableFuture.supplyAsync(
-                    AsyncNettyHelper.supplierWithTracingAndMdc(this::permissionDenied, ctx),
-                    longRunningTaskExecutor
-            );
+        SecureDataRequestInfo requestInfo = parseInfoFromPath(request.getPath());
+
+        if (! doesRequestHaveRequiredParams(requestInfo.getCategory(), requestInfo.getSdbSlug())) {
+            throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 
         CerberusPrincipal principal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
-        String sdbBasePath = String.format("%s/%s/", category, sdbSlug);
+        String sdbBasePath = String.format("%s/%s/", requestInfo.getCategory(), requestInfo.getSdbSlug());
         Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByPath(sdbBasePath);
 
         if (! sdbId.isPresent() || ! permissionService.doesPrincipalHavePermission(principal, sdbId.get(),
                         SecureDataAction.fromMethod(request.getMethod()))) {
-
-            return CompletableFuture.supplyAsync(
-                    AsyncNettyHelper.supplierWithTracingAndMdc(this::permissionDenied, ctx),
-                    longRunningTaskExecutor
-            );
-
+            throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 
-        return doExecute(sdbId.get(), request, longRunningTaskExecutor, ctx, securityContext.get());
+        requestInfo.setSdbid(sdbId.get());
+
+        return doExecute(requestInfo, request, longRunningTaskExecutor, ctx, securityContext.get());
     }
 
-    private boolean doesRequestHaveRequiredParams(String category, String sdbSlug, String path) {
-        return isNotBlank(category) || isNotBlank(sdbSlug) || isNotBlank(path);
+    private boolean doesRequestHaveRequiredParams(String category, String sdbSlug) {
+        return isNotBlank(category) || isNotBlank(sdbSlug);
     }
 
-    private ResponseInfo<Object> permissionDenied() {
-        return (ResponseInfo<Object>) ResponseInfo.newBuilder(
-                new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
-                        .withError("permission denied")
-                        .build()
-        ).withHttpStatusCode(HttpResponseStatus.FORBIDDEN.code())
-        .build();
+    protected SecureDataRequestInfo parseInfoFromPath(String path) {
+        String[] parts = path.split("/", 6);
+        SecureDataRequestInfo info = new SecureDataRequestInfo();
+        if (parts.length >= 4) {
+            info.setCategory(parts[3]);
+        }
+        if (parts.length >= 5) {
+            info.setSdbSlug(parts[4]);
+        }
+
+        if (parts.length >= 6) {
+            info.setPath(parts[5]);
+        }
+
+        return info;
     }
 
-    public abstract CompletableFuture<ResponseInfo<Object>> doExecute(String sdbId,
-                                                                      RequestInfo<I> request,
-                                                                      Executor longRunningTaskExecutor,
-                                                                      ChannelHandlerContext ctx,
-                                                                      SecurityContext securityContext);
+    protected class SecureDataRequestInfo {
+        private String category;
+        private String sdbSlug;
+        private String sdbid;
+        private String path;
+
+        public String getCategory() {
+            return category;
+        }
+
+        public SecureDataRequestInfo setCategory(String category) {
+            this.category = category;
+            return this;
+        }
+
+        public String getSdbSlug() {
+            return sdbSlug;
+        }
+
+        public SecureDataRequestInfo setSdbSlug(String sdbSlug) {
+            this.sdbSlug = sdbSlug;
+            return this;
+        }
+
+        public String getSdbid() {
+            return sdbid;
+        }
+
+        public SecureDataRequestInfo setSdbid(String sdbid) {
+            this.sdbid = sdbid;
+            return this;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public SecureDataRequestInfo setPath(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public String getFullPath() {
+            return String.format("%s/%s", sdbSlug, path);
+        }
+    }
+
+    public abstract CompletableFuture<ResponseInfo<O>> doExecute(SecureDataRequestInfo requestInfo,
+                                                                 RequestInfo<I> request,
+                                                                 Executor longRunningTaskExecutor,
+                                                                 ChannelHandlerContext ctx,
+                                                                 SecurityContext securityContext);
 
 }

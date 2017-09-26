@@ -18,12 +18,19 @@ package com.nike.cerberus.service;
 
 
 import com.nike.cerberus.dao.SecureDataDao;
+import com.nike.cerberus.record.SecureDataRecord;
+import org.apache.commons.lang3.StringUtils;
+import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class SecureDataService {
 
@@ -36,6 +43,7 @@ public class SecureDataService {
         this.secureDataDao = secureDataDao;
     }
 
+    @Transactional
     public void writeSecret(String sdbId, String path, String plainTextPayload) {
         log.debug("Writing secure data: SDB ID: {}, Path: {}, Payload: {}", sdbId, path, plainTextPayload);
 
@@ -44,13 +52,35 @@ public class SecureDataService {
         secureDataDao.writeSecureData(sdbId, path, encryptedPayload);
     }
 
-    public Object readSecret(String path) {
+    public String readSecret(String path) {
         log.debug("Reading secure data: Path: {}", path);
-        return null;
+        Optional<SecureDataRecord> secureDataRecord = secureDataDao.readSecureDataByPath(path);
+        if (! secureDataRecord.isPresent()) {
+            // TODO
+            log.error("NOT FOUND");
+            return null;
+        }
+
+        String encryptedBlob = secureDataRecord.get().getEncryptedBlob();
+        String plainText = decrypt(encryptedBlob);
+
+        return plainText;
     }
 
-    public List<String> listKeys(String path) {
-        return new LinkedList<>();
+    public Set<String> listKeys(String partialPath) {
+        Set<String> keys = new HashSet<>();
+        String[] pArray = secureDataDao.getPathsByPartialPath(partialPath);
+        if (pArray == null || pArray.length < 1) {
+            return keys;
+        }
+
+        for (int i = 0; i < pArray.length; i++) {
+            String fullPath = pArray[i];
+            String res = StringUtils.removeStart(fullPath, partialPath);
+
+        }
+
+        return keys;
     }
 
     private String encrypt(String plainTextPayload) {

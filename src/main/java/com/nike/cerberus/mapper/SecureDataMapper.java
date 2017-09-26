@@ -23,4 +23,8 @@ public interface SecureDataMapper {
 
     int writeSecureData(@Param("record") SecureDataRecord record);
 
+    SecureDataRecord readSecureDataByPath(@Param("path") String path);
+
+    String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
+
 }

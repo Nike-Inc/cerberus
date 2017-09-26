@@ -19,7 +19,7 @@ package com.nike.cerberus.record;
 public class SecureDataRecord {
 
     private Integer id;
-    private String sdbId;
+    private String sdboxId;
     private String path;
     private String encryptedBlob;
 
@@ -27,70 +27,35 @@ public class SecureDataRecord {
         return id;
     }
 
-    public void setId(Integer id) {
+    public SecureDataRecord setId(Integer id) {
         this.id = id;
+        return this;
     }
 
-    public String getSdbId() {
-        return sdbId;
+    public String getSdboxId() {
+        return sdboxId;
     }
 
-    public void setSdbId(String sdbId) {
-        this.sdbId = sdbId;
+    public SecureDataRecord setSdboxId(String sdboxId) {
+        this.sdboxId = sdboxId;
+        return this;
     }
 
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public SecureDataRecord setPath(String path) {
         this.path = path;
+        return this;
     }
 
     public String getEncryptedBlob() {
         return encryptedBlob;
     }
 
-    public void setEncryptedBlob(String encryptedBlob) {
+    public SecureDataRecord setEncryptedBlob(String encryptedBlob) {
         this.encryptedBlob = encryptedBlob;
-    }
-
-    public static final class SecureDataRecordBuilder {
-        private Integer id;
-        private String sdbId;
-        private String path;
-        private String encryptedBlob;
-
-        public SecureDataRecordBuilder() {
-        }
-
-        public SecureDataRecordBuilder withId(Integer id) {
-            this.id = id;
-            return this;
-        }
-
-        public SecureDataRecordBuilder withSdbId(String sdbId) {
-            this.sdbId = sdbId;
-            return this;
-        }
-
-        public SecureDataRecordBuilder withPath(String path) {
-            this.path = path;
-            return this;
-        }
-
-        public SecureDataRecordBuilder withEncryptedBlob(String encryptedBlob) {
-            this.encryptedBlob = encryptedBlob;
-            return this;
-        }
-
-        public SecureDataRecord build() {
-            SecureDataRecord secureDataRecord = new SecureDataRecord();
-            secureDataRecord.encryptedBlob = this.encryptedBlob;
-            secureDataRecord.id = this.id;
-            secureDataRecord.sdbId = this.sdbId;
-            secureDataRecord.path = this.path;
-            return secureDataRecord;
-        }
+        return this;
     }
 }

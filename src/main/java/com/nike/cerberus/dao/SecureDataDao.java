@@ -20,6 +20,7 @@ import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.mapper.SecureDataMapper;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class SecureDataDao {
 
@@ -32,12 +33,19 @@ public class SecureDataDao {
 
     public void writeSecureData(String sdbId, String path, String encryptedPayload) {
         secureDataMapper.writeSecureData(
-                new SecureDataRecord.SecureDataRecordBuilder()
-                .withId(path.hashCode())
-                .withPath(path)
-                .withSdbId(sdbId)
-                .withEncryptedBlob(encryptedPayload)
-                .build()
+                new SecureDataRecord()
+                .setId(path.hashCode())
+                .setPath(path)
+                .setSdboxId(sdbId)
+                .setEncryptedBlob(encryptedPayload)
         );
+    }
+
+    public Optional<SecureDataRecord> readSecureDataByPath(String path) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByPath(path));
+    }
+
+    public String[] getPathsByPartialPath(String partialPath) {
+        return secureDataMapper.getPathsByPartialPath(partialPath);
     }
 }

@@ -29,10 +29,26 @@
         )
         VALUES (
           #{record.id},
-          #{record.sdbId},
+          #{record.sdboxId},
           #{record.path},
           #{record.encryptedBlob}
         )
     </insert>
+
+    <select id="readSecureDataByPath" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID
+          PATH,
+          ENCRYPTED_BLOB
+        From
+          SECURE_DATA
+        WHERE
+          PATH = #{path}
+    </select>
+
+    <select id="getPathsByPartialPath" resultType="String[]">
+        SELECT PATH From SECURE_DATA WHERE PATH LIKE '#{partialPath}';
+    </select>
 
 </mapper>

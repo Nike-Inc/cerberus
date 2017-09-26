@@ -32,14 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class WriteSecureData extends SecureDataEndpointV1<String, Object> {
+public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -52,35 +49,33 @@ public class WriteSecureData extends SecureDataEndpointV1<String, Object> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Object>> doExecute(String sdbId,
-                                                             RequestInfo<String> request,
+    public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
+                                                             RequestInfo<Object> request,
                                                              Executor longRunningTaskExecutor,
                                                              ChannelHandlerContext ctx,
                                                              SecurityContext securityContext) {
 
         return CompletableFuture.supplyAsync(
-                AsyncNettyHelper.supplierWithTracingAndMdc(() -> writeSecureData(sdbId, request), ctx),
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> writeSecureData(requestInfo, request), ctx),
                 longRunningTaskExecutor
         );
     }
 
-    private ResponseInfo<Object> writeSecureData(String sdbId, RequestInfo<String> request) {
-        String sdbSlug = request.getPathParam(SDB_SLUG);
-        String path = request.getPathParam(PATH);
+    private ResponseInfo<Object> writeSecureData(SecureDataRequestInfo requestInfo, RequestInfo<Object> request) {
+        secureDataService.writeSecret(requestInfo.getSdbid(), requestInfo.getFullPath(),
+                request.getRawContent());
 
-        secureDataService.writeSecret(sdbId, String.format("%s/%s", sdbSlug, path),
-                request.getContent());
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }
 
     @Override
     public Matcher requestMatcher() {
-         return MultiMatcher.match(
-                 Sets.newHashSet(
-                         String.format("%s/{%s}/{%s}/{%s}", BASE_PATH, CATEGORY, SDB_SLUG, PATH),
-                         BASE_PATH
-                 ),
-                 HttpMethod.POST
-         );
+        return MultiMatcher.match(
+                Sets.newHashSet(
+                        String.format("%s/**", BASE_PATH),
+                        BASE_PATH
+                ),
+                HttpMethod.POST
+        );
     }
 }
