@@ -22,24 +22,22 @@
 
     <insert id="writeSecureData" parameterType="SecureDataRecord">
         INSERT INTO SECURE_DATA (
-          ID,
-          SDBOX_ID,
           PATH,
+          SDBOX_ID,
           ENCRYPTED_BLOB
         )
         VALUES (
-          #{record.id},
-          #{record.sdboxId},
           #{record.path},
+          #{record.sdboxId},
           #{record.encryptedBlob}
-        ) ON DUPLICATE KEY UPDATE ENCRYPTED_BLOB='#{record.encryptedBlob}'
+        ) ON DUPLICATE KEY UPDATE
+          ENCRYPTED_BLOB=VALUES(ENCRYPTED_BLOB)
     </insert>
 
     <select id="readSecureDataByPath" resultType="SecureDataRecord">
         SELECT
-          ID,
-          SDBOX_ID
           PATH,
+          SDBOX_ID
           ENCRYPTED_BLOB
         From
           SECURE_DATA

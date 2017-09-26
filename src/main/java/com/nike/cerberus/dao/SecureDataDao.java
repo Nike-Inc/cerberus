@@ -34,7 +34,6 @@ public class SecureDataDao {
     public void writeSecureData(String sdbId, String path, String encryptedPayload) {
         secureDataMapper.writeSecureData(
                 new SecureDataRecord()
-                .setId(path.hashCode())
                 .setPath(path)
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)

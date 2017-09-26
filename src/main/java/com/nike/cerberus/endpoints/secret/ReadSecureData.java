@@ -63,7 +63,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataRespons
                                                                          ChannelHandlerContext ctx,
                                                                          SecurityContext securityContext) {
 
-        if (StringUtils.equalsIgnoreCase(request.getPathParam("list"), "true")) {
+        if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
             return CompletableFuture.supplyAsync(
                     AsyncNettyHelper.supplierWithTracingAndMdc(() -> listKeys(requestInfo), ctx),
                     longRunningTaskExecutor
@@ -85,7 +85,6 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataRespons
 
         return ResponseInfo.newBuilder(response).withHttpStatusCode(HttpResponseStatus.OK.code()).build();
     }
-
     private ResponseInfo<SecureDataResponse> readSecureData(SecureDataRequestInfo info) {
         String data = secureDataService.readSecret(info.getFullPath());
 
