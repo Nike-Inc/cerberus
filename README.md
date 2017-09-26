@@ -187,9 +187,9 @@ Steps:
     - If you wish to do IAM auth in dev mode you will need to make sure you set your env as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
     - Now you should have a complete CMS system running locally.  The next steps are optional.
 3. `gradlew runDashboardAndReverseProxy` (optional)
-    - Runs the dashboard and reverse into interact with CMS, sometimes better than curling or using postman.
-    - Downloads the dashboard from GitHub releases and runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
-    - You can change dashboard version with `dashboardRelease` in `gradle/develop.gradle`
+    - Runs the dashboard and reverse proxy to interact with CMS, which sometimes better than curling or using postman.
+    - Runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
+    - By default this command runs the dashboard through Webpack. You can run the Dashboard from the CMS jar by changing the `loadDashboardFromCms` variable in `dashboard/server.js` to true
 4. `gradlew bootstrapData` (optional)
     - Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
 
