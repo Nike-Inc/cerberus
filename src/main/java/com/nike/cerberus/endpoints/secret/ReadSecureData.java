@@ -39,6 +39,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -76,7 +77,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataRespons
     }
 
     private ResponseInfo<SecureDataResponse> listKeys(SecureDataRequestInfo info) {
-        List<String> keys = secureDataService.listKeys(info.getFullPath());
+        Set<String> keys = secureDataService.listKeys(info.getFullPath());
 
         SecureDataResponse response = new SecureDataResponse();
         response.setRequestId(UUID.randomUUID().toString()); // maybe use trace id?

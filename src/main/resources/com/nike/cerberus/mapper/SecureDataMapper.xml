@@ -32,7 +32,7 @@
           #{record.sdboxId},
           #{record.path},
           #{record.encryptedBlob}
-        )
+        ) ON DUPLICATE KEY UPDATE ENCRYPTED_BLOB='#{record.encryptedBlob}'
     </insert>
 
     <select id="readSecureDataByPath" resultType="SecureDataRecord">
@@ -47,7 +47,7 @@
           PATH = #{path}
     </select>
 
-    <select id="getPathsByPartialPath" resultType="String[]">
+    <select id="getPathsByPartialPath" resultType="String">
         SELECT PATH From SECURE_DATA WHERE PATH LIKE '#{partialPath}';
     </select>
 
