@@ -35,19 +35,22 @@ import java.util.Set;
 public class SecureDataService {
 
     private final SecureDataDao secureDataDao;
+    private final EncryptionService encryptionService;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Inject
-    public SecureDataService(SecureDataDao secureDataDao) {
+    public SecureDataService(SecureDataDao secureDataDao,
+                             EncryptionService encryptionService) {
         this.secureDataDao = secureDataDao;
+        this.encryptionService = encryptionService;
     }
 
     @Transactional
     public void writeSecret(String sdbId, String path, String plainTextPayload) {
         log.debug("Writing secure data: SDB ID: {}, Path: {}, Payload: {}", sdbId, path, plainTextPayload);
 
-        String encryptedPayload = encrypt(plainTextPayload);
+        String encryptedPayload = encryptionService.encrypt(plainTextPayload);
 
         secureDataDao.writeSecureData(sdbId, path, encryptedPayload);
     }
@@ -62,7 +65,7 @@ public class SecureDataService {
         }
 
         String encryptedBlob = secureDataRecord.get().getEncryptedBlob();
-        String plainText = decrypt(encryptedBlob);
+        String plainText = encryptionService.decrypt(encryptedBlob);
 
         return plainText;
     }
@@ -81,16 +84,6 @@ public class SecureDataService {
         }
 
         return keys;
-    }
-
-    private String encrypt(String plainTextPayload) {
-        log.error("ENCRYPT NOT IMPLEMENTED RETURNING PLAIN TEXT");
-        return plainTextPayload;
-    }
-
-    private String decrypt(String encryptedPayload) {
-        log.error("DECRYPT NOT IMPLEMENTED RETURNING PLAIN TEXT");
-        return encryptedPayload;
     }
 
 }
