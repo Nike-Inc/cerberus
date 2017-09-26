@@ -22,7 +22,7 @@ buildscript {
 
 plugins {
     id "org.flywaydb.flyway" version "4.0.3"
-    id "com.moowork.node" version "1.0.1"
+    id "com.moowork.node" version "1.2.0"
 }
 
 apply plugin: 'java'
@@ -66,6 +66,8 @@ build {
 }
 
 processResources{
+    dependsOn 'copyDashboardResources'
+
     doFirst {
         project.ext.puppetRepository="maven"
         project.ext.packaging="jar"
@@ -86,7 +88,7 @@ artifacts {
 }
 
 jar {
-    dependsOn 'antReplace'
+    dependsOn 'antReplace', 'copyDashboardResources'
     doFirst {
         archiveName 'cms.jar'
     }
@@ -132,6 +134,22 @@ task antReplace() {
             ant.replace(file: fileName, token: "@@ARCHIVE_NAME@@", value: "${rootProject.name}.jar")
         }
     }
+}
+
+task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
+    doFirst {
+        project.buildDir.mkdirs()
+    }
+    group 'build'
+    args = ['run', 'build']
+}
+
+task copyDashboardResources(type: Copy, dependsOn: buildDashboard) {
+    def dashboardBuildDirectory = "${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}build"
+    def dashboardResourceFolder = "${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}dashboard"
+
+    from dashboardBuildDirectory
+    into dashboardResourceFolder
 }
 
 apply from: file('gradle/develop.gradle')
