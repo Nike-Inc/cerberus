@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.vault.client.VaultAdminClient;
 import com.nike.vault.client.model.VaultAuthResponse;
 import com.nike.vault.client.model.VaultClientTokenResponse;
@@ -37,8 +38,7 @@ public class HystrixVaultAdminClient {
         return execute("VaultCreateOrphanToken", () -> {
             try {
                 return vaultAdminClient.createOrphanToken(vaultTokenAuthRequest);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 LOGGER.warn("createOrphanToken failed, retrying...", e);
                 return vaultAdminClient.createOrphanToken(vaultTokenAuthRequest);
             }
@@ -73,27 +73,48 @@ public class HystrixVaultAdminClient {
      * Execute a function that returns a value
      */
     private static <T> T execute(String commandKey, Supplier<T> function) {
-        return new HystrixCommand<T>(buildSetter(commandKey)) {
+        try {
+            return new HystrixCommand<T>(buildSetter(commandKey)) {
 
-            @Override
-            protected T run() throws Exception {
-                return function.get();
+                @Override
+                protected T run() {
+                    return function.get();
+                }
+            }.execute();
+        } catch (HystrixRuntimeException e) {
+            LOGGER.error("commandKey:" + commandKey, e);
+            if (e.getCause() instanceof RuntimeException) {
+                // Convert back to the underlying exception type
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw e;
             }
-        }.execute();
+        }
+
     }
 
     /**
      * Execute a function with void return type
      */
     private static void execute(String commandKey, Runnable function) {
-        new HystrixCommand<Void>(buildSetter(commandKey)) {
+        try {
+            new HystrixCommand<Void>(buildSetter(commandKey)) {
 
-            @Override
-            protected Void run() throws Exception {
-                function.run();
-                return null;
+                @Override
+                protected Void run() {
+                    function.run();
+                    return null;
+                }
+            }.execute();
+        } catch (HystrixRuntimeException e) {
+            LOGGER.error("commandKey:" + commandKey, e);
+            if (e.getCause() instanceof RuntimeException) {
+                // Convert back to the underlying exception type
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw e;
             }
-        }.execute();
+        }
     }
 
     private static HystrixCommand.Setter buildSetter(String commandKey) {
