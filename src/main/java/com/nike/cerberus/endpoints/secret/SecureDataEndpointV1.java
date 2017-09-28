@@ -59,9 +59,9 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
-    public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
-                                                            final Executor longRunningTaskExecutor,
-                                                            final ChannelHandlerContext ctx) {
+    public final CompletableFuture<ResponseInfo<O>> execute(RequestInfo<I> request,
+                                                            Executor longRunningTaskExecutor,
+                                                            ChannelHandlerContext ctx) {
 
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);

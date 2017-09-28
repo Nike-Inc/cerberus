@@ -193,7 +193,6 @@ logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArra
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
 
 // begin TODO change these back
-logger("com.nike.cerberus.hystrix.HystrixMetricsLogger", WARN, allAsyncAppendersArray, false)
 logger("com.nike.cerberus.mapper.AuthTokenMapper", DEBUG, allAsyncAppendersArray, false)
 logger("com.nike.cerberus.mapper.PermissionsMapper", DEBUG, allAsyncAppendersArray, false)
 logger("com.nike.cerberus.mapper.SecureDataMapper", DEBUG, allAsyncAppendersArray, false)

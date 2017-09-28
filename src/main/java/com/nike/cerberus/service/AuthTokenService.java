@@ -17,9 +17,11 @@
 package com.nike.cerberus.service;
 
 import com.google.inject.name.Named;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AuthTokenRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.RandomString;
@@ -36,6 +38,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
+import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -130,7 +133,10 @@ public class AuthTokenService {
     }
 
     public CerberusAuthToken getCerberusAuthToken(String token) {
-        AuthTokenRecord tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
+        AuthTokenRecord tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token)).orElseThrow(
+                (Supplier<RuntimeException>) () -> new ApiException(DefaultApiError.ACCESS_DENIED)
+        );
+
         return getCerberusAuthTokenFromRecord(token, tokenRecord);
     }
 

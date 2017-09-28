@@ -20,6 +20,7 @@ import com.nike.cerberus.mapper.AuthTokenMapper;
 import com.nike.cerberus.record.AuthTokenRecord;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class AuthTokenDao {
 
@@ -34,8 +35,8 @@ public class AuthTokenDao {
         return authTokenMapper.createAuthToken(record);
     }
 
-    public AuthTokenRecord getAuthTokenFromHash(String hash) {
-        return authTokenMapper.getAuthTokenFromHash(hash);
+    public Optional<AuthTokenRecord> getAuthTokenFromHash(String hash) {
+        return Optional.ofNullable(authTokenMapper.getAuthTokenFromHash(hash));
     }
 
     public void deleteAuthTokenFromHash(String hash) {
