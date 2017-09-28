@@ -82,6 +82,8 @@ public class SafeDepositBoxService {
 
     private final AwsIamRoleArnParser awsIamRoleArnParser;
 
+    private final SecureDataService secureDataService;
+
     @Inject
     public SafeDepositBoxService(SafeDepositBoxDao safeDepositBoxDao,
                                  UserGroupDao userGroupDao,
@@ -93,7 +95,8 @@ public class SafeDepositBoxService {
                                  IamPrincipalPermissionService iamPrincipalPermissionService,
                                  Slugger slugger,
                                  DateTimeSupplier dateTimeSupplier,
-                                 AwsIamRoleArnParser awsIamRoleArnParser) {
+                                 AwsIamRoleArnParser awsIamRoleArnParser,
+                                 SecureDataService secureDataService) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
@@ -106,6 +109,7 @@ public class SafeDepositBoxService {
         this.slugger = slugger;
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
+        this.secureDataService = secureDataService;
     }
 
     /**
@@ -348,8 +352,8 @@ public class SafeDepositBoxService {
         userGroupPermissionService.deleteUserGroupPermissions(id);
         safeDepositBoxDao.deleteSafeDepositBox(id);
 
-        // 2. Recursively delete all secrets from the safe deposit box Vault path.
-        deleteAllSecrets(box.getPath());
+        // 2. Delete all secrets from the safe deposit box Vault path.
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(box.getPath());
     }
 
     private Optional<String> extractOwner(Set<UserGroupPermission> userGroupPermissions) {
@@ -559,15 +563,6 @@ public class SafeDepositBoxService {
         iamPrincipalPermissionService.grantIamPrincipalPermissions(safeDepositBoxId, toAddSet, user, dateTime);
         iamPrincipalPermissionService.updateIamPrincipalPermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
         iamPrincipalPermissionService.revokeIamPrincipalPermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
-    }
-
-    /**
-     * Deletes all of the secrets from Vault stored at the safe deposit box's path.
-     *
-     * @param path path to start deleting at.
-     */
-    private void deleteAllSecrets(final String path) {
-        throw new RuntimeException("NOT IMPLEMENTED");
     }
 
     /**

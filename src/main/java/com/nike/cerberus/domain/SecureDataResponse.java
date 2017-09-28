@@ -18,7 +18,7 @@ package com.nike.cerberus.domain;
 
 public class SecureDataResponse {
     private String requestId;
-    private String leaseId;
+    private String leaseId = "";
     private boolean renewable = false;
     private int leaseDuration = 3600;
     private Object data;

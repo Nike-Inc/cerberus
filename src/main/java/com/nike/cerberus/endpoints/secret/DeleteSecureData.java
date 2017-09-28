@@ -28,43 +28,36 @@ import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
+public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
 
     @Inject
-    protected WriteSecureData(SecureDataService secureDataService,
-                              PermissionsService permissionService,
-                              SafeDepositBoxService safeDepositBoxService) {
+    protected DeleteSecureData(SecureDataService secureDataService,
+                               PermissionsService permissionService,
+                               SafeDepositBoxService safeDepositBoxService) {
 
         super(secureDataService, permissionService, safeDepositBoxService);
     }
 
     @Override
     public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                             RequestInfo<Object> request,
-                                                             Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx,
-                                                             SecurityContext securityContext) {
-
+                                                           RequestInfo<Void> request,
+                                                           Executor longRunningTaskExecutor,
+                                                           ChannelHandlerContext ctx,
+                                                           SecurityContext securityContext) {
         return CompletableFuture.supplyAsync(
-                AsyncNettyHelper.supplierWithTracingAndMdc(() -> writeSecureData(requestInfo, request), ctx),
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> deleteSecureData(requestInfo), ctx),
                 longRunningTaskExecutor
         );
     }
 
-    private ResponseInfo<Object> writeSecureData(SecureDataRequestInfo requestInfo, RequestInfo<Object> request) {
-        secureDataService.writeSecret(requestInfo.getSdbid(), requestInfo.getPath(),
-                request.getRawContent());
-
+    private ResponseInfo<Object> deleteSecureData(SecureDataRequestInfo requestInfo) {
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(requestInfo.getPath());
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }
 
@@ -75,7 +68,7 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
                         String.format("%s/**", BASE_PATH),
                         BASE_PATH
                 ),
-                HttpMethod.POST
+                HttpMethod.DELETE
         );
     }
 }

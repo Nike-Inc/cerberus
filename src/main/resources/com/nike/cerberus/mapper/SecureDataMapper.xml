@@ -52,4 +52,12 @@
         SELECT PATH From SECURE_DATA WHERE PATH LIKE #{partialPath};
     </select>
 
+    <delete id="deleteAllSecretsThatStartWithGivenPartialPath">
+        DELETE FROM SECURE_DATA WHERE PATH LIKE #{partialPath};
+    </delete>
+
+    <delete id="deleteSecret">
+        DELETE FROM SECURE_DATA WHERE PATH = #{path}
+    </delete>
+
 </mapper>

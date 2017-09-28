@@ -106,7 +106,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         }
 
         if (parts.length >= 6) {
-            info.setPath(parts[5]);
+            info.setSubPath(parts[5]);
         }
 
         return info;
@@ -116,7 +116,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         private String category;
         private String sdbSlug;
         private String sdbid;
-        private String path;
+        private String subPath;
 
         public String getCategory() {
             return category;
@@ -145,17 +145,13 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
             return this;
         }
 
-        public String getPath() {
-            return path;
-        }
-
-        public SecureDataRequestInfo setPath(String path) {
-            this.path = path;
+        public SecureDataRequestInfo setSubPath(String path) {
+            this.subPath = path;
             return this;
         }
 
-        public String getFullPath() {
-            return String.format("%s/%s", sdbSlug, path);
+        public String getPath() {
+            return String.format("%s/%s", sdbSlug, subPath);
         }
     }
 

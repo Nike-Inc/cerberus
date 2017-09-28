@@ -25,10 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -55,19 +52,17 @@ public class SecureDataService {
         secureDataDao.writeSecureData(sdbId, path, encryptedPayload);
     }
 
-    public String readSecret(String path) {
+    public Optional<String> readSecret(String path) {
         log.debug("Reading secure data: Path: {}", path);
         Optional<SecureDataRecord> secureDataRecord = secureDataDao.readSecureDataByPath(path);
         if (! secureDataRecord.isPresent()) {
-            // TODO
-            log.error("NOT FOUND");
-            return null;
+            return Optional.empty();
         }
 
         String encryptedBlob = secureDataRecord.get().getEncryptedBlob();
         String plainText = encryptionService.decrypt(encryptedBlob);
 
-        return plainText;
+        return Optional.of(plainText);
     }
 
     public Set<String> listKeys(String partialPath) {
@@ -87,4 +82,31 @@ public class SecureDataService {
         return keys;
     }
 
+    /**
+     * Deletes all of the secure data from stored at the safe deposit box's partial path.
+     *
+     * ex: assume the following paths have secure data
+     * app/test/foo/1
+     * app/test/foo/2
+     * app/test/foo/3
+     * app/test/foo/4/bar
+     * app/test/foo/4/bam
+     * app/test/bam
+     * and you call this method with path = app/test/foo/
+     * all the above secrets except app/test/bam will be deleted
+     *
+     * @param subPath The sub path to delete all secrets that have paths that start with
+     */
+    public void deleteAllSecretsThatStartWithGivenPartialPath(String subPath) {
+        secureDataDao.deleteAllSecretsThatStartWithGivenPartialPath(subPath);
+    }
+
+    /**
+     * Deletes secure data at a given path
+     *
+     * @param path The sub path to delete all secrets that have paths that start with
+     */
+    public void deleteSecret(String path) {
+        secureDataDao.deleteSecret(path);
+    }
 }

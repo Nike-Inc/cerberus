@@ -35,6 +35,11 @@ public class HystrixRequestAndResponseFilter implements RequestAndResponseFilter
     public <T> ResponseInfo<T> filterResponse(ResponseInfo<T> currentResponseInfo, RequestInfo<?> requestInfo,
                                               ChannelHandlerContext ctx) {
         try {
+            if (requestInfo != null
+                    && requestInfo.getRequestAttributes() != null
+                    && requestInfo.getRequestAttributes().get("HystrixRequestContext") != null
+                    && requestInfo.getRequestAttributes().get("HystrixRequestContext") instanceof HystrixRequestContext)
+
             ((HystrixRequestContext) requestInfo.getRequestAttributes().get("HystrixRequestContext")).shutdown();
         } catch (Throwable t) {
             logger.error("An unexpected error occurred trying to shutdown the HystrixRequestContext for this request.", t);
