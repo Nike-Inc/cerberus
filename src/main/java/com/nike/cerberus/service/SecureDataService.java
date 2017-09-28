@@ -65,7 +65,26 @@ public class SecureDataService {
         return Optional.of(plainText);
     }
 
+    /**
+     * Method to list keys in the virtual tree structure
+     * This method is designed to mimic the Vault ?list=true functionality
+     *
+     * ex: given the following tree structure
+     * app/foo/bar/bam
+     * app/foo/bam
+     * app/bam/foo
+     *
+     * if you call listKeys with partialPath = "app/foo" or "app/foo/" you will receive the following set of keys
+     * ["bar/", "bam"]
+     *
+     * @param partialPath path to a node in the data structure that potentially has children
+     * @return Array of keys if the key is a data node it will not end with "/"
+     */
     public Set<String> listKeys(String partialPath) {
+        if (! partialPath.endsWith("/")) {
+            partialPath = partialPath + "/";
+        }
+
         Set<String> keys = new HashSet<>();
         String[] pArray = secureDataDao.getPathsByPartialPath(partialPath);
         if (pArray == null || pArray.length < 1) {

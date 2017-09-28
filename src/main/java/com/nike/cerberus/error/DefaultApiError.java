@@ -59,7 +59,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * X-Vault-Token header is blank.
      */
-    AUTH_VAULT_TOKEN_INVALID(99105, "X-Vault-Token or X-Cerberus-Token header is malformed.", HttpServletResponse.SC_UNAUTHORIZED),
+    AUTH_VAULT_TOKEN_INVALID(99105, "X-Vault-Token or X-Cerberus-Token header is malformed or invalid.", HttpServletResponse.SC_UNAUTHORIZED),
 
     /**
      * Supplied credentials are invalid.
@@ -241,12 +241,6 @@ public enum DefaultApiError implements ApiError {
      * Error reading the file contents of the requested dashboard asset
      */
     FAILED_TO_READ_DASHBOARD_ASSET_CONTENT(99233, "The requested dashboard asset file could not be read", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
-
-    /**
-     * Error reading the file contents of the requested dashboard asset
-     */
-    NO_SECURE_DATA_AT_GIVEN_PATH(99234, "There is no secure data at the given path", HttpServletResponse.SC_NOT_FOUND),
-
 
     /**
      * Generic not found error.

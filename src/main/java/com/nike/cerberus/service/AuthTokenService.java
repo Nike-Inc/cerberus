@@ -38,6 +38,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -132,12 +133,10 @@ public class AuthTokenService {
         }
     }
 
-    public CerberusAuthToken getCerberusAuthToken(String token) {
-        AuthTokenRecord tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token)).orElseThrow(
-                (Supplier<RuntimeException>) () -> new ApiException(DefaultApiError.ACCESS_DENIED)
-        );
+    public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
+        Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
+        return tokenRecord.map(authTokenRecord -> getCerberusAuthTokenFromRecord(token, authTokenRecord));
 
-        return getCerberusAuthTokenFromRecord(token, tokenRecord);
     }
 
     public void revokeToken(String token) {

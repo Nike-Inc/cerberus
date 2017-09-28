@@ -17,6 +17,7 @@
 package com.nike.cerberus.endpoints.secret;
 
 import com.google.common.collect.Sets;
+import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
@@ -46,6 +47,14 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
                               SafeDepositBoxService safeDepositBoxService) {
 
         super(secureDataService, permissionService, safeDepositBoxService);
+    }
+
+    @Override
+    protected ResponseInfo<Object> generateVaultStyleResponse(VaultStyleErrorResponse response, int statusCode) {
+        return ResponseInfo.newBuilder()
+                .withContentForFullResponse(response)
+                .withHttpStatusCode(statusCode)
+                .build();
     }
 
     @Override
