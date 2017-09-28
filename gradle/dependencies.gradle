@@ -49,9 +49,11 @@ dependencies {
             "org.ow2.asm:asm-all:5.0.4", // Required for full java 8 support (since we're excluding the old ASM 3 pulled in by various other libraries in the main build.gradle)
             "com.google.inject:guice:$guiceVersion",
             "com.google.inject.extensions:guice-multibindings:$guiceVersion",
+            'com.google.code.gson:gson:2.8.1',
             "com.amazonaws:aws-java-sdk-core:$awsSdkVersion",
             "com.amazonaws:aws-java-sdk-kms:$awsSdkVersion",
             "com.amazonaws:aws-java-sdk-s3:$awsSdkVersion",
+            'com.amazonaws:aws-encryption-sdk-java:1.3.1',
             "org.mybatis:mybatis:3.4.1",
             "org.mybatis:mybatis-typehandlers-jsr310:1.0.1",
             "org.mybatis:mybatis-guice:3.7.1",
