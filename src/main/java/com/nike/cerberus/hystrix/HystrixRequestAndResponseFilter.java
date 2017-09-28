@@ -13,13 +13,15 @@ import org.slf4j.LoggerFactory;
  */
 public class HystrixRequestAndResponseFilter implements RequestAndResponseFilter {
 
+    private static final String HYSTRIX_REQUEST_CONTEXT = "HystrixRequestContext";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public <T> RequestInfo<T> filterRequestFirstChunkNoPayload(RequestInfo<T> currentRequestInfo,
                                                                ChannelHandlerContext ctx) {
         HystrixRequestContext context = HystrixRequestContext.initializeContext();
-        currentRequestInfo.addRequestAttribute("HystrixRequestContext", context);
+        currentRequestInfo.addRequestAttribute(HYSTRIX_REQUEST_CONTEXT, context);
         return currentRequestInfo;
     }
 
@@ -35,7 +37,12 @@ public class HystrixRequestAndResponseFilter implements RequestAndResponseFilter
     public <T> ResponseInfo<T> filterResponse(ResponseInfo<T> currentResponseInfo, RequestInfo<?> requestInfo,
                                               ChannelHandlerContext ctx) {
         try {
-            ((HystrixRequestContext) requestInfo.getRequestAttributes().get("HystrixRequestContext")).shutdown();
+            if (requestInfo != null && requestInfo.getRequestAttributes() != null) {
+                HystrixRequestContext context = (HystrixRequestContext) requestInfo.getRequestAttributes().get(HYSTRIX_REQUEST_CONTEXT);
+                if (context != null) {
+                    context.shutdown();
+                }
+            }
         } catch (Throwable t) {
             logger.error("An unexpected error occurred trying to shutdown the HystrixRequestContext for this request.", t);
         }

@@ -1,5 +1,6 @@
 package com.nike.cerberus.hystrix;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateAliasResult;
@@ -19,6 +20,10 @@ import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixThreadPoolKey;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
@@ -31,6 +36,8 @@ import java.util.function.Supplier;
 public class HystrixKmsClient extends AWSKMSClient {
 
     private static final String KMS = "KMS";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HystrixKmsClient.class);
 
     private final AWSKMSClient client;
 
@@ -84,13 +91,32 @@ public class HystrixKmsClient extends AWSKMSClient {
      * Execute a function that returns a value in a specified ThreadPool
      */
     private static <T> T execute(String threadPoolName, String commandKey, Supplier<T> function) {
-        return new HystrixCommand<T>(buildSetter(threadPoolName, commandKey)) {
+        try {
+            return new HystrixCommand<T>(buildSetter(threadPoolName, commandKey)) {
 
-            @Override
-            protected T run() throws Exception {
-                return function.get();
+                @Override
+                protected T run() {
+                    try {
+                        return function.get();
+                    } catch (AmazonServiceException e) {
+                        if (e.getStatusCode() >= 400 && e.getStatusCode() < 500) {
+                            // convert 4xx error codes to bad request
+                            throw new HystrixBadRequestException(commandKey + " " + e.toString(), e);
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
+            }.execute();
+        } catch (HystrixRuntimeException | HystrixBadRequestException e) {
+            LOGGER.error("commandKey: " + commandKey);
+            if (e.getCause() instanceof RuntimeException) {
+                // Convert back to the underlying exception type
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw e;
             }
-        }.execute();
+        }
     }
 
     private static HystrixCommand.Setter buildSetter(String threadPoolName, String commandKey) {
