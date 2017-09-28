@@ -32,7 +32,8 @@
           #{record.sdboxId},
           #{record.path},
           #{record.encryptedBlob}
-        ) ON DUPLICATE KEY UPDATE ENCRYPTED_BLOB='#{record.encryptedBlob}'
+        ) ON DUPLICATE KEY UPDATE
+          ENCRYPTED_BLOB=VALUES(ENCRYPTED_BLOB)
     </insert>
 
     <select id="readSecureDataByPath" resultType="SecureDataRecord">
@@ -48,7 +49,15 @@
     </select>
 
     <select id="getPathsByPartialPath" resultType="String">
-        SELECT PATH From SECURE_DATA WHERE PATH LIKE '#{partialPath}';
+        SELECT PATH From SECURE_DATA WHERE PATH LIKE #{partialPath};
     </select>
+
+    <delete id="deleteAllSecretsThatStartWithGivenPartialPath">
+        DELETE FROM SECURE_DATA WHERE PATH LIKE #{partialPath};
+    </delete>
+
+    <delete id="deleteSecret">
+        DELETE FROM SECURE_DATA WHERE PATH = #{path}
+    </delete>
 
 </mapper>

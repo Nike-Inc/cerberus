@@ -18,6 +18,7 @@ package com.nike.cerberus.security;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.endpoints.secret.SecureDataEndpointV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.AuthTokenService;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
@@ -61,8 +62,19 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
     public void validateSecureRequestForEndpoint(RequestInfo<?> requestInfo, Endpoint<?> endpoint) {
         String token = parseRequiredAuthHeaderFromRequest(requestInfo.getHeaders());
 
-        CerberusAuthToken authToken = authTokenService.getCerberusAuthToken(token);
-        final CerberusPrincipal principal = new CerberusPrincipal(authToken);
+        Optional<CerberusAuthToken> authToken = authTokenService.getCerberusAuthToken(token);
+
+        CerberusPrincipal principal = null;
+        if (! authToken.isPresent()) {
+            // This is a hack, Secure Data Endpoint V1 endpoints need to honor the Vault API contract and
+            // cannot throw backstopper errors, we will handle this in the SecureDataEndpointV1 class
+            if (! (endpoint instanceof SecureDataEndpointV1)) {
+                throw new ApiException(DefaultApiError.AUTH_VAULT_TOKEN_INVALID);
+            }
+        } else {
+            principal = new CerberusPrincipal(authToken.get());
+        }
+
         final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
                 URI.create(requestInfo.getUri()).getScheme());
         requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);

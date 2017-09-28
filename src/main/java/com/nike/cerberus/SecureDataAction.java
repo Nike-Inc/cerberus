@@ -31,7 +31,8 @@ import static io.netty.handler.codec.http.HttpMethod.POST;
 public enum SecureDataAction {
 
     READ(GET, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
-    WRITE(POST, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
+    WRITE(POST, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
+    DELETE(HttpMethod.DELETE, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
 
     private final HttpMethod method;
 

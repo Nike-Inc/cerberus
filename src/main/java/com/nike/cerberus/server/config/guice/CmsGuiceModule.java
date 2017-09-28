@@ -55,6 +55,7 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
+import com.nike.cerberus.endpoints.secret.DeleteSecureData;
 import com.nike.cerberus.endpoints.secret.ReadSecureData;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
@@ -196,7 +197,8 @@ public class CmsGuiceModule extends AbstractModule {
             GetDashboardRedirect getDashboardRedirect,
             GetDashboard getDashboard,
             WriteSecureData writeSecureData,
-            ReadSecureData readSecureData
+            ReadSecureData readSecureData,
+            DeleteSecureData deleteSecureData
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -207,7 +209,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
                 getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords,
-                getDashboardRedirect, getDashboard, writeSecureData, readSecureData
+                getDashboardRedirect, getDashboard, writeSecureData, readSecureData, deleteSecureData
         ));
     }
 

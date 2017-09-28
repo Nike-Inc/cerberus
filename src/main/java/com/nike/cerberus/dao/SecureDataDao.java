@@ -46,6 +46,14 @@ public class SecureDataDao {
     }
 
     public String[] getPathsByPartialPath(String partialPath) {
-        return secureDataMapper.getPathsByPartialPath(partialPath);
+        return secureDataMapper.getPathsByPartialPath(partialPath + "%");
+    }
+
+    public void deleteAllSecretsThatStartWithGivenPartialPath(String partialPath) {
+        secureDataMapper.deleteAllSecretsThatStartWithGivenPartialPath(partialPath);
+    }
+
+    public void deleteSecret(String path) {
+        secureDataMapper.deleteSecret(path);
     }
 }

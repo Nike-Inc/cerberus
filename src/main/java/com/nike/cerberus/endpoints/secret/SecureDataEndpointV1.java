@@ -16,9 +16,8 @@
 
 package com.nike.cerberus.endpoints.secret;
 
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.SecureDataAction;
-import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.PermissionsService;
@@ -27,7 +26,9 @@ import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
+import com.nike.riposte.util.AsyncNettyHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,21 +60,35 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
-    public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
-                                                            final Executor longRunningTaskExecutor,
-                                                            final ChannelHandlerContext ctx) {
+    public final CompletableFuture<ResponseInfo<O>> execute(RequestInfo<I> request,
+                                                            Executor longRunningTaskExecutor,
+                                                            ChannelHandlerContext ctx) {
 
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
+        // If the token was invalid throw Vault style permission denied error
         if (! securityContext.isPresent() || ! (securityContext.get().getUserPrincipal() instanceof CerberusPrincipal)) {
-            throw new ApiException(DefaultApiError.ACCESS_DENIED);
+            return generateVaultStyleResponse(longRunningTaskExecutor,
+                    ctx,
+                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                            .withError("permission denied")
+                            .build(),
+                    HttpResponseStatus.FORBIDDEN.code()
+            );
         }
 
         SecureDataRequestInfo requestInfo = parseInfoFromPath(request.getPath());
 
+        // if that path was invalid throw Vault style permission denied error
         if (! doesRequestHaveRequiredParams(requestInfo.getCategory(), requestInfo.getSdbSlug())) {
-            throw new ApiException(DefaultApiError.ACCESS_DENIED);
+            return generateVaultStyleResponse(longRunningTaskExecutor,
+                    ctx,
+                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                            .withError("permission denied")
+                            .build(),
+                    HttpResponseStatus.FORBIDDEN.code()
+            );
         }
 
         CerberusPrincipal principal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
@@ -81,9 +96,16 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         String sdbBasePath = String.format("%s/%s/", requestInfo.getCategory(), requestInfo.getSdbSlug());
         Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByPath(sdbBasePath);
 
+        // check that the principal has the proper permissions or throw Vault style permission denied error
         if (! sdbId.isPresent() || ! permissionService.doesPrincipalHavePermission(principal, sdbId.get(),
                         SecureDataAction.fromMethod(request.getMethod()))) {
-            throw new ApiException(DefaultApiError.ACCESS_DENIED);
+            return generateVaultStyleResponse(longRunningTaskExecutor,
+                    ctx,
+                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                            .withError("permission denied")
+                            .build(),
+                    HttpResponseStatus.FORBIDDEN.code()
+            );
         }
 
         requestInfo.setSdbid(sdbId.get());
@@ -106,7 +128,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         }
 
         if (parts.length >= 6) {
-            info.setPath(parts[5]);
+            info.setSubPath(parts[5]);
         }
 
         return info;
@@ -116,7 +138,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         private String category;
         private String sdbSlug;
         private String sdbid;
-        private String path;
+        private String subPath;
 
         public String getCategory() {
             return category;
@@ -145,21 +167,31 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
             return this;
         }
 
-        public String getPath() {
-            return path;
-        }
-
-        public SecureDataRequestInfo setPath(String path) {
-            this.path = path;
+        public SecureDataRequestInfo setSubPath(String path) {
+            this.subPath = path;
             return this;
         }
 
-        public String getFullPath() {
-            return String.format("%s/%s", sdbSlug, path);
+        public String getPath() {
+            return String.format("%s/%s", sdbSlug, subPath);
         }
     }
 
-    public abstract CompletableFuture<ResponseInfo<O>> doExecute(SecureDataRequestInfo requestInfo,
+    protected CompletableFuture<ResponseInfo<O>> generateVaultStyleResponse(Executor longRunningTaskExecutor,
+                                                         ChannelHandlerContext ctx,
+                                                         VaultStyleErrorResponse response,
+                                                         int statusCode) {
+
+        return CompletableFuture.supplyAsync(
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> generateVaultStyleResponse(response, statusCode), ctx),
+                longRunningTaskExecutor
+        );
+
+    }
+
+    protected abstract ResponseInfo<O> generateVaultStyleResponse(VaultStyleErrorResponse response, int statusCode);
+
+    protected abstract CompletableFuture<ResponseInfo<O>> doExecute(SecureDataRequestInfo requestInfo,
                                                                  RequestInfo<I> request,
                                                                  Executor longRunningTaskExecutor,
                                                                  ChannelHandlerContext ctx,

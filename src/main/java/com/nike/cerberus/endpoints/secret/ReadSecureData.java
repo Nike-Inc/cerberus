@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.nike.cerberus.domain.SecureDataResponse;
+import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
@@ -38,13 +39,13 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataResponse> {
+public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -57,13 +58,21 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataRespons
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<SecureDataResponse>> doExecute(SecureDataRequestInfo requestInfo,
+    protected ResponseInfo<Object> generateVaultStyleResponse(VaultStyleErrorResponse response, int statusCode) {
+        return ResponseInfo.newBuilder()
+                .withContentForFullResponse(response)
+                .withHttpStatusCode(statusCode)
+                .build();
+    }
+
+    @Override
+    public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
                                                                          RequestInfo<Void> request,
                                                                          Executor longRunningTaskExecutor,
                                                                          ChannelHandlerContext ctx,
                                                                          SecurityContext securityContext) {
 
-        if (StringUtils.equalsIgnoreCase(request.getPathParam("list"), "true")) {
+        if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
             return CompletableFuture.supplyAsync(
                     AsyncNettyHelper.supplierWithTracingAndMdc(() -> listKeys(requestInfo), ctx),
                     longRunningTaskExecutor
@@ -76,28 +85,44 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, SecureDataRespons
         );
     }
 
-    private ResponseInfo<SecureDataResponse> listKeys(SecureDataRequestInfo info) {
-        Set<String> keys = secureDataService.listKeys(info.getFullPath());
+    private ResponseInfo<Object> listKeys(SecureDataRequestInfo info) {
+        Set<String> keys = secureDataService.listKeys(info.getPath());
+
+        if (keys.isEmpty()) {
+            return generateVaultStyleResponse(new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder().build(),
+                    HttpResponseStatus.NOT_FOUND.code());
+        }
 
         SecureDataResponse response = new SecureDataResponse();
         response.setRequestId(UUID.randomUUID().toString()); // maybe use trace id?
         response.setData(ImmutableMap.of("keys", keys));
 
-        return ResponseInfo.newBuilder(response).withHttpStatusCode(HttpResponseStatus.OK.code()).build();
+        return ResponseInfo.newBuilder()
+                .withContentForFullResponse(response)
+                .withHttpStatusCode(HttpResponseStatus.OK.code())
+                .build();
     }
+    private ResponseInfo<Object> readSecureData(SecureDataRequestInfo info) {
 
-    private ResponseInfo<SecureDataResponse> readSecureData(SecureDataRequestInfo info) {
-        String data = secureDataService.readSecret(info.getFullPath());
+        Optional<String> data = secureDataService.readSecret(info.getPath());
+
+        if (! data.isPresent()) {
+            return generateVaultStyleResponse(new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder().build(),
+                    HttpResponseStatus.NOT_FOUND.code());
+        }
 
         SecureDataResponse response = new SecureDataResponse();
         response.setRequestId(UUID.randomUUID().toString());
         try {
-            response.setData(new ObjectMapper().readTree(data));
+            response.setData(new ObjectMapper().readTree(data.get()));
         } catch (IOException e) {
             log.error("Failed to deserialize stored data", e);
         }
 
-        return ResponseInfo.newBuilder(response).withHttpStatusCode(HttpResponseStatus.OK.code()).build();
+        return ResponseInfo.newBuilder()
+                .withContentForFullResponse(response)
+                .withHttpStatusCode(HttpResponseStatus.OK.code())
+                .build();
     }
 
     @Override
