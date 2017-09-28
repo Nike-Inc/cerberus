@@ -38,6 +38,6 @@ public final class CerberusHttpHeaders {
                 return StringUtils.substringBefore(value, ",").trim();
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

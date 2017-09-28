@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.google.common.collect.Lists;
+import com.nike.cerberus.hystrix.HystrixRequestAndResponseFilter;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsListener;
@@ -26,7 +28,9 @@ import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestValidator;
 import com.nike.riposte.server.http.Endpoint;
 import io.netty.handler.ssl.SslContext;
+import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,6 +52,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
     public final CodahaleMetricsListener metricsListener;
     public final CompletableFuture<AppInfo> appInfoFuture;
     public final CmsRequestSecurityValidator cmsRequestSecurityValidator;
+    public final List<RequestAndResponseFilter> requestAndResponseFilters;
     public final SslContext sslContext;
 
     @Inject
@@ -66,6 +71,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
                                            @Nullable CodahaleMetricsListener metricsListener,
                                            @Named("appInfoFuture") CompletableFuture<AppInfo> appInfoFuture,
                                            CmsRequestSecurityValidator cmsRequestSecurityValidator,
+                                           HystrixRequestAndResponseFilter hystrixRequestAndResponseFilter,
                                            SslContext sslContext
     ) {
         super(endpointsPort, endpointsSslPort, endpointsUseSsl, numBossThreads, numWorkerThreads, maxRequestSizeInBytes, appEndpoints,
@@ -77,6 +83,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
         this.metricsListener = metricsListener;
         this.appInfoFuture = appInfoFuture;
         this.cmsRequestSecurityValidator = cmsRequestSecurityValidator;
+        this.requestAndResponseFilters = Lists.newArrayList(hystrixRequestAndResponseFilter);
         this.sslContext = sslContext;
     }
 }

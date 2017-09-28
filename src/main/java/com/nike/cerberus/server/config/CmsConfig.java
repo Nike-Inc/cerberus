@@ -17,8 +17,16 @@
 package com.nike.cerberus.server.config;
 
 import com.google.inject.util.Modules;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.config.DynamicPropertyFactory;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
-import com.nike.cerberus.server.config.guice.*;
+import com.nike.cerberus.server.config.guice.CmsFlywayModule;
+import com.nike.cerberus.server.config.guice.CmsGuiceModule;
+import com.nike.cerberus.server.config.guice.CmsMyBatisModule;
+import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
+import com.nike.cerberus.server.config.guice.MetricsGuiceModule;
+import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
+import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
 import com.nike.guice.typesafeconfig.TypesafeConfigPropertiesRegistrationGuiceModule;
 import com.nike.riposte.metrics.MetricsListener;
@@ -29,6 +37,7 @@ import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.error.validation.RequestValidator;
 import com.nike.riposte.server.http.Endpoint;
+import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 import com.nike.riposte.server.logging.AccessLogger;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -39,12 +48,15 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -58,6 +70,8 @@ import java.util.concurrent.CompletableFuture;
  * @author Nic Munroe
  */
 public class CmsConfig implements ServerConfig {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /*
          We use a GuiceProvidedServerConfigValues to generate most of the values we need to return for ServerConfig's methods.
@@ -81,8 +95,9 @@ public class CmsConfig implements ServerConfig {
             throw new IllegalArgumentException("appConfig cannot be null");
 
         this.appConfig = appConfig;
-
         this.objectMapper = configureObjectMapper();
+
+        ArchaiusUtils.initializeArchiaus(appConfig);
 
         // Create a Guice Injector for this app.
         List<Module> appGuiceModules = new ArrayList<>();
@@ -91,7 +106,8 @@ public class CmsConfig implements ServerConfig {
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule(),
-                new OneLoginGuiceModule()
+                new OneLoginGuiceModule(),
+                new MetricsGuiceModule()
         ));
 
         // bind the CMS Guice module last allowing the S3 props file to override any given application property
@@ -211,5 +227,10 @@ public class CmsConfig implements ServerConfig {
     @Override
     public int maxRequestSizeInBytes() {
         return guiceValues.maxRequestSizeInBytes;
+    }
+
+    @Override
+    public List<RequestAndResponseFilter> requestAndResponseFilters() {
+        return guiceValues.requestAndResponseFilters;
     }
 }

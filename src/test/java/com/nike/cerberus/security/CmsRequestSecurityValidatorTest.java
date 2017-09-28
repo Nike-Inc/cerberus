@@ -19,7 +19,7 @@ package com.nike.cerberus.security;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.vault.client.VaultAdminClient;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.VaultServerException;
 import com.nike.vault.client.model.VaultClientTokenResponse;
@@ -51,13 +51,13 @@ public class CmsRequestSecurityValidatorTest {
 
     private final Collection<Endpoint<?>> securedEndpoints = Lists.newArrayList(securedEndpoint);
 
-    private VaultAdminClient vaultAdminClient;
+    private HystrixVaultAdminClient vaultAdminClient;
 
     private CmsRequestSecurityValidator subject;
 
     @Before
     public void setUp() throws Exception {
-        vaultAdminClient = mock(VaultAdminClient.class);
+        vaultAdminClient = mock(HystrixVaultAdminClient.class);
         subject = new CmsRequestSecurityValidator(securedEndpoints, vaultAdminClient);
     }
 

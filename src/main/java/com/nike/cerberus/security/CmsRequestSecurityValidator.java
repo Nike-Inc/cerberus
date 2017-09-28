@@ -18,7 +18,7 @@ package com.nike.cerberus.security;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.vault.client.VaultAdminClient;
+import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.VaultServerException;
 import com.nike.vault.client.model.VaultClientTokenResponse;
@@ -48,10 +48,10 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
     private final Collection<Endpoint<?>> endpointsToValidate;
 
-    private final VaultAdminClient vaultAdminClient;
+    private final HystrixVaultAdminClient vaultAdminClient;
 
     public CmsRequestSecurityValidator(final Collection<Endpoint<?>> endpointsToValidate,
-                                       final VaultAdminClient vaultAdminClient) {
+                                       final HystrixVaultAdminClient vaultAdminClient) {
         this.endpointsToValidate = endpointsToValidate;
         this.vaultAdminClient = vaultAdminClient;
         this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));

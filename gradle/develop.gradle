@@ -18,10 +18,8 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import groovyx.net.http.RESTClient
 import static groovyx.net.http.ContentType.*
 
-def dashboardRelease = 'v1.3.0'
-def vaultVersion = "0.7.3"
+def vaultVersion = "0.8.1"
 
-def reverseProxyPort = 9001
 def nodeServerPort = 8000
 def cmsPort = 8080
 def vaultPort = 8200
@@ -65,53 +63,24 @@ task stopVaultAndMySQLBackgroundThread(type: KillProcessTask) {
     pidLockFileName '.vault-sql.pid.lock'
 }
 
-task downloadDashboard() {
-    group 'local development'
-    description 'Downloads the dashboard artifact from github releases'
-
-    doFirst {
-        project.buildDir.mkdirs()
-    }
-
-    doLast {
-        def artifactUrl = "https://github.com/Nike-Inc/cerberus-management-dashboard/releases/download/${dashboardRelease}/cerberus-dashboard.tar.gz"
-
-        ant.get(
-                src: artifactUrl,
-                dest: "${project.buildDir.absolutePath}",
-                skipexisting: 'true'
-        )
-    }
-}
-
-task extractDashboard(type: Copy, dependsOn: downloadDashboard) {
-    group 'local development'
-    description 'Extracts the dashboard archive into the build dir for the express server to service when running the dashboard / proxy'
-
-    from tarTree("${project.buildDir.absolutePath}${File.separator}cerberus-dashboard.tar.gz")
-    File dashboardDir = new File("${project.buildDir.absolutePath}${File.separator}dashboard")
-    dashboardDir.mkdirs()
-    into dashboardDir
-}
-
-task runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, extractDashboard]) {
+task  runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
     group 'local development'
     description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
 
-    script = file("${project.getRootDir().absolutePath}${File.separator}reverse_proxy${File.separator}server.js")
+    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
     execOverrides {
-        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}reverse_proxy").absolutePath
+        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
     }
 }
 
 /**
- * Configure the Node plugin to run out of the reverse proxy dir
+ * Configure the Node plugin to run out of the dashboard dir
  */
 node {
-    File reverseProxyDir = new File("${project.projectDir}${File.separator}reverse_proxy")
-    workDir = reverseProxyDir
-    npmWorkDir = reverseProxyDir
-    nodeModulesDir = reverseProxyDir
+    File dashboardDir = new File("${project.projectDir}${File.separator}dashboard")
+    workDir = dashboardDir
+    npmWorkDir = dashboardDir
+    nodeModulesDir = dashboardDir
 }
 
 /**
@@ -174,22 +143,27 @@ task extractVault(type: Copy, dependsOn: downloadVault) {
 /**
  * Runs vault and MySQL locally in memory in dev mod
  */
-task runVaultAndMySQL(type: Exec, dependsOn: [extractVault, startEmbeddedMysql]) {
+task runVaultAndMySQL(dependsOn: [extractVault, startEmbeddedMysql]) {
     group 'local development'
     description 'Runs Vault and MySQL locally in memory in dev mod, with out requiring either to be installed'
 
-    def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-    workingDir "${project.getBuildDir().absolutePath}${File.separator}"
+    doLast {
+        // this fails when in a 'doLast' block with task type 'Exec', so make manual 'exec' call
+        exec {
+            def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
+            workingDir "${project.getBuildDir().absolutePath}${File.separator}"
 
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine "${workingDir}${File.separator}vault.exe"
-    } else {
-        executable "vault"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine "${workingDir}${File.separator}vault.exe"
+            } else {
+                executable "vault"
+            }
+
+            args 'server', '--dev'
+
+            standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
+        }
     }
-
-    args 'server', '--dev'
-
-    standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
 }
 
 /**
@@ -210,6 +184,40 @@ def getTokenFromVaultLog() {
         }
 
         return tokens.last()
+    }
+}
+
+task debugCMS(dependsOn: [antReplace, assemble]) {
+    group 'local development'
+    description 'Runs CMS from it\'s JAR (assuming that the runVaultAndMySQL task has been executed and is running in a' +
+            'seperate thread) and configures CMS to automatically integrate with the local in memory instance of Vault.'
+
+    doLast {
+        javaexec {
+            // copy aws creds if they exist as sys props
+            def accessKey = 'aws.accessKeyId'
+            if (System.hasProperty(accessKey)) {
+                systemProperty accessKey, System.getProperty(accessKey)
+            }
+            def secretKey = 'aws.secretKey'
+            if (System.hasProperty(accessKey)) {
+                systemProperty secretKey, System.getProperty(secretKey)
+            }
+
+            def buildDir = "${project.getBuildDir().absolutePath}"
+
+            systemProperty 'vault.addr', "http://127.0.0.1:$vaultPort"
+            systemProperty 'vault.token', getTokenFromVaultLog()
+            systemProperty '@appId', 'cms'
+            systemProperty '@environment', 'local'
+
+            main = "-jar"
+            args = [
+                "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$cmsRemoteDebugPort",
+                "$buildDir${File.separator}libs${File.separator}${rootProject.name}.jar"
+            ]
+        }
+
     }
 }
 

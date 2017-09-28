@@ -1,0 +1,58 @@
+@import '../../assets/styles/common.scss';
+
+#vault-browser {
+
+}
+
+#vault-path {
+  padding: 8px;
+  margin-top: -1px;
+  border: 1px solid $snkrs_medium_grey;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+
+  #vault-path-label {
+    padding-right: 5px;
+  }
+
+  .breadcrumb-piece {
+    padding-left: 2px;
+    display: flex;
+  }
+
+  .breadcrumb-separator {
+    color: $snkrs_black;
+    padding-left: 2px;
+  }
+}
+
+#vault-keys {
+  border-bottom: 1px solid $snkrs_medium_grey;
+  padding-left: 50px;
+  padding-bottom: 10px;
+
+  .vault-key {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+
+#add-container {
+  padding-top: 10px;
+
+  .permissions-add-new-permission-button-container {
+
+  }
+
+  #vault-add-new-secret-container {
+    margin-top: 5px;
+  }
+}
+
+#add-form-container {
+  .vault-secret-form-label {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}

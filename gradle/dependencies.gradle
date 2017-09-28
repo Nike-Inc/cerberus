@@ -28,7 +28,7 @@ def groovyVersion = '2.3.9'
 
 dependencies {
     compile (
-            "com.nike:vault-client:1.4.0",
+            "com.nike:vault-client:1.6.0",
             "com.nike.riposte:riposte-spi:$riposteVersion",
             "com.nike.riposte:riposte-core:$riposteVersion",
             "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
@@ -36,7 +36,9 @@ dependencies {
             "com.nike.riposte:riposte-guice-typesafe-config:$riposteVersion",
             "com.nike.riposte:riposte-async-http-client:$riposteVersion",
             "com.nike.riposte:riposte-metrics-codahale:$riposteVersion",
+            "com.nike.riposte:riposte-metrics-codahale-signalfx:$riposteVersion",
 
+            "com.netflix.hystrix:hystrix-core:1.5.12",
             "javax:javaee-api:7.0",
             "org.codehaus.groovy:groovy-all:$groovyVersion", // For logback groovy config processing
             "ch.qos.logback:logback-classic:$logbackVersion",
