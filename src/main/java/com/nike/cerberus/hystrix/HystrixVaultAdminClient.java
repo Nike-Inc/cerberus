@@ -82,7 +82,7 @@ public class HystrixVaultAdminClient {
                 }
             }.execute();
         } catch (HystrixRuntimeException e) {
-            LOGGER.error("commandKey:" + commandKey, e);
+            LOGGER.error("commandKey:" + commandKey);
             if (e.getCause() instanceof RuntimeException) {
                 // Convert back to the underlying exception type
                 throw (RuntimeException) e.getCause();

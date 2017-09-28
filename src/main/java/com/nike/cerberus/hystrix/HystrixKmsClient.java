@@ -109,7 +109,7 @@ public class HystrixKmsClient extends AWSKMSClient {
                 }
             }.execute();
         } catch (HystrixRuntimeException | HystrixBadRequestException e) {
-            LOGGER.error("commandKey: " + commandKey, e);
+            LOGGER.error("commandKey: " + commandKey);
             if (e.getCause() instanceof RuntimeException) {
                 // Convert back to the underlying exception type
                 throw (RuntimeException) e.getCause();
