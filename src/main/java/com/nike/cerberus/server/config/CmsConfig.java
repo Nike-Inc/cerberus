@@ -50,6 +50,7 @@ import com.google.inject.Module;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -206,6 +207,11 @@ public class CmsConfig implements ServerConfig {
     @Override
     public boolean isEndpointsUseSsl() {
         return guiceValues.endpointsUseSsl;
+    }
+
+    @Override
+    public SslContext createSslContext() {
+        return guiceValues.sslContext;
     }
 
     @Override

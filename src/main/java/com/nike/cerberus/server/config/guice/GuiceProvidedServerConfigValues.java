@@ -27,6 +27,7 @@ import com.nike.riposte.server.error.handler.RiposteErrorHandler;
 import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestValidator;
 import com.nike.riposte.server.http.Endpoint;
+import io.netty.handler.ssl.SslContext;
 import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 
 import java.util.List;
@@ -52,6 +53,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
     public final CompletableFuture<AppInfo> appInfoFuture;
     public final CmsRequestSecurityValidator cmsRequestSecurityValidator;
     public final List<RequestAndResponseFilter> requestAndResponseFilters;
+    public final SslContext sslContext;
 
     @Inject
     public GuiceProvidedServerConfigValues(@Named("endpoints.port") Integer endpointsPort,
@@ -69,7 +71,8 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
                                            @Nullable CodahaleMetricsListener metricsListener,
                                            @Named("appInfoFuture") CompletableFuture<AppInfo> appInfoFuture,
                                            CmsRequestSecurityValidator cmsRequestSecurityValidator,
-                                           HystrixRequestAndResponseFilter hystrixRequestAndResponseFilter
+                                           HystrixRequestAndResponseFilter hystrixRequestAndResponseFilter,
+                                           SslContext sslContext
     ) {
         super(endpointsPort, endpointsSslPort, endpointsUseSsl, numBossThreads, numWorkerThreads, maxRequestSizeInBytes, appEndpoints,
               debugActionsEnabled, debugChannelLifecycleLoggingEnabled);
@@ -81,5 +84,6 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
         this.appInfoFuture = appInfoFuture;
         this.cmsRequestSecurityValidator = cmsRequestSecurityValidator;
         this.requestAndResponseFilters = Lists.newArrayList(hystrixRequestAndResponseFilter);
+        this.sslContext = sslContext;
     }
 }
