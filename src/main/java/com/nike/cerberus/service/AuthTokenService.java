@@ -135,12 +135,24 @@ public class AuthTokenService {
 
     public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
         Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
-        return tokenRecord.map(authTokenRecord -> getCerberusAuthTokenFromRecord(token, authTokenRecord));
 
+        // TODO is there a bug here with daylight savings?
+        if (! tokenRecord.isPresent() || tokenRecord.get().getExpiresTs().isBefore(OffsetDateTime.now())) {
+            return Optional.empty();
+        }
+
+        return tokenRecord.map(authTokenRecord -> getCerberusAuthTokenFromRecord(token, authTokenRecord));
     }
 
+    @Transactional
     public void revokeToken(String token) {
         String hash = hashToken(token);
         authTokenDao.deleteAuthTokenFromHash(hash);
+    }
+
+    // TODO is there a bug here with daylight savings, probably
+    @Transactional
+    public int deleteExpiredTokens() {
+        return authTokenDao.deleteExpiredTokens();
     }
 }

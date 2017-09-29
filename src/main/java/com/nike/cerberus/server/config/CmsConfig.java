@@ -17,8 +17,6 @@
 package com.nike.cerberus.server.config;
 
 import com.google.inject.util.Modules;
-import com.netflix.config.ConfigurationManager;
-import com.netflix.config.DynamicPropertyFactory;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsFlywayModule;
 import com.nike.cerberus.server.config.guice.CmsGuiceModule;
@@ -27,6 +25,7 @@ import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
 import com.nike.cerberus.server.config.guice.MetricsGuiceModule;
 import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
 import com.nike.cerberus.util.ArchaiusUtils;
+import com.nike.cerberus.util.JobsInitializerUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
 import com.nike.guice.typesafeconfig.TypesafeConfigPropertiesRegistrationGuiceModule;
 import com.nike.riposte.metrics.MetricsListener;
@@ -55,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -119,6 +117,8 @@ public class CmsConfig implements ServerConfig {
         // Now that everything else is setup, we can initialize the metrics listener.
         if (guiceValues.metricsListener != null)
             guiceValues.metricsListener.initEndpointAndServerConfigMetrics(this);
+
+        JobsInitializerUtils.initializeJobs(appConfig, appInjector);
     }
 
     public CmsConfig(Config appConfig) {

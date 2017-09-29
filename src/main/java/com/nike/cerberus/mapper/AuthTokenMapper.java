@@ -27,4 +27,5 @@ public interface AuthTokenMapper {
 
     void deleteAuthTokenFromHash(@Param("hash") String hash);
 
+    int deleteExpiredTokens();
 }

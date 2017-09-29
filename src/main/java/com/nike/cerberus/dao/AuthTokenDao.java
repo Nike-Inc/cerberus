@@ -20,6 +20,7 @@ import com.nike.cerberus.mapper.AuthTokenMapper;
 import com.nike.cerberus.record.AuthTokenRecord;
 
 import javax.inject.Inject;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public class AuthTokenDao {
@@ -41,5 +42,9 @@ public class AuthTokenDao {
 
     public void deleteAuthTokenFromHash(String hash) {
         authTokenMapper.deleteAuthTokenFromHash(hash);
+    }
+
+    public int deleteExpiredTokens() {
+        return authTokenMapper.deleteExpiredTokens();
     }
 }

@@ -3,6 +3,8 @@ package com.nike.cerberus.util;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicPropertyFactory;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
@@ -28,7 +30,14 @@ public class ArchaiusUtils {
      */
     public static Properties toProperties(Config config) {
         Properties properties = new Properties();
-        config.entrySet().forEach(e -> properties.setProperty(e.getKey(), config.getString(e.getKey())));
+        config.entrySet().forEach(prop -> {
+            try {
+                properties.setProperty(prop.getKey(), config.getString(prop.getKey()));
+            } catch (ConfigException e) { // Not everything in a type safe config can be retrieved as a string
+                LoggerFactory.getLogger("com.nike.cerberus.util.ArchaiusUtils")
+                        .error("Failed to process prop: {} with value: {} as a string", prop.getKey(), prop.getValue());
+            }
+        });
         return properties;
     }
 }
