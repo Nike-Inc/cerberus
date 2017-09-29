@@ -73,15 +73,23 @@ import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.net.ssl.SSLException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -111,6 +119,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     private Config appConfig;
     private final ObjectMapper objectMapper;
+    private CmsEnvPropertiesLoader cmsEnvPropertiesLoader;
 
     public CmsGuiceModule(Config appConfig, ObjectMapper objectMapper) {
         if (appConfig == null)
@@ -146,7 +155,7 @@ public class CmsGuiceModule extends AbstractModule {
         if (appConfig.hasPath(CMS_DISABLE_ENV_LOAD_FLAG) && appConfig.getBoolean(CMS_DISABLE_ENV_LOAD_FLAG)) {
             logger.warn("CMS environment property loading disabled.");
         } else {
-            final CmsEnvPropertiesLoader cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
+            cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
                     System.getenv(BUCKET_NAME_KEY),
                     System.getenv(REGION_KEY),
                     System.getenv(KMS_KEY_ID_KEY)
@@ -303,5 +312,26 @@ public class CmsGuiceModule extends AbstractModule {
         return ImmutableMap.<String, DashboardResourceFile>builder()
                 .putAll(dashboardAssets)
                 .build();
+    }
+
+    /**
+     * The SslContextBuilder and Netty´s SslContext implementations only support PKCS8 keys.
+     *
+     * http://netty.io/wiki/sslcontextbuilder-and-private-key.html
+     */
+    @Provides
+    @Singleton
+    public SslContext sslContext() throws SSLException, CertificateException {
+        if (cmsEnvPropertiesLoader == null) {
+            logger.info("initializing SslContext by creating a self-signed certificate");
+            SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+        }
+        else {
+            logger.info("initializing SslContext using certificate from S3");
+            InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(), Charset.defaultCharset());
+            InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(), Charset.defaultCharset());
+            return SslContextBuilder.forServer(certificate, privateKey).build();
+        }
     }
 }
