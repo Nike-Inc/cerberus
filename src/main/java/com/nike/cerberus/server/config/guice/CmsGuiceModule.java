@@ -18,9 +18,6 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
@@ -28,7 +25,6 @@ import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.CmsEnvPropertiesLoader;
-import com.nike.cerberus.domain.DashboardResourceFile;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
@@ -66,7 +62,6 @@ import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
-import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
 import com.nike.riposte.server.config.AppInfo;
@@ -86,15 +81,12 @@ import javax.inject.Singleton;
 import javax.net.ssl.SSLException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -291,30 +283,6 @@ public class CmsGuiceModule extends AbstractModule {
         return new HystrixKmsClientFactory(new KmsClientFactory());
     }
 
-    @Provides
-    @Singleton
-    @Named("dashboardAssetMap")
-    public Map<String, DashboardResourceFile> dashboardAssetMap() {
-        URL dashboardFilePath = getClass().getClassLoader().getResource(DASHBOARD_DIRECTORY_RELATIVE_PATH);
-        if (dashboardFilePath == null) {
-            throw new IllegalStateException("Failed to load dashboard resources, relative path: " + DASHBOARD_DIRECTORY_RELATIVE_PATH);
-        }
-
-        File dashboardDir = new File(dashboardFilePath.getPath());
-        Map<String, DashboardResourceFile> dashboardAssets = Maps.newHashMap();
-        Files.fileTreeTraverser()
-                .breadthFirstTraversal(dashboardDir)
-                .filter(File::isFile)
-                .forEach(f -> {
-                    DashboardResourceFile resource = DashboardResourceFileFactory.create(f, dashboardDir.getAbsolutePath());
-                    dashboardAssets.put(resource.getRelativePath(), resource);
-                });
-
-        return ImmutableMap.<String, DashboardResourceFile>builder()
-                .putAll(dashboardAssets)
-                .build();
-    }
-
     /**
      * The SslContextBuilder and Netty´s SslContext implementations only support PKCS8 keys.
      *
@@ -336,6 +304,8 @@ public class CmsGuiceModule extends AbstractModule {
 
     }
 
+    @Provides
+    @Singleton
     @Named("dashboardAssetManager")
     public StaticAssetManager dashboardStaticAssetManager() {
         int maxDepthOfFileTraversal = 2;
