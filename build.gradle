@@ -152,14 +152,4 @@ task copyDashboardResources(type: Copy, dependsOn: buildDashboard) {
     into dashboardResourceFolder
 }
 
-task  runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
-    group 'local development'
-    description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
-
-    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
-    execOverrides {
-        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
-    }
-}
-
 apply from: file('gradle/develop.gradle')

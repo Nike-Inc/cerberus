@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.endpoints;
@@ -24,12 +25,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.http.HttpHeaders;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
+
 /**
  * Returns the dashboard.
+import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
+
+/**
+ * Redirect endpoint to the dashboard.
  */
 public class GetDashboardRedirect extends StandardEndpoint<Void, Void> {
 
@@ -40,7 +48,7 @@ public class GetDashboardRedirect extends StandardEndpoint<Void, Void> {
         return CompletableFuture.completedFuture(
                 ResponseInfo.<Void>newBuilder()
                         .withHttpStatusCode(HttpResponseStatus.MOVED_PERMANENTLY.code())
-                        .withHeaders(new DefaultHttpHeaders().add("Location", "/dashboard/"))
+                        .withHeaders(new DefaultHttpHeaders().add(HttpHeaders.LOCATION, DASHBOARD_ENDPOINT))
                         .build());
     }
 

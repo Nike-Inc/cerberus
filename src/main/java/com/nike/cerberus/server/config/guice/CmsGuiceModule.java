@@ -64,6 +64,7 @@ import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.hystrix.HystrixMetricsLogger;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.DashboardResourceFileFactory;
 import com.nike.cerberus.util.UuidSupplier;
@@ -113,7 +114,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
 
-    private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "dashboard/";
+    private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "/dashboard/";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -219,8 +220,8 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords,
-                getDashboardRedirect, getDashboard, writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob
+                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords, getDashboardRedirect,
+                writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard
         ));
     }
 
@@ -326,12 +327,18 @@ public class CmsGuiceModule extends AbstractModule {
             logger.info("initializing SslContext by creating a self-signed certificate");
             SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
             return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-        }
-        else {
+        } else {
             logger.info("initializing SslContext using certificate from S3");
             InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(), Charset.defaultCharset());
             InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(), Charset.defaultCharset());
             return SslContextBuilder.forServer(certificate, privateKey).build();
         }
+
+    }
+
+    @Named("dashboardAssetManager")
+    public StaticAssetManager dashboardStaticAssetManager() {
+        int maxDepthOfFileTraversal = 2;
+        return new StaticAssetManager(DASHBOARD_DIRECTORY_RELATIVE_PATH, maxDepthOfFileTraversal);
     }
 }

@@ -240,7 +240,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * Error reading the file contents of the requested dashboard asset
      */
-    FAILED_TO_READ_DASHBOARD_ASSET_CONTENT(99233, "The requested dashboard asset file could not be read", HttpServletResponse.SC_INTERNAL_SERVER_ERROR),
+    FAILED_TO_READ_DASHBOARD_ASSET_CONTENT(99233, "The requested dashboard asset file could not be read", HttpServletResponse.SC_NOT_FOUND),
 
     /**
      * Generic not found error.
