@@ -137,7 +137,9 @@ public class AuthTokenService {
         Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
 
         // TODO is there a bug here with daylight savings?
-        if (! tokenRecord.isPresent() || tokenRecord.get().getExpiresTs().isBefore(OffsetDateTime.now())) {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {
+            logger.warn("Returning empty optional, because token was expired, expired: {}, now: {}", tokenRecord.get().getExpiresTs(), now);
             return Optional.empty();
         }
 

@@ -69,6 +69,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
 
         // If the token was invalid throw Vault style permission denied error
         if (! securityContext.isPresent() || ! (securityContext.get().getUserPrincipal() instanceof CerberusPrincipal)) {
+            log.error("Security context was null or principal was not instance of Cerberus Principal");
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
                     new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
@@ -82,6 +83,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
 
         // if that path was invalid throw Vault style permission denied error
         if (! doesRequestHaveRequiredParams(requestInfo.getCategory(), requestInfo.getSdbSlug())) {
+            log.error("Required path params missing, PATH: {}", request.getPath());
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
                     new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
@@ -99,6 +101,8 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
         // check that the principal has the proper permissions or throw Vault style permission denied error
         if (! sdbId.isPresent() || ! permissionService.doesPrincipalHavePermission(principal, sdbId.get(),
                         SecureDataAction.fromMethod(request.getMethod()))) {
+            log.info("SDB Id not found or permission was not granted for principal, principal: {}, sdb: {}," +
+                    " path: {}", principal.getName(), sdbId.orElseGet(() -> "missing"), request.getPath());
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
                     new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
