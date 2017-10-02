@@ -25,6 +25,7 @@ import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.auth.policy.actions.KMSActions;
 import com.amazonaws.auth.policy.internal.JsonPolicyReader;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +65,18 @@ public class KmsPolicyService {
 
     private final JsonPolicyReader policyReader;
 
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
+
     @Inject
     public KmsPolicyService(@Named(ROOT_USER_ARN_PROPERTY) String rootUserArn,
                             @Named(ADMIN_ROLE_ARN_PROPERTY) String adminRoleArn,
-                            @Named(CMS_ROLE_ARN_PROPERTY) String cmsRoleArn) {
+                            @Named(CMS_ROLE_ARN_PROPERTY) String cmsRoleArn,
+                            AwsIamRoleArnParser awsIamRoleArnParser) {
+
         this.rootUserArn = rootUserArn;
         this.adminRoleArn = adminRoleArn;
         this.cmsRoleArn = cmsRoleArn;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
 
         PolicyReaderOptions policyReaderOptions = new PolicyReaderOptions();
         policyReaderOptions.setStripAwsPrincipalIdHyphensEnabled(false);
@@ -82,11 +88,10 @@ public class KmsPolicyService {
      * access the KMS key.
      *
      * @param policyJson - The KMS key policy as a String
-     * @param iamRoleArn - The IAM Role that is supposed to have decrypt permissions
      * @return true if the policy is valid, false if the policy contains an ID because the ARN had been deleted and recreated
      */
-    public boolean isPolicyValid(String policyJson, String iamRoleArn) {
-        return iamPrincipalCanAccessKey(policyJson, iamRoleArn) && cmsHasKeyDeletePermissions(policyJson);
+    public boolean isPolicyValid(String policyJson) {
+        return consumerPrincipalIsAnArnAndNotAnId(policyJson) && cmsHasKeyDeletePermissions(policyJson);
     }
 
     /**
@@ -97,16 +102,17 @@ public class KmsPolicyService {
      * allow the ARN of the recreated principal instead of the ID of the deleted principal.
      *
      * @param policyJson - The KMS key policy as a String
-     * @param iamPrincipalArn - The IAM Role that is supposed to have decrypt permissions
      */
-    protected boolean iamPrincipalCanAccessKey(String policyJson, String iamPrincipalArn) {
+    protected boolean consumerPrincipalIsAnArnAndNotAnId(String policyJson) {
         try {
             Policy policy = policyReader.createPolicyFromJsonString(policyJson);
             return policy.getStatements()
                     .stream()
                     .anyMatch(statement ->
                             StringUtils.equals(statement.getId(), CERBERUS_CONSUMER_SID) &&
-                                    statementAppliesToPrincipal(statement, iamPrincipalArn));
+                                    statement.getPrincipals()
+                                            .stream()
+                                            .anyMatch(principal -> awsIamRoleArnParser.isRoleArn(principal.getId())));
         } catch (Exception e) {
             // if we can't deserialize we will assume policy has been corrupted manually and regenerate it
             logger.error("Failed to validate policy, did someone manually edit the kms policy?", e);
