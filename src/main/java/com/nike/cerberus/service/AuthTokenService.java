@@ -122,7 +122,7 @@ public class AuthTokenService {
         int keyLength = 256;
 
         // https://stackoverflow.com/questions/29431884/java-security-pbekeyspec-how-many-iterations-are-enough
-        int iterations = 50000;
+        int iterations = 100;
         try {
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes(), iterations, keyLength);
