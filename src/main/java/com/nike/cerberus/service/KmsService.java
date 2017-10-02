@@ -217,7 +217,7 @@ public class KmsService {
         try {
             String keyPolicy = getKmsKeyPolicy(awsKmsKeyArn, kmsCMKRegion);
 
-            if (!kmsPolicyService.isPolicyValid(keyPolicy, iamPrincipalArn)) {
+            if (!kmsPolicyService.isPolicyValid(keyPolicy)) {
                 logger.info("The KMS key: {} generated for IAM principal: {} contained an invalid policy, regenerating",
                         awsKmsKeyArn, iamPrincipalArn);
 
