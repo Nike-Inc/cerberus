@@ -50,10 +50,8 @@ public class CerberusBackstopperRiposteGuiceModule extends AbstractModule {
     public ApiExceptionHandlerUtils sfxAwareApiExceptionHandlerUtils(CodahaleMetricsCollector metricsCollector,
                                                                      SignalFxReporterFactory sfxReporterFactory) {
 
-        MetricRegistry metricRegistry = (metricsCollector == null)
-                ? null
-                : metricsCollector.getMetricRegistry();
-        MetricMetadata sfxMetricMetadata = (sfxReporterFactory == null || metricRegistry == null)
+        MetricRegistry metricRegistry = metricsCollector == null ? null : metricsCollector.getMetricRegistry();
+        MetricMetadata sfxMetricMetadata = sfxReporterFactory == null || metricRegistry == null
                 ? null
                 : sfxReporterFactory.getReporter(metricRegistry).getMetricMetadata();
 
@@ -61,7 +59,8 @@ public class CerberusBackstopperRiposteGuiceModule extends AbstractModule {
             logger.warn("Unable to do SignalFx metric gathering around API Errors - the CodahaleMetricsCollector "
                             + "and/or SignalFxReporterFactory were null. Defaulting to ApiExceptionHandlerUtils. "
                             + "metrics_collector_is_null={}, sfx_reporter_factory_is_null={}",
-                    (metricsCollector == null), (sfxReporterFactory == null));
+                    metricsCollector == null,
+                    sfxReporterFactory == null);
             return new ApiExceptionHandlerUtils();
         }
 
