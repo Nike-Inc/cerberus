@@ -28,6 +28,7 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
+import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
@@ -173,6 +174,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appEndpoints")
     public Set<Endpoint<?>> appEndpoints(
             HealthCheckEndpoint healthCheckEndpoint,
+            RobotsEndpoint robotsEndpoint,
             // Cerberus endpoints
             GetAllCategories getAllCategories,
             GetCategory getCategory,
@@ -206,6 +208,7 @@ public class CmsGuiceModule extends AbstractModule {
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
+                robotsEndpoint,
                 // Cerberus endpoints
                 getAllCategories, getCategory, createCategory, deleteCategory,
                 authenticateUser, authenticateIamPrincipal, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
@@ -246,6 +249,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("authProtectedEndpoints")
     public List<Endpoint<?>> authProtectedEndpoints(@Named("appEndpoints") Set<Endpoint<?>> endpoints) {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
+                || i instanceof RobotsEndpoint
                 || i instanceof AuthenticateUser
                 || i instanceof MfaCheck
                 || i instanceof AuthenticateIamRole
