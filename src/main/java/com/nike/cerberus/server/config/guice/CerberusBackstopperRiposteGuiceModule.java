@@ -28,6 +28,7 @@ import com.signalfx.codahale.reporter.MetricMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
 public class CerberusBackstopperRiposteGuiceModule extends AbstractModule {
@@ -47,8 +48,8 @@ public class CerberusBackstopperRiposteGuiceModule extends AbstractModule {
      */
     @Provides
     @Singleton
-    public ApiExceptionHandlerUtils sfxAwareApiExceptionHandlerUtils(CodahaleMetricsCollector metricsCollector,
-                                                                     SignalFxReporterFactory sfxReporterFactory) {
+    public ApiExceptionHandlerUtils sfxAwareApiExceptionHandlerUtils(@Nullable CodahaleMetricsCollector metricsCollector,
+                                                                     @Nullable SignalFxReporterFactory sfxReporterFactory) {
 
         MetricRegistry metricRegistry = metricsCollector == null ? null : metricsCollector.getMetricRegistry();
         MetricMetadata sfxMetricMetadata = sfxReporterFactory == null || metricRegistry == null
