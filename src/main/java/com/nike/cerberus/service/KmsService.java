@@ -30,6 +30,7 @@ import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
 import com.google.inject.name.Named;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
@@ -47,6 +48,7 @@ import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.RejectedExecutionException;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 
@@ -234,9 +236,9 @@ public class KmsService {
                             "Deleting the key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}",
                         awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, nfe);
             deleteKmsKeyById(kmsKeyRecord.getId());
-        } catch (AmazonServiceException e) {
-            logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s. API limit" +
-                    " may have been reached for validate call.", awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion), e);
+        } catch (AmazonServiceException | RejectedExecutionException | HystrixRuntimeException e) {
+            logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s due to %s",
+                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString()), e);
         }
     }
 
