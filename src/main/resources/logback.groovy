@@ -193,10 +193,10 @@ logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArra
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
 
 // begin TODO change these back
-logger("com.nike.cerberus.mapper.AuthTokenMapper", DEBUG, allAsyncAppendersArray, false)
+logger("com.nike.cerberus.mapper.AuthTokenMapper", INFO, allAsyncAppendersArray, false)
 logger("com.nike.cerberus.mapper.PermissionsMapper", DEBUG, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.mapper.SecureDataMapper", DEBUG, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.service.SecureDataService", DEBUG, allAsyncAppendersArray, false)
+logger("com.nike.cerberus.mapper.SecureDataMapper", INFO, allAsyncAppendersArray, false)
+logger("com.nike.cerberus.service.SecureDataService", INFO, allAsyncAppendersArray, false)
 logger("com.nike.cerberus.service.PermissionsService", DEBUG, allAsyncAppendersArray, false)
 // end TODO
 
