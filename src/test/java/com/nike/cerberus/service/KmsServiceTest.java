@@ -137,7 +137,7 @@ public class KmsServiceTest {
         when(result.getPolicy()).thenReturn(policy);
         when(client.getKeyPolicy(new GetKeyPolicyRequest().withKeyId(kmsKeyArn)
                 .withPolicyName("default"))).thenReturn(result);
-        when(kmsPolicyService.isPolicyValid(policy, kmsKeyArn)).thenReturn(true);
+        when(kmsPolicyService.isPolicyValid(policy)).thenReturn(true);
 
         AwsIamRoleKmsKeyRecord kmsKey = mock(AwsIamRoleKmsKeyRecord.class);
         when(kmsKey.getAwsIamRoleId()).thenReturn(awsIamRoleRecordId);
@@ -151,7 +151,7 @@ public class KmsServiceTest {
 
         verify(client, times(1)).getKeyPolicy(new GetKeyPolicyRequest().withKeyId(kmsKeyArn)
                 .withPolicyName("default"));
-        verify(kmsPolicyService, times(1)).isPolicyValid(policy, kmsKeyArn);
+        verify(kmsPolicyService, times(1)).isPolicyValid(policy);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class KmsServiceTest {
         kmsService.validateKeyAndPolicy(kmsKey, iamPrincipalArn);
 
         verify(kmsClientFactory, never()).getClient(anyString());
-        verify(kmsPolicyService, never()).isPolicyValid(anyString(), anyString());
+        verify(kmsPolicyService, never()).isPolicyValid(anyString());
     }
 
     @Test
@@ -201,7 +201,7 @@ public class KmsServiceTest {
 
         kmsService.validateKeyAndPolicy(kmsKey, iamPrincipalArn);
 
-        verify(kmsPolicyService, never()).isPolicyValid(policy, iamPrincipalArn);
+        verify(kmsPolicyService, never()).isPolicyValid(policy);
         verify(client, never()).putKeyPolicy(anyObject());
     }
 

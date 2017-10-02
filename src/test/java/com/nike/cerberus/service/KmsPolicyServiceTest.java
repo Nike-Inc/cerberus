@@ -6,6 +6,7 @@ import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.auth.policy.actions.KMSActions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
@@ -36,7 +37,7 @@ public class KmsPolicyServiceTest {
         String rootUserArn = "arn:aws:iam::1111111111:root";
         String adminRoleArn = "arn:aws:iam::1111111111:role/admin";
         String cmsRoleArn = "arn:aws:iam::1111111111:role/cms-iam-role";
-        kmsPolicyService = new KmsPolicyService(rootUserArn, adminRoleArn, cmsRoleArn);
+        kmsPolicyService = new KmsPolicyService(rootUserArn, adminRoleArn, cmsRoleArn, new AwsIamRoleArnParser());
         objectMapper = new ObjectMapper();
     }
 
@@ -62,7 +63,7 @@ public class KmsPolicyServiceTest {
                 .getResourceAsStream("com/nike/cerberus/service/valid-cerberus-iam-auth-kms-key-policy.json");
         String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
 
-        assertTrue(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+        assertTrue(kmsPolicyService.isPolicyValid(policyJsonAsString));
 
         policy.close();
     }
@@ -73,7 +74,7 @@ public class KmsPolicyServiceTest {
                 .getResourceAsStream("com/nike/cerberus/service/invalid-cerberus-iam-auth-kms-key-policy.json");
         String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
 
-        assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+        assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString));
 
         policy.close();
     }
@@ -84,14 +85,14 @@ public class KmsPolicyServiceTest {
                 .getResourceAsStream("com/nike/cerberus/service/invalid-cerberus-kms-key-policy-cms-cannot-delete.json");
         String policyJsonAsString = IOUtils.toString(policy, "UTF-8");
 
-        assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+        assertFalse(kmsPolicyService.isPolicyValid(policyJsonAsString));
 
         policy.close();
     }
 
     @Test
     public void test_that_isPolicyValid_returns_false_when_a_non_standard_policy_is_supplied() {
-        assertFalse(kmsPolicyService.isPolicyValid(null, CERBERUS_CONSUMER_IAM_ROLE_ARN));
+        assertFalse(kmsPolicyService.isPolicyValid(null));
     }
 
     @Test
