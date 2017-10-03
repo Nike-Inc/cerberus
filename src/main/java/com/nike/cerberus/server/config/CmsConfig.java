@@ -18,6 +18,7 @@ package com.nike.cerberus.server.config;
 
 import com.google.inject.util.Modules;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
+import com.nike.cerberus.server.config.guice.CerberusBackstopperRiposteGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsFlywayModule;
 import com.nike.cerberus.server.config.guice.CmsGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsMyBatisModule;
@@ -105,7 +106,8 @@ public class CmsConfig implements ServerConfig {
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule(),
                 new OneLoginGuiceModule(),
-                new MetricsGuiceModule()
+                new MetricsGuiceModule(),
+                new CerberusBackstopperRiposteGuiceModule()
         ));
 
         // bind the CMS Guice module last allowing the S3 props file to override any given application property
