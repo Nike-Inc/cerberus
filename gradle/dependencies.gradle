@@ -17,9 +17,13 @@
 
 repositories {
     jcenter()
+    maven {
+        // temporary for testing riposte branch with newer Netty version
+        url "https://dl.bintray.com/nmunroe/maven"
+    }
 }
 
-def riposteVersion = '0.10.1'
+def riposteVersion = '0.11.2.test'
 def logbackVersion = '1.1.7'
 // Request version 4 for full java 8 support
 def guiceVersion = '4.0'
