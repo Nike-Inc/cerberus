@@ -66,7 +66,7 @@ public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCrede
     private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamPrincipalCredentials> request) {
         final IamPrincipalCredentials credentials = request.getContent();
 
-        log.info("{}: {}, IAM Auth Event: the IAM principal {} with ip: {} in attempting to authenticate in region {}",
+        log.debug("{}: {}, IAM Auth Event: the IAM principal {} with ip: {} in attempting to authenticate in region {}",
                 HEADER_X_CERBERUS_CLIENT,
                 getClientVersion(request),
                 credentials.getIamPrincipalArn(),

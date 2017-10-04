@@ -49,6 +49,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 
@@ -64,7 +65,7 @@ public class KmsService {
 
     private static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
 
-    private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 6000;  // in milliseconds
+    private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = (int) TimeUnit.MINUTES.toMillis(5);  // in milliseconds
 
     public static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
 
@@ -207,7 +208,7 @@ public class KmsService {
      */
     public void validateKeyAndPolicy(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
 
-        if (! kmsPolicyNeedsValidation(kmsKeyRecord)) {
+        if (! kmsPolicyNeedsValidation(kmsKeyRecord, iamPrincipalArn)) {
             // Avoiding extra calls to AWS so that we don't get rate limited.
             return;
         }
@@ -374,19 +375,23 @@ public class KmsService {
      * @param kmsKeyRecord - KMS key record to check for validation
      * @return True if needs validation, False if not
      */
-    protected boolean kmsPolicyNeedsValidation(AwsIamRoleKmsKeyRecord kmsKeyRecord) {
+    protected boolean kmsPolicyNeedsValidation(AwsIamRoleKmsKeyRecord kmsKeyRecord, String arn) {
 
         OffsetDateTime now = dateTimeSupplier.get();
         long timeSinceLastValidatedInMillis = ChronoUnit.MILLIS.between(kmsKeyRecord.getLastValidatedTs(), now);
 
         boolean needValidation = timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
 
-        logger.warn("last validated: {}, time since last validated in millis: {}, " +
+        logger.debug("last validated: {}, time since last validated in millis: {}, " +
                         "kmsKeyPolicyValidationInterval: {}, needs validation: {}",
                 kmsKeyRecord.getLastValidatedTs(),
                 timeSinceLastValidatedInMillis,
                 kmsKeyPolicyValidationInterval,
                 needValidation);
+
+        if (needValidation) {
+            logger.info("Re-validating kms policy for arn: {}", arn);
+        }
 
         return needValidation;
     }
