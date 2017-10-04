@@ -125,6 +125,7 @@ public class AuthTokenService {
         int iterations = 100;
         try {
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+            // TODO: base64 decode the hashSalt
             PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes(), iterations, keyLength);
             SecretKey key = skf.generateSecret(spec);
             return Hex.encodeHexString(key.getEncoded());
