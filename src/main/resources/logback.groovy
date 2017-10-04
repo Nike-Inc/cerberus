@@ -192,14 +192,6 @@ logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArra
 
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
 
-// begin TODO change these back
-logger("com.nike.cerberus.mapper.AuthTokenMapper", INFO, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.mapper.PermissionsMapper", INFO, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.mapper.SecureDataMapper", INFO, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.service.SecureDataService", INFO, allAsyncAppendersArray, false)
-logger("com.nike.cerberus.service.PermissionsService", INFO, allAsyncAppendersArray, false)
-// end TODO
-
 logger("VALID_WINGTIPS_SPANS", OFF, allAsyncAppendersArray, false)
 
 // ACCESS LOG SETTINGS

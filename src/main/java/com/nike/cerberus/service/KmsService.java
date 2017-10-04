@@ -236,9 +236,11 @@ public class KmsService {
                             "Deleting the key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}",
                         awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, nfe);
             deleteKmsKeyById(kmsKeyRecord.getId());
-        } catch (AmazonServiceException | RejectedExecutionException | HystrixRuntimeException e) {
-            logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s due to %s",
-                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString()), e);
+        } catch (AmazonServiceException | HystrixRuntimeException e) {
+            logger.warn("Failed to validate KMS policy for keyId: {} for IAM principal: {} in region: {} due to {}",
+                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString());
+        } catch (RejectedExecutionException e) {
+            logger.warn("Hystrix rejected policy lookup, thread pool full, {}", e.toString());
         }
     }
 
@@ -377,6 +379,15 @@ public class KmsService {
         OffsetDateTime now = dateTimeSupplier.get();
         long timeSinceLastValidatedInMillis = ChronoUnit.MILLIS.between(kmsKeyRecord.getLastValidatedTs(), now);
 
-        return timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
+        boolean needValidation = timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
+
+        logger.warn("last validated: {}, time since last validated in millis: {}, " +
+                        "kmsKeyPolicyValidationInterval: {}, needs validation: {}",
+                kmsKeyRecord.getLastValidatedTs(),
+                timeSinceLastValidatedInMillis,
+                kmsKeyPolicyValidationInterval,
+                needValidation);
+
+        return needValidation;
     }
 }

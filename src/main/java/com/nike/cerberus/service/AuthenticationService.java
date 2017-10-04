@@ -335,7 +335,7 @@ public class AuthenticationService {
         authToken.setMetadata(ImmutableMap.of("_truncated", "true"));
         authToken.setPolicies(ImmutableSet.of("_truncated"));
 
-        logger.warn(
+        logger.debug(
                 "The auth token has length: {} which is > {} KMS cannot encrypt it, truncating auth payload by removing policies and metadata " +
                         "original metadata: {} " +
                         "original policies: {}",
