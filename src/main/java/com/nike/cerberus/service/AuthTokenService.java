@@ -20,8 +20,10 @@ import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.record.AuthTokenRecord;
+import com.nike.cerberus.util.AuthTokenGenerator;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.RandomString;
+import com.nike.cerberus.util.TokenHasher;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
@@ -43,17 +45,20 @@ public class AuthTokenService {
 
     private final UuidSupplier uuidSupplier;
     private final TokenHasher tokenHasher;
+    private final AuthTokenGenerator authTokenGenerator;
     private final AuthTokenDao authTokenDao;
     private final DateTimeSupplier dateTimeSupplier;
 
     @Inject
     public AuthTokenService(UuidSupplier uuidSupplier,
                             TokenHasher tokenHasher,
+                            AuthTokenGenerator authTokenGenerator,
                             AuthTokenDao authTokenDao,
                             DateTimeSupplier dateTimeSupplier) {
 
         this.uuidSupplier = uuidSupplier;
         this.tokenHasher = tokenHasher;
+        this.authTokenGenerator = authTokenGenerator;
         this.authTokenDao = authTokenDao;
         this.dateTimeSupplier = dateTimeSupplier;
     }
@@ -69,7 +74,7 @@ public class AuthTokenService {
         checkArgument(StringUtils.isNotBlank(principal), "The principal must be set and not empty");
 
         String id = uuidSupplier.get();
-        String token = new RandomString().nextString();
+        String token = authTokenGenerator.generateSecureToken();
         OffsetDateTime now = dateTimeSupplier.get();
 
         AuthTokenRecord tokenRecord = new AuthTokenRecord()

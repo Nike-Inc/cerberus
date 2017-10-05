@@ -1,4 +1,4 @@
-package com.nike.cerberus.service;
+package com.nike.cerberus.util;
 
 import com.google.inject.name.Named;
 import org.apache.commons.codec.binary.Hex;
@@ -33,6 +33,9 @@ public class TokenHasher {
      */
     public String hashToken(String token) {
         int keyLength = 256;
+
+        // TODO: additional research, security review
+        // TODO: all constants in method should be configurable
 
         // https://stackoverflow.com/questions/29431884/java-security-pbekeyspec-how-many-iterations-are-enough
         int iterations = 100;
