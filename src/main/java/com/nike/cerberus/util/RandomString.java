@@ -26,6 +26,8 @@ import java.util.Random;
  */
 public class RandomString {
 
+    // TODO: additional research and security review
+
     /**
      * Generate a random string.
      */
