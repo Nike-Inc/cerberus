@@ -16,30 +16,21 @@
 
 package com.nike.cerberus.service;
 
-import com.google.inject.name.Named;
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AuthTokenRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.RandomString;
 import com.nike.cerberus.util.UuidSupplier;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -50,21 +41,19 @@ public class AuthTokenService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static final String HASH_SALT = "auth.token.hashSalt";
-
     private final UuidSupplier uuidSupplier;
-    private final String hashSalt;
+    private final TokenHasher tokenHasher;
     private final AuthTokenDao authTokenDao;
     private final DateTimeSupplier dateTimeSupplier;
 
     @Inject
     public AuthTokenService(UuidSupplier uuidSupplier,
-                            @Named(HASH_SALT) String hashSalt,
+                            TokenHasher tokenHasher,
                             AuthTokenDao authTokenDao,
                             DateTimeSupplier dateTimeSupplier) {
 
         this.uuidSupplier = uuidSupplier;
-        this.hashSalt = hashSalt;
+        this.tokenHasher = tokenHasher;
         this.authTokenDao = authTokenDao;
         this.dateTimeSupplier = dateTimeSupplier;
     }
@@ -85,7 +74,7 @@ public class AuthTokenService {
 
         AuthTokenRecord tokenRecord = new AuthTokenRecord()
                 .setId(id)
-                .setTokenHash(hashToken(token))
+                .setTokenHash(tokenHasher.hashToken(token))
                 .setCreatedTs(now)
                 .setExpiresTs(now.plusMinutes(ttlInMinutes))
                 .setPrincipal(principal)
@@ -112,30 +101,8 @@ public class AuthTokenService {
                 .build();
     }
 
-    /**
-     * https://www.owasp.org/index.php/Hashing_Java
-     *
-     * @param token The token to hash
-     * @return The hashed token
-     */
-    private String hashToken(String token) {
-        int keyLength = 256;
-
-        // https://stackoverflow.com/questions/29431884/java-security-pbekeyspec-how-many-iterations-are-enough
-        int iterations = 100;
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-            // TODO: base64 decode the hashSalt
-            PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes(), iterations, keyLength);
-            SecretKey key = skf.generateSecret(spec);
-            return Hex.encodeHexString(key.getEncoded());
-        } catch (Exception e) {
-            throw new RuntimeException("There was a problem hashing the token", e);
-        }
-    }
-
     public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
-        Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(hashToken(token));
+        Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(tokenHasher.hashToken(token));
 
         // TODO is there a bug here with daylight savings?
         OffsetDateTime now = OffsetDateTime.now();
@@ -149,7 +116,7 @@ public class AuthTokenService {
 
     @Transactional
     public void revokeToken(String token) {
-        String hash = hashToken(token);
+        String hash = tokenHasher.hashToken(token);
         authTokenDao.deleteAuthTokenFromHash(hash);
     }
 
