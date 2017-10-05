@@ -28,7 +28,6 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
-import com.nike.cerberus.endpoints.InfoEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
@@ -76,6 +75,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -297,6 +297,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Provides
     @Singleton
     public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled) throws SSLException, CertificateException {
+        Validate.notBlank(protocolsEnabled, "cms.ssl.protocolsEnabled requires a list of SSL protocols, e.g. TLSv1.2");
         logger.info("ssl protocols enabled: " + protocolsEnabled);
         if (cmsEnvPropertiesLoader == null) {
             logger.info("initializing SslContext by creating a self-signed certificate");
