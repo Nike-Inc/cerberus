@@ -28,6 +28,7 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
+import com.nike.cerberus.endpoints.InfoEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
@@ -74,6 +75,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,16 +296,21 @@ public class CmsGuiceModule extends AbstractModule {
      */
     @Provides
     @Singleton
-    public SslContext sslContext() throws SSLException, CertificateException {
+    public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled) throws SSLException, CertificateException {
+        logger.info("ssl protocols enabled: " + protocolsEnabled);
         if (cmsEnvPropertiesLoader == null) {
             logger.info("initializing SslContext by creating a self-signed certificate");
             SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
-            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
+                    .protocols(StringUtils.split(protocolsEnabled, ","))
+                    .build();
         } else {
             logger.info("initializing SslContext using certificate from S3");
             InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(), Charset.defaultCharset());
             InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(), Charset.defaultCharset());
-            return SslContextBuilder.forServer(certificate, privateKey).build();
+            return SslContextBuilder.forServer(certificate, privateKey)
+                    .protocols(StringUtils.split(protocolsEnabled, ","))
+                    .build();
         }
 
     }
