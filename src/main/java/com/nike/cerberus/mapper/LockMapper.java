@@ -16,16 +16,10 @@
 
 package com.nike.cerberus.mapper;
 
-import com.nike.cerberus.record.AuthTokenRecord;
 import org.apache.ibatis.annotations.Param;
 
-public interface AuthTokenMapper {
+public interface LockMapper {
+    int getLock(@Param("name") String name);
 
-    int createAuthToken(@Param("record") AuthTokenRecord record);
-
-    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
-
-    void deleteAuthTokenFromHash(@Param("hash") String hash);
-
-    int deleteExpiredTokens(@Param("limit") int limit);
+    int releaseLock(@Param("name") String jobName);
 }

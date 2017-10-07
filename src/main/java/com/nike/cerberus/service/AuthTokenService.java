@@ -26,6 +26,7 @@ import com.nike.cerberus.util.RandomString;
 import com.nike.cerberus.util.TokenHasher;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
+import org.mybatis.guice.datasource.dbcp.PerUserDefaultAutoCommit;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.mybatis.guice.transactional.Isolation.READ_UNCOMMITTED;
 
 /**
  * Service for handling authentication tokens.
@@ -109,7 +111,6 @@ public class AuthTokenService {
     public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
         Optional<AuthTokenRecord> tokenRecord = authTokenDao.getAuthTokenFromHash(tokenHasher.hashToken(token));
 
-        // TODO is there a bug here with daylight savings?
         OffsetDateTime now = OffsetDateTime.now();
         if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {
             logger.warn("Returning empty optional, because token was expired, expired: {}, now: {}", tokenRecord.get().getExpiresTs(), now);
@@ -125,9 +126,11 @@ public class AuthTokenService {
         authTokenDao.deleteAuthTokenFromHash(hash);
     }
 
-    // TODO is there a bug here with daylight savings, probably
-    @Transactional
-    public int deleteExpiredTokens() {
-        return authTokenDao.deleteExpiredTokens();
+    @Transactional(
+            isolation = READ_UNCOMMITTED, // allow dirty reads so we don't block other threads
+            autoCommit = true // auto commit each batched / chunked delete
+    )
+    public int deleteExpiredTokens(int maxDelete, int batchSize) {
+        return authTokenDao.deleteExpiredTokens(maxDelete, batchSize);
     }
 }

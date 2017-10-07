@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.mapper;
+package com.nike.cerberus.dao;
 
-import com.nike.cerberus.record.AuthTokenRecord;
-import org.apache.ibatis.annotations.Param;
+import com.nike.cerberus.mapper.LockMapper;
 
-public interface AuthTokenMapper {
+import javax.inject.Inject;
 
-    int createAuthToken(@Param("record") AuthTokenRecord record);
+public class LockDao {
 
-    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
+    private final LockMapper lockMapper;
 
-    void deleteAuthTokenFromHash(@Param("hash") String hash);
+    @Inject
+    public LockDao(LockMapper lockMapper) {
+        this.lockMapper = lockMapper;
+    }
 
-    int deleteExpiredTokens(@Param("limit") int limit);
+    public int getLock(String name) {
+        return lockMapper.getLock(name);
+    }
+
+    public int releaseLock(String jobName) {
+        return lockMapper.releaseLock(jobName);
+    }
 }

@@ -25,6 +25,7 @@ import org.quartz.jobs.JobDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +64,7 @@ public class JobsInitializerUtils {
                 String jobFullClassPath = "com.nike.cerberus.jobs." + jobClassName;
                 long millis = TimeUnit.valueOf(repeatTimeUnit.toUpperCase()).toMillis(repeatInterval);
 
-                SundialJobScheduler.addJob(jobClassName, jobFullClassPath);
+                SundialJobScheduler.addJob(jobClassName, jobFullClassPath, null, false);
                 SundialJobScheduler.addSimpleTrigger(triggerName,
                         jobClassName,
                         repeatCount,

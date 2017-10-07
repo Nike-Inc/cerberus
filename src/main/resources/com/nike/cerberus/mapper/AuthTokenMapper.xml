@@ -71,7 +71,7 @@
   </delete>
 
   <delete id="deleteExpiredTokens">
-    DELETE FROM AUTH_TOKENS WHERE EXPIRES_TS &lt; CURRENT_TIME
+    DELETE FROM AUTH_TOKENS WHERE EXPIRES_TS &lt; CURRENT_TIME LIMIT #{limit}
   </delete>
 
 </mapper>

@@ -18,12 +18,16 @@ package com.nike.cerberus.dao;
 
 import com.nike.cerberus.mapper.AuthTokenMapper;
 import com.nike.cerberus.record.AuthTokenRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public class AuthTokenDao {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final AuthTokenMapper authTokenMapper;
 
@@ -44,7 +48,14 @@ public class AuthTokenDao {
         authTokenMapper.deleteAuthTokenFromHash(hash);
     }
 
-    public int deleteExpiredTokens() {
-        return authTokenMapper.deleteExpiredTokens();
+    public int deleteExpiredTokens(int maxDelete, int batchSize) {
+        int numberOfDeletedTokens = 0;
+        int cur;
+        do {
+            cur = authTokenMapper.deleteExpiredTokens(batchSize);
+            logger.info("Deleted {} tokens in this batch {} so far", cur, numberOfDeletedTokens);
+            numberOfDeletedTokens += cur;
+        } while (cur > 0 && numberOfDeletedTokens < maxDelete);
+        return numberOfDeletedTokens;
     }
 }
