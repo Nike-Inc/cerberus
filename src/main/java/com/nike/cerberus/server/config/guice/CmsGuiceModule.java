@@ -58,7 +58,7 @@ import com.nike.cerberus.endpoints.secret.ReadSecureData;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
-import com.nike.cerberus.hystrix.HystrixMetricsLogger;
+import com.nike.cerberus.jobs.HystrixMetricsProcessingJob;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
 import com.nike.cerberus.service.StaticAssetManager;
@@ -144,7 +144,6 @@ public class CmsGuiceModule extends AbstractModule {
             throw new IllegalArgumentException("class: " + className + " is the wrong type", cce);
         }
 
-        bind(HystrixMetricsLogger.class).asEagerSingleton();
     }
 
     private void loadEnvProperties() {
