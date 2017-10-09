@@ -48,13 +48,20 @@ public class AuthTokenDao {
         authTokenMapper.deleteAuthTokenFromHash(hash);
     }
 
-    public int deleteExpiredTokens(int maxDelete, int batchSize) {
+    public int deleteExpiredTokens(int maxDelete, int batchSize, int batchPauseTimeInMillis) {
         int numberOfDeletedTokens = 0;
         int cur;
         do {
             cur = authTokenMapper.deleteExpiredTokens(batchSize);
             logger.info("Deleted {} tokens in this batch {} so far", cur, numberOfDeletedTokens);
             numberOfDeletedTokens += cur;
+            if (cur > 0 && numberOfDeletedTokens < maxDelete && batchPauseTimeInMillis > 0) {
+                try {
+                    Thread.sleep(batchPauseTimeInMillis);
+                } catch (InterruptedException e) {
+                    logger.error("Failed to sleep between delete batches", e);
+                }
+            }
         } while (cur > 0 && numberOfDeletedTokens < maxDelete);
         return numberOfDeletedTokens;
     }

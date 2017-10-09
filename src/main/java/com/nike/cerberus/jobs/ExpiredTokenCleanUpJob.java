@@ -19,19 +19,34 @@ package com.nike.cerberus.jobs;
 import com.nike.cerberus.service.AuthTokenService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 public class ExpiredTokenCleanUpJob extends LockingJob {
 
     private final AuthTokenService authTokenService;
+    private final int maxNumberOfTokensToDeletePerJobRun;
+    private final int numberOfTokensToDeletePerBatch;
+    private final int batchPauseTimeInMillis;
 
     @Inject
-    public ExpiredTokenCleanUpJob(AuthTokenService authTokenService) {
+    public ExpiredTokenCleanUpJob(AuthTokenService authTokenService,
+                                  @Named("cms.jobs.ExpiredTokenCleanUpJob.maxNumberOfTokensToDeletePerJobRun")
+                                          int maxNumberOfTokensToDeletePerJobRun,
+                                  @Named("cms.jobs.ExpiredTokenCleanUpJob.numberOfTokensToDeletePerBatch")
+                                          int numberOfTokensToDeletePerBatch,
+                                  @Named("cms.jobs.ExpiredTokenCleanUpJob.batchPauseTimeInMillis")
+                                          int batchPauseTimeInMillis) {
+
         this.authTokenService = authTokenService;
+        this.maxNumberOfTokensToDeletePerJobRun = maxNumberOfTokensToDeletePerJobRun;
+        this.numberOfTokensToDeletePerBatch = numberOfTokensToDeletePerBatch;
+        this.batchPauseTimeInMillis = batchPauseTimeInMillis;
     }
 
     @Override
     protected void executeLockableCode() {
-        int numberOfDeletedTokens = authTokenService.deleteExpiredTokens(250000, 1000);
+        int numberOfDeletedTokens = authTokenService.deleteExpiredTokens(maxNumberOfTokensToDeletePerJobRun,
+                numberOfTokensToDeletePerBatch, batchPauseTimeInMillis);
         log.info("Deleted {} tokens", numberOfDeletedTokens);
     }
 }

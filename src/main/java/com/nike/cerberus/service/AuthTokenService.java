@@ -130,7 +130,7 @@ public class AuthTokenService {
             isolation = READ_UNCOMMITTED, // allow dirty reads so we don't block other threads
             autoCommit = true // auto commit each batched / chunked delete
     )
-    public int deleteExpiredTokens(int maxDelete, int batchSize) {
-        return authTokenDao.deleteExpiredTokens(maxDelete, batchSize);
+    public int deleteExpiredTokens(int maxDelete, int batchSize, int batchPauseTimeInMillis) {
+        return authTokenDao.deleteExpiredTokens(maxDelete, batchSize, batchPauseTimeInMillis);
     }
 }
