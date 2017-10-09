@@ -71,16 +71,16 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal =
+            final CerberusPrincipal authPrincipal =
                     (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, Delete Token Auth Event: the principal: {} with ip: {} is attempting to delete a token",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request));
 
-            authenticationService.revoke(vaultAuthPrincipal.getToken());
+            authenticationService.revoke(authPrincipal.getToken());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
         }
 
