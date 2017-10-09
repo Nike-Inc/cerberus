@@ -18,16 +18,11 @@ package com.nike.cerberus.security;
 
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.PrincipalType;
-import com.nike.cerberus.domain.AuthTokenLookupResponse;
 import com.nike.cerberus.domain.CerberusAuthToken;
-import com.nike.cerberus.service.AuthTokenService;
-import org.apache.commons.lang3.StringUtils;
 
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
