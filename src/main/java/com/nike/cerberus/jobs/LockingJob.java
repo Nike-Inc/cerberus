@@ -49,25 +49,25 @@ public abstract class LockingJob extends Job {
             executeLockableCode();
         } catch (Throwable t) {
             log.error("Failed to execute lockable job, releasing lock", t);
-        }
-
-        log.info("Attempting to release lock for Job: {}", jobName);
-        boolean released = false;
-        do {
-            try {
-                released = jobCoordinatorService.releaseLock(jobName);
-                if (!released) { // Sometimes it takes multiple calls to release, why?
-                    log.warn("Failed to release log, will retry after pause");
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+        } finally {
+            log.info("Attempting to release lock for Job: {}", jobName);
+            boolean released = false;
+            do {
+                try {
+                    released = jobCoordinatorService.releaseLock(jobName);
+                    if (!released) { // Sometimes it takes multiple calls to release, why?
+                        log.warn("Failed to release log, will retry after pause");
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+                    }
+                } catch (InterruptedException e) {
+                    log.error("Pause interrupted while trying to release lock", e);
+                    Thread.currentThread().interrupt();
+                } catch (Throwable t) {
+                    log.error("Something went wrong trying to release lock retrying", t);
                 }
-            } catch (InterruptedException | JobInterruptException e) {
-                log.error("Pause interrupted while trying to release lock", e);
-                throw new JobInterruptException();
-            } catch (Throwable t) {
-                log.error("Something went wrong trying to release lock retrying", t);
-            }
-        } while (! released);
-        log.info("Lock released for Job: {}", jobName);
+            } while (! released);
+            log.info("Lock released for Job: {}", jobName);
+        }
     }
 
     protected abstract void executeLockableCode();
