@@ -74,7 +74,7 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getHealthCounts()
             );
 
-            String baseMetricName = "cerberus.hystrix.command" +
+            String baseMetricName = "hyst.cmd" +
                     metrics.getCommandGroup().name().toLowerCase() + "." +
                     metrics.getCommandKey().name().toLowerCase();
 
@@ -113,21 +113,21 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getThreadPool()
             );
 
-            String baseMetricName = "cerberus.hystrix.threadPool." + metrics.getThreadPoolKey().name();
+            String baseMetricName = "hyst.tP." + metrics.getThreadPoolKey().name();
 
-            getOrCreateSettableGauge(baseMetricName + ".rolling.rejected").ifPresent((gauge) ->
+            getOrCreateSettableGauge(baseMetricName + ".rol.rejected").ifPresent((gauge) ->
                     gauge.setValue(metrics.getRollingCountThreadsRejected()));
 
-            getOrCreateSettableGauge(baseMetricName + ".rolling.executed").ifPresent((gauge) ->
+            getOrCreateSettableGauge(baseMetricName + ".rol.executed").ifPresent((gauge) ->
                     gauge.setValue(metrics.getRollingCountThreadsExecuted()));
 
-            getOrCreateSettableGauge(baseMetricName + ".rolling.maxActiveThreads").ifPresent((gauge) ->
+            getOrCreateSettableGauge(baseMetricName + ".rol.maxActiveThreads").ifPresent((gauge) ->
                     gauge.setValue(metrics.getRollingMaxActiveThreads()));
 
-            getOrCreateSettableGauge(baseMetricName + ".cumulative.rejected").ifPresent((gauge) ->
+            getOrCreateSettableGauge(baseMetricName + ".cum.rejected").ifPresent((gauge) ->
                     gauge.setValue(metrics.getCumulativeCountThreadsRejected()));
 
-            getOrCreateSettableGauge(baseMetricName + ".cumulative.executed").ifPresent((gauge) ->
+            getOrCreateSettableGauge(baseMetricName + ".cum.executed").ifPresent((gauge) ->
                     gauge.setValue(metrics.getCumulativeCountThreadsExecuted()));
 
             getOrCreateSettableGauge(baseMetricName + ".tpe.poolSize").ifPresent((gauge) ->
