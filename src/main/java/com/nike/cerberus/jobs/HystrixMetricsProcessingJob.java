@@ -74,7 +74,7 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getHealthCounts()
             );
 
-            String baseMetricName = "hyst.cmd" +
+            String baseMetricName = "hyst.cmd." +
                     metrics.getCommandGroup().name().toLowerCase() + "." +
                     metrics.getCommandKey().name().toLowerCase();
 
