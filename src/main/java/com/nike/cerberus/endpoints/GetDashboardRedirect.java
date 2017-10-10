@@ -33,10 +33,6 @@ import java.util.concurrent.Executor;
 import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
 
 /**
- * Returns the dashboard.
-import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
-
-/**
  * Redirect endpoint to the dashboard.
  */
 public class GetDashboardRedirect extends StandardEndpoint<Void, Void> {
