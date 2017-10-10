@@ -21,6 +21,7 @@ import com.google.inject.Singleton;
 import com.netflix.hystrix.HystrixCircuitBreaker;
 import com.netflix.hystrix.HystrixCommandMetrics;
 import com.netflix.hystrix.HystrixThreadPoolMetrics;
+import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
 import com.nike.riposte.metrics.codahale.SignalFxAwareCodahaleMetricsCollector;
 import com.signalfx.codahale.metrics.SettableLongGauge;
 import org.knowm.sundial.Job;
@@ -38,10 +39,10 @@ public class HystrixMetricsProcessingJob extends Job {
 
     private static final Logger log = LoggerFactory.getLogger(HystrixMetricsProcessingJob.class);
 
-    private final SignalFxAwareCodahaleMetricsCollector metricsCollector;
+    private final CodahaleMetricsCollector metricsCollector;
 
     @Inject
-    public HystrixMetricsProcessingJob(SignalFxAwareCodahaleMetricsCollector metricsCollector) {
+    public HystrixMetricsProcessingJob(CodahaleMetricsCollector metricsCollector) {
         this.metricsCollector = metricsCollector;
     }
 
