@@ -29,6 +29,7 @@ import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import com.nike.riposte.util.MultiMatcher;
+import com.nike.wingtips.Tracer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -94,7 +95,19 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
         }
 
         SecureDataResponse response = new SecureDataResponse();
-        response.setRequestId(UUID.randomUUID().toString()); // maybe use trace id?
+
+        String requestId;
+        Tracer tracer = Tracer.getInstance();
+        if (tracer != null &&
+                tracer.getCurrentSpan() != null &&
+                StringUtils.isNotBlank(tracer.getCurrentSpan().getTraceId())) {
+
+            requestId = tracer.getCurrentSpan().getTraceId();
+        } else {
+            requestId = UUID.randomUUID().toString();
+        }
+
+        response.setRequestId(requestId); // maybe use trace id?
         response.setData(ImmutableMap.of("keys", keys));
 
         return ResponseInfo.newBuilder()
