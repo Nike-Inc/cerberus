@@ -17,9 +17,13 @@
 
 repositories {
     jcenter()
+    maven {
+        // temporary for testing riposte branch with newer Netty version
+        url "https://dl.bintray.com/nmunroe/maven"
+    }
 }
 
-def riposteVersion = '0.10.1'
+def riposteVersion = '0.11.2.test'
 def logbackVersion = '1.1.7'
 // Request version 4 for full java 8 support
 def guiceVersion = '4.0'
@@ -28,7 +32,6 @@ def groovyVersion = '2.3.9'
 
 dependencies {
     compile (
-            "com.nike:vault-client:1.6.0",
             "com.nike.riposte:riposte-spi:$riposteVersion",
             "com.nike.riposte:riposte-core:$riposteVersion",
             "com.nike.riposte:riposte-typesafe-config:$riposteVersion",
@@ -50,9 +53,11 @@ dependencies {
             "org.ow2.asm:asm-all:5.0.4", // Required for full java 8 support (since we're excluding the old ASM 3 pulled in by various other libraries in the main build.gradle)
             "com.google.inject:guice:$guiceVersion",
             "com.google.inject.extensions:guice-multibindings:$guiceVersion",
+            'com.google.code.gson:gson:2.8.1',
             "com.amazonaws:aws-java-sdk-core:$awsSdkVersion",
             "com.amazonaws:aws-java-sdk-kms:$awsSdkVersion",
             "com.amazonaws:aws-java-sdk-s3:$awsSdkVersion",
+            'com.amazonaws:aws-encryption-sdk-java:1.3.1',
             "org.mybatis:mybatis:3.4.1",
             "org.mybatis:mybatis-typehandlers-jsr310:1.0.1",
             "org.mybatis:mybatis-guice:3.7.1",
@@ -62,7 +67,9 @@ dependencies {
             "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.2",
             "com.squareup.okhttp3:okhttp:3.3.1",
             "commons-io:commons-io:2.5",
-            "com.okta:okta-sdk:0.0.4"
+            "com.okta:okta-sdk:0.0.4",
+            "com.google.code.findbugs:jsr305:3.0.2",
+            "org.knowm:sundial:2.1.3"
     )
 
     testCompile (

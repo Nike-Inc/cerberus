@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.auth.connector;
 
-import com.nike.vault.client.model.VaultAuthResponse;
+import com.nike.cerberus.domain.AuthTokenResponse;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class AuthData {
 
     private List<AuthMfaDevice> devices = new LinkedList<>();
 
-    private VaultAuthResponse clientToken;
+    private AuthTokenResponse clientToken;
 
     public String getUserId() {
         return userId;
@@ -72,11 +72,11 @@ public class AuthData {
         return this;
     }
 
-    public VaultAuthResponse getClientToken() {
+    public AuthTokenResponse getClientToken() {
         return clientToken;
     }
 
-    public AuthData setClientToken(VaultAuthResponse clientToken) {
+    public AuthData setClientToken(AuthTokenResponse clientToken) {
         this.clientToken = clientToken;
         return this;
     }

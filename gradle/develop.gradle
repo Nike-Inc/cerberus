@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import org.apache.tools.ant.taskdefs.condition.Os
-import groovyx.net.http.RESTClient
-import static groovyx.net.http.ContentType.*
-
-def vaultVersion = "0.8.1"
 
 def nodeServerPort = 8000
-def cmsPort = 8080
-def vaultPort = 8200
 def cmsRemoteDebugPort = 5005
 
 buildscript {
@@ -45,32 +38,18 @@ task startProxyAndDashboardInBackground(type: SpawnProcessTask) {
     finalizedBy 'startVaultAndMySQLInBackground'
 }
 
-task startVaultAndMySQLInBackground(type: SpawnProcessTask) {
-    command "${project.getRootDir().absolutePath}${File.separator}gradlew runVaultAndMySQL --stacktrace"
+task startMySQLInBackground(type: SpawnProcessTask) {
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew sEM --stacktrace"
     ready 'core: post-unseal setup complete'
     pidLockFileName '.vault-sql.pid.lock'
 }
 
 task stop () {
-    finalizedBy 'stopProxyAndDashboardBackgroundThread', 'stopVaultAndMySQLBackgroundThread'
+    finalizedBy 'stopProxyAndDashboardBackgroundThread'
 }
 
 task stopProxyAndDashboardBackgroundThread(type: KillProcessTask) {
     pidLockFileName '.proxy-dash.pid.lock'
-}
-
-task stopVaultAndMySQLBackgroundThread(type: KillProcessTask) {
-    pidLockFileName '.vault-sql.pid.lock'
-}
-
-task  runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
-    group 'local development'
-    description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
-
-    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
-    execOverrides {
-        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
-    }
 }
 
 /**
@@ -81,110 +60,6 @@ node {
     workDir = dashboardDir
     npmWorkDir = dashboardDir
     nodeModulesDir = dashboardDir
-}
-
-/**
- * Determine which dist of Vault to use
- */
-def vaultBinMap = [
-        "${Os.FAMILY_WINDOWS}": "https://releases.hashicorp.com/vault/${vaultVersion}/vault_${vaultVersion}_windows_amd64.zip",
-        "${Os.FAMILY_MAC}"    : "https://releases.hashicorp.com/vault/${vaultVersion}/vault_${vaultVersion}_darwin_amd64.zip",
-        "${Os.FAMILY_UNIX}"   : "https://releases.hashicorp.com/vault/${vaultVersion}/vault_${vaultVersion}_linux_amd64.zip"
-]
-
-def vaultZip
-def vaultBin
-if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    logger.lifecycle("Detected Windows")
-    vaultBin = vaultBinMap.get("${Os.FAMILY_WINDOWS}")
-    vaultZip = "vault_${vaultVersion}_windows_amd64.zip"
-} else if (Os.isFamily(Os.FAMILY_MAC)) {
-    logger.lifecycle("Detected Mac")
-    vaultBin = vaultBinMap.get("${Os.FAMILY_MAC}")
-    vaultZip = "vault_${vaultVersion}_darwin_amd64.zip"
-} else if (Os.isFamily(Os.FAMILY_UNIX)) {
-    logger.lifecycle("Detected Unix")
-    vaultBin = vaultBinMap.get("${Os.FAMILY_UNIX}")
-    vaultZip = "vault_${vaultVersion}_linux_amd64.zip"
-}
-
-if (vaultBin == null) {
-    throw new GradleException("Failed to detect OS type and set url for vault binary download")
-}
-
-task downloadVault() {
-    group 'local development'
-    description 'Downloads the vault binary for the current OS'
-    doLast {
-        if (new File("${project.buildDir.absolutePath}${File.separator}${vaultZip}").exists()) {
-            logger.lifecycle("${project.buildDir.absolutePath}${File.separator}${vaultZip} already exists skipping...")
-            throw new StopExecutionException()
-        }
-
-        project.buildDir.mkdirs()
-        logger.lifecycle("Set download url to ${vaultBin}")
-        ant.get(
-                src: vaultBin,
-                dest: "${project.buildDir.absolutePath}",
-                skipexisting: 'true'
-        )
-    }
-}
-
-
-task extractVault(type: Copy, dependsOn: downloadVault) {
-    group 'local development'
-    description 'Extracts the Vault dist into the buld dir'
-
-    from zipTree("${project.buildDir.absolutePath}${File.separator}${vaultZip}")
-    into project.buildDir
-}
-
-/**
- * Runs vault and MySQL locally in memory in dev mod
- */
-task runVaultAndMySQL(dependsOn: [extractVault, startEmbeddedMysql]) {
-    group 'local development'
-    description 'Runs Vault and MySQL locally in memory in dev mod, with out requiring either to be installed'
-
-    doLast {
-        // this fails when in a 'doLast' block with task type 'Exec', so make manual 'exec' call
-        exec {
-            def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-            workingDir "${project.getBuildDir().absolutePath}${File.separator}"
-
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine "${workingDir}${File.separator}vault.exe"
-            } else {
-                executable "vault"
-            }
-
-            args 'server', '--dev'
-
-            standardOutput = new FileOutputStream(vaultStdoutVaultLog, true)
-        }
-    }
-}
-
-/**
- * Scans the Vault stdout log for the dev root token
- */
-def getTokenFromVaultLog() {
-    def vaultStdoutVaultLog = new File("${project.buildDir.absolutePath}${File.separator}vault.stdout.log")
-    sleep 1000
-    if (! vaultStdoutVaultLog.exists()) {
-        throw new GradleException("Log: ${vaultStdoutVaultLog.absolutePath} does not exist, cannot parse vault token")
-    } else {
-        def tokens = vaultStdoutVaultLog.text.findAll(/Root\ Token:\ (.*)/) { fullMatch, tokenMatch ->
-            return tokenMatch
-        }
-
-        if (tokens.size() < 1) {
-            throw new GradleException("Failed to parse root token")
-        }
-
-        return tokens.last()
-    }
 }
 
 task debugCMS(dependsOn: [antReplace, assemble]) {
@@ -233,8 +108,6 @@ task runCMS(dependsOn: [antReplace, assemble], ) {
         javaexec {
             classpath = sourceSets.main.runtimeClasspath
             main = 'com.nike.cerberus.Main'
-            systemProperty 'vault.addr', "http://127.0.0.1:$vaultPort"
-            systemProperty 'vault.token', getTokenFromVaultLog()
             systemProperty '@appId', 'cms'
             systemProperty '@environment', 'local'
 
@@ -261,133 +134,4 @@ embeddedMysql {
     url = flyway.url
     username = flyway.user
     password = flyway.password
-}
-
-/**
- * Bootstraps some test data into CMS and Vault
- */
-task bootstrapData() {
-    group 'local development'
-    description 'Uses the CMS API to inject some data into the in mem data stores, assumes CMS, Vault and' +
-            ' MySQL are running in seperate threads'
-    doLast {
-        def rootToken = getTokenFromVaultLog()
-        def cms = new RESTClient("http://127.0.0.1:$cmsPort", JSON)
-        def vault = new RESTClient("http://127.0.0.1:$vaultPort", JSON)
-
-        def cats = cms.get([
-                path: '/v1/category',
-                headers: [
-                        'X-Vault-Token': rootToken
-                ]
-        ]).responseData
-
-        def catStringToIdMap = [:]
-        def catIdToStringMap = [:]
-        cats.each { cat ->
-            catStringToIdMap.put cat.display_name, cat.id
-            catIdToStringMap.put cat.id, cat.display_name
-        }
-        logger.lifecycle("${catStringToIdMap}")
-
-        def roles = cms.get([
-                path: '/v1/role',
-                headers: [
-                        'X-Vault-Token': rootToken
-                ]
-        ]).responseData
-
-        def roleStringToIdMap = [:]
-        roles.each { role ->
-            roleStringToIdMap.put role.name, role.id
-        }
-        logger.lifecycle("${roleStringToIdMap}")
-
-        [
-                [
-                        name: "Test SDB One",
-                        description: "test",
-                        category_id: catStringToIdMap.'Applications',
-                        owner: 'Lst-Squad.Carebears',
-                        user_group_permissions: [
-                            [
-                                    name: 'foo',
-                                    role_id: roleStringToIdMap.'read'
-                            ]
-                        ],
-                        iam_role_permissions: [
-                                [
-                                        account_id: '123',
-                                        iam_role_name: 'foo',
-                                        role_id: roleStringToIdMap.'read'
-                                ]
-                        ]
-                ],[
-                        name: "Test SDB Two",
-                        description: "test",
-                        category_id: catStringToIdMap.'Applications',
-                        owner: 'Lst-Squad.Carebears',
-                        user_group_permissions: [
-                                [
-                                        name: 'group-one',
-                                        role_id: roleStringToIdMap.'write'
-                                ]
-                        ],
-                        iam_role_permissions: [
-                                [
-                                        account_id: '123',
-                                        iam_role_name: 'allthings',
-                                        role_id: roleStringToIdMap.'read'
-                                ]
-                        ]
-                ],[
-                        name: "cerberus cross region backup lambda",
-                        description: "test",
-                        category_id: catStringToIdMap.'Applications',
-                        owner: 'Lst-Squad.Carebears',
-                        user_group_permissions: [
-                                [
-                                        name: 'group-one',
-                                        role_id: roleStringToIdMap.'write'
-                                ]
-                        ],
-                        iam_role_permissions: [
-                                [
-                                        account_id: '123',
-                                        iam_role_name: 'allthings',
-                                        role_id: roleStringToIdMap.'read'
-                                ]
-                        ]
-                ]
-        ].each { sdb ->
-            try {
-                cms.post([
-                        path   : '/v1/safe-deposit-box',
-                        body   : sdb,
-                        headers: [
-                                'X-Vault-Token': rootToken
-                        ]
-                ])
-            } catch (Exception e) {
-                logger.error("Failure POST /v1/safe-deposit-box, ${sdb.name}, ${e.message}")
-            }
-            try {
-                def slug = sdb.name.replace(' ', '-').toLowerCase()
-                vault.post([
-                    path: "/v1/secret/app/${slug}/config",
-                    body: [
-                            admin_read_token: rootToken,
-                            foo: 'bar',
-                            secret: 'Sup3rS3cr3t'
-                    ],
-                    headers: [
-                            'X-Vault-Token': rootToken,
-                            'Content-Type': 'application/json'
-                    ]
-                ])
-            } catch (Exception e) {
-                logger.error("Failure POST /secret/app/${slug}/config, ${sdb.name}, ${e.message}")
-            }
-        }
-    }
 }

@@ -28,9 +28,11 @@ import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
+import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.CleanUpInactiveOrOrphanedRecords;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
+import com.nike.cerberus.endpoints.admin.TriggerScheduledJob;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
@@ -51,36 +53,41 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
+import com.nike.cerberus.endpoints.secret.DeleteSecureData;
+import com.nike.cerberus.endpoints.secret.ReadSecureData;
+import com.nike.cerberus.endpoints.secret.WriteSecureData;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.hystrix.HystrixMetricsLogger;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.AuthTokenService;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.UuidSupplier;
-import com.nike.cerberus.vault.CmsVaultCredentialsProvider;
-import com.nike.cerberus.vault.CmsVaultUrlResolver;
 import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
 import com.nike.riposte.server.config.AppInfo;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
-import com.nike.vault.client.ClientVersion;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultAdminClient;
-import com.nike.vault.client.VaultClientFactory;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValueFactory;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.net.ssl.SSLException;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -108,6 +115,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     private Config appConfig;
     private final ObjectMapper objectMapper;
+    private CmsEnvPropertiesLoader cmsEnvPropertiesLoader;
 
     public CmsGuiceModule(Config appConfig, ObjectMapper objectMapper) {
         if (appConfig == null)
@@ -121,8 +129,6 @@ public class CmsGuiceModule extends AbstractModule {
     protected void configure() {
         loadEnvProperties();
 
-        bind(UrlResolver.class).to(CmsVaultUrlResolver.class);
-        bind(VaultCredentialsProvider.class).to(CmsVaultCredentialsProvider.class);
         bind(ObjectMapper.class).toInstance(objectMapper);
 
         String className = this.appConfig.getString(AUTH_CONNECTOR_IMPL_KEY);
@@ -145,7 +151,7 @@ public class CmsGuiceModule extends AbstractModule {
         if (appConfig.hasPath(CMS_DISABLE_ENV_LOAD_FLAG) && appConfig.getBoolean(CMS_DISABLE_ENV_LOAD_FLAG)) {
             logger.warn("CMS environment property loading disabled.");
         } else {
-            final CmsEnvPropertiesLoader cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
+            cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
                     System.getenv(BUCKET_NAME_KEY),
                     System.getenv(REGION_KEY),
                     System.getenv(KMS_KEY_ID_KEY)
@@ -170,6 +176,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("appEndpoints")
     public Set<Endpoint<?>> appEndpoints(
             HealthCheckEndpoint healthCheckEndpoint,
+            RobotsEndpoint robotsEndpoint,
             // Cerberus endpoints
             GetAllCategories getAllCategories,
             GetCategory getCategory,
@@ -195,18 +202,23 @@ public class CmsGuiceModule extends AbstractModule {
             PutSDBMetadata putSDBMetadata,
             CleanUpInactiveOrOrphanedRecords cleanUpInactiveOrOrphanedRecords,
             GetDashboardRedirect getDashboardRedirect,
-            GetDashboard getDashboard
+            GetDashboard getDashboard,
+            WriteSecureData writeSecureData,
+            ReadSecureData readSecureData,
+            DeleteSecureData deleteSecureData,
+            TriggerScheduledJob triggerScheduledJob
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
+                robotsEndpoint,
                 // Cerberus endpoints
                 getAllCategories, getCategory, createCategory, deleteCategory,
                 authenticateUser, authenticateIamPrincipal, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords,
-                getDashboardRedirect, getDashboard
+                getSDBMetadata, putSDBMetadata, cleanUpInactiveOrOrphanedRecords, getDashboardRedirect,
+                writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard
         ));
     }
 
@@ -234,48 +246,12 @@ public class CmsGuiceModule extends AbstractModule {
         return new UuidSupplier();
     }
 
-    /**
-     * Binds a Vault admin client to the Guice context.  The expectation is that the VAULT_ADDR and VAULT_TOKEN
-     * properties have been set and are accessible, otherwise it will attempt to fail fast.
-     *
-     * @return Vault admin client
-     */
-    @Singleton
-    @Provides
-    public VaultAdminClient vaultAdminClient(UrlResolver urlResolver,
-                                             VaultCredentialsProvider vaultCredentialsProvider,
-                                             @Named("vault.maxRequests") int vaultMaxRequests,
-                                             @Named("vault.maxRequestsPerHost") int vaultMaxRequestsPerHost,
-                                             @Named("vault.connectTimeoutMillis") int vaultConnectTimeoutMillis,
-                                             @Named("vault.readTimeoutMillis")int vaultReadTimeoutMillis,
-                                             @Named("vault.writeTimeoutMillis") int vaultWriteTimeoutMillis,
-                                             @Named("service.version") String cmsVersion) {
-        String version = ClientVersion.getVersion();
-        logger.info("Vault clientVersion={}, maxRequests={}, maxRequestsPerHost={}, connectTimeoutMillis={}, readTimeoutMillis={}, writeTimeoutMillis={}, url={}",
-                version,
-                vaultMaxRequests,
-                vaultMaxRequestsPerHost,
-                vaultConnectTimeoutMillis,
-                vaultReadTimeoutMillis,
-                vaultWriteTimeoutMillis,
-                urlResolver.resolve());
-
-        return VaultClientFactory.getAdminClient(urlResolver,
-                vaultCredentialsProvider,
-                vaultMaxRequests,
-                vaultMaxRequestsPerHost,
-                vaultConnectTimeoutMillis,
-                vaultReadTimeoutMillis,
-                vaultWriteTimeoutMillis,
-                new HashMap<>()
-        );
-    }
-
     @Provides
     @Singleton
     @Named("authProtectedEndpoints")
     public List<Endpoint<?>> authProtectedEndpoints(@Named("appEndpoints") Set<Endpoint<?>> endpoints) {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
+                || i instanceof RobotsEndpoint
                 || i instanceof AuthenticateUser
                 || i instanceof MfaCheck
                 || i instanceof AuthenticateIamRole
@@ -288,8 +264,9 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            HystrixVaultAdminClient vaultAdminClient) {
-        return new CmsRequestSecurityValidator(authProtectedEndpoints, vaultAdminClient);
+            AuthTokenService authTokenService) {
+
+        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService);
     }
 
     @Provides
@@ -310,6 +287,33 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public KmsClientFactory hystrixKmsClientFactory() {
         return new HystrixKmsClientFactory(new KmsClientFactory());
+    }
+
+    /**
+     * The SslContextBuilder and Netty´s SslContext implementations only support PKCS8 keys.
+     *
+     * http://netty.io/wiki/sslcontextbuilder-and-private-key.html
+     */
+    @Provides
+    @Singleton
+    public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled) throws SSLException, CertificateException {
+        Validate.notBlank(protocolsEnabled, "cms.ssl.protocolsEnabled requires a list of SSL protocols, e.g. TLSv1.2");
+        logger.info("ssl protocols enabled: " + protocolsEnabled);
+        if (cmsEnvPropertiesLoader == null) {
+            logger.info("initializing SslContext by creating a self-signed certificate");
+            SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
+            return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
+                    .protocols(StringUtils.split(protocolsEnabled, ","))
+                    .build();
+        } else {
+            logger.info("initializing SslContext using certificate from S3");
+            InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(), Charset.defaultCharset());
+            InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(), Charset.defaultCharset());
+            return SslContextBuilder.forServer(certificate, privateKey)
+                    .protocols(StringUtils.split(protocolsEnabled, ","))
+                    .build();
+        }
+
     }
 
     @Provides

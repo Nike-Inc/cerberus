@@ -214,6 +214,10 @@
     SELECT id FROM SAFE_DEPOSIT_BOX WHERE NAME = #{name}
   </select>
 
+  <select id="getSafeDepositBoxIdByPath"  resultType="java.lang.String">
+    SELECT id FROM SAFE_DEPOSIT_BOX WHERE PATH = #{path}
+  </select>
+
   <select id="getSafeDepositBoxNameById"  resultType="java.lang.String">
     SELECT NAME FROM SAFE_DEPOSIT_BOX WHERE id = #{id}
   </select>

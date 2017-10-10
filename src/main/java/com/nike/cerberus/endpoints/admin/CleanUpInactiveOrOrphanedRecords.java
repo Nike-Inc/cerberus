@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.CleanUpRequest;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.CleanUpService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -62,7 +62,7 @@ public class CleanUpInactiveOrOrphanedRecords extends AdminStandardEndpoint<Clea
                                                            final ChannelHandlerContext ctx,
                                                            final SecurityContext securityContext) {
 
-        final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.getUserPrincipal();
+        final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
         final String principal = vaultAuthPrincipal.getName();
 
         log.info("Clean Up Event: the principal {} is attempting to clean up kms keys", principal);

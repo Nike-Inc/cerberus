@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.vault;
+package com.nike.cerberus.service;
 
-import com.nike.vault.client.UrlResolver;
+import com.nike.cerberus.dao.LockDao;
+import org.mybatis.guice.transactional.Transactional;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.inject.Named;
 
-/**
- * Resolves the vault URL from Guice.
- */
-public class CmsVaultUrlResolver implements UrlResolver {
+public class JobCoordinatorService {
 
-    private final String vaultAddr;
+    private final LockDao lockDao;
 
     @Inject
-    public CmsVaultUrlResolver(@Named("vault.addr") final String vaultAddr) {
-        this.vaultAddr = vaultAddr;
+    public JobCoordinatorService(LockDao lockDao) {
+        this.lockDao = lockDao;
     }
 
-    @Nullable
-    @Override
-    public String resolve() {
-        return vaultAddr;
+    @Transactional
+    public boolean acquireLockToRunJob(String job) {
+        return lockDao.getLock(job) > 0;
+    }
+
+    @Transactional
+    public boolean releaseLock(String jobName) {
+        return lockDao.releaseLock(jobName) > 0;
     }
 }

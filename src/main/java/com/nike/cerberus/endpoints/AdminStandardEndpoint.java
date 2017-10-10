@@ -19,7 +19,7 @@ package com.nike.cerberus.endpoints;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -49,12 +49,12 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         String principal = securityContext.isPresent() ?
-                securityContext.get().getUserPrincipal() instanceof VaultAuthPrincipal ?
+                securityContext.get().getUserPrincipal() instanceof CerberusPrincipal ?
                         securityContext.get().getUserPrincipal().getName() :
-                        "( Principal is not a Vault auth principal. )" : "( Principal name is empty. )";
+                        "( Principal is not a Cerberus auth principal. )" : "( Principal name is empty. )";
 
         log.info("Admin Endpoint Event: the principal {} from ip: {} is attempting to access admin endpoint: {}", principal, getXForwardedClientIp(request), this.getClass().getName());
-        if (!securityContext.isPresent() || !securityContext.get().isUserInRole(VaultAuthPrincipal.ROLE_ADMIN)) {
+        if (!securityContext.isPresent() || !securityContext.get().isUserInRole(CerberusPrincipal.ROLE_ADMIN)) {
             log.error("Admin Endpoint Event: the principal {} from ip: {} attempted to access {}, an admin endpoint but was not an admin", principal, getXForwardedClientIp(request),
                     this.getClass().getName());
             throw new ApiException(DefaultApiError.ACCESS_DENIED);

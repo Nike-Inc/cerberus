@@ -192,7 +192,7 @@ export function commitSecret(navigatedPath, data, token, isNewVaultPath) {
         })
         .catch((response) => {
             log.error("Failed to save Vault Secret data", response)
-            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Vault Secret data on Path: ${path}`} response={response} />))
+            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Vault Secret data on Path: ${fullPath}`} response={response} />))
         })
     }
 }

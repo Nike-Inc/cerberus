@@ -68,12 +68,6 @@ public class SafeDepositBoxServiceTest {
     private RoleService roleService;
 
     @Mock
-    private VaultAdminClient vaultAdminClient;
-
-    @Mock
-    private VaultPolicyService vaultPolicyService;
-
-    @Mock
     private UserGroupPermissionService userGroupPermissionService;
 
     @Mock

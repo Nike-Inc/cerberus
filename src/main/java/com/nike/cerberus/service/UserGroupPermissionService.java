@@ -50,6 +50,7 @@ public class UserGroupPermissionService {
     public UserGroupPermissionService(final UuidSupplier uuidSupplier,
                                       final RoleService roleService,
                                       final UserGroupDao userGroupDao) {
+
         this.uuidSupplier = uuidSupplier;
         this.roleService = roleService;
         this.userGroupDao = userGroupDao;
