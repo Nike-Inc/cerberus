@@ -48,6 +48,7 @@ import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -242,6 +243,8 @@ public class KmsService {
                     awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString());
         } catch (RejectedExecutionException e) {
             logger.warn("Hystrix rejected policy lookup, thread pool full, {}", e.toString());
+        } catch (RuntimeException e) {
+            logger.warn("Failed to look up policy, Hystrix is probably short circuted", e);
         }
     }
 
