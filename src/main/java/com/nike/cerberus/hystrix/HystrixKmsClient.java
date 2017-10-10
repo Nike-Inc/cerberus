@@ -25,6 +25,7 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
 
@@ -109,7 +110,7 @@ public class HystrixKmsClient extends AWSKMSClient {
                     }
                 }
             }.execute();
-        } catch (HystrixRuntimeException | HystrixBadRequestException | RejectedExecutionException e) {
+        } catch (HystrixRuntimeException | HystrixBadRequestException | CompletionException e) {
             LOGGER.error("commandKey: {}, e: {}", commandKey, e.toString());
             if (e.getCause() instanceof RuntimeException) {
                 // Convert back to the underlying exception type
