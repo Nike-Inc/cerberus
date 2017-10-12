@@ -42,7 +42,7 @@ public class TokenHasher {
         try {
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             // TODO: base64 decode the hashSalt once we correct it in test environments
-            PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes(), iterations, keyLength);
+            PBEKeySpec spec = new PBEKeySpec(token.toCharArray(), hashSalt.getBytes("UTF-8"), iterations, keyLength);
             SecretKey key = skf.generateSecret(spec);
             return Hex.encodeHexString(key.getEncoded());
         } catch (Exception e) {

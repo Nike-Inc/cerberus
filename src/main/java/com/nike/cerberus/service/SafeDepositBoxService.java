@@ -120,7 +120,7 @@ public class SafeDepositBoxService {
      */
     public List<SafeDepositBoxSummary> getAssociatedSafeDepositBoxes(final CerberusPrincipal principal) {
 
-        List<SafeDepositBoxRecord> sdbRecords = null;
+        List<SafeDepositBoxRecord> sdbRecords;
 
         switch (principal.getPrincipalType()) {
             case IAM:
@@ -129,6 +129,12 @@ public class SafeDepositBoxService {
             case USER:
                 sdbRecords = safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(principal.getUserGroups());
                 break;
+            default:
+                throw new ApiException(DefaultApiError.UNKNOWN_PRINCIPAL_TYPE);
+        }
+
+        if (sdbRecords == null) {
+            return new LinkedList<>();
         }
 
         final List<SafeDepositBoxSummary> summaries = Lists.newArrayListWithCapacity(sdbRecords.size());

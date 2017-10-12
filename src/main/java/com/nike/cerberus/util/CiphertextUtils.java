@@ -2,13 +2,18 @@ package com.nike.cerberus.util;
 
 import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.model.KeyBlob;
+import com.google.common.base.Utf8;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.error.DefaultApiError;
+import org.slf4j.LoggerFactory;
 
 
+import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.List;
 
@@ -36,7 +41,13 @@ public class CiphertextUtils {
         List<String> cmkArns = Lists.newArrayList();
         for (KeyBlob keyBlob : parsedCiphertext.getEncryptedKeyBlobs()) {
             if (KMS_PROVIDER_ID.equals(keyBlob.getProviderId())) {
-                cmkArns.add(new String(keyBlob.getProviderInformation()));
+                try {
+                    cmkArns.add(new String(keyBlob.getProviderInformation(), "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    LoggerFactory.getLogger("com.nike.cerberus.util.CiphertextUtils")
+                            .error("Failed to create new string from key blob provider information", e);
+                    throw new ApiException(DefaultApiError.INTERNAL_SERVER_ERROR);
+                }
             }
 
         }
@@ -69,7 +80,13 @@ public class CiphertextUtils {
         for (KeyBlob keyBlob : parsedCiphertext.getEncryptedKeyBlobs()) {
             JsonObject blob = new JsonObject();
             blob.addProperty("providerId", keyBlob.getProviderId());
-            blob.addProperty("providerInfo", new String(keyBlob.getProviderInformation()));
+            try {
+                blob.addProperty("providerInfo", new String(keyBlob.getProviderInformation(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                LoggerFactory.getLogger("com.nike.cerberus.util.CiphertextUtils")
+                        .error("Failed to create new string from key blob provider information", e);
+                throw new ApiException(DefaultApiError.INTERNAL_SERVER_ERROR);
+            }
             blob.addProperty("isComplete:", keyBlob.isComplete());
             keyBlobs.add(blob);
         }

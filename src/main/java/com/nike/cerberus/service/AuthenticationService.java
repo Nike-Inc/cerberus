@@ -291,7 +291,7 @@ public class AuthenticationService {
         // required as method parameters
         boolean isAdmin = Boolean.valueOf(metadata.get(METADATA_KEY_IS_ADMIN));
         String groups = metadata.get(METADATA_KEY_GROUPS);
-        int refreshCount = Integer.valueOf(metadata.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
+        int refreshCount = Integer.parseInt(metadata.getOrDefault(METADATA_KEY_TOKEN_REFRESH_COUNT, "0"));
 
         CerberusAuthToken tokenResult = authTokenService
                 .generateToken(principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount);
