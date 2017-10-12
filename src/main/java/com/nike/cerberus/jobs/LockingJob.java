@@ -56,7 +56,7 @@ public abstract class LockingJob extends Job {
                 try {
                     released = jobCoordinatorService.releaseLock(jobName);
                     if (!released) { // Sometimes it takes multiple calls to release, why?
-                        log.warn("Failed to release log, will retry after pause");
+                        log.warn("Failed to release lock, will retry after pause");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(1));
                     }
                 } catch (InterruptedException e) {
