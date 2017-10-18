@@ -91,12 +91,11 @@ public class AuthenticationService {
 
     public static final String SYSTEM_USER = "system";
     public static final String ADMIN_GROUP_PROPERTY = "cms.admin.group";
-    public static final String MAX_TOKEN_REFRESH_COUNT = "auth.token.maxRefreshCount";
     public static final String ADMIN_IAM_ROLES_PROPERTY = "cms.admin.roles";
-    public static final String USER_TOKEN_TTL_OVERRIDE = "cms.user.token.ttl.override";
-    public static final String IAM_TOKEN_TTL_OVERRIDE = "cms.iam.token.ttl.override";
+    public static final String MAX_TOKEN_REFRESH_COUNT = "cms.user.token.maxRefreshCount";
+    public static final String USER_TOKEN_TTL = "cms.user.token.ttl";
+    public static final String IAM_TOKEN_TTL = "cms.iam.token.ttl";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
-    public static final String DEFAULT_TOKEN_TTL = "1h";
     public static final int KMS_SIZE_LIMIT = 4096;
 
     private final SafeDepositBoxDao safeDepositBoxDao;
@@ -110,6 +109,9 @@ public class AuthenticationService {
     private final AwsIamRoleArnParser awsIamRoleArnParser;
     private final Slugger slugger;
     private final AuthTokenService authTokenService;
+    private final String userTokenTTL;
+    private final String iamTokenTTL;
+    private final int maxTokenRefreshCount;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -117,29 +119,21 @@ public class AuthenticationService {
 
     private Set<String> adminRoleArnSet;
 
-    @Inject(optional=true)
-    @Named(USER_TOKEN_TTL_OVERRIDE)
-    String userTokenTTL = DEFAULT_TOKEN_TTL;
-
-    @Inject(optional=true)
-    @Named(IAM_TOKEN_TTL_OVERRIDE)
-    String iamTokenTTL = DEFAULT_TOKEN_TTL;
-
-    private final int maxTokenRefreshCount;
-
     @Inject
-    public AuthenticationService(final SafeDepositBoxDao safeDepositBoxDao,
-                                 final AwsIamRoleDao awsIamRoleDao,
-                                 final AuthConnector authConnector,
-                                 final KmsService kmsService,
-                                 final KmsClientFactory kmsClientFactory,
-                                 final ObjectMapper objectMapper,
-                                 @Named(ADMIN_GROUP_PROPERTY) final String adminGroup,
-                                 @Named(MAX_TOKEN_REFRESH_COUNT) final int maxTokenRefreshCount,
-                                 final DateTimeSupplier dateTimeSupplier,
-                                 final AwsIamRoleArnParser awsIamRoleArnParser,
-                                 final Slugger slugger,
-                                 final AuthTokenService authTokenService) {
+    public AuthenticationService(SafeDepositBoxDao safeDepositBoxDao,
+                                 AwsIamRoleDao awsIamRoleDao,
+                                 AuthConnector authConnector,
+                                 KmsService kmsService,
+                                 KmsClientFactory kmsClientFactory,
+                                 ObjectMapper objectMapper,
+                                 @Named(ADMIN_GROUP_PROPERTY) String adminGroup,
+                                 @Named(MAX_TOKEN_REFRESH_COUNT) int maxTokenRefreshCount,
+                                 DateTimeSupplier dateTimeSupplier,
+                                 AwsIamRoleArnParser awsIamRoleArnParser,
+                                 Slugger slugger,
+                                 AuthTokenService authTokenService,
+                                 @Named(USER_TOKEN_TTL) String userTokenTTL,
+                                 @Named(IAM_TOKEN_TTL) String iamTokenTTL) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
@@ -153,6 +147,8 @@ public class AuthenticationService {
         this.maxTokenRefreshCount = maxTokenRefreshCount;
         this.slugger = slugger;
         this.authTokenService = authTokenService;
+        this.userTokenTTL = userTokenTTL;
+        this.iamTokenTTL = iamTokenTTL;
     }
 
     /**

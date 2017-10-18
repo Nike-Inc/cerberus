@@ -84,7 +84,7 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
         final String legacyToken = headers.get(LEGACY_AUTH_TOKN_HEADER);
         final String cerberusToken = headers.get(HEADER_X_CERBERUS_TOKEN);
 
-        if (StringUtils.isBlank(legacyToken) && StringUtils.isNotBlank(cerberusToken)) {
+        if (StringUtils.isBlank(legacyToken) && StringUtils.isBlank(cerberusToken)) {
             throw new ApiException(DefaultApiError.AUTH_TOKEN_INVALID);
         }
 

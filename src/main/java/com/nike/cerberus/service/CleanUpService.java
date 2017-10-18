@@ -19,6 +19,7 @@ package com.nike.cerberus.service;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.domain.CleanUpRequest;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
@@ -42,7 +43,7 @@ public class CleanUpService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final int DEFAULT_SLEEP_BETWEEN_KMS_CALLS = 10;  // in seconds
+    private static final String PAUSE_TIME_IN_SECONDS = "cms.jobs.KmsCleanUpJob.batchPauseTimeInSeconds";
 
     private static final int DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS = 30;
 
@@ -52,13 +53,18 @@ public class CleanUpService {
 
     private final DateTimeSupplier dateTimeSupplier;
 
+    private final int pauseTimeInSeconds;
+
     @Inject
     public CleanUpService(KmsService kmsService,
                           AwsIamRoleDao awsIamRoleDao,
-                          DateTimeSupplier dateTimeSupplier) {
+                          DateTimeSupplier dateTimeSupplier,
+                          @Named(PAUSE_TIME_IN_SECONDS) int pauseTimeInSeconds) {
+
         this.kmsService = kmsService;
         this.awsIamRoleDao = awsIamRoleDao;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.pauseTimeInSeconds = pauseTimeInSeconds;
     }
 
     public void cleanUp(final CleanUpRequest cleanUpRequest) {
@@ -74,8 +80,7 @@ public class CleanUpService {
      * or are no longer associated with an SDB.
      */
     protected void cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays) {
-
-        cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays, DEFAULT_SLEEP_BETWEEN_KMS_CALLS);
+        cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays, pauseTimeInSeconds);
     }
 
     /**

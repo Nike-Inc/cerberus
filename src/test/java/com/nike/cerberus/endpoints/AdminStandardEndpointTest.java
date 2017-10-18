@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints;
 
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CerberusSecurityContext;
@@ -53,11 +54,12 @@ public class AdminStandardEndpointTest {
     @Test
     public void execute_validates_user_is_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(
+                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                        .withIsAdmin(true)
+                        .withPrincipal("username")
+                        .withGroups("group1,group2")
+                        .build());
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
                 new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
@@ -81,11 +83,12 @@ public class AdminStandardEndpointTest {
     @Test(expected = ApiException.class)
     public void execute_throws_error_if_principal_not_an_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.FALSE.toString());
-        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(
+                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                        .withIsAdmin(false)
+                        .withPrincipal("username")
+                        .withGroups("group1,group2")
+                        .build());
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
                 new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);

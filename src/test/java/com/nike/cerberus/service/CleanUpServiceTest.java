@@ -43,7 +43,7 @@ public class CleanUpServiceTest {
 
         initMocks(this);
 
-        cleanUpService = new CleanUpService(kmsService, awsIamRoleDao, dateTimeSupplier);
+        cleanUpService = new CleanUpService(kmsService, awsIamRoleDao, dateTimeSupplier, 0);
     }
 
     @Test

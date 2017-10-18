@@ -19,16 +19,15 @@ package com.nike.cerberus.security;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.service.AuthTokenService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Collection;
@@ -42,41 +41,43 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class CmsRequestSecurityValidatorTest {
 
-    private final String vaultToken = "123-123-123-123-123";
+    private String token = "123-123-123-123-123";
 
-    private final Endpoint<Void> securedEndpoint = () -> null;
+    private Endpoint<Void> securedEndpoint = () -> null;
 
-    private final Collection<Endpoint<?>> securedEndpoints = Lists.newArrayList(securedEndpoint);
+    private Collection<Endpoint<?>> securedEndpoints = Lists.newArrayList(securedEndpoint);
 
-    private HystrixVaultAdminClient vaultAdminClient;
+    @Mock
+    AuthTokenService authTokenService;
 
     private CmsRequestSecurityValidator subject;
 
     @Before
     public void setUp() throws Exception {
-        vaultAdminClient = mock(HystrixVaultAdminClient.class);
-        subject = new CmsRequestSecurityValidator(securedEndpoints, vaultAdminClient);
+        initMocks(this);
+        subject = new CmsRequestSecurityValidator(securedEndpoints, authTokenService);
     }
 
     @Test
     public void test_validateSecureRequestForEndpoint_adds_security_context_to_request() {
-        final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
+        RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getUri()).thenReturn("https://localhost");
-        final HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.add(CmsRequestSecurityValidator.HEADER_X_VAULT_TOKEN, vaultToken);
+        HttpHeaders httpHeaders = new DefaultHttpHeaders();
+        httpHeaders.add(CmsRequestSecurityValidator.LEGACY_AUTH_TOKN_HEADER, token);
         when(requestInfo.getHeaders()).thenReturn(httpHeaders);
 
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultClientTokenResponse clientTokenResponse = new VaultClientTokenResponse()
-                .setId(vaultToken)
-                .setMeta(meta);
-        when(vaultAdminClient.lookupToken(vaultToken)).thenReturn(clientTokenResponse);
+        CerberusAuthToken authToken = new CerberusAuthToken.CerberusAuthTokenBuilder()
+                .withToken(token)
+                .withPrincipal("username")
+                .withGroups("group1,group2")
+                .withIsAdmin(true)
+                .build();
+
+        when(authTokenService.getCerberusAuthToken(token)).thenReturn(Optional.of(authToken));
 
         subject.validateSecureRequestForEndpoint(requestInfo, securedEndpoint);
 
@@ -85,52 +86,32 @@ public class CmsRequestSecurityValidatorTest {
 
     @Test(expected = ApiException.class)
     public void test_validateSecureRequestForEndpoint_throws_error_when_no_vault_token_header() {
-        final RequestInfo<?> requestInfo = mock(RequestInfo.class);
-        final HttpHeaders httpHeaders = new DefaultHttpHeaders();
+        RequestInfo<?> requestInfo = mock(RequestInfo.class);
+        HttpHeaders httpHeaders = new DefaultHttpHeaders();
         when(requestInfo.getHeaders()).thenReturn(httpHeaders);
-
-        subject.validateSecureRequestForEndpoint(requestInfo, securedEndpoint);
-    }
-
-    @Test(expected = ApiException.class)
-    public void test_validateSecureRequestForEndpoint_throws_error_when_vault_server_exception_caught() {
-        final RequestInfo<?> requestInfo = mock(RequestInfo.class);
-        final HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.add(CmsRequestSecurityValidator.HEADER_X_VAULT_TOKEN, vaultToken);
-        when(requestInfo.getHeaders()).thenReturn(httpHeaders);
-
-        when(vaultAdminClient.lookupToken(vaultToken)).thenThrow(new VaultServerException(1, Lists.newArrayList()));
-
-        subject.validateSecureRequestForEndpoint(requestInfo, securedEndpoint);
-    }
-
-    @Test(expected = ApiException.class)
-    public void test_validateSecureRequestForEndpoint_throws_error_when_vault_client_exception_caught() {
-        final RequestInfo<?> requestInfo = mock(RequestInfo.class);
-        final HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.add(CmsRequestSecurityValidator.HEADER_X_VAULT_TOKEN, vaultToken);
-        when(requestInfo.getHeaders()).thenReturn(httpHeaders);
-
-        when(vaultAdminClient.lookupToken(vaultToken)).thenThrow(new VaultClientException("Failure"));
 
         subject.validateSecureRequestForEndpoint(requestInfo, securedEndpoint);
     }
 
     @Test
     public void test_getSecurityContextForRequest_returns_optional_populated_with_security_context() {
-        final RequestInfo<?> requestInfo = mock(RequestInfo.class);
-        final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(CerberusPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        RequestInfo<?> requestInfo = mock(RequestInfo.class);
+        Map<String, Object> requestAttributes = Maps.newHashMap();
+        Map<String, String> meta = Maps.newHashMap();
+
+        CerberusAuthToken authToken = new CerberusAuthToken.CerberusAuthTokenBuilder()
+                .withToken(token)
+                .withPrincipal("username")
+                .withGroups("group1,group2")
+                .withIsAdmin(true)
+                .build();
+
         requestAttributes.put(SECURITY_CONTEXT_ATTR_KEY,
-                new CerberusSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(new CerberusPrincipal(authToken), "https"));
 
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
-        final Optional<SecurityContext> securityContext =
+        Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(requestInfo);
 
         assertThat(securityContext).isPresent();
@@ -139,11 +120,11 @@ public class CmsRequestSecurityValidatorTest {
 
     @Test
     public void test_getSecurityContextForRequest_returns_empty_optional_when_no_security_context() {
-        final RequestInfo<?> requestInfo = mock(RequestInfo.class);
-        final Map<String, Object> requestAttributes = Maps.newHashMap();
+        RequestInfo<?> requestInfo = mock(RequestInfo.class);
+        Map<String, Object> requestAttributes = Maps.newHashMap();
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
-        final Optional<SecurityContext> securityContext =
+        Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(requestInfo);
 
         assertThat(securityContext).isEmpty();

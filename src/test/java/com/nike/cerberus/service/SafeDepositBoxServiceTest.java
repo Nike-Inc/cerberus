@@ -28,7 +28,6 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
-import com.nike.vault.client.VaultAdminClient;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
