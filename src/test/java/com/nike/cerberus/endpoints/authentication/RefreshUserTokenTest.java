@@ -23,7 +23,7 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
-import com.nike.cerberus.security.VaultSecurityContext;
+import com.nike.cerberus.security.CerberusSecurityContext;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.vault.client.model.VaultAuthResponse;
 import com.nike.vault.client.model.VaultClientTokenResponse;
@@ -76,7 +76,7 @@ public class RefreshUserTokenTest {
         meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
         final VaultAuthResponse vaultAuthResponse = new VaultAuthResponse();
         final AuthResponse authResponse = new AuthResponse();
         authResponse.setStatus(AuthStatus.SUCCESS);

@@ -43,7 +43,7 @@ import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
 import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
- * Revokes the token supplied in the Vault token header.
+ * Revokes the token supplied in the token header.
  */
 public class RevokeToken extends StandardEndpoint<Void, Void> {
 

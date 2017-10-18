@@ -62,8 +62,8 @@ public class CleanUpInactiveOrOrphanedRecords extends AdminStandardEndpoint<Clea
                                                            final ChannelHandlerContext ctx,
                                                            final SecurityContext securityContext) {
 
-        final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
-        final String principal = vaultAuthPrincipal.getName();
+        final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
+        final String principal = authPrincipal.getName();
 
         log.info("Clean Up Event: the principal {} is attempting to clean up kms keys", principal);
 

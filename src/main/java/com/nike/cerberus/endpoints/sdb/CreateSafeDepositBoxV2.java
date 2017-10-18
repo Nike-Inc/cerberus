@@ -80,17 +80,17 @@ public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, Create SDB Event: the principal: {} from ip: {} is attempting to create sdb name: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request),
                     request.getContent().getName());
 
             final SafeDepositBoxV2 safeDepositBox =
-                    safeDepositBoxService.createSafeDepositBoxV2(request.getContent(), vaultAuthPrincipal.getName());
+                    safeDepositBoxService.createSafeDepositBoxV2(request.getContent(), authPrincipal.getName());
             final String location = basePath + "/" + safeDepositBox.getId();
             return ResponseInfo.newBuilder(safeDepositBox)
                     .withHeaders(new DefaultHttpHeaders()

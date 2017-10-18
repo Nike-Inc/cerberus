@@ -83,17 +83,17 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, Create SDB Event: the principal: {} from ip; {} is attempting to create sdb name: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request),
                     request.getContent().getName());
 
             final String id =
-                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), vaultAuthPrincipal.getName());
+                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), authPrincipal.getName());
 
             final String location = basePath + "/" + id;
             final Map<String, String> map = Maps.newHashMap();

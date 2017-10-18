@@ -46,8 +46,8 @@ public class TriggerScheduledJob extends AdminStandardEndpoint<Void, Void> {
                                                            ChannelHandlerContext ctx,
                                                            SecurityContext securityContext) {
 
-        CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
-        String principal = vaultAuthPrincipal.getName();
+        CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
+        String principal = authPrincipal.getName();
 
         String job = request.getPathParam("job");
 

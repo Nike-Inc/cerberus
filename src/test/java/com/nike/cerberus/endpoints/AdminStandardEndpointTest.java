@@ -20,8 +20,7 @@ import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
-import com.nike.cerberus.security.VaultSecurityContext;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.security.CerberusSecurityContext;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
@@ -60,7 +59,7 @@ public class AdminStandardEndpointTest {
         meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
@@ -88,7 +87,7 @@ public class AdminStandardEndpointTest {
         meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 

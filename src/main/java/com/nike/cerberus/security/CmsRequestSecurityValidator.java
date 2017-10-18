@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Request validator responsible for validating that the X-Vault-Token header is present and valid.
+ * Request validator responsible for validating that the X-Vault-Token or X-Cerberus-Token header is present and valid.
  * The client token entity will also be placed in the request context to be referenced downstream.
  */
 public class CmsRequestSecurityValidator implements RequestSecurityValidator {
@@ -69,13 +69,13 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
             // This is a hack, Secure Data Endpoint V1 endpoints need to honor the Vault API contract and
             // cannot throw backstopper errors, we will handle this in the SecureDataEndpointV1 class
             if (! (endpoint instanceof SecureDataEndpointV1)) {
-                throw new ApiException(DefaultApiError.AUTH_VAULT_TOKEN_INVALID);
+                throw new ApiException(DefaultApiError.AUTH_TOKEN_INVALID);
             }
         } else {
             principal = new CerberusPrincipal(authToken.get());
         }
 
-        final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
+        final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
                 URI.create(requestInfo.getUri()).getScheme());
         requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
     }
@@ -85,7 +85,7 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
         final String cerberusToken = headers.get(HEADER_X_CERBERUS_TOKEN);
 
         if (StringUtils.isBlank(legacyToken) && StringUtils.isNotBlank(cerberusToken)) {
-            throw new ApiException(DefaultApiError.AUTH_VAULT_TOKEN_INVALID);
+            throw new ApiException(DefaultApiError.AUTH_TOKEN_INVALID);
         }
 
         return StringUtils.isNotBlank(legacyToken) ? legacyToken : cerberusToken;

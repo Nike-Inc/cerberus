@@ -67,7 +67,7 @@ public class SecureDataService {
 
     /**
      * Method to list keys in the virtual tree structure
-     * This method is designed to mimic the Vault ?list=true functionality
+     * This method is designed to mimic the Vault ?list=true functionality to maintain the existing API contract.
      *
      * ex: given the following tree structure
      * app/foo/bar/bam

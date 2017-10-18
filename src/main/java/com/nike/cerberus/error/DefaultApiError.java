@@ -59,9 +59,9 @@ public enum DefaultApiError implements ApiError {
     AUTH_IAM_ROLE_AWS_REGION_BLANK(99104, "AWS region is malformed.", SC_BAD_REQUEST),
 
     /**
-     * X-Vault-Token header is blank.
+     * X-Vault-Token or X-Cerberus-Token header was blank or invalid.
      */
-    AUTH_VAULT_TOKEN_INVALID(99105, "X-Vault-Token or X-Cerberus-Token header is malformed or invalid.", SC_UNAUTHORIZED),
+    AUTH_TOKEN_INVALID(99105, "X-Vault-Token or X-Cerberus-Token header is malformed or invalid.", SC_UNAUTHORIZED),
 
     /**
      * Supplied credentials are invalid.

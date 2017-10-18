@@ -73,7 +73,7 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
@@ -82,12 +82,12 @@ public class DeleteSafeDepositBox extends StandardEndpoint<Void, Void> {
             log.info("{}: {}, Delete SDB Event: the principal: {} from ip: {} is attempting to delete sdb name: '{}' and id: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request),
                     sdbName,
                     sdbId);
 
-            safeDepositBoxService.deleteSafeDepositBox(vaultAuthPrincipal, sdbId);
+            safeDepositBoxService.deleteSafeDepositBox(authPrincipal, sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
                     .build();

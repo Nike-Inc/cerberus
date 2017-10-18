@@ -62,9 +62,9 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
     }
 
     private ResponseInfo<Void> restoreSdbMetadata(RequestInfo<SDBMetadata> request, SecurityContext securityContext) {
-        CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
+        CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
 
-        String principal = vaultAuthPrincipal.getName();
+        String principal = authPrincipal.getName();
 
         log.info("Metadata Restore Event: the principal {} is attempting to restore sdb name: '{}'", principal, request.getContent().getName());
 

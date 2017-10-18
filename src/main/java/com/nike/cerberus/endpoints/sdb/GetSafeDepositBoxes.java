@@ -75,16 +75,16 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, List SDB Event: the principal: {} from ip: {} is attempting to list the SDBs that it has access to",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request));
 
             return ResponseInfo.newBuilder(
-                    safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal)).build();
+                    safeDepositBoxService.getAssociatedSafeDepositBoxes(authPrincipal)).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();

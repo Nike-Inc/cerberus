@@ -81,8 +81,6 @@ task debugCMS(dependsOn: [antReplace, assemble]) {
 
             def buildDir = "${project.getBuildDir().absolutePath}"
 
-            systemProperty 'vault.addr', "http://127.0.0.1:$vaultPort"
-            systemProperty 'vault.token', getTokenFromVaultLog()
             systemProperty '@appId', 'cms'
             systemProperty '@environment', 'local'
 

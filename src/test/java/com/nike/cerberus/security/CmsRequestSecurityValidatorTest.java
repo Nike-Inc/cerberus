@@ -126,7 +126,7 @@ public class CmsRequestSecurityValidatorTest {
         meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, "group1,group2");
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(new VaultClientTokenResponse().setMeta(meta));
         requestAttributes.put(SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
 
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
@@ -134,7 +134,7 @@ public class CmsRequestSecurityValidatorTest {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(requestInfo);
 
         assertThat(securityContext).isPresent();
-        assertThat(securityContext.get()).isInstanceOf(VaultSecurityContext.class);
+        assertThat(securityContext.get()).isInstanceOf(CerberusSecurityContext.class);
     }
 
     @Test

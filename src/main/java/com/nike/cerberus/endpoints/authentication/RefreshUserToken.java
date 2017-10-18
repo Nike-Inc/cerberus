@@ -71,13 +71,13 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal =
+            final CerberusPrincipal authPrincipal =
                     (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             log.info("{}: {}, Refresh User Token Auth Event: the principal: {} with ip: {} is attempting to refresh its token",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request));
 
             return ResponseInfo.newBuilder(
@@ -85,7 +85,7 @@ public class RefreshUserToken extends StandardEndpoint<Void, AuthResponse> {
                             (CerberusPrincipal) securityContext.get().getUserPrincipal())).build();
         }
 
-        throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_VAULT_TOKEN_INVALID).build();
+        throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_TOKEN_INVALID).build();
     }
 
     @Override

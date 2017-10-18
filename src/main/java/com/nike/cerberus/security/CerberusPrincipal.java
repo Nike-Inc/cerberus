@@ -26,8 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents the authenticated principal.  This contains the vault client token entity and any assigned roles based
- * on that.
+ * Represents the authenticated principal.
+ * This contains the client token entity and any assigned roles based on that.
  */
 public class CerberusPrincipal implements Principal {
 

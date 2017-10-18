@@ -23,15 +23,15 @@ import java.security.Principal;
  * Custom security context that will host the auth principal object that can be utilized to check user details
  * during a request.
  */
-public class VaultSecurityContext implements SecurityContext {
+public class CerberusSecurityContext implements SecurityContext {
 
-    public static final String AUTH_SCHEME = "VAULT_TOKEN";
+    public static final String AUTH_SCHEME = "CERBERUS_TOKEN";
 
     private final CerberusPrincipal authPrincipal;
 
     private final String scheme;
 
-    public VaultSecurityContext(CerberusPrincipal authPrincipal, String scheme) {
+    public CerberusSecurityContext(CerberusPrincipal authPrincipal, String scheme) {
         this.authPrincipal = authPrincipal;
         this.scheme = scheme;
     }

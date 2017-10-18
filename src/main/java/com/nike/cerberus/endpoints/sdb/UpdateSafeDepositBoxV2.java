@@ -76,7 +76,7 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final CerberusPrincipal vaultAuthPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             String sdbId = request.getPathParam("id");
             Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
@@ -84,12 +84,12 @@ public class UpdateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
             log.info("{}: {}, Update SDB Event: the principal: {} from ip: {} is attempting to update sdb name: '{}' and id: '{}'",
                     HEADER_X_CERBERUS_CLIENT,
                     getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
+                    authPrincipal.getName(),
                     getXForwardedClientIp(request),
                     sdbName,
                     sdbId);
             SafeDepositBoxV2 safeDepositBoxV2 = safeDepositBoxService.updateSafeDepositBoxV2(request.getContent(),
-                    vaultAuthPrincipal,
+                    authPrincipal,
                     request.getPathParam("id"));
             return ResponseInfo.newBuilder(safeDepositBoxV2)
                     .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))

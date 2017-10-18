@@ -153,12 +153,12 @@ public class SafeDepositBoxService {
      * Queries the data store for the specific safe deposit box by ID.  The query also enforces that the specified
      * safe deposit box has a linked permission via the user groups supplied in the call.
      *
-     * @param vaultAuthPrincipal The authenticated principal
+     * @param authPrincipal The authenticated principal
      * @param id The unique identifier for the safe deposit box to lookup
      * @return The safe deposit box, if found
      */
-    public SafeDepositBoxV1 getSDBAndValidatePrincipalAssociationV1(CerberusPrincipal vaultAuthPrincipal, String id) {
-        return convertSafeDepositBoxV2ToV1(getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id));
+    public SafeDepositBoxV1 getSDBAndValidatePrincipalAssociationV1(CerberusPrincipal authPrincipal, String id) {
+        return convertSafeDepositBoxV2ToV1(getSDBAndValidatePrincipalAssociationV2(authPrincipal, id));
     }
 
     /**
@@ -235,8 +235,7 @@ public class SafeDepositBoxService {
     }
     
     /**
-     * Creates a safe deposit box and all the appropriate permissions.  Policies for each role are also
-     * created within Vault.
+     * Creates a safe deposit box and all the appropriate permissions.
      *
      * @param safeDepositBox Safe deposit box to create
      * @param user User requesting the creation
@@ -251,8 +250,7 @@ public class SafeDepositBoxService {
     }
 
     /**
-     * Creates a safe deposit box and all the appropriate permissions.  Policies for each role are also
-     * created within Vault.
+     * Creates a safe deposit box and all the appropriate permissions.
      *
      * @param safeDepositBox Safe deposit box to create
      * @param user User requesting the creation
@@ -296,36 +294,36 @@ public class SafeDepositBoxService {
      * Updates a safe deposit box.  Currently, only the description, owner and permissions are updatable.
      *
      * @param safeDepositBox Updated safe deposit box
-     * @param vaultAuthPrincipal The authenticated principal
+     * @param authPrincipal The authenticated principal
      * @param id Safe deposit box id
      */
     @Transactional
     public void updateSafeDepositBoxV1(final SafeDepositBoxV1 safeDepositBox,
-                                       final CerberusPrincipal vaultAuthPrincipal,
+                                       final CerberusPrincipal authPrincipal,
                                        final String id) {
 
         SafeDepositBoxV2 safeDepositBoxV2 = convertSafeDepositBoxV1ToV2(safeDepositBox);
 
-        updateSafeDepositBoxV2(safeDepositBoxV2, vaultAuthPrincipal, id);
+        updateSafeDepositBoxV2(safeDepositBoxV2, authPrincipal, id);
     }
 
     /**
      * Updates a safe deposit box.  Currently, only the description, owner and permissions are updatable.
      *
      * @param safeDepositBox Updated safe deposit box
-     * @param vaultAuthPrincipal The authenticated principal
+     * @param authPrincipal The authenticated principal
      * @param id Safe deposit box id
      */
     @Transactional
     public SafeDepositBoxV2 updateSafeDepositBoxV2(final SafeDepositBoxV2 safeDepositBox,
-                                                   final CerberusPrincipal vaultAuthPrincipal,
+                                                   final CerberusPrincipal authPrincipal,
                                                    final String id) {
 
-        final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+        final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(authPrincipal, id);
 
-        sdbPermissionService.assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, currentBox);
+        sdbPermissionService.assertPrincipalHasOwnerPermissions(authPrincipal, currentBox);
 
-        String principalName = vaultAuthPrincipal.getName();
+        String principalName = authPrincipal.getName();
         final OffsetDateTime now = dateTimeSupplier.get();
         final SafeDepositBoxRecord boxToUpdate = buildBoxToUpdate(id, safeDepositBox, principalName, now);
         final Set<UserGroupPermission> userGroupPermissionSet = safeDepositBox.getUserGroupPermissions();
@@ -339,26 +337,26 @@ public class SafeDepositBoxService {
         modifyUserGroupPermissions(currentBox, userGroupPermissionSet, principalName, now);
         modifyIamPrincipalPermissions(currentBox, iamRolePermissionSet, principalName, now);
 
-        return getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+        return getSDBAndValidatePrincipalAssociationV2(authPrincipal, id);
     }
 
     /**
-     * Deletes a safe deposit box and associated permissions.  Also removes the policies and secrets from Vault.
+     * Deletes a safe deposit box and associated permissions.
      *
      * @param id The unique identifier for the safe deposit box
      */
     @Transactional
-    public void deleteSafeDepositBox(CerberusPrincipal vaultAuthPrincipal, final String id) {
-        final SafeDepositBoxV2 box = getSDBAndValidatePrincipalAssociationV2(vaultAuthPrincipal, id);
+    public void deleteSafeDepositBox(CerberusPrincipal authPrincipal, final String id) {
+        final SafeDepositBoxV2 box = getSDBAndValidatePrincipalAssociationV2(authPrincipal, id);
 
-        sdbPermissionService.assertPrincipalHasOwnerPermissions(vaultAuthPrincipal, box);
+        sdbPermissionService.assertPrincipalHasOwnerPermissions(authPrincipal, box);
 
         // 1. Remove permissions and metadata from database.
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
         userGroupPermissionService.deleteUserGroupPermissions(id);
         safeDepositBoxDao.deleteSafeDepositBox(id);
 
-        // 2. Delete all secrets from the safe deposit box Vault path.
+        // 2. Delete all secrets from the safe deposit box.
         secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(box.getPath());
     }
 

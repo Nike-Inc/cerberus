@@ -82,7 +82,7 @@ import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_TOKEN_RE
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
 
 /**
- * Authentication service for Users and IAM roles to be able to authenticate and get an assigned Vault token.
+ * Authentication service for Users and IAM roles to be able to authenticate and get an assigned auth token.
  */
 @Singleton
 public class AuthenticationService {
@@ -156,7 +156,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Enables a user to authenticate with their credentials and get back a Vault token with any policies they
+     * Enables a user to authenticate with their credentials and get back a token with any policies they
      * are entitled to.  If a MFA check is required, the details are contained within the auth response.
      *
      * @param credentials User credentials for the authenticating user
@@ -175,7 +175,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Enables a user to execute an MFA check to complete authentication and get a Vault token.
+     * Enables a user to execute an MFA check to complete authentication and get an auth token.
      *
      * @param mfaCheckRequest Request containing the MFA token details
      * @return The auth response
@@ -209,23 +209,23 @@ public class AuthenticationService {
         iamPrincipalCredentials.setIamPrincipalArn(iamPrincipalArn);
         iamPrincipalCredentials.setRegion(region);
 
-        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, region);
-        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
-        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
+        final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, region);
+        authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
+        authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
-        return authenticate(iamPrincipalCredentials, vaultAuthPrincipalMetadata);
+        return authenticate(iamPrincipalCredentials, authPrincipalMetadata);
     }
 
     public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
 
         final String iamPrincipalArn = credentials.getIamPrincipalArn();
-        final Map<String, String> vaultAuthPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
-        vaultAuthPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
+        final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
+        authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-        return authenticate(credentials, vaultAuthPrincipalMetadata);
+        return authenticate(credentials, authPrincipalMetadata);
     }
 
-    private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> vaultAuthPrincipalMetadata) {
+    private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
         final String keyId;
         try {
             keyId = getKeyId(credentials);
@@ -248,7 +248,7 @@ public class AuthenticationService {
                 credentials.getIamPrincipalArn(),
                 PrincipalType.IAM,
                 policies,
-                vaultAuthPrincipalMetadata,
+                authPrincipalMetadata,
                 iamTokenTTL
         );
 
@@ -308,8 +308,6 @@ public class AuthenticationService {
      * If the metadata and policies make the token too big to encrypt with KMS we can as a stop gap trim the metadata
      * and policies from the token.
      *
-     * This information is stored in Vault and can be fetched by the client with a look-up self call
-     *
      * @param authResponseJson The current serialized auth payload
      * @param authToken The auth payload, with the original policies and metadata
      * @param iamPrincipal The calling iam principal
@@ -362,7 +360,7 @@ public class AuthenticationService {
      * necessary.  Anytime permissions change, this is required to reflect that to the user.
      *
      * @param authPrincipal The principal for the caller
-     * @return The auth response directly from Vault with the token and metadata
+     * @return The auth response with the token and metadata
      */
     public AuthResponse refreshUserToken(final CerberusPrincipal authPrincipal) {
 
@@ -408,7 +406,7 @@ public class AuthenticationService {
      *
      * @param username The user requesting a token
      * @param userGroups The user's groups
-     * @return The auth response directly from Vault with the token and metadata
+     * @return The auth response with the token and metadata
      */
     private AuthTokenResponse generateToken(final String username, final Set<String> userGroups, int refreshCount) {
         final Map<String, String> meta = Maps.newHashMap();
@@ -429,7 +427,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Builds the policy set to be associated with the to-be generated Vault token.  The lookup-self policy is
+     * Builds the policy set to be associated with the to-be generated auth token.  The lookup-self policy is
      * included by default.  All other associated policies are based on the groups the user is a member of.
      *
      * @param groups Groups the user is a member of
@@ -469,7 +467,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Builds the policy set to be associated with the to-be generated Vault token.  The lookup-self policy is
+     * Builds the policy set to be associated with the to-be generated auth token.  The lookup-self policy is
      * included by default.  All other associated policies are based on what permissions are granted to the IAM role.
      *
      * @param iamRoleArn IAM role ARN
@@ -574,7 +572,8 @@ public class AuthenticationService {
     }
 
     /**
-     * Generate map of Vault token metadata that is common to all principals
+     * Generate map of Token metadata that is common to all principals
+     *
      * @param iamPrincipalArn - The authenticating IAM principal ARN
      * @param region - The AWS region
      * @return - Map of token metadata
@@ -622,7 +621,7 @@ public class AuthenticationService {
     }
 
     /**
-     * Outputs the expected policy name format used in Vault.
+     * Outputs the expected policy name format that was used in Vault, when Cerberus used Vault to store AC information.
      *
      * @param sdbName Safe deposit box name.
      * @param roleName Role for safe deposit box.
