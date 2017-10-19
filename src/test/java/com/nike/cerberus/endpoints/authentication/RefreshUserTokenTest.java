@@ -72,7 +72,7 @@ public class RefreshUserTokenTest {
         Map<String, Object> requestAttributes = Maps.newHashMap();
 
         CerberusPrincipal authPrincipal = new CerberusPrincipal(
-                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                CerberusAuthToken.Builder.create()
                         .withIsAdmin(true)
                         .withPrincipal("username")
                         .withGroups("group1,group2")

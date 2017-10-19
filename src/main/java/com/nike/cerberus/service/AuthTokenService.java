@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -39,6 +40,7 @@ import static org.mybatis.guice.transactional.Isolation.READ_UNCOMMITTED;
 /**
  * Service for handling authentication tokens.
  */
+@Singleton
 public class AuthTokenService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -94,7 +96,7 @@ public class AuthTokenService {
     }
 
     private CerberusAuthToken getCerberusAuthTokenFromRecord(String token, AuthTokenRecord tokenRecord) {
-        return new CerberusAuthToken.CerberusAuthTokenBuilder()
+        return CerberusAuthToken.Builder.create()
                 .withToken(token)
                 .withCreated(tokenRecord.getCreatedTs())
                 .withExpires(tokenRecord.getExpiresTs())

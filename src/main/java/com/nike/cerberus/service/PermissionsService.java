@@ -29,11 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 import java.util.Set;
 
 import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
 
+@Singleton
 public class PermissionsService {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());

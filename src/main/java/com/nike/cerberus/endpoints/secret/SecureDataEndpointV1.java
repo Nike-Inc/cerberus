@@ -72,7 +72,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
             log.error("Security context was null or principal was not instance of Cerberus Principal");
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
-                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                    VaultStyleErrorResponse.Builder.create()
                             .withError("permission denied")
                             .build(),
                     HttpResponseStatus.FORBIDDEN.code()
@@ -86,7 +86,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
             log.error("Required path params missing, PATH: {}", request.getPath());
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
-                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                    VaultStyleErrorResponse.Builder.create()
                             .withError("permission denied")
                             .build(),
                     HttpResponseStatus.FORBIDDEN.code()
@@ -105,7 +105,7 @@ public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> 
                     " path: {}", principal.getName(), sdbId.orElseGet(() -> "missing"), request.getPath());
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
-                    new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder()
+                    VaultStyleErrorResponse.Builder.create()
                             .withError("permission denied")
                             .build(),
                     HttpResponseStatus.FORBIDDEN.code()

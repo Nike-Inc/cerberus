@@ -207,4 +207,104 @@ public class SafeDepositBoxV2 implements SafeDepositBox {
         result = 31 * result + (iamPrincipalPermissions != null ? iamPrincipalPermissions.hashCode() : 0);
         return result;
     }
+
+
+    public static final class Builder {
+        private String id;
+        private String categoryId;
+        private String name;
+        private String description;
+        private String path;
+        private OffsetDateTime createdTs;
+        private OffsetDateTime lastUpdatedTs;
+        private String createdBy;
+        private String lastUpdatedBy;
+        private String owner;
+        private Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
+        private Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
+
+        private Builder() {
+        }
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withCategoryId(String categoryId) {
+            this.categoryId = categoryId;
+            return this;
+        }
+
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder withPath(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public Builder withCreatedTs(OffsetDateTime createdTs) {
+            this.createdTs = createdTs;
+            return this;
+        }
+
+        public Builder withLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+            this.lastUpdatedTs = lastUpdatedTs;
+            return this;
+        }
+
+        public Builder withCreatedBy(String createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder withLastUpdatedBy(String lastUpdatedBy) {
+            this.lastUpdatedBy = lastUpdatedBy;
+            return this;
+        }
+
+        public Builder withOwner(String owner) {
+            this.owner = owner;
+            return this;
+        }
+
+        public Builder withUserGroupPermissions(Set<UserGroupPermission> userGroupPermissions) {
+            this.userGroupPermissions = userGroupPermissions;
+            return this;
+        }
+
+        public Builder withIamPrincipalPermissions(Set<IamPrincipalPermission> iamPrincipalPermissions) {
+            this.iamPrincipalPermissions = iamPrincipalPermissions;
+            return this;
+        }
+
+        public SafeDepositBoxV2 build() {
+            SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
+            safeDepositBoxV2.setId(id);
+            safeDepositBoxV2.setCategoryId(categoryId);
+            safeDepositBoxV2.setName(name);
+            safeDepositBoxV2.setDescription(description);
+            safeDepositBoxV2.setPath(path);
+            safeDepositBoxV2.setCreatedTs(createdTs);
+            safeDepositBoxV2.setLastUpdatedTs(lastUpdatedTs);
+            safeDepositBoxV2.setCreatedBy(createdBy);
+            safeDepositBoxV2.setLastUpdatedBy(lastUpdatedBy);
+            safeDepositBoxV2.setOwner(owner);
+            safeDepositBoxV2.setUserGroupPermissions(userGroupPermissions);
+            safeDepositBoxV2.setIamPrincipalPermissions(iamPrincipalPermissions);
+            return safeDepositBoxV2;
+        }
+    }
 }

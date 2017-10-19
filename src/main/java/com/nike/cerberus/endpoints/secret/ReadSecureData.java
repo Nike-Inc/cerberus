@@ -90,7 +90,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
         Set<String> keys = secureDataService.listKeys(info.getPath());
 
         if (keys.isEmpty()) {
-            return generateVaultStyleResponse(new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder().build(),
+            return generateVaultStyleResponse(VaultStyleErrorResponse.Builder.create().build(),
                     HttpResponseStatus.NOT_FOUND.code());
         }
 
@@ -120,7 +120,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
         Optional<String> data = secureDataService.readSecret(info.getPath());
 
         if (! data.isPresent()) {
-            return generateVaultStyleResponse(new VaultStyleErrorResponse.VaultStyleErrorResponseBuilder().build(),
+            return generateVaultStyleResponse(VaultStyleErrorResponse.Builder.create().build(),
                     HttpResponseStatus.NOT_FOUND.code());
         }
 

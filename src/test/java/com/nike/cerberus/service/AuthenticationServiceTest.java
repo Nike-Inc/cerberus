@@ -340,7 +340,7 @@ public class AuthenticationServiceTest {
     public void tests_that_refreshUserToken_refreshes_token_when_count_is_less_than_limit() {
         Integer curCount = MAX_LIMIT - 1;
 
-        CerberusAuthToken authToken = new CerberusAuthToken.CerberusAuthTokenBuilder()
+        CerberusAuthToken authToken = CerberusAuthToken.Builder.create()
                 .withPrincipalType(PrincipalType.USER)
                 .withPrincipal("principal")
                 .withGroups("group1,group2")
@@ -359,7 +359,7 @@ public class AuthenticationServiceTest {
                 anyInt(),
                 anyInt())
         ).thenReturn(
-                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                CerberusAuthToken.Builder.create()
                         .withPrincipalType(PrincipalType.USER)
                         .withPrincipal("principal")
                         .withGroups("group1,group2")
