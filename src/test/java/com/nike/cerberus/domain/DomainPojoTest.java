@@ -22,7 +22,6 @@ public class DomainPojoTest {
 
         // exclude this class because it does not need getters and setters for every constructor parameter
         pojoClasses.remove(PojoClassFactory.getPojoClass(AssetResourceFile.class));
-        pojoClasses.remove(PojoClassFactory.getPojoClass(DashboardResourceFile.class));
         // exclude CerberusAuthToken and its builder
         pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.class));
         pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.CerberusAuthTokenBuilder.class));
