@@ -70,7 +70,7 @@ public class CmsRequestSecurityValidatorTest {
         httpHeaders.add(CmsRequestSecurityValidator.LEGACY_AUTH_TOKN_HEADER, token);
         when(requestInfo.getHeaders()).thenReturn(httpHeaders);
 
-        CerberusAuthToken authToken = new CerberusAuthToken.CerberusAuthTokenBuilder()
+        CerberusAuthToken authToken = CerberusAuthToken.Builder.create()
                 .withToken(token)
                 .withPrincipal("username")
                 .withGroups("group1,group2")
@@ -99,7 +99,7 @@ public class CmsRequestSecurityValidatorTest {
         Map<String, Object> requestAttributes = Maps.newHashMap();
         Map<String, String> meta = Maps.newHashMap();
 
-        CerberusAuthToken authToken = new CerberusAuthToken.CerberusAuthTokenBuilder()
+        CerberusAuthToken authToken = CerberusAuthToken.Builder.create()
                 .withToken(token)
                 .withPrincipal("username")
                 .withGroups("group1,group2")

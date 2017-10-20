@@ -55,7 +55,7 @@ public class AdminStandardEndpointTest {
     public void execute_validates_user_is_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(
-                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                CerberusAuthToken.Builder.create()
                         .withIsAdmin(true)
                         .withPrincipal("username")
                         .withGroups("group1,group2")
@@ -84,7 +84,7 @@ public class AdminStandardEndpointTest {
     public void execute_throws_error_if_principal_not_an_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
         final CerberusPrincipal authPrincipal = new CerberusPrincipal(
-                new CerberusAuthToken.CerberusAuthTokenBuilder()
+                CerberusAuthToken.Builder.create()
                         .withIsAdmin(false)
                         .withPrincipal("username")
                         .withGroups("group1,group2")

@@ -128,4 +128,69 @@ public class IamPrincipalPermission {
     public int hashCode() {
         return iamPrincipalArn != null ? iamPrincipalArn.hashCode() : 0;
     }
+
+
+    public static final class Builder {
+        private String id;
+        private String roleId;
+        private String iamPrincipalArn;
+        private OffsetDateTime createdTs;
+        private OffsetDateTime lastUpdatedTs;
+        private String createdBy;
+        private String lastUpdatedBy;
+
+        private Builder() {
+        }
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withRoleId(String roleId) {
+            this.roleId = roleId;
+            return this;
+        }
+
+        public Builder withIamPrincipalArn(String iamPrincipalArn) {
+            this.iamPrincipalArn = iamPrincipalArn;
+            return this;
+        }
+
+        public Builder withCreatedTs(OffsetDateTime createdTs) {
+            this.createdTs = createdTs;
+            return this;
+        }
+
+        public Builder withLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+            this.lastUpdatedTs = lastUpdatedTs;
+            return this;
+        }
+
+        public Builder withCreatedBy(String createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder withLastUpdatedBy(String lastUpdatedBy) {
+            this.lastUpdatedBy = lastUpdatedBy;
+            return this;
+        }
+
+        public IamPrincipalPermission build() {
+            IamPrincipalPermission iamPrincipalPermission = new IamPrincipalPermission();
+            iamPrincipalPermission.setId(id);
+            iamPrincipalPermission.setRoleId(roleId);
+            iamPrincipalPermission.setIamPrincipalArn(iamPrincipalArn);
+            iamPrincipalPermission.setCreatedTs(createdTs);
+            iamPrincipalPermission.setLastUpdatedTs(lastUpdatedTs);
+            iamPrincipalPermission.setCreatedBy(createdBy);
+            iamPrincipalPermission.setLastUpdatedBy(lastUpdatedBy);
+            return iamPrincipalPermission;
+        }
+    }
 }

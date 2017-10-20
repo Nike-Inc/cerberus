@@ -64,7 +64,7 @@ public class CerberusAuthToken {
         return refreshCount;
     }
 
-    public static final class CerberusAuthTokenBuilder {
+    public static final class Builder {
         private String token;
         private OffsetDateTime created;
         private OffsetDateTime expires;
@@ -74,45 +74,49 @@ public class CerberusAuthToken {
         private String groups;
         private int refreshCount;
 
-        public CerberusAuthTokenBuilder() {
+        private Builder() {
         }
 
-        public CerberusAuthTokenBuilder withToken(String token) {
+        public static Builder create() {
+            return new Builder();
+        }
+
+        public Builder withToken(String token) {
             this.token = token;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withCreated(OffsetDateTime created) {
+        public Builder withCreated(OffsetDateTime created) {
             this.created = created;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withExpires(OffsetDateTime expires) {
+        public Builder withExpires(OffsetDateTime expires) {
             this.expires = expires;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withPrincipal(String principal) {
+        public Builder withPrincipal(String principal) {
             this.principal = principal;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withPrincipalType(PrincipalType principalType) {
+        public Builder withPrincipalType(PrincipalType principalType) {
             this.principalType = principalType;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withIsAdmin(boolean isAdmin) {
+        public Builder withIsAdmin(boolean isAdmin) {
             this.isAdmin = isAdmin;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withGroups(String groups) {
+        public Builder withGroups(String groups) {
             this.groups = groups;
             return this;
         }
 
-        public CerberusAuthTokenBuilder withRefreshCount(int refreshCount) {
+        public Builder withRefreshCount(int refreshCount) {
             this.refreshCount = refreshCount;
             return this;
         }

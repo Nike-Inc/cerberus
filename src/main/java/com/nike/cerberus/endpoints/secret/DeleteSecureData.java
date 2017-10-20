@@ -66,7 +66,7 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
     }
 
     private ResponseInfo<Object> deleteSecureData(SecureDataRequestInfo requestInfo) {
-        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(requestInfo.getPath());
+        secureDataService.deleteSecret(requestInfo.getPath());
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }
 

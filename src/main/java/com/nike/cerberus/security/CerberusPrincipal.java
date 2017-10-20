@@ -90,6 +90,9 @@ public class CerberusPrincipal implements Principal {
     }
 
     public Set<String> getUserGroups() {
+        if (cerberusAuthToken.getGroups() == null) {
+            return new HashSet<>();
+        }
         return new HashSet<>(Arrays.asList(cerberusAuthToken.getGroups().split(",")));
     }
 

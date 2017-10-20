@@ -21,7 +21,7 @@ import java.util.List;
 
 public class VaultStyleErrorResponse {
 
-    List<String> errors;
+    private List<String> errors;
 
     public List<String> getErrors() {
         return errors;
@@ -32,17 +32,17 @@ public class VaultStyleErrorResponse {
     }
 
 
-    public static final class VaultStyleErrorResponseBuilder {
+    public static final class Builder {
         List<String> errors = new LinkedList<>();
 
-        public VaultStyleErrorResponseBuilder() {
+        private Builder() {
         }
 
-        public static VaultStyleErrorResponseBuilder aVaultStyleErrorResponse() {
-            return new VaultStyleErrorResponseBuilder();
+        public static Builder create() {
+            return new Builder();
         }
 
-        public VaultStyleErrorResponseBuilder withError(String error) {
+        public Builder withError(String error) {
             errors.add(error);
             return this;
         }

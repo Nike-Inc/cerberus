@@ -124,4 +124,69 @@ public class UserGroupPermission {
     public int hashCode() {
         return name != null ? name.hashCode() : 0;
     }
+
+
+    public static final class Builder {
+        private String id;
+        private String name;
+        private String roleId;
+        private OffsetDateTime createdTs;
+        private OffsetDateTime lastUpdatedTs;
+        private String createdBy;
+        private String lastUpdatedBy;
+
+        private Builder() {
+        }
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder withRoleId(String roleId) {
+            this.roleId = roleId;
+            return this;
+        }
+
+        public Builder withCreatedTs(OffsetDateTime createdTs) {
+            this.createdTs = createdTs;
+            return this;
+        }
+
+        public Builder withLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+            this.lastUpdatedTs = lastUpdatedTs;
+            return this;
+        }
+
+        public Builder withCreatedBy(String createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder withLastUpdatedBy(String lastUpdatedBy) {
+            this.lastUpdatedBy = lastUpdatedBy;
+            return this;
+        }
+
+        public UserGroupPermission build() {
+            UserGroupPermission userGroupPermission = new UserGroupPermission();
+            userGroupPermission.setId(id);
+            userGroupPermission.setName(name);
+            userGroupPermission.setRoleId(roleId);
+            userGroupPermission.setCreatedTs(createdTs);
+            userGroupPermission.setLastUpdatedTs(lastUpdatedTs);
+            userGroupPermission.setCreatedBy(createdBy);
+            userGroupPermission.setLastUpdatedBy(lastUpdatedBy);
+            return userGroupPermission;
+        }
+    }
 }

@@ -22,12 +22,13 @@ public class DomainPojoTest {
 
         // exclude this class because it does not need getters and setters for every constructor parameter
         pojoClasses.remove(PojoClassFactory.getPojoClass(AssetResourceFile.class));
-        // exclude CerberusAuthToken and its builder
+
         pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.class));
-        pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.CerberusAuthTokenBuilder.class));
-        // exclude VaultStyleErrorResponse and its builder
-        pojoClasses.remove(PojoClassFactory.getPojoClass(VaultStyleErrorResponse.class));
-        pojoClasses.remove(PojoClassFactory.getPojoClass(VaultStyleErrorResponse.VaultStyleErrorResponseBuilder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.Builder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(VaultStyleErrorResponse.Builder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(IamPrincipalPermission.Builder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(UserGroupPermission.Builder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(SafeDepositBoxV2.Builder.class));
 
         Assert.assertTrue(pojoClasses.size() > 1);
 
