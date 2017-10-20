@@ -21,7 +21,7 @@ import java.util.List;
 
 public class VaultStyleErrorResponse {
 
-    List<String> errors;
+    private List<String> errors;
 
     public List<String> getErrors() {
         return errors;
