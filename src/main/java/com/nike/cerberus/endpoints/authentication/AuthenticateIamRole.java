@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -34,9 +35,7 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
+import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
 
 /**
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
@@ -48,10 +47,14 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
+    private final EventProcessorService eventProcessorService;
 
     @Inject
-    public AuthenticateIamRole(final AuthenticationService authenticationService) {
+    public AuthenticateIamRole(final AuthenticationService authenticationService,
+                               EventProcessorService eventProcessorService) {
+
         this.authenticationService = authenticationService;
+        this.eventProcessorService = eventProcessorService;
     }
 
     @Override
@@ -68,14 +71,14 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
     private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamRoleCredentials> request) {
         final IamRoleCredentials credentials = request.getContent();
 
-        log.info("{}: {}, IAM Auth Event: the IAM principal {} with ip: {} is attempting to authenticate in region {}",
-                HEADER_X_CERBERUS_CLIENT,
-                getClientVersion(request),
-                String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
-                        credentials.getAccountId(),
-                        credentials.getRoleName()),
-                getXForwardedClientIp(request),
-                credentials.getRegion());
+        String arn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                credentials.getAccountId(),
+                credentials.getRoleName());
+
+        eventProcessorService.ingestEvent(auditableEvent(String.format("[ Name: %s ]", arn), request, getClass().getSimpleName())
+                .withAction(String.format("Attempting to authenticate in region %s", credentials.getRegion()))
+                .build()
+        );
 
         return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
     }

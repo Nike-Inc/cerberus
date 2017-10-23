@@ -66,8 +66,6 @@ public class PutSDBMetadata extends AdminStandardEndpoint<SDBMetadata, Void> {
 
         String principal = authPrincipal.getName();
 
-        log.info("Metadata Restore Event: the principal {} is attempting to restore sdb name: '{}'", principal, request.getContent().getName());
-
         metadataService.restoreMetadata(request.getContent(), principal);
 
         return ResponseInfo.<Void>newBuilder()

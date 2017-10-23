@@ -17,20 +17,18 @@
 package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -38,16 +36,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
-
 /**
  * Revokes the token supplied in the token header.
  */
-public class RevokeToken extends StandardEndpoint<Void, Void> {
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
+public class RevokeToken extends AuditableEventEndpoint<Void, Void> {
 
     private final AuthenticationService authenticationService;
 
@@ -73,12 +65,6 @@ public class RevokeToken extends StandardEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             final CerberusPrincipal authPrincipal =
                     (CerberusPrincipal) securityContext.get().getUserPrincipal();
-
-            log.info("{}: {}, Delete Token Auth Event: the principal: {} with ip: {} is attempting to delete a token",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    authPrincipal.getName(),
-                    getXForwardedClientIp(request));
 
             authenticationService.revoke(authPrincipal.getToken());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();

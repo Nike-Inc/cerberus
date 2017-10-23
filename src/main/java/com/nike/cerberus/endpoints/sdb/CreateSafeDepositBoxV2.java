@@ -19,13 +19,13 @@ package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -41,9 +41,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_REFRESH_TOKEN;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
@@ -51,7 +48,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
 /**
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
-public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
+public class CreateSafeDepositBoxV2 extends AuditableEventEndpoint<SafeDepositBoxV2, SafeDepositBoxV2> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -82,13 +79,6 @@ public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
         if (securityContext.isPresent()) {
             final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
-            log.info("{}: {}, Create SDB Event: the principal: {} from ip: {} is attempting to create sdb name: '{}'",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    authPrincipal.getName(),
-                    getXForwardedClientIp(request),
-                    request.getContent().getName());
-
             final SafeDepositBoxV2 safeDepositBox =
                     safeDepositBoxService.createSafeDepositBoxV2(request.getContent(), authPrincipal.getName());
             final String location = basePath + "/" + safeDepositBox.getId();
@@ -106,5 +96,10 @@ public class CreateSafeDepositBoxV2 extends StandardEndpoint<SafeDepositBoxV2, S
     @Override
     public Matcher requestMatcher() {
         return Matcher.match(BASE_PATH, HttpMethod.POST);
+    }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<SafeDepositBoxV2> request) {
+        return String.format("Create SDB with name: %s.", request.getContent().getName());
     }
 }

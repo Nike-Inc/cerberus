@@ -46,20 +46,16 @@ public class TriggerScheduledJob extends AdminStandardEndpoint<Void, Void> {
                                                            ChannelHandlerContext ctx,
                                                            SecurityContext securityContext) {
 
-        CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
-        String principal = authPrincipal.getName();
-
         String job = request.getPathParam("job");
 
         List<String> registeredJobs = SundialJobScheduler.getAllJobNames();
 
         if (StringUtils.isBlank(job) || ! registeredJobs.contains(job)) {
-            log.error("Principal: {} has attempted to manually triggered job: {}, but the job was null or was not registered. Registered jobs are {}",
-                    principal, job, String.join(",", registeredJobs));
+            log.error("The Job: {} was null or was not registered. Registered jobs are {}",
+                    job, String.join(",", registeredJobs));
             throw new ApiException(DefaultApiError.GENERIC_BAD_REQUEST);
         }
 
-        log.info("Principal: {} has manually triggered job: {}", principal, job);
         SundialJobScheduler.startJob(job);
 
         return CompletableFuture.completedFuture(
@@ -72,5 +68,10 @@ public class TriggerScheduledJob extends AdminStandardEndpoint<Void, Void> {
     @Override
     public Matcher requestMatcher() {
         return Matcher.match("/v1/admin/trigger-job/{job}", HttpMethod.POST);
+    }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<Void> request) {
+        return String.format("Triggering job: %s.", request.getPathParam("job"));
     }
 }

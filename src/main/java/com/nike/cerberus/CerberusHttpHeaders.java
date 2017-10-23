@@ -40,4 +40,18 @@ public final class CerberusHttpHeaders {
         }
         return UNKNOWN;
     }
+
+    /**
+     * Get the complete Http header "X-Forwarded-For"
+     */
+    public static String getXForwardedCompleteHeader(RequestInfo request) {
+        final HttpHeaders headers = request.getHeaders();
+        if (headers != null) {
+            String value = headers.get(HEADER_X_FORWARDED_FOR);
+            if (value != null) {
+                return value;
+            }
+        }
+        return UNKNOWN;
+    }
 }

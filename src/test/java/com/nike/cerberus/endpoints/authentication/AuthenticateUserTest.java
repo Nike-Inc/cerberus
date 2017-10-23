@@ -20,6 +20,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -27,6 +28,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.util.Base64;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import static org.assertj.core.api.Fail.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AuthenticateUserTest {
 
@@ -54,14 +57,19 @@ public class AuthenticateUserTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
+    @Mock
     private AuthenticationService authenticationService;
+
+    @Mock
+    private EventProcessorService eventProcessorService;
 
     private AuthenticateUser subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationService.class);
-        subject = new AuthenticateUser(authenticationService);
+        initMocks(this);
+
+        subject = new AuthenticateUser(authenticationService, eventProcessorService);
     }
 
     @Test

@@ -19,6 +19,7 @@ package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
@@ -57,10 +58,11 @@ import com.nike.cerberus.endpoints.secret.DeleteSecureData;
 import com.nike.cerberus.endpoints.secret.ReadSecureData;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
+import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
-import com.nike.cerberus.jobs.HystrixMetricsProcessingJob;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.UuidSupplier;
@@ -89,6 +91,7 @@ import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -259,13 +262,49 @@ public class CmsGuiceModule extends AbstractModule {
                 || i instanceof GetDashboard)).collect(Collectors.toList());
     }
 
+    /**
+     * Process the list of fully qualified class names under cms.event.enabledProcessors.
+     * Using just to get an instance of the class and create a list of processors for the event processing service.
+     * @param injector The guice injector
+     *
+     * @return List of enabled processors
+     */
+    @Provides
+    @Singleton
+    @Named("eventProcessors")
+    public List<EventProcessor> eventProcessors(Injector injector) {
+        List<EventProcessor> eventProcessors = new LinkedList<>();
+        appConfig.getList("cms.event.enabledProcessors").forEach(processorClassname -> {
+            try {
+                EventProcessor processor = (EventProcessor)
+                        injector.getInstance(Class.forName((String) processorClassname.unwrapped()));
+
+                eventProcessors.add(processor);
+            } catch (ClassNotFoundException e) {
+                logger.error("Failed to get instance of Event Processor: {}", e);
+            }
+        });
+        return eventProcessors;
+    }
+
+    @Provides
+    @Singleton
+    public EventProcessorService eventProcessorService(@Named("eventProcessors") List<EventProcessor> eventProcessors) {
+
+        EventProcessorService eventProcessorService = new EventProcessorService();
+        eventProcessors.forEach(eventProcessorService::registerProcessor);
+
+        return eventProcessorService;
+    }
+
     @Provides
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            AuthTokenService authTokenService) {
+            AuthTokenService authTokenService,
+            EventProcessorService eventProcessorService) {
 
-        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService);
+        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService, eventProcessorService);
     }
 
     @Provides
