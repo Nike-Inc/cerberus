@@ -20,26 +20,33 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Extension endpoint class for validating caller is admin before executing.
  */
-public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O> {
+public abstract class AdminStandardEndpoint<I, O> extends AuditableEventEndpoint<I, O> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    protected EventProcessorService eventProcessorService;
+
+    @Inject
+    public void setEventProcessorService(EventProcessorService eventProcessorService) {
+        this.eventProcessorService = eventProcessorService;
+    }
 
     public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
                                                             final Executor longRunningTaskExecutor,
@@ -48,15 +55,17 @@ public abstract class AdminStandardEndpoint<I, O> extends StandardEndpoint<I, O>
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
-        String principal = securityContext.isPresent() ?
-                securityContext.get().getUserPrincipal() instanceof CerberusPrincipal ?
-                        securityContext.get().getUserPrincipal().getName() :
-                        "( Principal is not a Cerberus auth principal. )" : "( Principal name is empty. )";
+        CerberusPrincipal cerberusPrincipal = null;
+        if (securityContext.isPresent() && securityContext.get().getUserPrincipal() instanceof CerberusPrincipal) {
+            cerberusPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
+        }
 
-        log.info("Admin Endpoint Event: the principal {} from ip: {} is attempting to access admin endpoint: {}", principal, getXForwardedClientIp(request), this.getClass().getName());
         if (!securityContext.isPresent() || !securityContext.get().isUserInRole(CerberusPrincipal.ROLE_ADMIN)) {
-            log.error("Admin Endpoint Event: the principal {} from ip: {} attempted to access {}, an admin endpoint but was not an admin", principal, getXForwardedClientIp(request),
-                    this.getClass().getName());
+            eventProcessorService.ingestEvent(auditableEvent(cerberusPrincipal, request)
+                    .withName(String.format("%s Illegally Invoked", this.getClass().getSimpleName()))
+                    .withAction("A non-admin principal attempted to access admin protected endpoint")
+                    .build());
+
             throw new ApiException(DefaultApiError.ACCESS_DENIED);
         }
 

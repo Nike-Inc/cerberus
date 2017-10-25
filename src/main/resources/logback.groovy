@@ -169,6 +169,7 @@ if (shouldOutputAccessLogsToLogFile()) {
 }
 
 // CUSTOM LOGGER SETTINGS (setting output levels for various classes)
+logger("com.okta.sdk.framework.ApiClient", WARN, allAsyncAppendersArray, false)
 logger("com.nike.riposte.server.handler.RequestContentDeserializerHandler", INFO, allAsyncAppendersArray, false)
 logger("com.nike.riposte.server.handler.DTraceStartHandler", INFO, allAsyncAppendersArray, false)
 logger("com.nike.riposte.metrics.codahale.CodahaleMetricsListener", INFO, allAsyncAppendersArray, false)

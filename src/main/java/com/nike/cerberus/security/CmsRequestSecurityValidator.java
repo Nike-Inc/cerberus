@@ -18,9 +18,11 @@ package com.nike.cerberus.security;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.secret.SecureDataEndpointV1;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
@@ -48,14 +50,17 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
     private final Collection<Endpoint<?>> endpointsToValidate;
     private final AuthTokenService authTokenService;
+    private final EventProcessorService eventProcessorService;
 
     public CmsRequestSecurityValidator(Collection<Endpoint<?>> endpointsToValidate,
-                                       AuthTokenService authTokenService) {
+                                       AuthTokenService authTokenService,
+                                       EventProcessorService eventProcessorService) {
 
         this.endpointsToValidate = endpointsToValidate;
         this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
 
         this.authTokenService = authTokenService;
+        this.eventProcessorService = eventProcessorService;
     }
 
     @Override
@@ -78,6 +83,20 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
         final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
                 URI.create(requestInfo.getUri()).getScheme());
         requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
+
+        processPrincipalEvent(principal, requestInfo, endpoint);
+    }
+
+    private void processPrincipalEvent(CerberusPrincipal principal,
+                                       RequestInfo<?> requestInfo,
+                                       Endpoint<?> endpoint) {
+
+        if (endpoint instanceof AuditableEventEndpoint) {
+            //noinspection unchecked
+            eventProcessorService.ingestEvent(
+                    ((AuditableEventEndpoint) endpoint).generateAuditableEvent(principal, requestInfo)
+            );
+        }
     }
 
     private String parseRequiredAuthHeaderFromRequest(HttpHeaders headers) {

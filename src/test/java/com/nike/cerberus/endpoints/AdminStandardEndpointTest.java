@@ -22,6 +22,7 @@ import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CerberusSecurityContext;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
@@ -29,6 +30,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Map;
@@ -39,16 +41,23 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AdminStandardEndpointTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
+    @Mock
+    private EventProcessorService eventProcessorService;
+
     private AdminStandardEndpoint<Void, Void> subject;
 
     @Before
-    public void setUp() throws Exception {
+    public void before() throws Exception {
+        initMocks(this);
+
         subject = new AdminStandardEndpointImpl();
+        subject.setEventProcessorService(eventProcessorService);
     }
 
     @Test

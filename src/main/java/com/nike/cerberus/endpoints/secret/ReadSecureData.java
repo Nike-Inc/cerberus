@@ -148,4 +148,14 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
                 HttpMethod.GET
         );
     }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<Void> request) {
+        String path = request.getPath();
+        if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
+            return String.format("Listing keys under path: %s", path);
+        } else {
+            return String.format("Reading secret with path: %s", path);
+        }
+    }
 }

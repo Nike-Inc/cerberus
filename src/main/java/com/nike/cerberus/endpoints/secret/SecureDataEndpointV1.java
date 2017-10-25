@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.PermissionsService;
@@ -25,7 +26,6 @@ import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -40,7 +40,7 @@ import java.util.concurrent.Executor;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public abstract class SecureDataEndpointV1<I, O> extends StandardEndpoint<I, O> {
+public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<I, O> {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 

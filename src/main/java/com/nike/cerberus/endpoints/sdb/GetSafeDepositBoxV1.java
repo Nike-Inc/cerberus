@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -47,7 +48,7 @@ import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
  * deposit box by its unique id.
  */
 @Deprecated
-public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1> {
+public class GetSafeDepositBoxV1 extends AuditableEventEndpoint<Void, SafeDepositBoxV1> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -76,16 +77,6 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
             final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             String sdbId = request.getPathParam("id");
-            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
-            log.info("{}: {}, Read SDB Event: the principal: {} from ip: {} is attempting to read sdb name: '{}' and id: '{}'",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    authPrincipal.getName(),
-                    getXForwardedClientIp(request),
-                    sdbName,
-                    sdbId);
-
             final SafeDepositBoxV1 safeDepositBox =
                     safeDepositBoxService.getSDBAndValidatePrincipalAssociationV1(
                             authPrincipal,
@@ -100,5 +91,13 @@ public class GetSafeDepositBoxV1 extends StandardEndpoint<Void, SafeDepositBoxV1
     @Override
     public Matcher requestMatcher() {
         return Matcher.match("/v1/safe-deposit-box/{id}", HttpMethod.GET);
+    }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<Void> request) {
+        String sdbId = request.getPathParam("id");
+        Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+        String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+        return String.format("Fetch details for SDB with name: '%s' and id: '%s'", sdbName, sdbId);
     }
 }

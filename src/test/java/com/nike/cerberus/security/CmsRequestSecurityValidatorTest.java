@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -52,14 +53,18 @@ public class CmsRequestSecurityValidatorTest {
     private Collection<Endpoint<?>> securedEndpoints = Lists.newArrayList(securedEndpoint);
 
     @Mock
-    AuthTokenService authTokenService;
+    private AuthTokenService authTokenService;
+
+    @Mock
+    private EventProcessorService eventProcessorService;
 
     private CmsRequestSecurityValidator subject;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        subject = new CmsRequestSecurityValidator(securedEndpoints, authTokenService);
+
+        subject = new CmsRequestSecurityValidator(securedEndpoints, authTokenService, eventProcessorService);
     }
 
     @Test
