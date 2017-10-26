@@ -22,6 +22,8 @@ import com.nike.backstopper.exception.ApiException;
 import com.okta.sdk.clients.AuthApiClient;
 import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserApiClient;
+import com.okta.sdk.clients.UserGroupApiClient;
+import com.okta.sdk.framework.PagedResults;
 import com.okta.sdk.models.auth.AuthResult;
 import com.okta.sdk.models.usergroups.UserGroup;
 import org.junit.Before;
@@ -52,7 +54,7 @@ public class OktaApiClientHelperTest {
     private AuthApiClient authApiClient;
 
     @Mock
-    private UserApiClient userApiClient;
+    private UserGroupApiClient userGroupApiClient;
 
     @Mock
     private FactorsApiClient factorsApiClient;
@@ -63,7 +65,7 @@ public class OktaApiClientHelperTest {
         initMocks(this);
 
         // create test object
-        this.oktaApiClientHelper = new OktaApiClientHelper(authApiClient, userApiClient, factorsApiClient);
+        this.oktaApiClientHelper = new OktaApiClientHelper(authApiClient, userGroupApiClient, factorsApiClient, "");
     }
 
 
@@ -76,7 +78,10 @@ public class OktaApiClientHelperTest {
 
         String id = "id";
         UserGroup group = mock(UserGroup.class);
-        when(userApiClient.getUserGroups(id)).thenReturn(Lists.newArrayList(group));
+        PagedResults res = mock(PagedResults.class);
+        when(res.getResult()).thenReturn(Lists.newArrayList(group));
+        when(res.isLastPage()).thenReturn(true);
+        when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenReturn(res);
 
         // do the call
         List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id);
@@ -88,7 +93,7 @@ public class OktaApiClientHelperTest {
     @Test(expected = ApiException.class)
     public void getUserGroupsFails() throws Exception {
 
-        when(userApiClient.getUserGroups(anyString())).thenThrow(IOException.class);
+        when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenThrow(IOException.class);
 
         // do the call
         this.oktaApiClientHelper.getUserGroups("id");

@@ -15,20 +15,37 @@
  */
 
 sourceSets {
-    integration {
-        java.srcDir file('src/integration/java')
-        resources.srcDir file('src/integration/resources')
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
     }
 }
 
-task integration(type: Test, description: 'Runs integration tests') {
-    testClassesDir = sourceSets.integration.output.classesDir
-    classpath = sourceSets.integration.runtimeClasspath
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+integrationTest {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+
 dependencies {
-    integrationCompile sourceSets.main.output
-    integrationCompile configurations.testCompile
-    integrationCompile sourceSets.test.output
-    integrationRuntime configurations.testRuntime
+    integrationTestCompile sourceSets.main.output
+    integrationTestCompile configurations.testCompile
+    integrationTestCompile sourceSets.test.output
+    integrationTestRuntime configurations.testRuntime
+    integrationTestCompile 'com.fieldju:commons:1.1.0'
 }
