@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Factory for creating {@link AssetResourceFile} objects
@@ -62,7 +63,9 @@ public class AssetResourceFileFactory {
     private static byte[] getFileContents(String filePath) {
         try {
             ClassLoader loader = AssetResourceFileFactory.class.getClassLoader();
-            return IOUtils.toByteArray(loader.getResourceAsStream(filePath));
+            try (InputStream inputStream = loader.getResourceAsStream(filePath)) {
+                return IOUtils.toByteArray(inputStream);
+            }
         } catch (NullPointerException | IOException e) {
             throw new IllegalArgumentException("Could not read contents of file: " + filePath, e);
         }
