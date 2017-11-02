@@ -78,11 +78,10 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
             }
         } else {
             principal = new CerberusPrincipal(authToken.get());
+            final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
+                    URI.create(requestInfo.getUri()).getScheme());
+            requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
         }
-
-        final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
-                URI.create(requestInfo.getUri()).getScheme());
-        requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
 
         processPrincipalEvent(principal, requestInfo, endpoint);
     }
