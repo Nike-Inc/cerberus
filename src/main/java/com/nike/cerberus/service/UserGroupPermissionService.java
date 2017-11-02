@@ -190,23 +190,18 @@ public class UserGroupPermissionService {
                                            final String user,
                                            final OffsetDateTime dateTime) {
         for (final UserGroupPermission userGroupPermission : userGroupPermissionSet) {
-            revokeUserGroupPermission(safeDepositBoxId, userGroupPermission, user, dateTime);
+            revokeUserGroupPermission(safeDepositBoxId, userGroupPermission);
         }
     }
 
     /**
      * Revokes a user group permission.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param userGroupPermission The user group permission
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeUserGroupPermission(final String safeDepositBoxId,
-                                          final UserGroupPermission userGroupPermission,
-                                          final String user,
-                                          final OffsetDateTime dateTime) {
+                                          final UserGroupPermission userGroupPermission) {
         final Optional<UserGroupRecord> userGroupRecord =
                 userGroupDao.getUserGroupByName(userGroupPermission.getName());
 

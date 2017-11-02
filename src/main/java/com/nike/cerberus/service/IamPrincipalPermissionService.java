@@ -188,23 +188,18 @@ public class IamPrincipalPermissionService {
                                               final String user,
                                               final OffsetDateTime dateTime) {
         for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
-            revokeIamPrincipalPermission(safeDepositBoxId, iamRolePermission, user, dateTime);
+            revokeIamPrincipalPermission(safeDepositBoxId, iamRolePermission);
         }
     }
 
     /**
      * Revokes a IAM role permission.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param iamPrincipalPermission The IAM principal permission
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeIamPrincipalPermission(final String safeDepositBoxId,
-                                             final IamPrincipalPermission iamPrincipalPermission,
-                                             final String user,
-                                             final OffsetDateTime dateTime) {
+                                             final IamPrincipalPermission iamPrincipalPermission) {
         final Optional<AwsIamRoleRecord> iamRole =
                 awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 

@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.SecurityContext;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -61,8 +60,7 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
     public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
                                                              RequestInfo<Object> request,
                                                              Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx,
-                                                             SecurityContext securityContext) {
+                                                             ChannelHandlerContext ctx) {
 
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> writeSecureData(requestInfo, request), ctx),

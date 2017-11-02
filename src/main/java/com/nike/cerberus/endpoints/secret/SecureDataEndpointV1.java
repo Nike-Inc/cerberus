@@ -114,7 +114,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
         requestInfo.setSdbid(sdbId.get());
 
-        return doExecute(requestInfo, request, longRunningTaskExecutor, ctx, securityContext.get());
+        return doExecute(requestInfo, request, longRunningTaskExecutor, ctx);
     }
 
     private boolean doesRequestHaveRequiredParams(String category, String sdbSlug) {
@@ -196,9 +196,8 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
     protected abstract ResponseInfo<O> generateVaultStyleResponse(VaultStyleErrorResponse response, int statusCode);
 
     protected abstract CompletableFuture<ResponseInfo<O>> doExecute(SecureDataRequestInfo requestInfo,
-                                                                 RequestInfo<I> request,
-                                                                 Executor longRunningTaskExecutor,
-                                                                 ChannelHandlerContext ctx,
-                                                                 SecurityContext securityContext);
+                                                                    RequestInfo<I> request,
+                                                                    Executor longRunningTaskExecutor,
+                                                                    ChannelHandlerContext ctx);
 
 }
