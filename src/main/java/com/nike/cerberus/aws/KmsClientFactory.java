@@ -23,7 +23,6 @@ import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
 
-import javax.inject.Singleton;
 import java.util.Map;
 
 /**

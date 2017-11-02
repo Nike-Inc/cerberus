@@ -19,7 +19,6 @@ package com.nike.cerberus.error;
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.apierror.ApiErrorBase;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.UUID;
 

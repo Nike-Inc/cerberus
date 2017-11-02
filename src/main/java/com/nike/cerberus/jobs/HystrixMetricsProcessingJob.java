@@ -22,7 +22,6 @@ import com.netflix.hystrix.HystrixCircuitBreaker;
 import com.netflix.hystrix.HystrixCommandMetrics;
 import com.netflix.hystrix.HystrixThreadPoolMetrics;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
-import com.nike.riposte.metrics.codahale.SignalFxAwareCodahaleMetricsCollector;
 import com.signalfx.codahale.metrics.SettableLongGauge;
 import org.knowm.sundial.Job;
 import org.knowm.sundial.exceptions.JobInterruptException;

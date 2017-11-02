@@ -26,7 +26,6 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,10 +38,6 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 
 /**
  * Extracts the user groups from the security context for the request and attempts to get details about the safe

@@ -19,7 +19,6 @@ package com.nike.cerberus.endpoints.admin;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
