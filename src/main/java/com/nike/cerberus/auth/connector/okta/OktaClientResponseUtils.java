@@ -34,9 +34,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by sford4 on 1/30/17.
- */
 public class OktaClientResponseUtils {
 
     public static final String AUTHENTICATION_MFA_REQUIRED_STATUS = "MFA_REQUIRED";
