@@ -176,17 +176,12 @@ public class IamPrincipalPermissionService {
 
     /**
      * Revokes a set of IAM role permissions.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param iamPrincipalPermissionSet The set of IAM principal permissions
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeIamPrincipalPermissions(final String safeDepositBoxId,
-                                              final Set<IamPrincipalPermission> iamPrincipalPermissionSet,
-                                              final String user,
-                                              final OffsetDateTime dateTime) {
+                                              final Set<IamPrincipalPermission> iamPrincipalPermissionSet) {
         for (IamPrincipalPermission iamRolePermission : iamPrincipalPermissionSet) {
             revokeIamPrincipalPermission(safeDepositBoxId, iamRolePermission);
         }
