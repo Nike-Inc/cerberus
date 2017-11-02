@@ -58,13 +58,8 @@ public class IamRolePermissionsValidator
     }
 
     private String buildKey(IamRolePermission iamRolePermission) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH));
-        stringBuilder.append('-');
-        stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getIamRoleName(), Locale.ENGLISH));
-
-        return stringBuilder.toString();
+        return StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH) + '-' +
+                StringUtils.lowerCase(iamRolePermission.getIamRoleName(), Locale.ENGLISH);
     }
 
 }

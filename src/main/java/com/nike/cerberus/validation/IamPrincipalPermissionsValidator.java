@@ -58,11 +58,7 @@ public class IamPrincipalPermissionsValidator
     }
 
     private String buildKey(IamPrincipalPermission iamRolePermission) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append(StringUtils.lowerCase(iamRolePermission.getIamPrincipalArn(), Locale.ENGLISH));
-
-        return stringBuilder.toString();
+        return StringUtils.lowerCase(iamRolePermission.getIamPrincipalArn(), Locale.ENGLISH);
     }
 
 }
