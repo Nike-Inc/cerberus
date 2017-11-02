@@ -627,10 +627,6 @@ public class AuthenticationService {
         Preconditions.checkArgument(StringUtils.isNotBlank(sdbName), "sdbName cannot be blank!");
         Preconditions.checkArgument(StringUtils.isNotBlank(roleName), "roleName cannot be blank!");
 
-        final StringBuilder sb = new StringBuilder();
-        sb.append(slugger.toSlug(sdbName));
-        sb.append('-');
-        sb.append(StringUtils.lowerCase(roleName));
-        return sb.toString();
+        return slugger.toSlug(sdbName) + '-' + StringUtils.lowerCase(roleName);
     }
 }
