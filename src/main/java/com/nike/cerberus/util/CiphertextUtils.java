@@ -2,7 +2,6 @@ package com.nike.cerberus.util;
 
 import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.model.KeyBlob;
-import com.google.common.base.Utf8;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
