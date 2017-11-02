@@ -536,7 +536,7 @@ public class SafeDepositBoxService {
         final String safeDepositBoxId = currentBox.getId();
         userGroupPermissionService.grantUserGroupPermissions(safeDepositBoxId, toAddSet, user, dateTime);
         userGroupPermissionService.updateUserGroupPermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
-        userGroupPermissionService.revokeUserGroupPermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
+        userGroupPermissionService.revokeUserGroupPermissions(safeDepositBoxId, toDeleteSet);
     }
 
     /**
@@ -566,7 +566,7 @@ public class SafeDepositBoxService {
 
         iamPrincipalPermissionService.grantIamPrincipalPermissions(safeDepositBoxId, toAddSet, user, dateTime);
         iamPrincipalPermissionService.updateIamPrincipalPermissions(safeDepositBoxId, toUpdateSet, user, dateTime);
-        iamPrincipalPermissionService.revokeIamPrincipalPermissions(safeDepositBoxId, toDeleteSet, user, dateTime);
+        iamPrincipalPermissionService.revokeIamPrincipalPermissions(safeDepositBoxId, toDeleteSet);
     }
 
     /**

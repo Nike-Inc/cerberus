@@ -178,17 +178,12 @@ public class UserGroupPermissionService {
 
     /**
      * Revokes a set of user group permissions.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param userGroupPermissionSet The set of user group permissions
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeUserGroupPermissions(final String safeDepositBoxId,
-                                           final Set<UserGroupPermission> userGroupPermissionSet,
-                                           final String user,
-                                           final OffsetDateTime dateTime) {
+                                           final Set<UserGroupPermission> userGroupPermissionSet) {
         for (final UserGroupPermission userGroupPermission : userGroupPermissionSet) {
             revokeUserGroupPermission(safeDepositBoxId, userGroupPermission);
         }
