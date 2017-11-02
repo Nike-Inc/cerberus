@@ -506,7 +506,7 @@ public class SafeDepositBoxService {
             newOwnerPermission.setRoleId(ownerRole.get().getId());
 
             userGroupPermissionService.grantUserGroupPermission(safeDepositBoxId, newOwnerPermission, user, dateTime);
-            userGroupPermissionService.revokeUserGroupPermission(safeDepositBoxId, oldOwnerPermission, user, dateTime);
+            userGroupPermissionService.revokeUserGroupPermission(safeDepositBoxId, oldOwnerPermission);
         }
     }
 

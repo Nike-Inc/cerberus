@@ -31,7 +31,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.SecurityContext;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -55,10 +54,9 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
 
     @Override
     public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                           RequestInfo<Void> request,
-                                                           Executor longRunningTaskExecutor,
-                                                           ChannelHandlerContext ctx,
-                                                           SecurityContext securityContext) {
+                                                             RequestInfo<Void> request,
+                                                             Executor longRunningTaskExecutor,
+                                                             ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> deleteSecureData(requestInfo), ctx),
                 longRunningTaskExecutor

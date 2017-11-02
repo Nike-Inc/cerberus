@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
@@ -68,10 +67,9 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
 
     @Override
     public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                                         RequestInfo<Void> request,
-                                                                         Executor longRunningTaskExecutor,
-                                                                         ChannelHandlerContext ctx,
-                                                                         SecurityContext securityContext) {
+                                                             RequestInfo<Void> request,
+                                                             Executor longRunningTaskExecutor,
+                                                             ChannelHandlerContext ctx) {
 
         if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
             return CompletableFuture.supplyAsync(
