@@ -62,6 +62,15 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private static final String VERSION_FILE_NAME = "version";
 
+    /**
+     * The Content-Security-Policy header helps protect against XSS and other code injection attacks
+     *
+     * https://www.owasp.org/index.php/Content_Security_Policy
+     * https://en.wikipedia.org/wiki/Content_Security_Policy
+     */
+    private static final String CONTENT_SECURITY_POLICY_HEADER_NAME = "Content-Security-Policy";
+    private static final String CONTENT_SECURITY_POLICY_HEADER_VALUE = "default-src 'none'; connect-src 'self'; font-src https://web.nike.com; img-src 'self'; script-src 'self'; style-src 'unsafe-inline' https://web.nike.com/";
+
     private final StaticAssetManager dashboardAssetManager;
 
     private final String cmsVersion;
@@ -118,6 +127,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
                 .withContentForFullResponse(dashboardResource.getFileContents())
                 .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
+                .withHeaders(new DefaultHttpHeaders().add(CONTENT_SECURITY_POLICY_HEADER_NAME, CONTENT_SECURITY_POLICY_HEADER_VALUE))
                 .build();
     }
 
