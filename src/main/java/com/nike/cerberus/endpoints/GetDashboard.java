@@ -62,6 +62,9 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private static final String VERSION_FILE_NAME = "version";
 
+    private static final String X_FRAME_OPTIONS_HEADER_NAME = "X-Frame-Options";
+    private static final String X_FRAME_OPTIONS_HEADER_VALUE = "DENY";
+
     /**
      * The Content-Security-Policy header helps protect against XSS and other code injection attacks
      *
@@ -69,7 +72,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
      * https://en.wikipedia.org/wiki/Content_Security_Policy
      */
     private static final String CONTENT_SECURITY_POLICY_HEADER_NAME = "Content-Security-Policy";
-    private static final String CONTENT_SECURITY_POLICY_HEADER_VALUE = "default-src 'none'; connect-src 'self'; font-src https://web.nike.com; img-src 'self'; script-src 'self'; style-src 'unsafe-inline' https://web.nike.com/";
+    private static final String CONTENT_SECURITY_POLICY_HEADER_VALUE = "default-src 'none'; connect-src 'self'; font-src https://web.nike.com; img-src 'self'; script-src 'self'; style-src 'unsafe-inline' https://web.nike.com/; frame-ancestors 'none'";
 
     private final StaticAssetManager dashboardAssetManager;
 
@@ -127,7 +130,10 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
                 .withContentForFullResponse(dashboardResource.getFileContents())
                 .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
-                .withHeaders(new DefaultHttpHeaders().add(CONTENT_SECURITY_POLICY_HEADER_NAME, CONTENT_SECURITY_POLICY_HEADER_VALUE))
+                .withHeaders(new DefaultHttpHeaders()
+                        .add(X_FRAME_OPTIONS_HEADER_NAME, X_FRAME_OPTIONS_HEADER_VALUE)
+                        .add(CONTENT_SECURITY_POLICY_HEADER_NAME, CONTENT_SECURITY_POLICY_HEADER_VALUE)
+                )
                 .build();
     }
 
