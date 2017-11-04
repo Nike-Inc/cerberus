@@ -51,6 +51,12 @@ public class SecurityHttpHeaders extends DefaultHttpHeaders {
     private static final String CONTENT_SECURITY_POLICY_HEADER_VALUE = "default-src 'none'; connect-src 'self'; font-src https://web.nike.com; img-src 'self'; script-src 'self'; style-src 'unsafe-inline' https://web.nike.com/; frame-ancestors 'none';";
 
     /**
+     * Referrer Policy header can restrict referrer information sent by browser
+     */
+    private static final String REFERRER_POLICY_HEADER_NAME = "Referrer-Policy";
+    private static final String REFERRER_POLICY_HEADER_VALUE = "strict-origin";
+
+    /**
      * Some standard security headers for the Dashboard
      */
     public SecurityHttpHeaders() {
@@ -58,6 +64,7 @@ public class SecurityHttpHeaders extends DefaultHttpHeaders {
         this.add(X_CONTENT_TYPE_OPTIONS_HEADER_NAME, X_CONTENT_TYPE_OPTIONS_HEADER_VALUE);
         this.add(X_XSS_PROTECTION_HEADER_NAME, X_XSS_PROTECTION_HEADER_VALUE);
         this.add(CONTENT_SECURITY_POLICY_HEADER_NAME, CONTENT_SECURITY_POLICY_HEADER_VALUE);
+        this.add(REFERRER_POLICY_HEADER_NAME, REFERRER_POLICY_HEADER_VALUE);
     }
 
 }
