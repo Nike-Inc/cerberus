@@ -30,7 +30,7 @@ public class AwsIamRoleArnParser {
 
     public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(?!group).+?/(?<roleName>.+)$";
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(role|user|federated-user|assumed-role).*?/(?<roleName>.+)$";
 
     private static final String AWS_IAM_ROLE_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
 
@@ -38,7 +38,7 @@ public class AwsIamRoleArnParser {
 
     private static final String GENERIC_ASSUMED_ROLE_REGEX = "^arn:aws:sts::(?<accountId>\\d+?):assumed-role/.+$";
 
-    private static final Pattern IAM_PRINCIPAL_ARN_PATTERN = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX);
+    public static final Pattern IAM_PRINCIPAL_ARN_PATTERN = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX);
 
     private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
 

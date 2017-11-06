@@ -108,7 +108,7 @@ public class OktaAuthConnector implements AuthConnector {
         final List<UserGroup> userGroups = oktaApiClientHelper.getUserGroups(authData.getUserId());
 
         final Set<String> groups = new HashSet<>();
-        if (userGroups == null) {
+        if (userGroups.isEmpty()) {
             return groups;
         }
 
