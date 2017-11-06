@@ -24,7 +24,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.groups.Default;
 import java.time.OffsetDateTime;
 
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED;
 
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit box
@@ -36,7 +36,7 @@ public class IamPrincipalPermission {
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
-    @Pattern(regexp = AWS_IAM_PRINCIPAL_ARN_REGEX, message = "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID", groups = {Default.class, Updatable.class})
+    @Pattern(regexp = AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED, message = "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID", groups = {Default.class, Updatable.class})
     private String iamPrincipalArn;
 
     private OffsetDateTime createdTs;
