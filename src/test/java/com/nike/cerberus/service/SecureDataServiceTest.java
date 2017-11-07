@@ -60,7 +60,7 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_writeSecret_encrypts_the_payload_before_writing_to_data_store() {
-        when(encryptionService.encrypt(secret)).thenReturn(encryptedPayload);
+        when(encryptionService.encrypt(secret, path)).thenReturn(encryptedPayload);
 
         secureDataService.writeSecret(sdbId, path, secret);
         verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload);
@@ -80,7 +80,7 @@ public class SecureDataServiceTest {
         when(secureDataDao.readSecureDataByPath(path))
                 .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(encryptedPayload)));
 
-        when(encryptionService.decrypt(encryptedPayload)).thenReturn(secret);
+        when(encryptionService.decrypt(encryptedPayload, path)).thenReturn(secret);
 
         Optional<String> result = secureDataService.readSecret(path);
 

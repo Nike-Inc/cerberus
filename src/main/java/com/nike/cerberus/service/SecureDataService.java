@@ -47,7 +47,7 @@ public class SecureDataService {
     public void writeSecret(String sdbId, String path, String plainTextPayload) {
         log.debug("Writing secure data: SDB ID: {}, Path: {}, Payload: {}", sdbId, path, plainTextPayload);
 
-        String encryptedPayload = encryptionService.encrypt(plainTextPayload);
+        String encryptedPayload = encryptionService.encrypt(plainTextPayload, path);
 
         secureDataDao.writeSecureData(sdbId, path, encryptedPayload);
     }
@@ -60,7 +60,7 @@ public class SecureDataService {
         }
 
         String encryptedBlob = secureDataRecord.get().getEncryptedBlob();
-        String plainText = encryptionService.decrypt(encryptedBlob);
+        String plainText = encryptionService.decrypt(encryptedBlob, path);
 
         return Optional.of(plainText);
     }
