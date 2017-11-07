@@ -495,11 +495,11 @@ public class AuthenticationService {
         final OffsetDateTime now = dateTimeSupplier.get();
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), iamPrincipalArn, credentials.getRegion(), SYSTEM_USER, now);
+            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), iamRole.get().getAwsIamRoleArn(), credentials.getRegion(), SYSTEM_USER, now);
         } else {
             kmsKeyRecord = kmsKey.get();
             kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
-            kmsService.validateKeyAndPolicy(kmsKeyRecord, iamPrincipalArn);
+            kmsService.validateKeyAndPolicy(kmsKeyRecord, iamRole.get().getAwsIamRoleArn());
         }
 
         return kmsKeyId;

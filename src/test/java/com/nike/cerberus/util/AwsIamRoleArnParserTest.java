@@ -20,16 +20,11 @@ package com.nike.cerberus.util;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.nike.cerberus.util.AwsIamRoleArnParser.IAM_PRINCIPAL_ARN_PATTERN;
+import static com.nike.cerberus.util.AwsIamRoleArnParser.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED;
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests the AwsIamRoleArnParser class
@@ -109,30 +104,45 @@ public class AwsIamRoleArnParserTest {
     @Test
     public void test_IAM_PRINCIPAL_ARN_PATTERN_valid_ARNs_accepted_by_KMS() {
         // valid
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:role/some-role").matches());
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:role/some/path/some-role").matches());
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:user/some-user").matches());
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:sts::12345678901234:assumed-role/some-path/some-role").matches());
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:sts::12345678901234:assumed-role/some-role").matches());
-        assertTrue(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:sts::12345678901234:federated-user/my_user").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some-role").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some/path/some-role").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:user/some-user").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:sts::12345678901234:assumed-role/some-path/some-role").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:sts::12345678901234:assumed-role/some-role").matches());
+        assertTrue(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:sts::12345678901234:federated-user/my_user").matches());
     }
 
     @Test
     public void test_IAM_PRINCIPAL_ARN_PATTERN_valid_ARNs_rejected_by_KMS() {
         // invalid - KMS doesn't allow 'group' or 'instance-profile'
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:group/some-group").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:instance-profile/some-profile").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:other/some-value").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:group/some-group").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:instance-profile/some-profile").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:other/some-value").matches());
     }
 
     @Test
     public void test_IAM_PRINCIPAL_ARN_PATTERN_invalid_ARNs() {
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:some-role").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam:::role/some-role").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:::12345678901234:role/some-role").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn::iam::12345678901234:role/some-role").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher(":aws:iam::12345678901234:role/some-role").matches());
-        assertFalse(IAM_PRINCIPAL_ARN_PATTERN.matcher("arn:aws:iam::12345678901234:other/some-value").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:some-role").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam:::role/some-role").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:::12345678901234:role/some-role").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn::iam::12345678901234:role/some-role").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher(":aws:iam::12345678901234:role/some-role").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:other/some-value").matches());
+    }
+
+    @Test
+    public void test_isArnThatCanGoInKeyPolicy() {
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:role/some-role"));
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:role/some/path/some-role"));
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:user/some-user"));
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:sts::12345678901234:assumed-role/some-path/some-role"));
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:sts::12345678901234:assumed-role/some-role"));
+        assertTrue(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:sts::12345678901234:federated-user/my_user"));
+
+        // invalid - KMS doesn't allow 'group' or 'instance-profile'
+        assertFalse(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:group/some-group"));
+        assertFalse(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:instance-profile/some-profile"));
+        assertFalse(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:other/some-value"));
     }
 }

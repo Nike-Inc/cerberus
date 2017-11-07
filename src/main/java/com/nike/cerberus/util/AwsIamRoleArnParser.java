@@ -30,7 +30,21 @@ public class AwsIamRoleArnParser {
 
     public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
 
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(role|user|federated-user|assumed-role).*?/(?<roleName>.+)$";
+    /**
+     * Pattern used to determine if an ARN should be allowed in DB.
+     *
+     * This is also the list of ARN types that are allowed in KMS key policies.
+     */
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED = "^arn:aws:(iam|sts)::\\d+:(role|user|federated-user|assumed-role).*/.+$";
+
+    /**
+     * Pattern used for generating a role from another ARN.
+     *
+     * Backwards compatible to allow generating a role name from an instance-profile ARN which only work for certain
+     * instance-profile ARNs.  Going forward we don't allow instance-profile ARNs because they can't go in KMS key
+     * policies.
+     */
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ROLE_GENERATION = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(?!group).+?/(?<roleName>.+)$";
 
     private static final String AWS_IAM_ROLE_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
 
@@ -38,7 +52,21 @@ public class AwsIamRoleArnParser {
 
     private static final String GENERIC_ASSUMED_ROLE_REGEX = "^arn:aws:sts::(?<accountId>\\d+?):assumed-role/.+$";
 
-    public static final Pattern IAM_PRINCIPAL_ARN_PATTERN = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX);
+    /**
+     * Pattern used to determine if an ARN should be allowed in DB
+     *
+     * This is also the list of ARN types that are allowed in KMS key policies.
+     */
+    public static final Pattern IAM_PRINCIPAL_ARN_PATTERN_ALLOWED = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED);
+
+    /**
+     * Pattern used for generating a role from another ARN.
+     *
+     * Backwards compatible to allow generating a role name from an instance-profile ARN which only work for certain
+     * instance-profile ARNs.  Going forward we don't allow instance-profile ARNs because they can't go in KMS key
+     * policies.
+     */
+    private static final Pattern IAM_PRINCIPAL_ARN_PATTERN_ROLE_GENERATION = Pattern.compile(AWS_IAM_PRINCIPAL_ARN_REGEX_ROLE_GENERATION);
 
     private static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
 
@@ -79,6 +107,12 @@ public class AwsIamRoleArnParser {
         return iamRoleArnMatcher.find();
     }
 
+    public boolean isArnThatCanGoInKeyPolicy(final String arn) {
+        final Matcher arnMatcher = IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher(arn);
+
+        return arnMatcher.find();
+    }
+
     /**
      * Converts a principal ARN (e.g. 'arn:aws:iam::0000000000:instance-profile/example') to a role ARN,
      * (i.e. 'arn:aws:iam::000000000:role/example')
@@ -92,7 +126,7 @@ public class AwsIamRoleArnParser {
         }
 
         final boolean isAssumedRole = GENERIC_ASSUMED_ROLE_PATTERN.matcher(principalArn).find();
-        final Pattern patternToMatch = isAssumedRole ? IAM_ASSUMED_ROLE_ARN_PATTERN : IAM_PRINCIPAL_ARN_PATTERN;
+        final Pattern patternToMatch = isAssumedRole ? IAM_ASSUMED_ROLE_ARN_PATTERN : IAM_PRINCIPAL_ARN_PATTERN_ROLE_GENERATION;
 
         final String accountId = getNamedGroupFromRegexPattern(patternToMatch, "accountId", principalArn);
         final String roleName = getNamedGroupFromRegexPattern(patternToMatch, "roleName", principalArn);

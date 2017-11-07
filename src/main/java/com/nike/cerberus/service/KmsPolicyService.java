@@ -112,7 +112,7 @@ public class KmsPolicyService {
                             StringUtils.equals(statement.getId(), CERBERUS_CONSUMER_SID) &&
                                     statement.getPrincipals()
                                             .stream()
-                                            .anyMatch(principal -> awsIamRoleArnParser.isRoleArn(principal.getId())));
+                                            .anyMatch(principal -> awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(principal.getId())));
         } catch (Exception e) {
             // if we can't deserialize we will assume policy has been corrupted manually and regenerate it
             logger.error("Failed to validate policy, did someone manually edit the kms policy?", e);
