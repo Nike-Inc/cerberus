@@ -36,40 +36,26 @@ public class StrictTransportSecurityRequestAndResponseFilter implements RequestA
      */
     private static final String STRICT_TRANSPORT_SECURITY_HEADER_VALUE = "max-age=31536000; includeSubDomains";
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> RequestInfo<T> filterRequestFirstChunkNoPayload(RequestInfo<T> currentRequestInfo, ChannelHandlerContext ctx) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> RequestInfo<T> filterRequestLastChunkWithFullPayload(RequestInfo<T> currentRequestInfo, ChannelHandlerContext ctx) {
         return null;
     }
 
     /**
-     * Called by the application when the first chunk of the response is about to be sent to the client. Depending on
-     * how the response was generated ("normal" endpoint vs proxy/router endpoint for example) this may be a chunked
-     * response in which case no response payload would be available, or it might be a full response that has the
-     * payload available. You can use {@link ResponseInfo#isChunkedResponse()} to determine if the payload is
-     * available.
+     * Add Strict-Transport-Security HTTP header to inform browser to use HTTPS only.
      *
-     * @param currentResponseInfo The current response info, which may or may not have the payload attached (call {@link
-     *                            ResponseInfo#isChunkedResponse()} to see if the payload is available - chunked response means no payload).
-     * @param requestInfo         The {@link RequestInfo} associated with this request. Useful if your adjustments to response headers are
-     *                            dependent on the request that was processed (for example).
-     * @param ctx                 The {@link ChannelHandlerContext} associated with this request - unlikely to be used but there if you need
-     *                            it.
-     * @return The response object that should be sent to the caller. Usually you should just return the same response
-     * object you received and make adjustments to headers directly, or if you need to modify something that is normally
-     * immutable then you might return a delegate/wrapper object that returns all the data from the original response
-     * except for the methods that you want to modify. But ultimately it's up to you what you return so be careful.
-     * <b>Null can safely be returned - if null is returned then the original response will continue to be used.</b>
-     * <p>
-     * <p><b>IMPORTANT NOTE:</b> The implementation class of the return value *must* be the same as the original
-     * response object. If the classes differ then an error will be logged and the original response will be used
-     * instead. For example, {@link ChunkedResponseInfo} must map to {@link ChunkedResponseInfo}, and {@link
-     * FullResponseInfo} must map to {@link FullResponseInfo}. This is another reason it's best to simply adjust the
-     * original response when possible.
+     * {@inheritDoc}
      */
     @Override
     public <T> ResponseInfo<T> filterResponse(ResponseInfo<T> currentResponseInfo, RequestInfo<?> requestInfo, ChannelHandlerContext ctx) {
