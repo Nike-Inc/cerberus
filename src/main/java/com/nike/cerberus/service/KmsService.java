@@ -29,6 +29,7 @@ import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
+import com.amazonaws.services.kms.model.Tag;
 import com.google.inject.name.Named;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.backstopper.exception.ApiException;
@@ -36,6 +37,7 @@ import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +63,8 @@ public class KmsService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String KMS_ALIAS_FORMAT = "alias/cerberus/%s";
+    private static final String ALIAS_DELIMITER = "/";
+    private static final int MAX_KMS_ALIAS_LENGTH = 256;
 
     private static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
 
@@ -70,14 +73,14 @@ public class KmsService {
     public static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
 
     private final AwsIamRoleDao awsIamRoleDao;
-
     private final UuidSupplier uuidSupplier;
-
     private final KmsClientFactory kmsClientFactory;
-
     private final KmsPolicyService kmsPolicyService;
-
     private final DateTimeSupplier dateTimeSupplier;
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
+
+    private final String cmsVersion;
+    private final String environmentName;
 
     @com.google.inject.Inject(optional=true)
     @Named(KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE)
@@ -88,12 +91,18 @@ public class KmsService {
                       final UuidSupplier uuidSupplier,
                       final KmsClientFactory kmsClientFactory,
                       final KmsPolicyService kmsPolicyService,
-                      final DateTimeSupplier dateTimeSupplier) {
+                      final DateTimeSupplier dateTimeSupplier,
+                      AwsIamRoleArnParser awsIamRoleArnParser,
+                      @Named("service.version") String cmsVersion,
+                      @Named("cms.env.name") String environmentName) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
         this.kmsPolicyService = kmsPolicyService;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
+        this.cmsVersion = cmsVersion;
+        this.environmentName = environmentName;
     }
 
     /**
@@ -116,17 +125,23 @@ public class KmsService {
 
         final String awsIamPrincipalKmsKeyId = uuidSupplier.get();
 
-        final CreateKeyRequest request = new CreateKeyRequest();
-        request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
-        request.setDescription("Key used by Cerberus for IAM role authentication.");
-        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn));
+        final CreateKeyRequest request = new CreateKeyRequest()
+                .withKeyUsage(KeyUsageType.ENCRYPT_DECRYPT)
+                .withDescription("Key used by Cerberus " + environmentName + " for IAM role authentication. " + iamPrincipalArn)
+                .withPolicy(kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn))
+                .withTags(
+                    createTag("created_by", "cms" + cmsVersion),
+                    createTag("created_for", "cerberus_auth"),
+                    createTag("auth_principal", iamPrincipalArn),
+                    createTag("cerberus_env", environmentName)
+                );
+
         final CreateKeyResult result = kmsClient.createKey(request);
 
-        final CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(getAliasName(awsIamPrincipalKmsKeyId));
-        KeyMetadata keyMetadata = result.getKeyMetadata();
-        String arn = keyMetadata.getArn();
-        aliasRequest.setTargetKeyId(arn);
+        // alias is only used to provide extra description in AWS console
+        final CreateAliasRequest aliasRequest = new CreateAliasRequest()
+                .withAliasName(getAliasName(awsIamPrincipalKmsKeyId, iamPrincipalArn))
+                .withTargetKeyId(result.getKeyMetadata().getArn());
         kmsClient.createAlias(aliasRequest);
 
         final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
@@ -143,6 +158,16 @@ public class KmsService {
         awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
         return result.getKeyMetadata().getArn();
+    }
+
+    /**
+     * Create a KMS tag truncating the key/value as needed to ensure successful operation
+     */
+    private Tag createTag(String key, String value) {
+        // extra safety measures here are probably not needed but just in case there are any weird edge cases
+        return new Tag()
+                .withTagKey(StringUtils.substring(key, 0, 128))
+                .withTagValue(StringUtils.substring(value != null ? value : "unknown", 0, 256));
     }
 
     /**
@@ -184,8 +209,24 @@ public class KmsService {
         awsIamRoleDao.deleteKmsKeyById(kmsKeyId);
     }
 
-    protected String getAliasName(String awsIamRoleKmsKeyId) {
-        return String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId);
+    /**
+     * Generate a unique and descriptive alias name for a KMS key
+     * @param awsIamRoleKmsKeyId UUID
+     * @param iamPrincipalArn the main ARN this key is being created for.
+     */
+    protected String getAliasName(String awsIamRoleKmsKeyId, String iamPrincipalArn) {
+        // create a descriptive text for the alias including as much info as possible
+        String descriptiveText = "alias/cerberus/" + environmentName + ALIAS_DELIMITER + awsIamRoleArnParser.stripOutDescription(iamPrincipalArn);
+
+        // if the descriptive text is too long then truncate it (this seems very unlikely to happen)
+        if (descriptiveText.length() + ALIAS_DELIMITER.length() + awsIamRoleKmsKeyId.length() > MAX_KMS_ALIAS_LENGTH) {
+            descriptiveText = StringUtils.substring(descriptiveText, 0, MAX_KMS_ALIAS_LENGTH - ALIAS_DELIMITER.length() - awsIamRoleKmsKeyId.length());
+            // remove final '/' if it exists
+            descriptiveText = StringUtils.stripEnd(descriptiveText, ALIAS_DELIMITER);
+        }
+
+        // tack on the UUID onto the end to make sure the alias is unique
+        return descriptiveText + ALIAS_DELIMITER + awsIamRoleKmsKeyId;
     }
 
     /**

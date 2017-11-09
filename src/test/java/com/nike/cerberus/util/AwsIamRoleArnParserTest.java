@@ -145,4 +145,19 @@ public class AwsIamRoleArnParserTest {
         assertFalse(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:instance-profile/some-profile"));
         assertFalse(awsIamRoleArnParser.isArnThatCanGoInKeyPolicy("arn:aws:iam::12345678901234:other/some-value"));
     }
+
+    @Test
+    public void test_stripOutDescription() {
+        assertEquals("12345678901234/some-role", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:role/some-role"));
+        assertEquals("12345678901234/some/path/some-role", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:role/some/path/some-role"));
+        assertEquals("12345678901234/some-user", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:user/some-user"));
+        assertEquals("12345678901234/some-path/some-role", awsIamRoleArnParser.stripOutDescription("arn:aws:sts::12345678901234:assumed-role/some-path/some-role"));
+        assertEquals("12345678901234/some-role", awsIamRoleArnParser.stripOutDescription("arn:aws:sts::12345678901234:assumed-role/some-role"));
+        assertEquals("12345678901234/my_user", awsIamRoleArnParser.stripOutDescription("arn:aws:sts::12345678901234:federated-user/my_user"));
+
+        // invalid - KMS doesn't allow 'group' or 'instance-profile' though some parsing is still possible (this behavior isn't important)
+        assertEquals("", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:group/some-group"));
+        assertEquals("12345678901234/some-value", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:other/some-value"));
+        assertEquals("12345678901234/some-profile", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:instance-profile/some-profile"));
+    }
 }

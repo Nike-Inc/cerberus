@@ -134,6 +134,19 @@ public class AwsIamRoleArnParser {
         return String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
     }
 
+    /**
+     * Strip out a description from the supplied ARN, e.g. "123456789/role-name" or the empty string
+     */
+    public String stripOutDescription(final String principalArn) {
+       Matcher matcher = IAM_PRINCIPAL_ARN_PATTERN_ROLE_GENERATION.matcher(principalArn);
+        if (matcher.find()) {
+            return matcher.group("accountId") + "/" + matcher.group("roleName");
+        }
+        else {
+            // never return null since this is just for descriptive purposes
+            return "";
+        }
+    }
 
     private String getNamedGroupFromRegexPattern(final Pattern pattern, final String groupName, final String input) {
         final Matcher iamRoleArnMatcher = pattern.matcher(input);
