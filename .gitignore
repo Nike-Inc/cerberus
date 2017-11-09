@@ -193,6 +193,7 @@ node_modules
 Starting Cerberus Dashboard local dev env
 *~
 npm-debug.log
+package-lock.json
 /dashboard/reports
 /dashboard/logs
 /dashboard/vault
