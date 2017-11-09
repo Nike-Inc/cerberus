@@ -11,10 +11,13 @@ import com.amazonaws.services.kms.model.GetKeyPolicyResult;
 import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyState;
 import com.amazonaws.services.kms.model.KeyUsageType;
+import com.amazonaws.services.kms.model.Tag;
+import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
 import org.junit.Before;
@@ -37,6 +40,9 @@ import static org.mockito.Mockito.when;
 
 public class KmsServiceTest {
 
+    private static final String VERSION = "fakeVersion";
+    private static final String ENV = "fakeEnv";
+
     private AwsIamRoleDao awsIamRoleDao;
     private UuidSupplier uuidSupplier;
     private KmsClientFactory kmsClientFactory;
@@ -53,7 +59,7 @@ public class KmsServiceTest {
         kmsPolicyService = mock(KmsPolicyService.class);
         dateTimeSupplier = mock(DateTimeSupplier.class);
 
-        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService, dateTimeSupplier);
+        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService, dateTimeSupplier, new AwsIamRoleArnParser(), VERSION, ENV);
     }
 
     @Test
@@ -65,7 +71,7 @@ public class KmsServiceTest {
         OffsetDateTime dateTime = OffsetDateTime.now();
 
         String policy = "policy";
-        String arn = "arn";
+        String arn = "arn:aws:iam::12345678901234:role/some-role";
 
         String awsIamRoleKmsKeyId = "awsIamRoleKmsKeyId";
 
@@ -77,8 +83,17 @@ public class KmsServiceTest {
 
         CreateKeyRequest request = new CreateKeyRequest();
         request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
-        request.setDescription("Key used by Cerberus for IAM role authentication.");
+        request.setDescription("Key used by Cerberus fakeEnv for IAM role authentication. " + arn);
         request.setPolicy(policy);
+        request.setTags(
+                Lists.newArrayList(
+                        new Tag().withTagKey("created_by").withTagValue("cms" + VERSION),
+                        new Tag().withTagKey("created_for").withTagValue("cerberus_auth"),
+                        new Tag().withTagKey("auth_principal").withTagValue(arn),
+                        new Tag().withTagKey("cerberus_env").withTagValue(ENV)
+                )
+
+        );
 
         CreateKeyResult createKeyResult = mock(CreateKeyResult.class);
         KeyMetadata metadata = mock(KeyMetadata.class);
@@ -92,7 +107,7 @@ public class KmsServiceTest {
         assertEquals(arn, actualResult);
 
         CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(kmsService.getAliasName(awsIamRoleKmsKeyId));
+        aliasRequest.setAliasName(kmsService.getAliasName(awsIamRoleKmsKeyId, arn));
         aliasRequest.setTargetKeyId(arn);
         verify(client).createAlias(aliasRequest);
 
@@ -111,7 +126,20 @@ public class KmsServiceTest {
 
     @Test
     public void test_getAliasName() {
-        assertEquals("alias/cerberus/foo", kmsService.getAliasName("foo"));
+        assertEquals("alias/cerberus/fakeEnv/12345678901234/some-role/uuid", kmsService.getAliasName("uuid", "arn:aws:iam::12345678901234:role/some-role"));
+    }
+
+    @Test
+    public void test_getAliasName_with_overly_long_descriptive_text() {
+        assertEquals("alias/cerberus/fakeEnv/12345678901234/this/is/a/very/long/path/that/just/keeps/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/uuid",
+                kmsService.getAliasName("uuid", "arn:aws:iam::12345678901234:role/this/is/a/very/long/path/that/just/keeps/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/on/going/on/and/some-role")
+        );
+    }
+
+    @Test
+    public void test_getAliasName_starts_with_alias() {
+        // aliases must start with "alias/"
+        assertTrue(kmsService.getAliasName("uuid", "arn:aws:iam::12345678901234:role/some-role").startsWith("alias/"));
     }
 
     @Test
