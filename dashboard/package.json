@@ -56,7 +56,7 @@
     "isparta-loader": "2.0.0",
     "json-loader": "0.5.4",
     "lolex": "1.5.0",
-    "node-sass": "3.8.0",
+    "node-sass": "3.11.0",
     "react-addons-test-utils": "15.1.0",
     "redbird": "0.5.2",
     "redux-devtools": "3.3.1",

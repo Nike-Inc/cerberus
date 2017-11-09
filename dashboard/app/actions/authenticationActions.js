@@ -16,7 +16,7 @@ import { getLogger } from 'logger'
 
 var log = getLogger('authentication-actions')
 
-const AUTH_ACTION_TIMEOUT = 10000 // 10 seconds in milliseconds
+const AUTH_ACTION_TIMEOUT = 60000 // 60 seconds in milliseconds
 
 /**
  * These are the actions for authentication events that will trigger the related reducers to change application state
