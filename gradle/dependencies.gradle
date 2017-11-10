@@ -62,7 +62,7 @@ dependencies {
             "org.mybatis:mybatis-typehandlers-jsr310:1.0.1",
             "org.mybatis:mybatis-guice:3.7.1",
             "com.mchange:c3p0:0.9.5.2",
-            "mysql:mysql-connector-java:5.1.38",
+            "mysql:mysql-connector-java:5.1.44",
             "org.flywaydb:flyway-core:4.0",
             "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.2",
             "com.squareup.okhttp3:okhttp:3.3.1",
