@@ -44,8 +44,6 @@ public class AuthTokenGenerator {
 
     private final int length;
 
-    private final SecureRandom random = SecureRandom.getInstanceStrong();
-
     @Inject
     public AuthTokenGenerator(@Named(AUTH_TOKEN_LENGTH_CONFIG_PARAM) final int length) throws NoSuchAlgorithmException {
         if (length < 64) {
@@ -58,6 +56,7 @@ public class AuthTokenGenerator {
      * Generate an Auth Token
      */
     public String generateSecureToken() {
+        SecureRandom random = new SecureRandom();
         final char[] buf = new char[length];
         for (int i = 0; i < buf.length; ++i) {
             buf[i] = SYMBOLS[random.nextInt(SYMBOLS.length)];
