@@ -43,8 +43,8 @@ import java.util.Properties;
 public class CmsEnvPropertiesLoader {
 
     private static final String ENV_PATH = "cms/environment.properties";
-    private static final String CERTIFICATE_PATH = "certificates/%s/cms-cert.pem";
-    private static final String PRIVATE_KEY_PATH = "certificates/%s/cms-pkcs8-key.pem";
+    private static final String CERTIFICATE_PATH = "certificates/%s/cert.pem";
+    private static final String PRIVATE_KEY_PATH = "certificates/%s/pkcs8-key.pem";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
