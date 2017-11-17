@@ -42,9 +42,9 @@ import java.util.Properties;
  */
 public class CmsEnvPropertiesLoader {
 
-    private static final String ENV_PATH = "data/cms/environment.properties";
-    private static final String CERTIFICATE_PATH = "data/cms/cms-cert.pem";
-    private static final String PRIVATE_KEY_PATH = "data/cms/cms-pkcs8-key.pem";
+    private static final String ENV_PATH = "cms/environment.properties";
+    private static final String CERTIFICATE_PATH = "certificates/%s/cms-cert.pem";
+    private static final String PRIVATE_KEY_PATH = "certificates/%s/cms-pkcs8-key.pem";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -87,9 +87,10 @@ public class CmsEnvPropertiesLoader {
 
     /**
      * Get the value of the Certificate from S3
+     * @param certificateName
      */
-    public String getCertificate() {
-        return getObject(CERTIFICATE_PATH);
+    public String getCertificate(String certificateName) {
+        return getObject(String.format(CERTIFICATE_PATH, certificateName));
     }
 
     /**
@@ -98,9 +99,10 @@ public class CmsEnvPropertiesLoader {
      * The SslContextBuilder and Netty´s SslContext implementations only support PKCS8 keys.
      *
      * http://netty.io/wiki/sslcontextbuilder-and-private-key.html
+     * @param certificateName
      */
-    public String getPrivateKey() {
-        return getObject(PRIVATE_KEY_PATH);
+    public String getPrivateKey(String certificateName) {
+        return getObject(String.format(PRIVATE_KEY_PATH, certificateName));
     }
 
     private String getObject(String path) {
