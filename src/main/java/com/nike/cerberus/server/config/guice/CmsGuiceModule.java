@@ -20,6 +20,7 @@ package com.nike.cerberus.server.config.guice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
@@ -334,7 +335,7 @@ public class CmsGuiceModule extends AbstractModule {
      */
     @Provides
     @Singleton
-    public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled) throws SSLException, CertificateException {
+    public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled, Injector injector) throws SSLException, CertificateException {
         Validate.notBlank(protocolsEnabled, "cms.ssl.protocolsEnabled requires a list of SSL protocols, e.g. TLSv1.2");
         logger.info("ssl protocols enabled: " + protocolsEnabled);
         if (cmsEnvPropertiesLoader == null) {
@@ -345,8 +346,10 @@ public class CmsGuiceModule extends AbstractModule {
                     .build();
         } else {
             logger.info("initializing SslContext using certificate from S3");
-            InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(), Charset.defaultCharset());
-            InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(), Charset.defaultCharset());
+            String certificateName = injector.getInstance(Key.get(String.class, Names.named("cms.ssl.certificateName")));
+            logger.info("Perparing to download and use certificate with identity management name: {}", certificateName);
+            InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(certificateName), Charset.defaultCharset());
+            InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(certificateName), Charset.defaultCharset());
             return SslContextBuilder.forServer(certificate, privateKey)
                     .protocols(StringUtils.split(protocolsEnabled, ","))
                     .build();
