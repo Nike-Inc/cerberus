@@ -347,6 +347,7 @@ public class CmsGuiceModule extends AbstractModule {
         } else {
             logger.info("initializing SslContext using certificate from S3");
             String certificateName = injector.getInstance(Key.get(String.class, Names.named("cms.ssl.certificateName")));
+            logger.info("Perparing to download and use certificate with identity management name: {}", certificateName);
             InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(certificateName), Charset.defaultCharset());
             InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(certificateName), Charset.defaultCharset());
             return SslContextBuilder.forServer(certificate, privateKey)
