@@ -43,7 +43,7 @@ public class CleanUpServiceTest {
 
         initMocks(this);
 
-        cleanUpService = new CleanUpService(kmsService, awsIamRoleDao, dateTimeSupplier, 0);
+        cleanUpService = new CleanUpService(kmsService, awsIamRoleDao, dateTimeSupplier);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class CleanUpServiceTest {
 
         when(awsIamRoleDao.deleteKmsKeyById(keyRecordId)).thenThrow(new NullPointerException());
 
-        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(inactivePeriod);
+        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(inactivePeriod, 0);
     }
 
     @Test
