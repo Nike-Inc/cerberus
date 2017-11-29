@@ -40,6 +40,8 @@ import java.util.Set;
 @Singleton
 public class UserGroupPermissionService {
 
+    private static final String OWNER_ROLE_NAME = "owner";
+
     private final UuidSupplier uuidSupplier;
 
     private final RoleService roleService;
@@ -232,6 +234,21 @@ public class UserGroupPermissionService {
         });
 
         return permissionsSet;
+    }
+
+    public int getTotalNumUniqueOwnerGroups() {
+        Role ownerRole = roleService.getRoleByName(OWNER_ROLE_NAME).orElseThrow(() ->
+                new RuntimeException("Could not find ID for owner permissions role"));
+
+        return userGroupDao.getTotalNumUniqueUserGroupsByRole(ownerRole.getId());
+    }
+
+    public int getTotalNumUniqueNonOwnerGroups() {
+        return userGroupDao.getTotalNumUniqueNonOwnerGroups();
+    }
+
+    public int getTotalNumUniqueUserGroups() {
+        return userGroupDao.getTotalNumUniqueUserGroups();
     }
 
     @Transactional

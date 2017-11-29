@@ -68,6 +68,43 @@
         UGP.ROLE_ID = #{roleId}
   </select>
 
+  <select id="getTotalNumUniqueUserGroupsByRole" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+        USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+    WHERE
+        UGP.ROLE_ID = #{roleId}
+  </select>
+
+  <select id="getTotalNumUniqueNonOwnerGroups" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+          USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+    WHERE
+      UGP.ROLE_ID IN (SELECT ID FROM ROLE WHERE NOT (NAME = 'owner'))
+  </select>
+
+  <select id="getTotalNumUniqueUserGroups" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+        USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+  </select>
+
   <insert id="createUserGroup" parameterType="UserGroupRecord">
     INSERT INTO USER_GROUP (
       ID,

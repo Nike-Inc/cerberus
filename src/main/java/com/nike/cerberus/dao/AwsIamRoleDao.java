@@ -90,6 +90,10 @@ public class AwsIamRoleDao {
         return awsIamRoleMapper.getOrphanedIamRoles();
     }
 
+    public int getTotalNumberOfUniqueIamRoles() {
+        return awsIamRoleMapper.getTotalNumberOfUniqueIamRoles();
+    }
+
     public int deleteIamRoleById(final String id) {
         return awsIamRoleMapper.deleteIamRoleById(id);
     }

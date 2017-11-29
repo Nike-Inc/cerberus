@@ -27,6 +27,8 @@ public interface SecureDataMapper {
 
     String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
 
+    int getTotalNumberOfDataNodes();
+
     int deleteAllSecretsThatStartWithGivenPartialPath(@Param("partialPath") String partialPath);
 
     int deleteSecret(@Param("path") String path);
