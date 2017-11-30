@@ -21,14 +21,11 @@ import com.google.inject.Singleton;
 import com.netflix.hystrix.HystrixCircuitBreaker;
 import com.netflix.hystrix.HystrixCommandMetrics;
 import com.netflix.hystrix.HystrixThreadPoolMetrics;
-import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
-import com.signalfx.codahale.metrics.SettableLongGauge;
+import com.nike.cerberus.service.MetricsService;
 import org.knowm.sundial.Job;
 import org.knowm.sundial.exceptions.JobInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 /**
  * Periodically print Hystrix metrics to the log.
@@ -38,11 +35,11 @@ public class HystrixMetricsProcessingJob extends Job {
 
     private static final Logger log = LoggerFactory.getLogger(HystrixMetricsProcessingJob.class);
 
-    private final CodahaleMetricsCollector metricsCollector;
+    private final MetricsService metricsService;
 
     @Inject
-    public HystrixMetricsProcessingJob(CodahaleMetricsCollector metricsCollector) {
-        this.metricsCollector = metricsCollector;
+    public HystrixMetricsProcessingJob(MetricsService metricsService) {
+        this.metricsService = metricsService;
     }
 
     @Override
@@ -77,26 +74,13 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getCommandGroup().name().toLowerCase() + "." +
                     metrics.getCommandKey().name().toLowerCase();
 
-            getOrCreateSettableGauge(baseMetricName + ".circuitOpen").ifPresent((gauge) ->
-                    gauge.setValue(isCircuitOpen ? 1 : 0));
-
-            getOrCreateSettableGauge(baseMetricName + ".mean").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getExecutionTimeMean()));
-
-            getOrCreateSettableGauge(baseMetricName + ".95th").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getExecutionTimePercentile(95.0)));
-
-            getOrCreateSettableGauge(baseMetricName + ".99th").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getExecutionTimePercentile(99.0)));
-
-            getOrCreateSettableGauge(baseMetricName + ".995th").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getExecutionTimePercentile(99.5)));
-
-            getOrCreateSettableGauge(baseMetricName + ".totalCount").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getHealthCounts().getTotalRequests()));
-
-            getOrCreateSettableGauge(baseMetricName + ".errorCount").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getHealthCounts().getErrorCount()));
+            metricsService.setGaugeValue(baseMetricName + ".circuitOpen", isCircuitOpen ? 1 : 0);
+            metricsService.setGaugeValue(baseMetricName + ".mean", metrics.getExecutionTimeMean());
+            metricsService.setGaugeValue(baseMetricName + ".95th", metrics.getExecutionTimePercentile(95.0));
+            metricsService.setGaugeValue(baseMetricName + ".99th", metrics.getExecutionTimePercentile(99.0));
+            metricsService.setGaugeValue(baseMetricName + ".995th", metrics.getExecutionTimePercentile(99.5));
+            metricsService.setGaugeValue(baseMetricName + ".totalCount", metrics.getHealthCounts().getTotalRequests());
+            metricsService.setGaugeValue(baseMetricName + ".errorCount", metrics.getHealthCounts().getErrorCount());
         }
     }
 
@@ -114,47 +98,15 @@ public class HystrixMetricsProcessingJob extends Job {
 
             String baseMetricName = "hyst.tP." + metrics.getThreadPoolKey().name();
 
-            getOrCreateSettableGauge(baseMetricName + ".rol.rejected").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getRollingCountThreadsRejected()));
-
-            getOrCreateSettableGauge(baseMetricName + ".rol.executed").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getRollingCountThreadsExecuted()));
-
-            getOrCreateSettableGauge(baseMetricName + ".rol.maxActiveThreads").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getRollingMaxActiveThreads()));
-
-            getOrCreateSettableGauge(baseMetricName + ".cum.rejected").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getCumulativeCountThreadsRejected()));
-
-            getOrCreateSettableGauge(baseMetricName + ".cum.executed").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getCumulativeCountThreadsExecuted()));
-
-            getOrCreateSettableGauge(baseMetricName + ".tpe.poolSize").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getThreadPool().getPoolSize()));
-
-            getOrCreateSettableGauge(baseMetricName + ".tpe.activeThreads").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getThreadPool().getActiveCount()));
-
-            getOrCreateSettableGauge(baseMetricName + ".tpe.queuedTasks").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getThreadPool().getQueue().size()));
-
-            getOrCreateSettableGauge(baseMetricName + ".tpe.completedTasks").ifPresent((gauge) ->
-                    gauge.setValue(metrics.getThreadPool().getCompletedTaskCount()));
+            metricsService.setGaugeValue(baseMetricName + ".rol.rejected", metrics.getRollingCountThreadsRejected());
+            metricsService.setGaugeValue(baseMetricName + ".rol.executed", metrics.getRollingCountThreadsExecuted());
+            metricsService.setGaugeValue(baseMetricName + ".rol.maxActiveThreads", metrics.getRollingMaxActiveThreads());
+            metricsService.setGaugeValue(baseMetricName + ".cum.rejected", metrics.getCumulativeCountThreadsRejected());
+            metricsService.setGaugeValue(baseMetricName + ".cum.executed", metrics.getCumulativeCountThreadsExecuted());
+            metricsService.setGaugeValue(baseMetricName + ".tpe.poolSize", metrics.getThreadPool().getPoolSize());
+            metricsService.setGaugeValue(baseMetricName + ".tpe.activeThreads", metrics.getThreadPool().getActiveCount());
+            metricsService.setGaugeValue(baseMetricName + ".tpe.queuedTasks", metrics.getThreadPool().getQueue().size());
+            metricsService.setGaugeValue(baseMetricName + ".tpe.completedTasks", metrics.getThreadPool().getCompletedTaskCount());
         }
     }
-
-    private Optional<SettableLongGauge> getOrCreateSettableGauge(String name) {
-        boolean isGaugeAlreadyRegistered = metricsCollector.getMetricRegistry().getGauges().containsKey(name);
-        if (isGaugeAlreadyRegistered) {
-            return Optional.of((SettableLongGauge) metricsCollector.getMetricRegistry().getGauges().get(name));
-        }
-
-        try {
-            return Optional.of(metricsCollector.getMetricRegistry().register(name, new SettableLongGauge()));
-        } catch (IllegalArgumentException e) {
-            log.error("Failed to get or create settable gauge, a non-gauge metric with name: {} is probably registered", name);
-            return Optional.empty();
-        }
-    }
-
 }

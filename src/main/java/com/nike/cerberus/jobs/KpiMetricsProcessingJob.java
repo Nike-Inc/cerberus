@@ -20,17 +20,14 @@ package com.nike.cerberus.jobs;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.nike.cerberus.dao.AwsIamRoleDao;
+import com.nike.cerberus.service.MetricsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.cerberus.service.UserGroupPermissionService;
-import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
-import com.signalfx.codahale.metrics.SettableLongGauge;
 import org.knowm.sundial.Job;
 import org.knowm.sundial.exceptions.JobInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 /**
  * Periodically send KPI metrics to the enabled metrics services.
@@ -40,7 +37,7 @@ public class KpiMetricsProcessingJob extends Job {
 
     private static final Logger log = LoggerFactory.getLogger(KpiMetricsProcessingJob.class);
 
-    private final CodahaleMetricsCollector metricsCollector;
+    private final MetricsService metricsService;
 
     private final SafeDepositBoxService safeDepositBoxService;
 
@@ -51,12 +48,12 @@ public class KpiMetricsProcessingJob extends Job {
     private final UserGroupPermissionService userGroupPermissionService;
 
     @Inject
-    public KpiMetricsProcessingJob(CodahaleMetricsCollector metricsCollector,
+    public KpiMetricsProcessingJob(MetricsService metricsService,
                                    SafeDepositBoxService safeDepositBoxService,
                                    AwsIamRoleDao awsIamRoleDao,
                                    SecureDataService secureDataService,
                                    UserGroupPermissionService userGroupPermissionService) {
-        this.metricsCollector = metricsCollector;
+        this.metricsService = metricsService;
         this.safeDepositBoxService = safeDepositBoxService;
         this.awsIamRoleDao = awsIamRoleDao;
         this.secureDataService = secureDataService;
@@ -83,7 +80,7 @@ public class KpiMetricsProcessingJob extends Job {
         int numSDBs = safeDepositBoxService.getTotalNumberOfSafeDepositBoxes();
         int numDataNodes = secureDataService.getTotalNumberOfDataNodes();
 
-        log.debug("Number of IAM roles: {}, Owner Groups: {}, Non-Owner Groups: {}, Total Unique Groups: {}, SDBs: {}, Key/Value Pairs: {}",
+        log.info("Number of IAM roles: {}, Owner Groups: {}, Non-Owner Groups: {}, Total Unique Groups: {}, SDBs: {}, Key/Value Pairs: {}",
                 numUniqueIamRoles,
                 numUniqueOwnerGroups,
                 numUniqueNonOwnerGroups,
@@ -91,37 +88,12 @@ public class KpiMetricsProcessingJob extends Job {
                 numSDBs,
                 numDataNodes);
 
-        getOrCreateSettableGauge("numberOfUniqueIamRoles").ifPresent((gauge) ->
-                gauge.setValue(numUniqueIamRoles));
-
-        getOrCreateSettableGauge("numberOfUniqueOwnerGroups").ifPresent((gauge) ->
-                gauge.setValue(numUniqueOwnerGroups));
-
-        getOrCreateSettableGauge("numberOfUniqueNonOwnerGroups").ifPresent((gauge) ->
-                gauge.setValue(numUniqueNonOwnerGroups));
-
-        getOrCreateSettableGauge("totalUniqueUserGroups").ifPresent((gauge) ->
-                gauge.setValue(totalUniqueUserGroups));
-
-        getOrCreateSettableGauge("numberOfSdbs").ifPresent((gauge) ->
-                gauge.setValue(numSDBs));
-
-        getOrCreateSettableGauge("numberOfDataNodes").ifPresent((gauge) ->
-                gauge.setValue(numDataNodes));
-    }
-
-    private Optional<SettableLongGauge> getOrCreateSettableGauge(String name) {
-        boolean isGaugeAlreadyRegistered = metricsCollector.getMetricRegistry().getGauges().containsKey(name);
-        if (isGaugeAlreadyRegistered) {
-            return Optional.of((SettableLongGauge) metricsCollector.getMetricRegistry().getGauges().get(name));
-        }
-
-        try {
-            return Optional.of(metricsCollector.getMetricRegistry().register(name, new SettableLongGauge()));
-        } catch (IllegalArgumentException e) {
-            log.error("Failed to get or create settable gauge, a non-gauge metric with name: {} is probably registered", name);
-            return Optional.empty();
-        }
+        metricsService.setGaugeValue("numberOfUniqueIamRoles", numUniqueIamRoles);
+        metricsService.setGaugeValue("numberOfUniqueOwnerGroups", numUniqueOwnerGroups);
+        metricsService.setGaugeValue("numberOfUniqueNonOwnerGroups", numUniqueNonOwnerGroups);
+        metricsService.setGaugeValue("totalUniqueUserGroups", totalUniqueUserGroups);
+        metricsService.setGaugeValue("numberOfSdbs", numSDBs);
+        metricsService.setGaugeValue("numberOfDataNodes", numDataNodes);
     }
 
 }
