@@ -101,6 +101,10 @@ public class SecureDataService {
         return keys;
     }
 
+    public int getTotalNumberOfDataNodes() {
+        return secureDataDao.getTotalNumberOfDataNodes();
+    }
+
     /**
      * Deletes all of the secure data from stored at the safe deposit box's partial path.
      *

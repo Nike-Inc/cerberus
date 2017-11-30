@@ -56,6 +56,18 @@ public class UserGroupDao {
         return userGroupMapper.getUserGroupPermissions(safeDepositBoxId);
     }
 
+    public int getTotalNumUniqueUserGroupsByRole(String roleId) {
+        return userGroupMapper.getTotalNumUniqueUserGroupsByRole(roleId);
+    }
+
+    public int getTotalNumUniqueNonOwnerGroups() {
+        return userGroupMapper.getTotalNumUniqueNonOwnerGroups();
+    }
+
+    public int getTotalNumUniqueUserGroups() {
+        return userGroupMapper.getTotalNumUniqueUserGroups();
+    }
+
     public int createUserGroupPermission(final UserGroupPermissionRecord record) {
         return userGroupMapper.createUserGroupPermission(record);
     }

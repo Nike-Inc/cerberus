@@ -57,6 +57,8 @@ public interface AwsIamRoleMapper {
 
     List<AwsIamRoleRecord> getOrphanedIamRoles();
 
+    int getTotalNumberOfUniqueIamRoles();
+
     int deleteIamRoleById(@Param("id") final String id);
 
     int deleteKmsKeyById(@Param("id") final String id);

@@ -49,6 +49,10 @@ public class SecureDataDao {
         return secureDataMapper.getPathsByPartialPath(partialPath + "%");
     }
 
+    public int getTotalNumberOfDataNodes() {
+        return secureDataMapper.getTotalNumberOfDataNodes();
+    }
+
     public void deleteAllSecretsThatStartWithGivenPartialPath(String partialPath) {
         secureDataMapper.deleteAllSecretsThatStartWithGivenPartialPath(partialPath);
     }

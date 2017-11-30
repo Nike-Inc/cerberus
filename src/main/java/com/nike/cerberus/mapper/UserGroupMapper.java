@@ -31,6 +31,12 @@ public interface UserGroupMapper {
 
     UserGroupRecord getUserGroupByName(@Param("name") String name);
 
+    int getTotalNumUniqueUserGroupsByRole(String roleId);
+
+    int getTotalNumUniqueNonOwnerGroups();
+
+    int getTotalNumUniqueUserGroups();
+
     List<UserGroupRecord> getUserGroupsByRole(@Param("safeDepositBoxId") String safeDepositBoxId,
                                                   @Param("roleId") String roleId);
 
