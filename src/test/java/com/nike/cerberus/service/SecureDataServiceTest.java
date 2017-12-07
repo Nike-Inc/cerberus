@@ -16,13 +16,17 @@
 
 package com.nike.cerberus.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.record.SecureDataRecord;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -30,6 +34,7 @@ import java.util.UUID;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -48,6 +53,7 @@ public class SecureDataServiceTest {
 
     @Mock private SecureDataDao secureDataDao;
     @Mock private EncryptionService encryptionService;
+    @Mock private ObjectMapper objectMapper;
 
     private SecureDataService secureDataService;
 
@@ -55,7 +61,7 @@ public class SecureDataServiceTest {
     public void before() {
         initMocks(this);
 
-        secureDataService = new SecureDataService(secureDataDao, encryptionService);
+        secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper);
     }
 
     @Test
@@ -166,6 +172,23 @@ public class SecureDataServiceTest {
     public void test_that_deleteSecret_proxies_to_dao() {
         secureDataService.deleteSecret(partialPathWithoutTrailingSlash);
         verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
+    }
+
+    @Test
+    public void test_that_restoreSdbSecrets_proxies_to_dao() {
+        String sdbId = "sdb-id";
+        String sdbPath = "category/secret/path/one";
+        String secretPath = StringUtils.substringAfter(sdbPath, "/");
+
+        Map<String, Map<String, Object>> data = Maps.newHashMap();
+        Map<String, Object> keyValuePairs = Maps.newHashMap();
+        data.put(sdbPath, keyValuePairs);
+
+        String encryptedPayload = "encrypted payload";
+        when(encryptionService.encrypt(anyString(), anyString())).thenReturn(encryptedPayload);
+
+        secureDataService.restoreSdbSecrets(sdbId, data);
+        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload);
     }
 
 }

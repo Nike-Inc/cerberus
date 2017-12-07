@@ -17,6 +17,8 @@
 package com.nike.cerberus.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.record.SecureDataRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -33,19 +36,22 @@ public class SecureDataService {
 
     private final SecureDataDao secureDataDao;
     private final EncryptionService encryptionService;
+    private final ObjectMapper objectMapper;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Inject
     public SecureDataService(SecureDataDao secureDataDao,
-                             EncryptionService encryptionService) {
+                             EncryptionService encryptionService,
+                             ObjectMapper objectMapper) {
         this.secureDataDao = secureDataDao;
         this.encryptionService = encryptionService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
     public void writeSecret(String sdbId, String path, String plainTextPayload) {
-        log.debug("Writing secure data: SDB ID: {}, Path: {}, Payload: {}", sdbId, path, plainTextPayload);
+        log.debug("Writing secure data: SDB ID: {}, Path: {}", sdbId, path);
 
         String encryptedPayload = encryptionService.encrypt(plainTextPayload, path);
 
@@ -63,6 +69,18 @@ public class SecureDataService {
         String plainText = encryptionService.decrypt(encryptedBlob, path);
 
         return Optional.of(plainText);
+    }
+
+    public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data) {
+        data.forEach((String path, Map<String, Object> secretsData) -> {
+            String pathWithoutCategory = removeCategoryFromPath(path);
+            try {
+                String plainTextSecrets = objectMapper.writeValueAsString(secretsData);
+                writeSecret(sdbId, pathWithoutCategory, plainTextSecrets);
+            } catch (JsonProcessingException jpe) {
+                throw new RuntimeException("Failed to parse secrets data for SDB ID: " + sdbId, jpe);
+            }
+        });
     }
 
     /**
@@ -105,6 +123,11 @@ public class SecureDataService {
         return secureDataDao.getTotalNumberOfDataNodes();
     }
 
+    public void deleteAllSecretsInSdb(String sdbPath) {
+        String pathWithoutCategory = removeCategoryFromPath(sdbPath);
+        deleteAllSecretsThatStartWithGivenPartialPath(pathWithoutCategory);
+    }
+
     /**
      * Deletes all of the secure data from stored at the safe deposit box's partial path.
      *
@@ -120,7 +143,9 @@ public class SecureDataService {
      *
      * @param subPath The sub path to delete all secrets that have paths that start with
      */
+    @Transactional
     public void deleteAllSecretsThatStartWithGivenPartialPath(String subPath) {
+        log.warn("Deleting all secrets under path: {}", subPath);
         secureDataDao.deleteAllSecretsThatStartWithGivenPartialPath(subPath);
     }
 
@@ -131,5 +156,13 @@ public class SecureDataService {
      */
     public void deleteSecret(String path) {
         secureDataDao.deleteSecret(path);
+    }
+
+    private String removeCategoryFromPath(String sdbPath) {
+        String pathSeparator = "/";
+        String pathWithoutTrailingSlash = StringUtils.removeEnd(sdbPath, pathSeparator);
+        return sdbPath.contains(pathWithoutTrailingSlash) ?
+                StringUtils.substringAfter(pathWithoutTrailingSlash, "/") :
+                sdbPath;
     }
 }
