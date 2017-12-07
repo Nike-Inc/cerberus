@@ -145,7 +145,7 @@ public class SecureDataService {
      */
     @Transactional
     public void deleteAllSecretsThatStartWithGivenPartialPath(String subPath) {
-        log.warn("Recursively deleting secrets under path: {}", subPath);
+        log.warn("Deleting all secrets under path: {}", subPath);
         secureDataDao.deleteAllSecretsThatStartWithGivenPartialPath(subPath);
     }
 
