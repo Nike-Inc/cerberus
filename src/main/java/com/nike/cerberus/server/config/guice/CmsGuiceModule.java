@@ -33,6 +33,7 @@ import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
+import com.nike.cerberus.endpoints.admin.RestoreSafeDepositBox;
 import com.nike.cerberus.endpoints.admin.TriggerScheduledJob;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
@@ -207,7 +208,8 @@ public class CmsGuiceModule extends AbstractModule {
             WriteSecureData writeSecureData,
             ReadSecureData readSecureData,
             DeleteSecureData deleteSecureData,
-            TriggerScheduledJob triggerScheduledJob
+            TriggerScheduledJob triggerScheduledJob,
+            RestoreSafeDepositBox restoreSafeDepositBox
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -219,7 +221,8 @@ public class CmsGuiceModule extends AbstractModule {
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
                 getSDBMetadata, putSDBMetadata, getDashboardRedirect,
-                writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard
+                writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard,
+                restoreSafeDepositBox
         ));
     }
 

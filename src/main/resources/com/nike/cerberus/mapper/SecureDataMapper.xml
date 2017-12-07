@@ -49,7 +49,7 @@
     </select>
 
     <select id="getPathsByPartialPath" resultType="String">
-        SELECT PATH From SECURE_DATA WHERE PATH LIKE #{partialPath};
+        SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%';
     </select>
 
     <select id="getTotalNumberOfDataNodes" resultType="java.lang.Integer">
@@ -57,7 +57,7 @@
     </select>
 
     <delete id="deleteAllSecretsThatStartWithGivenPartialPath">
-        DELETE FROM SECURE_DATA WHERE PATH LIKE #{partialPath};
+        DELETE FROM SECURE_DATA WHERE PATH LIKE '${partialPath}%';
     </delete>
 
     <delete id="deleteSecret">

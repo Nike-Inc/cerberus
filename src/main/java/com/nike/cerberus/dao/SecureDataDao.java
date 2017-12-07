@@ -46,7 +46,7 @@ public class SecureDataDao {
     }
 
     public String[] getPathsByPartialPath(String partialPath) {
-        return secureDataMapper.getPathsByPartialPath(partialPath + "%");
+        return secureDataMapper.getPathsByPartialPath(partialPath);
     }
 
     public int getTotalNumberOfDataNodes() {
