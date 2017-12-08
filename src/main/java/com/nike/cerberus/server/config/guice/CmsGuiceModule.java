@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.amazonaws.encryptionsdk.AwsCrypto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -63,6 +64,7 @@ import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.EncryptionService;
 import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.cerberus.util.ArchaiusUtils;
@@ -157,8 +159,7 @@ public class CmsGuiceModule extends AbstractModule {
             cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
                     System.getenv(BUCKET_NAME_KEY),
                     System.getenv(REGION_KEY),
-                    System.getenv(KMS_KEY_ID_KEY)
-            );
+                    new AwsCrypto());
             Properties properties = cmsEnvPropertiesLoader.getProperties();
 
             // bind the props to named props for guice
