@@ -181,7 +181,7 @@ public class AuthenticationServiceTest {
 
         when(dateTimeSupplier.get()).thenReturn(now);
 
-        String result = authenticationService.getKeyId(iamPrincipalCredentials);
+        String result = authenticationService.getKmsKeyRecordForIamPrincipal(principalArn, region).getAwsKmsKeyId();
 
         // verify validate is called once interval has passed
         assertEquals(cmkId, result);

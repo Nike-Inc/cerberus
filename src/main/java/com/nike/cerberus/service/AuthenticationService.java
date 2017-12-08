@@ -23,6 +23,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
+import com.amazonaws.services.kms.model.NotFoundException;
+import com.amazonaws.services.kms.model.KMSInvalidStateException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -50,6 +52,7 @@ import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.error.KeyInvalidForAuthException;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
@@ -222,31 +225,24 @@ public class AuthenticationService {
     }
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
-        final String keyId;
+        final AwsIamRoleKmsKeyRecord kmsKeyRecord;
         try {
-            keyId = getKeyId(credentials);
+            kmsKeyRecord = getKmsKeyRecordForIamPrincipal(credentials.getIamPrincipalArn(), credentials.getRegion());
         } catch (AmazonServiceException e) {
             if ("InvalidArnException".equals(e.getErrorCode())) {
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
                         .withExceptionCause(e)
-                        .withExceptionMessage(String.format(
-                                "Failed to lazily provision KMS key for %s in region: %s",
-                                credentials.getIamPrincipalArn(), credentials.getRegion()))
+                        .withExceptionMessage(String.format("Failed to lazily provision KMS key for %s in region: %s",
+                                credentials.getIamPrincipalArn(),
+                                credentials.getRegion()))
                         .build();
             }
             throw e;
         }
 
         final Set<String> policies = buildCompleteSetOfPolicies(credentials.getIamPrincipalArn());
-
-        AuthTokenResponse authResponse = createToken(
-                credentials.getIamPrincipalArn(),
-                PrincipalType.IAM,
-                policies,
-                authPrincipalMetadata,
-                iamTokenTTL
-        );
+        AuthTokenResponse authResponse = createToken(credentials.getIamPrincipalArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
 
         byte[] authResponseJson;
         try {
@@ -262,7 +258,9 @@ public class AuthenticationService {
         authResponseJson = validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(authResponseJson,
                 authResponse, credentials.getIamPrincipalArn());
 
-        final byte[] encryptedAuthResponse = encrypt(credentials.getRegion(), keyId, authResponseJson);
+        final byte[] encryptedAuthResponse = safeEncryptWithRetry(kmsKeyRecord.getAwsIamRoleId(),
+                credentials.getIamPrincipalArn(), kmsKeyRecord.getId(), kmsKeyRecord.getAwsKmsKeyId(),
+                credentials.getRegion(), authResponseJson);
 
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
@@ -481,15 +479,7 @@ public class AuthenticationService {
         return policies;
     }
 
-    /**
-     * Looks up the KMS key id associated with the iam role + region.  If the IAM role exists, but its the first time
-     * we've seen the region, we provision a key for usage and return it.
-     *
-     * @param credentials IAM role credentials
-     * @return KMS Key id
-     */
-    protected String getKeyId(IamPrincipalCredentials credentials) {
-        final String iamPrincipalArn = credentials.getIamPrincipalArn();
+    protected AwsIamRoleRecord getIamPrincipalRecord(String iamPrincipalArn) {
         final Optional<AwsIamRoleRecord> iamRole = findIamRoleAssociatedWithSdb(iamPrincipalArn);
 
         if (!iamRole.isPresent()) {
@@ -499,21 +489,54 @@ public class AuthenticationService {
                     .build();
         }
 
-        final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRole.get().getId(), credentials.getRegion());
+        return iamRole.get();
+    }
 
-        final String kmsKeyId;
+    protected AwsIamRoleKmsKeyRecord getKmsKeyRecordForIamPrincipal(final String iamPrincipalArn, final String awsRegion) {
+        final AwsIamRoleRecord iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
+        final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRoleRecord.getId(), awsRegion);
+
         final AwsIamRoleKmsKeyRecord kmsKeyRecord;
         final OffsetDateTime now = dateTimeSupplier.get();
 
         if (!kmsKey.isPresent()) {
-            kmsKeyId = kmsService.provisionKmsKey(iamRole.get().getId(), iamRole.get().getAwsIamRoleArn(), credentials.getRegion(), SYSTEM_USER, now);
+            kmsKeyRecord = kmsService.provisionKmsKey(iamRoleRecord.getId(), iamRoleRecord.getAwsIamRoleArn(), awsRegion, SYSTEM_USER, now);
         } else {
             kmsKeyRecord = kmsKey.get();
-            kmsKeyId = kmsKeyRecord.getAwsKmsKeyId();
-            kmsService.validateKeyAndPolicy(kmsKeyRecord, iamRole.get().getAwsIamRoleArn());
+
+            // regenerate the KMS key policy, if it is invalid
+            kmsService.validateKeyAndPolicy(kmsKeyRecord, iamRoleRecord.getAwsIamRoleArn());
         }
 
-        return kmsKeyId;
+        return kmsKeyRecord;
+    }
+
+    /**
+     * Encrypt the given payload with KMS. If the given KMS key is invalid, create a new key and encrypt using the new key.
+     * @param iamPrincipalArn  The IAM principal ARN associated with the key
+     * @param kmsKeyRecordId   The ID of the KMS key record
+     * @param keyId            The AWS ARN of the KMS key
+     * @param awsRegion        The region in which the KMS key exists
+     * @param data             The data which to encrypt with KMS
+     * @return  The encrypted payload
+     */
+    private byte[] safeEncryptWithRetry(final String iamRoleRecordId, final String iamPrincipalArn, final String kmsKeyRecordId,
+                                        final String keyId, final String awsRegion, final byte[] data) {
+        try {
+            return encrypt(awsRegion, keyId, data);
+        } catch (KeyInvalidForAuthException invalidKeyException) {
+            logger.error(
+                    "The KMS key with id: {} for principal: {} is disabled or scheduled for deletion. " +
+                            "The record for this KMS key will be deleted and a new KMS key will be created.",
+                    keyId,
+                    iamPrincipalArn);
+
+            kmsService.deleteKmsKeyById(kmsKeyRecordId);
+            AwsIamRoleKmsKeyRecord newKeyRecord = kmsService.provisionKmsKey(iamRoleRecordId, iamPrincipalArn, awsRegion,
+                    SYSTEM_USER, dateTimeSupplier.get());
+
+            return encrypt(awsRegion, newKeyRecord.getAwsKmsKeyId(), data);
+        }
     }
 
     /**
@@ -542,12 +565,15 @@ public class AuthenticationService {
                     kmsClient.encrypt(new EncryptRequest().withKeyId(keyId).withPlaintext(ByteBuffer.wrap(data)));
 
             return encryptResult.getCiphertextBlob().array();
+        } catch (NotFoundException | KMSInvalidStateException keyNotUsableException) {
+            throw new KeyInvalidForAuthException(
+                    String.format("Failed to encrypt token using KMS key with id: %s", keyId),
+                    keyNotUsableException);
         } catch (AmazonClientException ace) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
                     .withExceptionCause(ace)
-                    .withExceptionMessage(
-                            String.format("Unexpected error communicating with AWS KMS for region %s.", regionName))
+                    .withExceptionMessage(String.format("Unexpected error communicating with AWS KMS for region %s.", regionName))
                     .build();
         }
     }
