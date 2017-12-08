@@ -127,6 +127,7 @@ export default class CreateSDBoxForm extends Component {
                         <label id="category-select-label" className='ncss-label'>Owner</label>
                         <GroupsSelect {...owner}
                             userGroups={userGroups}
+                            allowCustomValues={false}
                             handleBeingTouched={() => {
                                       dispatch(touch(formName, owner.name))
                                   }} />

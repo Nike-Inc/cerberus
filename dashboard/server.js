@@ -6,9 +6,8 @@ var config = require("./webpack.config.js");
 var reverseProxyPort = 9001
 var nodeServerPort = 8000
 var cmsPort = 8080
-var vaultPort = 8200
 
-var loadDashboardFromCms = true
+var loadDashboardFromCms = false
 var dashboardRedirectUrl = '127.0.0.1:' + nodeServerPort
 if (loadDashboardFromCms !== false) {
     dashboardRedirectUrl = '127.0.0.1:' + cmsPort + '/dashboard/'
@@ -37,8 +36,8 @@ redwire.http('http://localhost:' + reverseProxyPort + '/', dashboardRedirectUrl)
 redwire.http('http://127.0.0.1:' + reverseProxyPort + '/', dashboardRedirectUrl)
 
 // redirect /secret to Hashicorp Vault
-redwire.http('http://localhost:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + vaultPort + '/v1/secret')
-redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + vaultPort + '/v1/secret')
+redwire.http('http://localhost:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + cmsPort + '/v1/secret')
+redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + cmsPort + '/v1/secret')
 
 // redirect rule for Cerberus Management Service
 redwire.http('http://localhost:' + reverseProxyPort + '/v1', '127.0.0.1:' + cmsPort + '/v1')

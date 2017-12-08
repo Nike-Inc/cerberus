@@ -52,6 +52,16 @@ task stopProxyAndDashboardBackgroundThread(type: KillProcessTask) {
     pidLockFileName '.proxy-dash.pid.lock'
 }
 
+task runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
+    group 'local development'
+    description 'Using the Node plugin (embedded node js) Serves the dashboard and runs the reverse proxy so that you can interact with the total composed Cerberus API'
+
+    script = file("${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}server.js")
+    execOverrides {
+        it.workingDir = new File("${project.getRootDir().absolutePath}${File.separator}dashboard").absolutePath
+    }
+}
+
 /**
  * Configure the Node plugin to run out of the dashboard dir
  */
