@@ -6,7 +6,7 @@ import log from 'logger'
 export default class GroupsSelect extends Component {
 
     render() {
-        const {userGroups, value, onChange, handleBeingTouched, touched, error} = this.props
+        const {userGroups, allowCustomValues, value, onChange, handleBeingTouched, touched, error} = this.props
 
         var options = userGroups.map(function(group) {
             return {label: group, value: group}
@@ -28,13 +28,24 @@ export default class GroupsSelect extends Component {
 
         return (
             <div className='group-select ncss-form-group'>
-                <Select.Creatable
-                    className={((touched && error) ? 'category-select select-container-error' : 'category-select select-container')}
-                    onChange = {(v) => { handleBeingTouched(); onChange(v)}}
-                    onBlur={() => { handleBeingTouched() }}
-                    value={value}
-                    placeholder="Select a user group"
-                    options={options} />
+                { allowCustomValues &&
+                    <Select.Creatable
+                        className={((touched && error) ? 'category-select select-container-error' : 'category-select select-container')}
+                        onChange = {(v) => { handleBeingTouched(); onChange(v)}}
+                        onBlur={() => { handleBeingTouched() }}
+                        value={value}
+                        placeholder="Select a user group"
+                        options={options} />
+                }
+                { !allowCustomValues &&
+                    <Select
+                        className={((touched && error) ? 'category-select select-container-error' : 'category-select select-container')}
+                        onChange = {(v) => { handleBeingTouched(); onChange(v)}}
+                        onBlur={() => { handleBeingTouched() }}
+                        value={value}
+                        placeholder="Select a user group"
+                        options={options} />
+                }
                 {touched && error && <div className='select-error-msg'>{error}</div>}
             </div>
         )

@@ -38,6 +38,7 @@ export default class UserGroupPermissionsFieldSet extends Component {
 
                                 <GroupsSelect {...permission.name}
                                     userGroups={userGroups}
+                                    allowCustomValues={true}
                                     handleBeingTouched={() => {
                                                           dispatch(touch(formName, permission.name.name))
                                                       }} />
