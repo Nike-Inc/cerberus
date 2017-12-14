@@ -70,8 +70,8 @@ cms.role.arn                                        | Yes      | The arn for the
 cms.admin.group                                     | Yes      | Group that user can be identified by to get admin privileges, currently this just enables users to access `/v1/metadata` see API.md
 cms.admin.roles                                     | No       | Comma separated list of ARNs that can auth and access admin endpoints.
 cms.auth.connector                                  | Yes      | The user authentication connector implementation to use for user auth.
-cms.user.token.ttl.override                         | No       | By default user tokens are created with a TTL of 1h, you can override that with this param
-cms.iam.token.ttl.override                          | No       | By default IAM tokens are created with a TTL of 1h, you can override that with this param
+cms.user.token.ttl                                  | No       | By default user tokens are created with a TTL of 1h, you can override that with this param
+cms.iam.token.ttl                                   | No       | By default IAM tokens are created with a TTL of 1h, you can override that with this param
 cms.kms.policy.validation.interval.millis.override  | No       | By default CMS validates KMS key policies no more than once per minute, you can override that with this param
 
 KMS Policies are bound to IAM Principal IDs rather than ARNs themselves. Because of this, we validate the policy at authentication time
