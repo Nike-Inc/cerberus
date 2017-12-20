@@ -69,16 +69,13 @@ public class SecureDataService {
      * @param plainTextPayload the json payload
      * @return The number of top level key value pairs the json payload contains
      */
-    private int getTopLevelKVPairCount(String plainTextPayload) {
+    protected int getTopLevelKVPairCount(String plainTextPayload) {
         int kvCount = 1;
         try {
             Map<String, Object> data = objectMapper.readValue(plainTextPayload, new TypeReference<HashMap<String, Object>>() {});
             kvCount = data.size();
-        } catch (Throwable t) {
-            log.error("Failed to get top level kv pair count metric from plainTextPayload");
-            if (Thread.interrupted())  {
-                Thread.currentThread().interrupt();
-            }
+        } catch (Exception e) {
+            log.error("Failed to get top level kv pair count metric from plainTextPayload", e);
         }
         return kvCount;
     }
