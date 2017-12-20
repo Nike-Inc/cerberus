@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.dao.SecureDataDao;
@@ -26,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,14 +36,16 @@ import java.util.UUID;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class SecureDataServiceTest {
 
-    private String secret = "S3cr3t";
+    private String secret = "{\"k1\":\"val\",\"k2\":\"val\"}";
     private String encryptedPayload = "fasl;kej fasdf0978023 alskdf as";
     private String sdbId = UUID.randomUUID().toString();
     private String path = "super/important/secrets";
@@ -53,14 +57,14 @@ public class SecureDataServiceTest {
 
     @Mock private SecureDataDao secureDataDao;
     @Mock private EncryptionService encryptionService;
-    @Mock private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     private SecureDataService secureDataService;
 
     @Before
     public void before() {
         initMocks(this);
-
+        objectMapper = new ObjectMapper();
         secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper);
     }
 
@@ -69,7 +73,7 @@ public class SecureDataServiceTest {
         when(encryptionService.encrypt(secret, path)).thenReturn(encryptedPayload);
 
         secureDataService.writeSecret(sdbId, path, secret);
-        verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload);
+        verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload, 2);
     }
 
     @Test
@@ -182,13 +186,26 @@ public class SecureDataServiceTest {
 
         Map<String, Map<String, Object>> data = Maps.newHashMap();
         Map<String, Object> keyValuePairs = Maps.newHashMap();
+        keyValuePairs.put("foo", "bar");
         data.put(sdbPath, keyValuePairs);
 
         String encryptedPayload = "encrypted payload";
         when(encryptionService.encrypt(anyString(), anyString())).thenReturn(encryptedPayload);
 
         secureDataService.restoreSdbSecrets(sdbId, data);
-        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload);
+        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload, 1);
+    }
+
+    @Test
+    public void test_that_getTopLevelKVPairCount_returns_proper_count() {
+        assertEquals(2, secureDataService
+                .getTopLevelKVPairCount("{\"k1\":\"val\",\"k2\":\"val\"}"));
+    }
+
+    @Test
+    public void test_that_getTopLevelKVPairCount_returns_1_on_failure() {
+        assertEquals(1, secureDataService
+                .getTopLevelKVPairCount("{[\"1\",\"2\"]}"));
     }
 
 }

@@ -32,4 +32,6 @@ public interface SecureDataMapper {
     int deleteAllSecretsThatStartWithGivenPartialPath(@Param("partialPath") String partialPath);
 
     int deleteSecret(@Param("path") String path);
+
+    Integer getSumTopLevelKeyValuePairs();
 }

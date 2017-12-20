@@ -79,14 +79,16 @@ public class KpiMetricsProcessingJob extends Job {
         int totalUniqueUserGroups = userGroupPermissionService.getTotalNumUniqueUserGroups();
         int numSDBs = safeDepositBoxService.getTotalNumberOfSafeDepositBoxes();
         int numDataNodes = secureDataService.getTotalNumberOfDataNodes();
+        int numKeyValuePairs = secureDataService.getTotalNumberOfKeyValuePairs();
 
-        log.info("Number of IAM roles: {}, Owner Groups: {}, Non-Owner Groups: {}, Total Unique Groups: {}, SDBs: {}, Key/Value Pairs: {}",
+        log.info("Number of IAM roles: {}, Owner Groups: {}, Non-Owner Groups: {}, Total Unique Groups: {}, SDBs: {}, Nodes: {}, Key/Value Pairs: {}",
                 numUniqueIamRoles,
                 numUniqueOwnerGroups,
                 numUniqueNonOwnerGroups,
                 totalUniqueUserGroups,
                 numSDBs,
-                numDataNodes);
+                numDataNodes,
+                numKeyValuePairs);
 
         metricsService.setGaugeValue("numberOfUniqueIamRoles", numUniqueIamRoles);
         metricsService.setGaugeValue("numberOfUniqueOwnerGroups", numUniqueOwnerGroups);
@@ -94,6 +96,7 @@ public class KpiMetricsProcessingJob extends Job {
         metricsService.setGaugeValue("totalUniqueUserGroups", totalUniqueUserGroups);
         metricsService.setGaugeValue("numberOfSdbs", numSDBs);
         metricsService.setGaugeValue("numberOfDataNodes", numDataNodes);
+        metricsService.setGaugeValue("numberOfKeyValuePairs", numKeyValuePairs);
     }
 
 }

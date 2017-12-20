@@ -31,13 +31,14 @@ public class SecureDataDao {
         this.secureDataMapper = secureDataMapper;
     }
 
-    public void writeSecureData(String sdbId, String path, String encryptedPayload) {
+    public void writeSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount) {
         secureDataMapper.writeSecureData(
                 new SecureDataRecord()
                 .setId(path.hashCode())
                 .setPath(path)
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)
+                .setTopLevelKVCount(topLevelKVPairCount)
         );
     }
 
@@ -59,5 +60,10 @@ public class SecureDataDao {
 
     public void deleteSecret(String path) {
         secureDataMapper.deleteSecret(path);
+    }
+
+    public int getSumTopLevelKeyValuePairs() {
+        Integer val = secureDataMapper.getSumTopLevelKeyValuePairs();
+        return val == null ? 0 : val;
     }
 }

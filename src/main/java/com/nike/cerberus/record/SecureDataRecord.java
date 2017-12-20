@@ -22,6 +22,7 @@ public class SecureDataRecord {
     private String sdboxId;
     private String path;
     private String encryptedBlob;
+    private Integer topLevelKVCount;
 
     public Integer getId() {
         return id;
@@ -56,6 +57,15 @@ public class SecureDataRecord {
 
     public SecureDataRecord setEncryptedBlob(String encryptedBlob) {
         this.encryptedBlob = encryptedBlob;
+        return this;
+    }
+
+    public Integer getTopLevelKVCount() {
+        return topLevelKVCount;
+    }
+
+    public SecureDataRecord setTopLevelKVCount(Integer topLevelKVCount) {
+        this.topLevelKVCount = topLevelKVCount;
         return this;
     }
 }

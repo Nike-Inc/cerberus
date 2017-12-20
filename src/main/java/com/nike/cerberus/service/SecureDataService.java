@@ -18,6 +18,7 @@ package com.nike.cerberus.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.record.SecureDataRecord;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +57,27 @@ public class SecureDataService {
 
         String encryptedPayload = encryptionService.encrypt(plainTextPayload, path);
 
-        secureDataDao.writeSecureData(sdbId, path, encryptedPayload);
+        int topLevelKVPairCount = getTopLevelKVPairCount(plainTextPayload);
+
+        secureDataDao.writeSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount);
+    }
+
+    /**
+     * Attempts to deserialize the plain text payload and determine how many key value pairs it contains, in order to
+     * capture this metadata metric for KPI reporting.
+     *
+     * @param plainTextPayload the json payload
+     * @return The number of top level key value pairs the json payload contains
+     */
+    protected int getTopLevelKVPairCount(String plainTextPayload) {
+        int kvCount = 1;
+        try {
+            Map<String, Object> data = objectMapper.readValue(plainTextPayload, new TypeReference<HashMap<String, Object>>() {});
+            kvCount = data.size();
+        } catch (Exception e) {
+            log.error("Failed to get top level kv pair count metric from plainTextPayload", e);
+        }
+        return kvCount;
     }
 
     public Optional<String> readSecret(String path) {
@@ -164,5 +186,9 @@ public class SecureDataService {
         return sdbPath.contains(pathWithoutTrailingSlash) ?
                 StringUtils.substringAfter(pathWithoutTrailingSlash, "/") :
                 sdbPath;
+    }
+
+    public int getTotalNumberOfKeyValuePairs() {
+        return secureDataDao.getSumTopLevelKeyValuePairs();
     }
 }
