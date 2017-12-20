@@ -69,7 +69,7 @@ public class SecureDataServiceTest {
         when(encryptionService.encrypt(secret, path)).thenReturn(encryptedPayload);
 
         secureDataService.writeSecret(sdbId, path, secret);
-        verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload);
+        verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload, 1);
     }
 
     @Test
@@ -188,7 +188,7 @@ public class SecureDataServiceTest {
         when(encryptionService.encrypt(anyString(), anyString())).thenReturn(encryptedPayload);
 
         secureDataService.restoreSdbSecrets(sdbId, data);
-        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload);
+        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload, 1);
     }
 
 }

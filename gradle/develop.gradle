@@ -39,7 +39,7 @@ task startProxyAndDashboardInBackground(type: SpawnProcessTask) {
 }
 
 task startMySQLInBackground(type: SpawnProcessTask) {
-    command "${project.getRootDir().absolutePath}${File.separator}gradlew sEM --stacktrace"
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew startEmbeddedMysql --stacktrace"
     ready 'core: post-unseal setup complete'
     pidLockFileName '.vault-sql.pid.lock'
 }

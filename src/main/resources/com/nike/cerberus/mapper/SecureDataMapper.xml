@@ -25,13 +25,15 @@
           ID,
           SDBOX_ID,
           PATH,
-          ENCRYPTED_BLOB
+          ENCRYPTED_BLOB,
+          TOP_LEVEL_KV_COUNT
         )
         VALUES (
           #{record.id},
           #{record.sdboxId},
           #{record.path},
-          #{record.encryptedBlob}
+          #{record.encryptedBlob},
+          #{record.topLevelKVCount}
         ) ON DUPLICATE KEY UPDATE
           ENCRYPTED_BLOB=VALUES(ENCRYPTED_BLOB)
     </insert>
@@ -54,6 +56,10 @@
 
     <select id="getTotalNumberOfDataNodes" resultType="java.lang.Integer">
         SELECT COUNT(ID) FROM SECURE_DATA
+    </select>
+
+    <select id="getSumTopLevelKeyValuePairs" resultType="java.lang.Integer">
+        SELECT SUM(TOP_LEVEL_KV_COUNT) FROM SECURE_DATA
     </select>
 
     <delete id="deleteAllSecretsThatStartWithGivenPartialPath">
