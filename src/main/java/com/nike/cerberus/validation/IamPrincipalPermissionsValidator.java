@@ -58,7 +58,7 @@ public class IamPrincipalPermissionsValidator
     }
 
     private String buildKey(IamPrincipalPermission iamRolePermission) {
-        return StringUtils.lowerCase(iamRolePermission.getIamPrincipalArn(), Locale.ENGLISH);
+        return iamRolePermission.getIamPrincipalArn();
     }
 
 }
