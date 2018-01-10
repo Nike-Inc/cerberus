@@ -37,6 +37,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
@@ -76,6 +77,7 @@ public class KmsService {
     private final KmsPolicyService kmsPolicyService;
     private final DateTimeSupplier dateTimeSupplier;
     private final AwsIamRoleArnParser awsIamRoleArnParser;
+    private final Slugger slugger;
 
     private final String cmsVersion;
     private final String environmentName;
@@ -92,7 +94,8 @@ public class KmsService {
                       final DateTimeSupplier dateTimeSupplier,
                       AwsIamRoleArnParser awsIamRoleArnParser,
                       @Named("service.version") String cmsVersion,
-                      @Named("cms.env.name") String environmentName) {
+                      @Named("cms.env.name") String environmentName,
+                      final Slugger slugger) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
@@ -101,6 +104,7 @@ public class KmsService {
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.cmsVersion = cmsVersion;
         this.environmentName = environmentName;
+        this.slugger = slugger;
     }
 
     /**
@@ -167,13 +171,19 @@ public class KmsService {
 
         final CreateKeyResult result = kmsClient.createKey(request);
 
-        // alias is only used to provide extra description in AWS console
-        final CreateAliasRequest aliasRequest = new CreateAliasRequest()
-                .withAliasName(getAliasName(kmsKeyRecordId, iamPrincipalArn))
-                .withTargetKeyId(result.getKeyMetadata().getArn());
-        kmsClient.createAlias(aliasRequest);
+        String kmsKeyAliasName = getAliasName(kmsKeyRecordId, iamPrincipalArn);
+        String kmsKeyArn = result.getKeyMetadata().getArn();
+        try {
+            // alias is only used to provide extra description in AWS console
+            final CreateAliasRequest aliasRequest = new CreateAliasRequest()
+                    .withAliasName(kmsKeyAliasName)
+                    .withTargetKeyId(result.getKeyMetadata().getArn());
+            kmsClient.createAlias(aliasRequest);
+        } catch (RuntimeException re) {
+            logger.error("Failed to create KMS alias: {}, for keyId: {}", kmsKeyAliasName, kmsKeyArn);
+        }
 
-        return result.getKeyMetadata().getArn();
+        return kmsKeyArn;
     }
 
     /**
@@ -233,16 +243,17 @@ public class KmsService {
     protected String getAliasName(String awsIamRoleKmsKeyId, String iamPrincipalArn) {
         // create a descriptive text for the alias including as much info as possible
         String descriptiveText = "alias/cerberus/" + environmentName + ALIAS_DELIMITER + awsIamRoleArnParser.stripOutDescription(iamPrincipalArn);
+        String validAliasText = slugger.slugifyKmsAliases(descriptiveText);
 
         // if the descriptive text is too long then truncate it (this seems very unlikely to happen)
-        if (descriptiveText.length() + ALIAS_DELIMITER.length() + awsIamRoleKmsKeyId.length() > MAX_KMS_ALIAS_LENGTH) {
-            descriptiveText = StringUtils.substring(descriptiveText, 0, MAX_KMS_ALIAS_LENGTH - ALIAS_DELIMITER.length() - awsIamRoleKmsKeyId.length());
+        if (validAliasText.length() + ALIAS_DELIMITER.length() + awsIamRoleKmsKeyId.length() > MAX_KMS_ALIAS_LENGTH) {
+            validAliasText = StringUtils.substring(validAliasText, 0, MAX_KMS_ALIAS_LENGTH - ALIAS_DELIMITER.length() - awsIamRoleKmsKeyId.length());
             // remove final '/' if it exists
-            descriptiveText = StringUtils.stripEnd(descriptiveText, ALIAS_DELIMITER);
+            validAliasText = StringUtils.stripEnd(validAliasText, ALIAS_DELIMITER);
         }
 
         // tack on the UUID onto the end to make sure the alias is unique
-        return descriptiveText + ALIAS_DELIMITER + awsIamRoleKmsKeyId;
+        return validAliasText + ALIAS_DELIMITER + awsIamRoleKmsKeyId;
     }
 
     /**

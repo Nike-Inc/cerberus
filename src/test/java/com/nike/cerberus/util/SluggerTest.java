@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class SluggerTest {
 
@@ -36,5 +37,11 @@ public class SluggerTest {
         final String expected = "eternal-testing";
 
         assertThat(subject.toSlug(testCase)).isEqualTo(expected);
+    }
+
+    @Test
+    public void test_sluggify_kms_alias() {
+        assertEquals("x-y-z", subject.slugifyKmsAliases("x.y.z"));
+        assertEquals("accountId/role-name", subject.slugifyKmsAliases("accountId/role.name"));
     }
 }
