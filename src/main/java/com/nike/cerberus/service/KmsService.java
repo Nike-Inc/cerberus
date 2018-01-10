@@ -158,10 +158,12 @@ public class KmsService {
     private String createKmsKeyInAws(String iamPrincipalArn, String kmsKeyRecordId, String awsRegion) {
         final AWSKMSClient kmsClient = kmsClientFactory.getClient(awsRegion);
 
+        final String policy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
+
         final CreateKeyRequest request = new CreateKeyRequest()
                 .withKeyUsage(KeyUsageType.ENCRYPT_DECRYPT)
                 .withDescription("Key used by Cerberus " + environmentName + " for IAM role authentication. " + iamPrincipalArn)
-                .withPolicy(kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn))
+                .withPolicy(policy)
                 .withTags(
                     createTag("created_by", "cms" + cmsVersion),
                     createTag("created_for", "cerberus_auth"),
@@ -169,7 +171,13 @@ public class KmsService {
                     createTag("cerberus_env", environmentName)
                 );
 
-        final CreateKeyResult result = kmsClient.createKey(request);
+        CreateKeyResult result;
+        try {
+            result = kmsClient.createKey(request);
+        } catch (Throwable t) {
+            logger.error("Failed to provision KMS key using policy: {}", policy, t);
+            throw t;
+        }
 
         String kmsKeyAliasName = getAliasName(kmsKeyRecordId, iamPrincipalArn);
         String kmsKeyArn = result.getKeyMetadata().getArn();
