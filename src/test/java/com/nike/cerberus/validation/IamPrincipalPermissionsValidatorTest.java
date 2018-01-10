@@ -65,13 +65,13 @@ public class IamPrincipalPermissionsValidatorTest {
     }
 
     @Test
-    public void duplicate_set_is_invalid() {
+    public void set_can_handle_case_sensitivity() {
 
         IamPrincipalPermission a = new IamPrincipalPermission();
         a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
         IamPrincipalPermission b = new IamPrincipalPermission();
         b.withIamPrincipalArn("arn:aws:iam::123:role/ABC");
 
-        assertThat(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext)).isFalse();
+        assertThat(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext)).isTrue();
     }
 }
