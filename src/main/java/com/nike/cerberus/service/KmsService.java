@@ -116,8 +116,16 @@ public class KmsService {
         final CreateKeyRequest request = new CreateKeyRequest();
         request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
         request.setDescription("Key used by Cerberus for IAM role authentication.");
-        request.setPolicy(kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn));
-        final CreateKeyResult result = kmsClient.createKey(request);
+        String policy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
+        request.setPolicy(policy);
+
+        CreateKeyResult result;
+        try {
+            result = kmsClient.createKey(request);
+        } catch (Throwable t) {
+            logger.error("Failed to provision KMS key using policy: {}", policy, t);
+            throw t;
+        }
 
         final CreateAliasRequest aliasRequest = new CreateAliasRequest();
         aliasRequest.setAliasName(getAliasName(awsIamPrincipalKmsKeyId));
