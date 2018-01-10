@@ -19,6 +19,7 @@ import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +48,7 @@ public class KmsServiceTest {
     private KmsClientFactory kmsClientFactory;
     private KmsPolicyService kmsPolicyService;
     private DateTimeSupplier dateTimeSupplier;
+    private Slugger slugger;
 
     private KmsService kmsService;
 
@@ -57,8 +59,9 @@ public class KmsServiceTest {
         kmsClientFactory = mock(KmsClientFactory.class);
         kmsPolicyService = mock(KmsPolicyService.class);
         dateTimeSupplier = mock(DateTimeSupplier.class);
+        slugger = new Slugger();
 
-        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService, dateTimeSupplier, new AwsIamRoleArnParser(), VERSION, ENV);
+        kmsService = new KmsService(awsIamRoleDao, uuidSupplier, kmsClientFactory, kmsPolicyService, dateTimeSupplier, new AwsIamRoleArnParser(), VERSION, ENV, slugger);
     }
 
     @Test
