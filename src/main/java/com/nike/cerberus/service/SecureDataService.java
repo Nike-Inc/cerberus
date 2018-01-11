@@ -95,7 +95,7 @@ public class SecureDataService {
 
     public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data) {
         data.forEach((String path, Map<String, Object> secretsData) -> {
-            String pathWithoutCategory = removeCategoryFromPath(path);
+            String pathWithoutCategory = StringUtils.substringAfter(path, "/");
             try {
                 String plainTextSecrets = objectMapper.writeValueAsString(secretsData);
                 writeSecret(sdbId, pathWithoutCategory, plainTextSecrets);
@@ -145,11 +145,6 @@ public class SecureDataService {
         return secureDataDao.getTotalNumberOfDataNodes();
     }
 
-    public void deleteAllSecretsInSdb(String sdbPath) {
-        String pathWithoutCategory = removeCategoryFromPath(sdbPath);
-        deleteAllSecretsThatStartWithGivenPartialPath(pathWithoutCategory);
-    }
-
     /**
      * Deletes all of the secure data from stored at the safe deposit box's partial path.
      *
@@ -178,14 +173,6 @@ public class SecureDataService {
      */
     public void deleteSecret(String path) {
         secureDataDao.deleteSecret(path);
-    }
-
-    private String removeCategoryFromPath(String sdbPath) {
-        String pathSeparator = "/";
-        String pathWithoutTrailingSlash = StringUtils.removeEnd(sdbPath, pathSeparator);
-        return sdbPath.contains(pathWithoutTrailingSlash) ?
-                StringUtils.substringAfter(pathWithoutTrailingSlash, "/") :
-                sdbPath;
     }
 
     public int getTotalNumberOfKeyValuePairs() {
