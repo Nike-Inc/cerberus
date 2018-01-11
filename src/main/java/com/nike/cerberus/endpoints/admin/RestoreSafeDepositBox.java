@@ -30,6 +30,7 @@ import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,8 @@ public class RestoreSafeDepositBox extends AdminStandardEndpoint<SDBMetadata, Vo
 
         metadataService.restoreMetadata(sdbMetadata, principal);
         String sdbId  = metadataService.getSdbId(sdbMetadata);
-        secureDataService.deleteAllSecretsInSdb(sdbMetadata.getPath());
+        String sdbPathWithoutCategory = StringUtils.substringAfter(sdbMetadata.getPath(), "/");
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbPathWithoutCategory);
         secureDataService.restoreSdbSecrets(sdbId, sdbMetadata.getData());
 
         return ResponseInfo.<Void>newBuilder()
