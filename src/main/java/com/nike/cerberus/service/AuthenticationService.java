@@ -226,8 +226,10 @@ public class AuthenticationService {
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
         final AwsIamRoleKmsKeyRecord kmsKeyRecord;
+        final AwsIamRoleRecord iamRoleRecord;
         try {
-            kmsKeyRecord = getKmsKeyRecordForIamPrincipal(credentials.getIamPrincipalArn(), credentials.getRegion());
+            iamRoleRecord = getIamPrincipalRecord(credentials.getIamPrincipalArn());
+            kmsKeyRecord = getKmsKeyRecordForIamPrincipal(iamRoleRecord, credentials.getRegion());
         } catch (AmazonServiceException e) {
             if ("InvalidArnException".equals(e.getErrorCode())) {
                 throw ApiException.newBuilder()
@@ -242,7 +244,7 @@ public class AuthenticationService {
         }
 
         final Set<String> policies = buildCompleteSetOfPolicies(credentials.getIamPrincipalArn());
-        AuthTokenResponse authResponse = createToken(credentials.getIamPrincipalArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
+        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
 
         byte[] authResponseJson;
         try {
@@ -492,8 +494,7 @@ public class AuthenticationService {
         return iamRole.get();
     }
 
-    protected AwsIamRoleKmsKeyRecord getKmsKeyRecordForIamPrincipal(final String iamPrincipalArn, final String awsRegion) {
-        final AwsIamRoleRecord iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
+    protected AwsIamRoleKmsKeyRecord getKmsKeyRecordForIamPrincipal(final AwsIamRoleRecord iamRoleRecord, final String awsRegion) {
         final Optional<AwsIamRoleKmsKeyRecord> kmsKey = awsIamRoleDao.getKmsKey(iamRoleRecord.getId(), awsRegion);
 
         final AwsIamRoleKmsKeyRecord kmsKeyRecord;
