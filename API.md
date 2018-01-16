@@ -31,7 +31,7 @@ This endpoint will take a Users credentials, validate them with configured Auth 
                "status": "success",
                "data": {
                    "client_token": {
-                       "client_token": "7f6808f1-ede3-2177-aa9d-45f507391310",
+                       "client_token": "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
                        "policies": [
                            "web",
                            "stage"
@@ -115,7 +115,7 @@ If the configured Auth Connector (e.g. Okta, OneLogin) requires Multi-Factor Aut
                "status": "success",
                "data": {
                    "client_token": {
-                       "client_token": "7f6808f1-ede3-2177-aa9d-45f507391310",
+                       "client_token": "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
                        "policies": [
                            "web",
                            "stage"
@@ -145,7 +145,7 @@ refresh_count and max_refresh_count can be used to determine when a re-authentic
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -156,7 +156,7 @@ refresh_count and max_refresh_count can be used to determine when a re-authentic
                "status": "success",
                "data": {
                    "client_token": {
-                       "client_token": "234808f1-ede3-2177-aa9d-45f507391310",
+                       "client_token": "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
                        "policies": [
                            "web",
                            "stage"
@@ -202,7 +202,7 @@ This endpoint takes IAM ARN information and generates a base64 encoded KMS encry
     + Body
 
             {
-              "client_token" : "e5fd901b-bc65-71e7-a214-6066fef1e918",
+              "client_token" : "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
               "policies" : [ "foo-bar-read", "lookup-self" ],
               "metadata" : {
                 "aws_region" : "us-west-2",
@@ -246,7 +246,7 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
     + Body
 
             {
-              "client_token" : "234808f1-ede3-2177-aa9d-45f507391310",
+              "client_token" : "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
               "policies" : [ "health-check-bucket-read", "lookup-self" ],
               "metadata" : {
                 "aws_region" : "us-west-2",
@@ -271,7 +271,7 @@ This endpoint will take the users `X-Cerberus-Token` header and revoke the token
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 204 (application/json)
@@ -288,7 +288,7 @@ This endpoint will list all the Safe Deposit Box a user is authorized to see.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -318,7 +318,7 @@ This endpoint will create a new Safe Deposit Box
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
@@ -386,7 +386,7 @@ This endpoint returns details on a specific Safe Deposit Box.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -425,7 +425,7 @@ This endpoint allows a user to update the description, user group, and iam role 
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
@@ -490,7 +490,7 @@ This endpoint allows a user to delete a safe deposit box that they own
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200
@@ -509,7 +509,7 @@ This endpoint will list all the Safe Deposit Box a user is authorized to see.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -539,7 +539,7 @@ This endpoint will create a new Safe Deposit Box
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
@@ -590,7 +590,7 @@ This endpoint returns details on a specific Safe Deposit Box.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -629,7 +629,7 @@ This endpoint allows a user to update the description, user group, and iam role 
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
@@ -670,7 +670,7 @@ This endpoint allows a user to delete a safe deposit box that they own.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200
@@ -693,7 +693,7 @@ list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
         X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -723,7 +723,7 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
         X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -768,7 +768,7 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
         X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
@@ -786,7 +786,7 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
         X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 204
@@ -803,7 +803,7 @@ Lists all the roles that can be granted to an IAM Role or User Group on a Safe D
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -854,7 +854,7 @@ SDBs under different categories have no functional difference. They are simply a
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -901,7 +901,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
@@ -975,7 +975,7 @@ A 400 response code is given if the job wasn't found.
 
     + Headers
 
-            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
             X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 204
