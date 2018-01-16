@@ -1,6 +1,12 @@
 # Cerberus Management Service
 
-An API to manage secrets and access to said secrets in the Cerberus ecosystem.
+A REST API to manage secrets and access to said secrets in the Cerberus system.
+
+The `X-Cerberus-Client` header is for clients to self-report their name and version to Cerberus.  It is currently
+optional but may be required in the future.
+
+More information about using the API can be found in the various [clients](http://engineering.nike.com/cerberus/components/#clients)
+as well as in the [integration tests](https://github.com/Nike-Inc/cerberus-integration-tests/) project.
 
 # Group Authentication
 
@@ -8,13 +14,14 @@ An API to manage secrets and access to said secrets in the Cerberus ecosystem.
 
 ### Authenticate with Cerberus as a User [GET]
 
-This endpoint will take a Users credentials and proxy the request to Vault to get a Vault token for the user with some extra metadata.
+This endpoint will take a Users credentials, validate them with configured Auth Connector (e.g. Okta, OneLogin), and then generate a token.
 
 + Request (application/json)
 
     + Headers
 
             Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -71,9 +78,13 @@ This endpoint will take a Users credentials and proxy the request to Vault to ge
 
 ### Verify MFA token for a user [POST]
 
-This endpoint will take a Users credentials and proxy the request to Vault to get a Vault token for the user with some extra metadata.
+If the configured Auth Connector (e.g. Okta, OneLogin) requires Multi-Factor Authentication, this endpoint is used during the second step of the authentication process.
 
 + Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -121,7 +132,8 @@ refresh_count and max_refresh_count can be used to determine when a re-authentic
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -153,9 +165,13 @@ refresh_count and max_refresh_count can be used to determine when a re-authentic
 
 ### Authenticate with Cerberus as an App [POST]
 
-This endpoint takes IAM ARN information and generates an base 64 encoded KMS encrypted payload of the below. The ARN if registered with an SDB will have kms decrypt permissions on the KMS key that the payload was enrypted with.
+This endpoint takes IAM ARN information and generates a base64 encoded KMS encrypted payload. 
 
 + Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -191,14 +207,18 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
 
 ### Authenticate with Cerberus as an App [POST]
 
-This endpoint takes IAM ARN information and generates an base 64 encoded KMS encrypted payload of the below. The ARN if registered with an SDB will have kms decrypt permissions on the KMS key that the payload was enrypted with.
+This endpoint takes IAM ARN information and generates an base 64 encoded KMS encrypted payload of the below. The ARN if registered with an SDB will have kms decrypt permissions on the KMS key that the payload was encrypted with.
 
 + Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
             {
-                "account_id" : "123",
+                "account_id" : "123456789012",
                 "role_name": "web",
                 "region": "us-west-2"
             }
@@ -227,13 +247,14 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
 
 ### Logout of Cerberus [DELETE]
 
-This endpoint will take the users `X-Vault-Token` header and proxy to Vault to revoke.
+This endpoint will take the users `X-Cerberus-Token` header and revoke the token.
 
 + Request (application/json)
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 204 (application/json)
 
@@ -249,7 +270,8 @@ This endpoint will list all the Safe Deposit Box a user is authorized to see.
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -278,7 +300,8 @@ This endpoint will create a new Safe Deposit Box
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -345,7 +368,8 @@ This endpoint returns details on a specific Safe Deposit Box.
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -383,7 +407,8 @@ This endpoint allows a user to update the description, user group, and iam role 
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -447,7 +472,8 @@ This endpoint allows a user to delete a safe deposit box that they own
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200
 
@@ -465,7 +491,8 @@ This endpoint will list all the Safe Deposit Box a user is authorized to see.
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -494,7 +521,8 @@ This endpoint will create a new Safe Deposit Box
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -544,7 +572,8 @@ This endpoint returns details on a specific Safe Deposit Box.
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -576,13 +605,14 @@ This endpoint returns details on a specific Safe Deposit Box.
 
 ### Update a specific authorized Safe Deposit Box [PUT]
 
-This endpoint allows a user to update the description, user group, and iam role mappings
+This endpoint allows a user to update the description, user group, and iam role mappings.
 
 + Request (application/json)
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -612,7 +642,7 @@ This endpoint allows a user to update the description, user group, and iam role 
 
 ### Delete a specific authorized Safe Deposit Box [DELETE]
 
-This endpoint allows a user to delete a safe deposit box that they own
+This endpoint allows a user to delete a safe deposit box that they own.
 
 + Parameters
 
@@ -622,7 +652,8 @@ This endpoint allows a user to delete a safe deposit box that they own
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200
 
@@ -630,19 +661,108 @@ This endpoint allows a user to delete a safe deposit box that they own
 
             X-Refresh-Token: true
 
+# Secrets
+
+## List Paths [v1/secret/{category}/{sdb-name}?list]
+
+### List Paths [GET]
+
++ Request (application/json)
+
+    + Headers
+
+        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+          "request_id" : "bbdd111111a2aaa3a",
+          "lease_id" : "",
+          "renewable" : false,
+          "lease_duration" : 3600,
+          "data" : {
+            "keys" : [ "path1", "path2", "path3" ]
+          },
+          "wrap_info" : null,
+          "warnings" : null,
+          "auth" : null
+        }
+
+## Secrets [v1/secret/{category}/{sdb-name}/{path}]
+
+### Read Secrets at a path [GET]
+
++ Request (application/json)
+
+    + Headers
+
+        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+
+    + Body
+
+        {
+          "request_id" : "aa11aaa1-1111-1a1a-1aa1-a1aa11aaa1a1",
+          "lease_id" : "",
+          "renewable" : false,
+          "lease_duration" : 3600,
+          "data" : {
+            "password" : "secret",
+            "username" : "someuser"
+          },
+          "wrap_info" : null,
+          "warnings" : null,
+          "auth" : null
+        }
+
+### Create/Update Secrets at a path [POST]
+
++ Request (application/json)
+
+    + Headers
+
+        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Client: MyClientName/1.0.0
+
+    + Body
+
+        {
+            "key1": "value1",
+            "key2": "value2"
+        }
+
++ Response 204
+
+### Delete Secrets at a path [DELETE]
+
++ Request
+
+    + Headers
+
+        X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+        X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 204
+
 # Group Role
 
 ## Role List [/v1/role]
 
 ### Retrieve the role list [GET]
 
-Lists all the roles that can be granted to an IAM Role or User Group on a Safe Deposit Box.
+Lists all the roles that can be granted to an IAM Role or User Group on a Safe Deposit Box, e.g. owner, write, read.
 
 + Response 200 (application/json)
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -679,13 +799,19 @@ Lists all the roles that can be granted to an IAM Role or User Group on a Safe D
 
 ### Retrieve the category list [GET]
 
-Lists all the possible categories that a safe deposit box can belong to.
+Lists all the possible categories that a safe deposit box can belong to.  By default there are two categories:
+
+1. Applications - for SDBs owned by a single application.
+1. Shared - for SDBs that are shared between many applications or groups.
+
+SDBs under different categories have no functional difference. They are simply an organizational mechanism.
 
 + Response 200 (application/json)
 
     + Headers
 
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -717,8 +843,8 @@ Lists all the possible categories that a safe deposit box can belong to.
 
 ### Get metadata [GET]
 
-Returns pageable metadata for all SDBs
-You can use has_next and next_offset from the response to paginate through all records
+Returns pageable metadata for all SDBs.
+You can use has_next and next_offset from the response to paginate through all records.
 
 + Parameters
     + limit (number) - OPTIONAL: The number of records to include in the metadata result. Defaults to 100
@@ -728,7 +854,8 @@ You can use has_next and next_offset from the response to paginate through all r
 
     + Headers
     
-            X-Vault-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
         
     + Body
     
