@@ -73,6 +73,19 @@ This endpoint will take a Users credentials, validate them with configured Auth 
               }
             }
 
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "error_id":"ccc1cc1c-e111-11e1-11ce-111e11a111f1",
+                "errors": [
+                    {
+                        "code":99106,
+                        "message":"Invalid credentials"
+                    }
+                ]
+            }
 
 ## User MFA Check [/v2/auth/mfa_check]
 
@@ -183,7 +196,7 @@ This endpoint takes IAM ARN information and generates a base64 encoded KMS encry
 + Response 200 (application/json)
     + The response will be a simple JSON payload with the encrypted data
             {
-                "auth_data": "long-encrypted-string"
+                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-long-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
             }
     + Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
     + Body
@@ -225,6 +238,11 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
 
 + Response 200 (application/json)
 
+    + The response will be a simple JSON payload with the encrypted data
+            {
+                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-long-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+    + Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
     + Body
 
             {
@@ -663,9 +681,13 @@ This endpoint allows a user to delete a safe deposit box that they own.
 
 # Secrets
 
-## List Paths [v1/secret/{category}/{sdb-name}?list]
+## List Paths [v1/secret/{category}/{sdb-name}/{path}?list=true]
 
 ### List Paths [GET]
+
+When listing paths, if a path ends with a '/' then it is a virtual path, i.e. a path that contains no
+data but can be listed to further find additional sub-paths.  Calling GET on a virtual path without the 
+list=true parameter will return 404.
 
 + Request (application/json)
 
@@ -684,7 +706,7 @@ This endpoint allows a user to delete a safe deposit box that they own.
           "renewable" : false,
           "lease_duration" : 3600,
           "data" : {
-            "keys" : [ "path1", "path2", "path3" ]
+            "keys" : [ "path1", "path2", "virtual-path1/" ]
           },
           "wrap_info" : null,
           "warnings" : null,
@@ -694,6 +716,8 @@ This endpoint allows a user to delete a safe deposit box that they own.
 ## Secrets [v1/secret/{category}/{sdb-name}/{path}]
 
 ### Read Secrets at a path [GET]
+
+Calling GET on a virtual path without the list=true parameter will return 404.
 
 + Request (application/json)
 
@@ -718,6 +742,24 @@ This endpoint allows a user to delete a safe deposit box that they own.
           "wrap_info" : null,
           "warnings" : null,
           "auth" : null
+        }
+        
++ Response 403 (application/json)
+
+    + Body
+
+        {
+            "errors": [
+                "permission denied"
+            ]
+        }
+
++ Response 404 (application/json)
+
+    + Body
+
+        {
+            "errors": []
         }
 
 ### Create/Update Secrets at a path [POST]
@@ -757,12 +799,14 @@ This endpoint allows a user to delete a safe deposit box that they own.
 
 Lists all the roles that can be granted to an IAM Role or User Group on a Safe Deposit Box, e.g. owner, write, read.
 
-+ Response 200 (application/json)
++ Request
 
     + Headers
 
             X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
             X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
 
     + Body
 
@@ -806,12 +850,14 @@ Lists all the possible categories that a safe deposit box can belong to.  By def
 
 SDBs under different categories have no functional difference. They are simply an organizational mechanism.
 
-+ Response 200 (application/json)
++ Request
 
     + Headers
 
             X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
             X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
 
     + Body
 
@@ -837,25 +883,28 @@ SDBs under different categories have no functional difference. They are simply a
             ]
 
 
-# Group Metadata
+# Group Admin Endpoints
 
 ## SDB Metadata [/v1/metadata?limit={limit}&offset={offset}]
 
 ### Get metadata [GET]
 
 Returns pageable metadata for all SDBs.
-You can use has_next and next_offset from the response to paginate through all records.
+You can use has_next and next_offset from the response to paginate through all records.  
+This endpoint does not return any secret data but can be used by Cerberus admins to look-up the contact information for an SDB.
 
 + Parameters
     + limit (number) - OPTIONAL: The number of records to include in the metadata result. Defaults to 100
     + offset (number) - OPTIONAL: The offset to use when paginating records. Defaults to 0
 
-+ Response 200 (application/json)
++ Request
 
     + Headers
-    
+
             X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
             X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
         
     + Body
     
@@ -914,3 +963,39 @@ You can use has_next and next_offset from the response to paginate through all r
                     }
                 ]
             }
+
+## Trigger Scheduled Job [/v1/admin/trigger-job/{job}]
+
+### Trigger Scheduled Job [POST]
+
+Manually trigger a job, e.g. ExpiredTokenCleanUpJob, HystrixMetricsProcessingJob, KmsKeyCleanUpJob, KpiMetricsProcessingJob.
+A 400 response code is given if the job wasn't found.
+
++ Request
+
+    + Headers
+
+            X-Cerberus-Token: 7f6808f1-ede3-2177-aa9d-45f507391310
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 204
+
++ Response 400 (application/json)
+
+    + Body
+
+        {
+            "error_id": "1111111c-cc1a-11a1-11b1-1a1c1c1a1a11",
+            "errors": [
+                {
+                    "code": 99999,
+                    "message": "Request will not be completed."
+                }
+            ]
+        }
+
+## Healthcheck [/healthcheck]
+
+### Healthcheck [GET]
+
++ Response 204
