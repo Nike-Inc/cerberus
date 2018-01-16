@@ -194,12 +194,14 @@ This endpoint takes IAM ARN information and generates a base64 encoded KMS encry
             }
 
 + Response 200 (application/json)
-    + The response will be a simple JSON payload with the encrypted data
-            {
-                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-long-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            }
-    + Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
+
     + Body
+
+            {
+                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-base64-encoded-KMS-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+
+    + The response will be a simple JSON payload with the encrypted data. Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
 
             {
               "client_token" : "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
@@ -238,21 +240,21 @@ This endpoint takes IAM ARN information and generates an base 64 encoded KMS enc
 
 + Response 200 (application/json)
 
-    + The response will be a simple JSON payload with the encrypted data
-            {
-                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-long-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            }
-    + Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
     + Body
 
             {
+                "auth_data": "xxxxxxxxxxxxxxxxxxxxx-base64-encoded-KMS-encrypted-string-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+
+    + The response will be a simple JSON payload with the encrypted data. Once you have the encrypted string, you need to make a call to AWS Key Management Service (KMS) to decrypt the response. The decrypted response will contain the body below with the token needed to access Cerberus
+
+            {
               "client_token" : "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
-              "policies" : [ "health-check-bucket-read", "lookup-self" ],
+              "policies" : [ "foo-bar-read", "lookup-self" ],
               "metadata" : {
                 "aws_region" : "us-west-2",
-                "aws_account_id" : "111111111",
-                "aws_iam_role_name" : "fake-role",
-                "username" : "arn:aws:iam::111111111:role/fake-role",
+                "iam_principal_arn" : "arn:aws:iam::111111111:role/fake-role"
+                "username" : "arn:aws:iam::111111111:role/fake-role"
                 "is_admin": "false",
                 "groups": "registered-iam-principals"
               },
