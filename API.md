@@ -702,18 +702,18 @@ list=true parameter will return 404.
 
     + Body
 
-        {
-          "request_id" : "bbdd111111a2aaa3a",
-          "lease_id" : "",
-          "renewable" : false,
-          "lease_duration" : 3600,
-          "data" : {
-            "keys" : [ "path1", "path2", "virtual-path1/" ]
-          },
-          "wrap_info" : null,
-          "warnings" : null,
-          "auth" : null
-        }
+            {
+              "request_id" : "bbdd111111a2aaa3a",
+              "lease_id" : "",
+              "renewable" : false,
+              "lease_duration" : 3600,
+              "data" : {
+                "keys" : [ "path1", "path2", "virtual-path1/" ]
+              },
+              "wrap_info" : null,
+              "warnings" : null,
+              "auth" : null
+            }
 
 ## Secrets [v1/secret/{category}/{sdb-name}/{path}]
 
@@ -732,37 +732,37 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Body
 
-        {
-          "request_id" : "aa11aaa1-1111-1a1a-1aa1-a1aa11aaa1a1",
-          "lease_id" : "",
-          "renewable" : false,
-          "lease_duration" : 3600,
-          "data" : {
-            "password" : "secret",
-            "username" : "someuser"
-          },
-          "wrap_info" : null,
-          "warnings" : null,
-          "auth" : null
-        }
+            {
+              "request_id" : "aa11aaa1-1111-1a1a-1aa1-a1aa11aaa1a1",
+              "lease_id" : "",
+              "renewable" : false,
+              "lease_duration" : 3600,
+              "data" : {
+                "password" : "secret",
+                "username" : "someuser"
+              },
+              "wrap_info" : null,
+              "warnings" : null,
+              "auth" : null
+            }
         
 + Response 403 (application/json)
 
     + Body
 
-        {
-            "errors": [
-                "permission denied"
-            ]
-        }
+            {
+                "errors": [
+                    "permission denied"
+                ]
+            }
 
 + Response 404 (application/json)
 
     + Body
 
-        {
-            "errors": []
-        }
+            {
+                "errors": []
+            }
 
 ### Create/Update Secrets at a path [POST]
 
@@ -775,10 +775,10 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Body
 
-        {
-            "key1": "value1",
-            "key2": "value2"
-        }
+            {
+                "key1": "value1",
+                "key2": "value2"
+            }
 
 + Response 204
 
@@ -986,15 +986,15 @@ A 400 response code is given if the job wasn't found.
 
     + Body
 
-        {
-            "error_id": "1111111c-cc1a-11a1-11b1-1a1c1c1a1a11",
-            "errors": [
-                {
-                    "code": 99999,
-                    "message": "Request will not be completed."
-                }
-            ]
-        }
+            {
+                "error_id": "1111111c-cc1a-11a1-11b1-1a1c1c1a1a11",
+                "errors": [
+                    {
+                        "code": 99999,
+                        "message": "Request will not be completed."
+                    }
+                ]
+            }
 
 ## Healthcheck [/healthcheck]
 
