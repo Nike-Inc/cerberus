@@ -695,8 +695,8 @@ list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
-        X-Cerberus-Client: MyClientName/1.0.0
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -725,8 +725,8 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
-        X-Cerberus-Client: MyClientName/1.0.0
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 200 (application/json)
 
@@ -770,8 +770,8 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
-        X-Cerberus-Client: MyClientName/1.0.0
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
 
     + Body
 
@@ -788,8 +788,8 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Headers
 
-        X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
-        X-Cerberus-Client: MyClientName/1.0.0
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
 
 + Response 204
 
