@@ -51,7 +51,7 @@ public class TriggerScheduledJob extends AdminStandardEndpoint<Void, Void> {
 
         if (StringUtils.isBlank(job) || ! registeredJobs.contains(job)) {
             log.error("The Job: {} was null or was not registered. Registered jobs are {}",
-                    job, String.join(",", registeredJobs));
+                    job, String.join(", ", registeredJobs));
             throw new ApiException(DefaultApiError.GENERIC_BAD_REQUEST);
         }
 
