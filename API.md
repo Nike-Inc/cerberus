@@ -1000,4 +1000,8 @@ A 400 response code is given if the job wasn't found.
 
 ### Healthcheck [GET]
 
-+ Response 204
++ Response 200
+
+    + Body
+
+            CMS is running Wed Jan 17 10:17:51 PST 2018
