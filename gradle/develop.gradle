@@ -15,41 +15,22 @@
  */
 
 
-def nodeServerPort = 8000
 def cmsRemoteDebugPort = 5005
 
 buildscript {
     apply from: file('gradle/buildscript.gradle'), to: buildscript
 }
 
-task start() {
-    doLast {
-        logger.lifecycle("Starting reverse proxy, dashboard, Vault and MySQL followed by CMS")
-    }
-
-    finalizedBy 'startProxyAndDashboardInBackground'
+task startMysqlAndDashboard(type: SpawnProcessTask) {
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew startEmbeddedMysql runDashboardAndReverseProxy --stacktrace"
+    ready 'successfully started MySQL and Dashboard'
+    pidLockFileName '.sql-dashboard.pid.lock'
 }
 
-task startProxyAndDashboardInBackground(type: SpawnProcessTask) {
-    command "${project.getRootDir().absolutePath}${File.separator}gradlew runDashboardAndReverseProxy --stacktrace"
-    ready "express server listing on port $nodeServerPort"
-    pidLockFileName '.proxy-dash.pid.lock'
-
-    finalizedBy 'startVaultAndMySQLInBackground'
-}
-
-task startMySQLInBackground(type: SpawnProcessTask) {
-    command "${project.getRootDir().absolutePath}${File.separator}gradlew startEmbeddedMysql --stacktrace"
-    ready 'core: post-unseal setup complete'
-    pidLockFileName '.vault-sql.pid.lock'
-}
-
-task stop () {
-    finalizedBy 'stopProxyAndDashboardBackgroundThread'
-}
-
-task stopProxyAndDashboardBackgroundThread(type: KillProcessTask) {
-    pidLockFileName '.proxy-dash.pid.lock'
+task startMysqlAndCms(type: SpawnProcessTask) {
+    command "${project.getRootDir().absolutePath}${File.separator}gradlew startEmbeddedMysql runCMS --stacktrace"
+    ready 'successfully started MySQL and CMS'
+    pidLockFileName '.sql-cms.pid.lock'
 }
 
 task runDashboardAndReverseProxy(type: NodeTask, dependsOn: [npmInstall, copyDashboardResources]) {
@@ -74,8 +55,7 @@ node {
 
 task debugCMS(dependsOn: [antReplace, assemble]) {
     group 'local development'
-    description 'Runs CMS from it\'s JAR (assuming that the runVaultAndMySQL task has been executed and is running in a' +
-            'seperate thread) and configures CMS to automatically integrate with the local in memory instance of Vault.'
+    description 'Runs CMS from it\'s JAR (assuming that MySQL Server is already running)'
 
     doLast {
         javaexec {
@@ -109,8 +89,7 @@ task debugCMS(dependsOn: [antReplace, assemble]) {
  */
 task runCMS(dependsOn: [antReplace, assemble], ) {
     group 'local development'
-    description 'Runs CMS assuming that the runVaultAndMySQL task has been executed and is running in a seperate ' +
-            'thread, configuring CMS automatically to integrate with the local in mem Vault'
+    description 'Runs CMS assuming that MySql Server is already running. MySQL can be started with the '
 
     doLast {
         javaexec {
