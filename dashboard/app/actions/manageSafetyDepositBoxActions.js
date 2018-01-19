@@ -11,6 +11,7 @@ import ApiError from '../components/ApiError/ApiError'
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
 
 import { getLogger } from 'logger'
+import GenericError from "../components/GenericError/GenericError";
 var log = getLogger('manage-sdb-actions')
 
 export function storeSDBData(data) {
@@ -276,10 +277,16 @@ export function deleteSecureDataPath(navigatedPath, label, token) {
     }
 }
 
-export function deleteSDBConfirm(sdbId, token) {
+export function deleteSDBConfirm(sdbId, hasSecureData, token) {
     return (dispatch) => {
         let yes = () => {
-            dispatch(deleteSDB(sdbId, token))
+            if (hasSecureData) {
+                log.error("Cannot delete non-empty SDB: %s. Must delete secrets data first.", sdbId)
+                dispatch(messengerActions.addNewMessage(<GenericError errorHeader="Validation Error"
+                                                                      message="Cannot delete non-empty SDB. Must delete secrets data first." />))
+            } else {
+                dispatch(deleteSDB(sdbId, token))
+            }
             dispatch(modalActions.popModal())
         }
         
@@ -292,7 +299,6 @@ export function deleteSDBConfirm(sdbId, token) {
                                     message="Are you sure you want to delete this Safe Deposit Box."/>
         
         dispatch(modalActions.pushModal(comp))
-        
     }
 }
 

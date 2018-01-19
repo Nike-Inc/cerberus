@@ -95,7 +95,8 @@ export default class ManageSDBox extends Component {
                                 dispatch(modalActions.pushModal(<EditSDBoxForm />))
                             }}></div>
                             <div className="manage-sdb-box-delete" onClick={() => {
-                                dispatch(sdbMActions.deleteSDBConfirm(sdbData.id, cerberusAuthToken))
+                                let hasSecureData = keysForSecureDataPath.length > 0
+                                dispatch(sdbMActions.deleteSDBConfirm(sdbData.id, hasSecureData, cerberusAuthToken))
                             }}></div>
                         </div>
                     </div>
