@@ -1,10 +1,10 @@
 @import '../../assets/styles/common.scss';
 
-#vault-browser {
+#secure-data-browser {
 
 }
 
-#vault-path {
+#secure-data-path {
   padding: 8px;
   margin-top: -1px;
   border: 1px solid $snkrs_medium_grey;
@@ -12,7 +12,7 @@
   font-weight: bold;
   display: flex;
 
-  #vault-path-label {
+  #secure-data-path-label {
     padding-right: 5px;
   }
 
@@ -27,12 +27,12 @@
   }
 }
 
-#vault-keys {
+#secure-data-keys {
   border-bottom: 1px solid $snkrs_medium_grey;
   padding-left: 50px;
   padding-bottom: 10px;
 
-  .vault-key {
+  .secure-data-key {
     font-size: 16px;
     font-weight: bold;
   }
@@ -45,13 +45,13 @@
 
   }
 
-  #vault-add-new-secret-container {
+  #add-new-secure-data-container {
     margin-top: 5px;
   }
 }
 
 #add-form-container {
-  .vault-secret-form-label {
+  .secure-data-form-label {
     font-size: 16px;
     font-weight: bold;
   }

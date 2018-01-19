@@ -22,7 +22,7 @@ export default class Header extends Component {
                     <UserBox userName={this.props.userName}
                              displayUserContextMenu={this.props.displayUserContextMenu}
                              dispatch={this.props.dispatch}
-                             vaultToken={this.props.vaultToken}
+                             cerberusAuthToken={this.props.cerberusAuthToken}
                              isAdmin={this.props.isAdmin}/>
                 </div>
             </header>
@@ -49,7 +49,7 @@ class UserBox extends Component {
 
 
         this.handleMouseClickLogout = function() {
-            this.props.dispatch(authActions.logoutUser(this.props.vaultToken))
+            this.props.dispatch(authActions.logoutUser(this.props.cerberusAuthToken))
         }.bind(this)
     }
 

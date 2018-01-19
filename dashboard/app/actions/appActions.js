@@ -33,18 +33,18 @@ export function fetchedSideBarData(data) {
     }
 }
 
-export function fetchSideBarData(vaultToken) {
+export function fetchSideBarData(cerberusAuthToken) {
     return function(dispatch) {
         dispatch(fetchingSideBarData())
         return axios.all([
             axios.get(environmentService.getDomain() + cms.RETRIEVE_CATEGORY_PATH, {
                 headers: {
-                    'X-Vault-Token': vaultToken
+                    'X-Cerberus-Token': cerberusAuthToken
                 }
             }),
             axios.get(environmentService.getDomain() + cms.BUCKET_RESOURCE, {
                 headers: {
-                    'X-Vault-Token': vaultToken
+                    'X-Cerberus-Token': cerberusAuthToken
                 }
             })
         ])
@@ -77,17 +77,17 @@ export function fetchSideBarData(vaultToken) {
     }
 }
 
-export function fetchCmsDomainData(vaultToken) {
+export function fetchCmsDomainData(cerberusAuthToken) {
     return function(dispatch) {
         return axios.all([
             axios.get(environmentService.getDomain() + cms.RETRIEVE_CATEGORY_PATH, {
                 headers: {
-                    'X-Vault-Token': vaultToken
+                    'X-Cerberus-Token': cerberusAuthToken
                 }
             }),
             axios.get(environmentService.getDomain() + cms.RETRIEVE_ROLE_PATH, {
                 headers: {
-                    'X-Vault-Token': vaultToken
+                    'X-Cerberus-Token': cerberusAuthToken
                 }
             })
         ])
@@ -119,12 +119,12 @@ export function addBucketBtnClicked(categoryId) {
  * Action for when a user clicks a safe deposit box in the sidebar or creates a safety deposit box
  * @param id The id of the safety deposit box
  * @param path The path for the safety deposit box
- * @param vaultToken The vaultToken of the user to needed for authenticated interaction with Vault
+ * @param cerberusAuthToken The token needed for authenticated interaction with Cerberus
  */
-export function loadManageSDBPage(id, path, vaultToken) {
+export function loadManageSDBPage(id, path, cerberusAuthToken) {
     return function(dispatch) {
-        dispatch(mSDBActions.updateNavigatedPath(path, vaultToken))
-        dispatch(mSDBActions.fetchSDBDataFromCMS(id, vaultToken))
+        dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken))
+        dispatch(mSDBActions.fetchSDBDataFromCMS(id, cerberusAuthToken))
         hashHistory.push(`/manage-safe-deposit-box/${id}`)
     }
 }

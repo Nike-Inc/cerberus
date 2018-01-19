@@ -1,6 +1,6 @@
 @import '../../assets/styles/common.scss';
 
-.vault-secret-container {
+.secure-data-container {
   @media /* Macbook Pro */
   only screen and (-webkit-min-device-pixel-ratio: 2),
   only screen and (   min--moz-device-pixel-ratio: 2),
@@ -27,7 +27,7 @@
   padding-top: 15px;
   padding-bottom: 3px;
 
-  .vault-secret-collapsed-container {
+  .secure-data-collapsed-container {
     display: flex;
 
     .folder {
@@ -61,33 +61,33 @@
       margin-left: 15px;
     }
 
-    .vault-secret-collapsed-icon {
+    .secure-data-collapsed-icon {
       background-repeat: no-repeat;
 
       display: block;
     }
 
-    .vault-secret-collapsed-label {
+    .secure-data-collapsed-label {
       @extend .clickable;
     }
   }
 
-  .vault-secret-data-container {
+  .secure-data-data-container {
     margin-top: 5px;
 
-    #vault-add-new-secret-form {
+    #add-new-secure-data-form {
       width: 100%;
 
-      #new-vault-secret-path {
-        #new-vault-secret-path-label {
+      #new-secure-data-path {
+        #new-secure-data-path-label {
           margin-top: 0;
         }
 
-        #new-vault-secret-path-full {
+        #new-secure-data-path-full {
           margin-top: 0;
         }
 
-        .new-vault-secret-path-user-value-read-only {
+        .new-secure-data-path-user-value-read-only {
           margin-top: 0px;
         }
       }
@@ -107,12 +107,12 @@
   }
 }
 
-.vault-secret-delete-btn {
+.secure-data-delete-btn {
   margin-top: 10px;
   cursor: pointer;
   display: flex;
 
-  .vault-secret-delete-btn-icon {
+  .secure-data-delete-btn-icon {
     background: url(../../assets/images/remove-red.svg);
     background-repeat: no-repeat;
     margin-left: 2px;
@@ -120,7 +120,7 @@
     padding: 9px;
   }
 
-  .vault-secret-delete-btn-label {
+  .secure-data-delete-btn-label {
     @extend .clickable;
     padding-left: 10px;
     font-size: 14px;

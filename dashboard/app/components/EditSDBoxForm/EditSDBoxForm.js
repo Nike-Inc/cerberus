@@ -33,7 +33,7 @@ class EditSDBoxForm extends Component {
 
     render() {
         const { fields: { description, owner, userGroupPermissions, iamPrincipalPermissions },
-            vaultToken, sdbId, roles, userGroups, hasDomainDataLoaded, dispatch, handleSubmit, isEditSubmitting } = this.props
+            cerberusAuthToken, sdbId, roles, userGroups, hasDomainDataLoaded, dispatch, handleSubmit, isEditSubmitting } = this.props
 
         // Lets not attempt to render everything until we have the data we need, when the domain data has loaded we can pass this
         if (! hasDomainDataLoaded) {
@@ -42,7 +42,7 @@ class EditSDBoxForm extends Component {
 
         return (
             <form id="edit-sdb-form" onSubmit={ handleSubmit( data => {
-                dispatch(manageSafetyDepositBoxActions.submitEditSDBRequest(sdbId, data, vaultToken))
+                dispatch(manageSafetyDepositBoxActions.submitEditSDBRequest(sdbId, data, cerberusAuthToken))
             })}>
 
                 <div id="form-description" className="ncss-brand">
@@ -103,7 +103,7 @@ export default connect((state) => {
     const { id, description, owner, userGroupPermissions, iamPrincipalPermissions } = state.manageSafetyDepositBox.data
 
     return {
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
         roles: state.app.cmsDomainData.roles,
         userGroups: state.auth.groups,

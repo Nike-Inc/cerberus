@@ -28,7 +28,7 @@ export function fetchSDBDataFromCMS(sdbId, token) {
     return function(dispatch) {
         return axios({
             url: `${environmentService.getDomain()}${cms.BUCKET_RESOURCE}/${sdbId}`,
-            headers: {'X-Vault-Token': token}
+            headers: {'X-Cerberus-Token': token}
         })
         .then((response) => {
             log.debug("Fetched SDB Data from CMS", response)
@@ -47,7 +47,7 @@ export function togglePermVis() {
     }
 }
 
-export function fetchVaultPathKeys(path, token) {
+export function fetchSecureDataPathKeys(path, token) {
     return function(dispatch) {
         dispatch(fetchingKeys())
         return axios({
@@ -55,41 +55,41 @@ export function fetchVaultPathKeys(path, token) {
             params: {
                 list: true
             },
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: 60 * 1000 // 1 minute
         })
         .then((response) => {
-            dispatch(updateVaultPathKeys(response.data.data.keys))
+            dispatch(updateSecureDataPathKeys(response.data.data.keys))
         })
         .catch((response) => {
             // no keys for the SDB Yet
             if (response.status == 404) {
-                dispatch(updateVaultPathKeys([]))
+                dispatch(updateSecureDataPathKeys([]))
             } else {
-                log.error("Failed to fetch Vault Path Keys", response)
-                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch list of keys for Path: ${path} from vault`} response={response} />))
+                log.error("Failed to fetch keys for secure data path", response)
+                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch list of keys for Path: ${path} from Cerberus`} response={response} />))
             }
         })
     }
 }
 
-export function updateVaultPathKeys(keys) {
+export function updateSecureDataPathKeys(keys) {
     return {
-        type: actions.FETCHED_VAULT_KEYS,
+        type: actions.FETCHED_SECURE_DATA_KEYS,
         payload: keys
     }
 }
 
 export function fetchingKeys() {
     return {
-        type: actions.FETCHING_VAULT_KEYS
+        type: actions.FETCHING_SECURE_DATA_KEYS
     }
 }
 
 export function updateNavigatedPath(newPath, token) {
     return function(dispatch) {
         dispatch(storeNewPath(newPath))
-        dispatch(fetchVaultPathKeys(newPath, token))
+        dispatch(fetchSecureDataPathKeys(newPath, token))
     }
 }
 
@@ -100,34 +100,34 @@ export function storeNewPath(newPath) {
     }
 }
 
-export function getVaultSecret(path, token) {
+export function getSecureData(path, token) {
     return function (dispatch) {
-        dispatch(fetchingVaultSecret(path))
+        dispatch(fetchingSecureData(path))
         axios({
             url: `/v1/secret/${path}`,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: 60 * 1000 // 1 minute
         })
         .then((response) => {
-            dispatch(storeVaultSecret(path, response.data.data))
+            dispatch(storeSecureData(path, response.data.data))
         })
         .catch((response) => {
-            log.error("Failed to fetch Vault Secret", response)
-            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch Vault Path: ${path}`} response={response} />))
+            log.error("Failed to fetch Secure Data", response)
+            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch Secret Path: ${path}`} response={response} />))
         })
     }
 }
 
-export function fetchingVaultSecret(path) {
+export function fetchingSecureData(path) {
     return {
-        type: actions.FETCHING_VAULT_SECRET,
+        type: actions.FETCHING_SECURE_DATA,
         payload: path
     }
 }
 
-export function storeVaultSecret(path, data) {
+export function storeSecureData(path, data) {
     return {
-        type: actions.FETCHED_VAULT_SECRET,
+        type: actions.FETCHED_SECURE_DATA,
         payload: {
             key: path,
             data: data
@@ -135,39 +135,39 @@ export function storeVaultSecret(path, data) {
     }
 }
 
-export function removeVaultSecretFromLocalStore(key) {
+export function removeSecureDataFromLocalStore(key) {
     return {
         type: actions.REMOVE_SECRET_FROM_LOCAL_STORE,
         payload: key
     }
 }
 
-export function removeVaultNodePathKeyFromLocalStore(key) {
+export function removeKeyForSecureDataNodeFromLocalStore(key) {
     return {
-        type: actions.REMOVE_VAULT_KEY_FROM_LOCAL_STORE,
+        type: actions.REMOVE_KEY_FOR_SECURE_DATA_FROM_LOCAL_STORE,
         payload: key
     }
 }
 
-export function showAddNewVaultSecret() {
+export function showAddNewSecureData() {
     return {
         type: actions.SHOW_ADD_SECRET_FORM
     }
 }
 
-export function hideAddNewVaultSecret() {
+export function hideAddNewSecureData() {
     return {
         type: actions.HIDE_ADD_SECRET_FORM
     }
 }
 
-export function commitSecret(navigatedPath, data, token, isNewVaultPath) {
-    let vaultData = {}
+export function commitSecret(navigatedPath, data, token, isNewSecureDataPath) {
+    let secureData = {}
     let key = data.path
     let fullPath = `${navigatedPath}${key}`
 
     data.kvMap.map((entry) => {
-        vaultData[entry.key] = entry.value
+        secureData[entry.key] = entry.value
     })
 
     return function (dispatch) {
@@ -175,37 +175,37 @@ export function commitSecret(navigatedPath, data, token, isNewVaultPath) {
         // let the UI / state know that we are saving the secret, so that the user can't spam the save button
         // but only if not a nested folder
         if (! nestedFolder) {
-            dispatch(savingVaultSecret(fullPath))
+            dispatch(savingSecureData(fullPath))
         }
 
         // save the secret
         axios({
             method: 'post',
             url: `/v1/secret/${fullPath}`,
-            data: vaultData,
-            headers: {'X-Vault-Token': token},
+            data: secureData,
+            headers: {'X-Cerberus-Token': token},
             timeout: 60 * 1000 // 1 minute
         })
         .then((response) => {
             // once saved we can use the data we have locally to update the state, without additional API calls
-            dispatch(updateLocalStateAfterSaveCommit(navigatedPath, key, vaultData, isNewVaultPath))
+            dispatch(updateLocalStateAfterSaveCommit(navigatedPath, key, secureData, isNewSecureDataPath))
         })
         .catch((response) => {
-            log.error("Failed to save Vault Secret data", response)
-            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Vault Secret data on Path: ${fullPath}`} response={response} />))
+            log.error("Failed to save Secure Data", response)
+            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Secret on Path: ${fullPath}`} response={response} />))
         })
     }
 }
 
 /**
- * After posting a secret to Vault we can update the local state to represent the new data
+ * After posting a secret to Cerberus we can update the local state to represent the new data
  *
- * @param prefix, the partial path to Vault Node / Secret (Sort of like a virtual folder)
- * @param key, the key to the Vault Node / Secret
- * @param data, the Vault secret data that was saved, we can store this and save an API call
- * @param isNewVaultPath, boolean, if its a new secret we need to hide the add new form
+ * @param prefix, the partial path to Cerberus Node / Secret (Sort of like a virtual folder)
+ * @param key, the key to the Cerberus Node / Secret
+ * @param data, the Cerberus secure data that was saved, we can store this and save an API call
+ * @param isNewSecureDataPath, boolean, if its a new secret we need to hide the add new form
  */
-export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewVaultPath) {
+export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewSecureDataPath) {
     return (dispatch) => {
         // we will only store the data, if its not in a nested virtual folder
         let addSecretData = true;
@@ -220,26 +220,26 @@ export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewVaultPat
         }
         dispatch(updateStoredKeys(key))
 
-        // Update the stored vault secret data for the given complete path, if the key is not a virtual folder
+        // Update the stored Cerberus secure data for the given complete path, if the key is not a virtual folder
         if (addSecretData) {
             log.info('ADDING KEY DATA')
-            dispatch(storeVaultSecret(`${prefix}${key}`, data))
+            dispatch(storeSecureData(`${prefix}${key}`, data))
         }
 
-        // if this is a new vault path remove the create new form
-        if (isNewVaultPath) {
-            dispatch(hideAddNewVaultSecret())
+        // if this is a new secure data path remove the create new form
+        if (isNewSecureDataPath) {
+            dispatch(hideAddNewSecureData())
         }
 
         // finally lets let the user know we saved there data
-        dispatch(messengerActions.addNewMessageWithTimeout(`Successfully saved Vault secret at path: ${prefix}${key}`, 2500))
+        dispatch(messengerActions.addNewMessageWithTimeout(`Successfully saved Secret at path: ${prefix}${key}`, 2500))
     }
 }
 
-export function deleteVaultPathConfirm(navigatedPath, label, token) {
+export function deleteSecureDataPathConfirm(navigatedPath, label, token) {
     return (dispatch) => {
         let yes = () => {
-            dispatch(deleteVaultPath(navigatedPath, label, token))
+            dispatch(deleteSecureDataPath(navigatedPath, label, token))
             dispatch(modalActions.popModal())
         }
 
@@ -249,28 +249,28 @@ export function deleteVaultPathConfirm(navigatedPath, label, token) {
 
         let comp = <ConfirmationBox handleYes={yes}
                                     handleNo={no}
-                                    message="Are you sure you want to delete this Vault Path."/>
+                                    message="Are you sure you want to delete this Secret Path."/>
 
         dispatch(modalActions.pushModal(comp))
 
     }
 }
 
-export function deleteVaultPath(navigatedPath, label, token) {
+export function deleteSecureDataPath(navigatedPath, label, token) {
     return function (dispatch) {
         axios({
             method: 'delete',
             url: `/v1/secret/${navigatedPath}${label}`,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: 60 * 1000 // 1 minute
         })
             .then((response) => {
-                dispatch(removeVaultSecretFromLocalStore(`${navigatedPath}${label}`))
-                dispatch(removeVaultNodePathKeyFromLocalStore(label))
+                dispatch(removeSecureDataFromLocalStore(`${navigatedPath}${label}`))
+                dispatch(removeKeyForSecureDataNodeFromLocalStore(label))
             })
             .catch((response) => {
-                log.error("Failed to delete Vault Secret", response)
-                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Vault Secret: ${path}`}
+                log.error("Failed to delete Secure Data", response)
+                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Secret: ${path}`}
                                                                   response={response}/>))
             })
     }
@@ -301,7 +301,7 @@ export function deleteSDB(sdbId, token) {
         return axios({
             method: 'delete',
             url: `${environmentService.getDomain()}${cms.BUCKET_RESOURCE}/${sdbId}`,
-            headers: {'X-Vault-Token': token}
+            headers: {'X-Cerberus-Token': token}
         })
         .then((response) => {
             log.debug("Deleted SDB", response)
@@ -325,7 +325,7 @@ export function submitEditSDBRequest(sdbId, data, token) {
         axios({
             method: 'put',
             url: `${environmentService.getDomain()}${cms.BUCKET_RESOURCE}/${sdbId}`,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             data: formData,
             timeout: 10 * 1000 // 10 seconds
         })
@@ -354,16 +354,16 @@ export function resetSubmittingEditSDBRequest() {
     }
 }
 
-export function savingVaultSecret(path) {
+export function savingSecureData(path) {
     return {
-        type: actions.SAVING_VAULT_SECRET,
+        type: actions.SAVING_SECURE_DATA,
         payload: path
     }
 }
 
 export function updateStoredKeys(key) {
     return {
-        type: actions.ADD_VAULT_KEY_IF_NOT_PRESET,
+        type: actions.ADD_SECURE_DATA_KEY_IF_NOT_PRESET,
         payload: key
     }
 }
