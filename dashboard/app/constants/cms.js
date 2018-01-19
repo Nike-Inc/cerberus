@@ -1,4 +1,4 @@
-export const TOKEN_HEADER = 'X-Vault-Token'
+export const TOKEN_HEADER = 'X-Cerberus-Token'
 export const USER_AUTH_PATH = '/v2/auth/user'
 export const USER_AUTH_MFA_PATH = '/v2/auth/mfa_check'
 export const USER_AUTH_PATH_REFRESH = '/v2/auth/user/refresh'

@@ -10,7 +10,7 @@ var log = getLogger('side-bar-component')
 
 @connect((state) => {
     return {
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         data: state.app.sideBar.data,
         isFetching: state.app.sideBar.isFetching,
         hasLoaded: state.app.sideBar.hasLoaded
@@ -21,7 +21,7 @@ export default class SideBar extends Component {
     constructor(props) {
         super(props)
         if (! this.props.hasLoaded) {
-            this.props.dispatch(appActions.fetchSideBarData(this.props.vaultToken))
+            this.props.dispatch(appActions.fetchSideBarData(this.props.cerberusAuthToken))
         }
 
         this.handleMouseClickAddNewBucket = (id) => {
@@ -29,8 +29,8 @@ export default class SideBar extends Component {
         }
 
         this.handleSDBClicked = (id, path) => {
-            this.props.dispatch(mSDBActions.hideAddNewVaultSecret())
-            this.props.dispatch(appActions.loadManageSDBPage(id, path, this.props.vaultToken))
+            this.props.dispatch(mSDBActions.hideAddNewSecureData())
+            this.props.dispatch(appActions.loadManageSDBPage(id, path, this.props.cerberusAuthToken))
         }
     }
 

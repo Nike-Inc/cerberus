@@ -9,10 +9,10 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 
 import './ViewTokenModal.scss'
 
-// connect to the store in order to obtain the current vault token
+// connect to the store in order to obtain the current cerberus auth token
 @connect((state) => {
   return {
-    clientToken: state.auth.vaultToken,
+    clientToken: state.auth.cerberusAuthToken,
     isAuthenticating: state.auth.isAuthenticating
   }
 })

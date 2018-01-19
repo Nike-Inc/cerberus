@@ -21,7 +21,7 @@ import './App.scss'
         isSessionExpired: state.auth.isSessionExpired,
         userName: state.auth.userName,
         displayUserContextMenu: state.header.displayUserContextMenu,
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         modalStack: state.modal.modalStack,
         hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
         dashboardVersion: state.app.metadata.version
@@ -38,7 +38,7 @@ export default class App extends Component {
     }
 
     render() {
-        const {isAdmin, userName, displayUserContextMenu, dispatch, vaultToken, modalStack, children, isSessionExpired, isAuthenticated, dashboardVersion} = this.props
+        const {isAdmin, userName, displayUserContextMenu, dispatch, cerberusAuthToken, modalStack, children, isSessionExpired, isAuthenticated, dashboardVersion} = this.props
 
         axios.defaults.headers.common['X-Cerberus-Client'] = `Dashboard/${dashboardVersion}`
 
@@ -52,7 +52,7 @@ export default class App extends Component {
                     <Header userName={userName}
                             displayUserContextMenu={displayUserContextMenu}
                             dispatch={dispatch}
-                            vaultToken={vaultToken}
+                            cerberusAuthToken={cerberusAuthToken}
                             isAdmin={isAdmin}/>
                     { isAuthenticated &&
                         <div id="app-messenger-wrapper">

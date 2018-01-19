@@ -1,32 +1,32 @@
 @import '../../assets/styles/common.scss';
 
-#vault-add-new-secret-form {
+#add-new-secure-data-form {
   width: 700px;
-  #new-vault-secret-path {
+  #new-secure-data-path {
     display: flex;
     font-size: 16px;
     font-weight: bold;
 
     // TODO these need media queries to scale up and down with the ncss inputs
-    #new-vault-secret-path-label {
+    #new-secure-data-path-label {
       margin-top: 5px;
       font-size: 16px;
       font-weight: 400;
     }
 
-    #new-vault-secret-path-full {
+    #new-secure-data-path-full {
       margin-top: 5px;
       padding-left: 8px;
       font-size: 16px;
       font-weight: 400;
     }
 
-    #new-vault-secret-path-user-value {
+    #new-secure-data-path-user-value {
       padding-left: 5px;
       flex: 1;
     }
 
-    .new-vault-secret-path-user-value-read-only {
+    .new-secure-data-path-user-value-read-only {
       margin-top: 5px;
       font-size: 16px;
       font-weight: 400;
@@ -34,25 +34,25 @@
 
   }
 
-  #new-vault-secret-kv-map {
+  #new-secure-data-kv-map {
     padding-top: 10px;
     padding-left: 25px;
   }
-  .new-vault-secret-kv-entry {
+  .new-secure-data-kv-entry {
     padding-bottom: 8px;
     display: flex;
 
-    .vault-secret-key {
+    .secure-data-key {
       flex: .4;
     }
 
-    .vault-secret-value {
+    .secure-data-value {
       flex: .6;
       padding-left: 10px;
     }
   }
 
-  .vault-secret-button-container {
+  .secure-data-button-container {
     display: flex;
 
     #submit-btn-container {

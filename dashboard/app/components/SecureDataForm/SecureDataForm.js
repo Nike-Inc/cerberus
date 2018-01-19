@@ -5,11 +5,11 @@ import { reduxForm } from 'redux-form'
 import CopyToClipboard from 'react-copy-to-clipboard';
 import AddButton from '../AddButton/AddButton'
 import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions'
-import './VaultSecretForm.scss'
+import './SecureDataForm.scss'
 import { getLogger } from 'logger'
 const  { DOM: { textarea } } = React
 
-var log = getLogger('create-new-vault-secret')
+var log = getLogger('create-new-secret')
 
 const fields = [
     'path',
@@ -43,20 +43,20 @@ const validate = values => {
 }
 @connect((state) => {
     return {
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         navigatedPath: state.manageSafetyDepositBox.navigatedPath,
-        vaultSecretsData: state.manageSafetyDepositBox.vaultSecretsData
+        secureData: state.manageSafetyDepositBox.secureData
     }
 })
 @reduxForm(
     {
-        form: 'create-new-vault-secret',
+        form: 'create-new-secret',
         fields: fields,
         validate
     }
 )
 
-export default class VaultSecretForm extends Component {
+export default class SecureDataForm extends Component {
     render() {
         const {
             fields: {
@@ -65,28 +65,28 @@ export default class VaultSecretForm extends Component {
             },
             navigatedPath,
             dispatch,
-            vaultToken,
+            cerberusAuthToken,
             handleSubmit,
             pathReadOnly,
-            vaultSecretsData,
+            secureData,
             formKey
         } = this.props
 
         return(
-            <div id="vault-add-new-secret-container">
-                <form id='vault-add-new-secret-form' onSubmit={handleSubmit( data => {
-                    let isNewVaultPath = formKey == 'add-new-secret'
-                    dispatch(mSDBActions.commitSecret(navigatedPath, data, vaultToken, isNewVaultPath))
+            <div id="add-new-secure-data-container">
+                <form id='add-new-secure-data-form' onSubmit={handleSubmit( data => {
+                    let isNewSecureDataPath = formKey == 'add-new-secure-data'
+                    dispatch(mSDBActions.commitSecret(navigatedPath, data, cerberusAuthToken, isNewSecureDataPath))
                 })}>
-                    <div id='new-vault-secret-path'>
-                        <div id='new-vault-secret-path-label'>Path:</div>
-                        <div id='new-vault-secret-path-full'>
+                    <div id='new-secure-data-path'>
+                        <div id='new-secure-data-path-label'>Path:</div>
+                        <div id='new-secure-data-path-full'>
                             {navigatedPath}
-                            {pathReadOnly && <span className="new-vault-secret-path-user-value-read-only">{path.value}</span>}
+                            {pathReadOnly && <span className="new-secure-data-path-user-value-read-only">{path.value}</span>}
                         </div>
                         {! pathReadOnly &&
-                            <div id='new-vault-secret-path-user-value'>
-                                <div className='vault-secret-path'>
+                            <div id='new-secure-data-path-user-value'>
+                                <div className='secure-data-path'>
                                     <div
                                         className={((path.touched && path.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
                                         <input {...path}
@@ -99,10 +99,10 @@ export default class VaultSecretForm extends Component {
                             </div>
                         }
                     </div>
-                    <div id="new-vault-secret-kv-map">
+                    <div id="new-secure-data-kv-map">
                         {kvMap.map((entry, index) =>
-                            <div className="new-vault-secret-kv-entry" key={index}>
-                                <div className='vault-secret-key'>
+                            <div className="new-secure-data-kv-entry" key={index}>
+                                <div className='secure-data-key'>
                                     <div className={((entry.key.touched && entry.key.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
                                         <input {...entry.key}
                                             type='text'
@@ -111,7 +111,7 @@ export default class VaultSecretForm extends Component {
                                         {entry.key.touched && entry.key.error && <div className='ncss-error-msg'>{entry.key.error}</div>}
                                     </div>
                                 </div>
-                                <div className='vault-secret-value'>
+                                <div className='secure-data-value'>
                                     <div className={((entry.value.touched && entry.value.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
                                         <textarea {...entry.value}
                                                   type="text"
@@ -147,20 +147,20 @@ export default class VaultSecretForm extends Component {
                             </div>
                         )}
                     </div>
-                    <div className="vault-secret-button-container">
+                    <div className="secure-data-button-container">
                         <AddButton handleClick={() => {kvMap.addField({'revealed': true})}} message="Add Key Value Pair" />
                         <div id="submit-btn-container">
                             <div className="btn-wrapper">
                                 <div id='cancel-btn'
                                         className='ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
                                         onClick={() => {
-                                            dispatch(mSDBActions.hideAddNewVaultSecret())
+                                            dispatch(mSDBActions.hideAddNewSecureData())
                                         }}>Cancel</div>
                             </div>
                             <div className="btn-wrapper">
                                 <button id='submit-btn'
                                         className='ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                                        disabled={vaultSecretsData[navigatedPath + path.value] ? vaultSecretsData[navigatedPath + path.value].isUpdating : false}>Save
+                                        disabled={secureData[navigatedPath + path.value] ? secureData[navigatedPath + path.value].isUpdating : false}>Save
                                 </button>
                             </div>
                         </div>      

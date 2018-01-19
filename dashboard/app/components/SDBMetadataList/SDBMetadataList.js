@@ -10,7 +10,7 @@ import './SDBMetadataList.scss'
 
 @connect((state) => {
     return {
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         metadata: state.metadata.metadata,
         perPage: state.metadata.perPage,
         pageNumber: state.metadata.pageNumber
@@ -27,14 +27,14 @@ export default class SDBMetadataList extends Component {
     ]
 
     componentDidMount() {
-        this.props.dispatch(metadataActions.fetchMetadata(this.props.vaultToken, this.props.pageNumber, this.props.perPage))
+        this.props.dispatch(metadataActions.fetchMetadata(this.props.cerberusAuthToken, this.props.pageNumber, this.props.perPage))
     }
 
     handlePageClick = (data) => {
         let pageNumber = data.selected;
 
         this.props.dispatch(metadataActions.updatePageNumber(pageNumber));
-        this.props.dispatch(metadataActions.fetchMetadata(this.props.vaultToken, pageNumber, this.props.perPage));
+        this.props.dispatch(metadataActions.fetchMetadata(this.props.cerberusAuthToken, pageNumber, this.props.perPage));
     };
 
     handlePerPageSelect = (selected) => {
@@ -43,7 +43,7 @@ export default class SDBMetadataList extends Component {
 
         this.props.dispatch(metadataActions.updatePerPage(perPage));
         this.props.dispatch(metadataActions.updatePageNumber(pageNumber))
-        this.props.dispatch(metadataActions.fetchMetadata(this.props.vaultToken, pageNumber, perPage));
+        this.props.dispatch(metadataActions.fetchMetadata(this.props.cerberusAuthToken, pageNumber, perPage));
     };
 
     render() {

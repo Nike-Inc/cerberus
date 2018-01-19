@@ -35,7 +35,7 @@ redwire.http('http://127.0.0.1:' + reverseProxyPort + '/dashboard', dashboardRed
 redwire.http('http://localhost:' + reverseProxyPort + '/', dashboardRedirectUrl)
 redwire.http('http://127.0.0.1:' + reverseProxyPort + '/', dashboardRedirectUrl)
 
-// redirect /secret to Hashicorp Vault
+// redirect /secret to CMS
 redwire.http('http://localhost:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + cmsPort + '/v1/secret')
 redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v1/secret', '127.0.0.1:' + cmsPort + '/v1/secret')
 
