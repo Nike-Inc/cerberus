@@ -305,6 +305,7 @@ export function deleteSDB(sdbId, token) {
         })
         .then((response) => {
             log.debug("Deleted SDB", response)
+            dispatch(resetToInitialState())
             dispatch(authActions.refreshAuth(token, `/`))
         })
         .catch((response) => {
