@@ -351,13 +351,16 @@ public class SafeDepositBoxService {
 
         sdbPermissionService.assertPrincipalHasOwnerPermissions(authPrincipal, box);
 
-        // 1. Remove permissions and metadata from database.
+        // 1. Remove permissions
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
         userGroupPermissionService.deleteUserGroupPermissions(id);
-        safeDepositBoxDao.deleteSafeDepositBox(id);
 
         // 2. Delete all secrets from the safe deposit box.
-        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(box.getPath());
+        String sdbPathWithoutCategory = StringUtils.substringAfter(box.getPath(), "/");
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbPathWithoutCategory);
+
+        // 3. Remove metadata
+        safeDepositBoxDao.deleteSafeDepositBox(id);
     }
 
     private Optional<String> extractOwner(Set<UserGroupPermission> userGroupPermissions) {
