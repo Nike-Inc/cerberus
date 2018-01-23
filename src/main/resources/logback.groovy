@@ -169,6 +169,7 @@ if (shouldOutputAccessLogsToLogFile()) {
 }
 
 // CUSTOM LOGGER SETTINGS (setting output levels for various classes)
+logger("com.okta.sdk.framework.ApiClient", WARN, allAsyncAppendersArray, false)
 logger("com.nike.riposte.server.handler.RequestContentDeserializerHandler", INFO, allAsyncAppendersArray, false)
 logger("com.nike.riposte.server.handler.DTraceStartHandler", INFO, allAsyncAppendersArray, false)
 logger("com.nike.riposte.metrics.codahale.CodahaleMetricsListener", INFO, allAsyncAppendersArray, false)
@@ -191,6 +192,9 @@ logger("com.newrelic", INFO, allAsyncAppendersArray, false)
 logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArray, false)
 
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
+
+// TODO revert before merge to master
+logger("com.nike.cerberus.jobs.HystrixMetricsProcessingJob", DEBUG, allAsyncAppendersArray, false)
 
 logger("VALID_WINGTIPS_SPANS", OFF, allAsyncAppendersArray, false)
 

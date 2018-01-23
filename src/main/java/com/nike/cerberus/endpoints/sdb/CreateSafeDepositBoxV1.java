@@ -19,13 +19,13 @@ package com.nike.cerberus.endpoints.sdb;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,9 +43,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
 import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_REFRESH_TOKEN;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
@@ -54,7 +51,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
 @Deprecated
-public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, Map<String, String>> {
+public class CreateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBoxV1, Map<String, String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -83,17 +80,10 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-
-            log.info("{}: {}, Create SDB Event: the principal: {} from ip; {} is attempting to create sdb name: '{}'",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
-                    getXForwardedClientIp(request),
-                    request.getContent().getName());
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             final String id =
-                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), vaultAuthPrincipal.getName());
+                    safeDepositBoxService.createSafeDepositBoxV1(request.getContent(), authPrincipal.getName());
 
             final String location = basePath + "/" + id;
             final Map<String, String> map = Maps.newHashMap();
@@ -113,4 +103,10 @@ public class CreateSafeDepositBoxV1 extends StandardEndpoint<SafeDepositBoxV1, M
     public Matcher requestMatcher() {
         return Matcher.match(BASE_PATH, HttpMethod.POST);
     }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<SafeDepositBoxV1> request) {
+        return String.format("Create SDB with name: %s.", request.getContent().getName());
+    }
+
 }

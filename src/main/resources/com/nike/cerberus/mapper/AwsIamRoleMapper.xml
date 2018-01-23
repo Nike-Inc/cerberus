@@ -99,6 +99,10 @@
            )
   </select>
 
+  <select id="getTotalNumberOfUniqueIamRoles" resultType="java.lang.Integer">
+    SELECT COUNT(DISTINCT ID) FROM AWS_IAM_ROLE
+  </select>
+
   <insert id="createIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">
     INSERT INTO AWS_IAM_ROLE_KMS_KEY (
       ID,

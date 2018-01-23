@@ -39,7 +39,7 @@ export const fields = [
 @connect((state) => {
     return {
         // user info
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
         userGroups: state.auth.groups,
 
         // domain data for the drop downs
@@ -69,7 +69,7 @@ export default class CreateSDBoxForm extends Component {
      */
     componentDidMount() {
         if (! this.props.hasDomainDataLoaded) {
-            this.props.dispatch(appActions.fetchCmsDomainData(this.props.vaultToken))
+            this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken))
         }
     }
 
@@ -90,7 +90,7 @@ export default class CreateSDBoxForm extends Component {
             dispatch,
             roles,
             userGroups,
-            vaultToken
+            cerberusAuthToken
         } = this.props
 
         // Lets not attempt to render everything until we have the data we need, when the domain data has loaded we can pass this
@@ -102,7 +102,7 @@ export default class CreateSDBoxForm extends Component {
 
         return (
             <form id='new-sdbox-form' onSubmit={handleSubmit( data => {
-                dispatch(cNSDBActions.submitCreateNewSDB(data, vaultToken))
+                dispatch(cNSDBActions.submitCreateNewSDB(data, cerberusAuthToken))
             })}>
                 <div id="form-description" className="ncss-brand">
                     <h1>Create a New Safe Deposit Box</h1>
@@ -127,6 +127,7 @@ export default class CreateSDBoxForm extends Component {
                         <label id="category-select-label" className='ncss-label'>Owner</label>
                         <GroupsSelect {...owner}
                             userGroups={userGroups}
+                            allowCustomValues={false}
                             handleBeingTouched={() => {
                                       dispatch(touch(formName, owner.name))
                                   }} />

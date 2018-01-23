@@ -19,13 +19,13 @@ package com.nike.cerberus.endpoints.sdb;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import com.nike.riposte.util.MultiMatcher;
@@ -41,15 +41,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
-
 /**
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
-public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDepositBoxSummary>> {
+public class GetSafeDepositBoxes extends AuditableEventEndpoint<Void, List<SafeDepositBoxSummary>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -75,16 +71,10 @@ public class GetSafeDepositBoxes extends StandardEndpoint<Void, List<SafeDeposit
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
-
-            log.info("{}: {}, List SDB Event: the principal: {} from ip: {} is attempting to list the SDBs that it has access to",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
-                    getXForwardedClientIp(request));
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             return ResponseInfo.newBuilder(
-                    safeDepositBoxService.getAssociatedSafeDepositBoxes(vaultAuthPrincipal)).build();
+                    safeDepositBoxService.getAssociatedSafeDepositBoxes(authPrincipal)).build();
         }
 
         throw ApiException.newBuilder().withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS).build();

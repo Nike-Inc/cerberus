@@ -78,7 +78,7 @@ public class OneLoginHttpClient {
     }
 
     /**
-     * Builds the full URL for preforming an operation against Vault.
+     * Builds the full URL.
      *
      * @param path Path for the requested operation
      * @return Full URL to execute a request against

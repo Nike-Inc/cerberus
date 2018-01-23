@@ -20,23 +20,24 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
+import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
+import com.nike.cerberus.domain.AuthTokenResponse;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.vault.client.VaultAdminClient;
-import com.nike.vault.client.model.VaultAuthResponse;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.util.Slugger;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
@@ -61,6 +62,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -88,12 +92,6 @@ public class AuthenticationServiceTest {
     @Mock
     private KmsClientFactory kmsClientFactory;
 
-    @Mock
-    private HystrixVaultAdminClient vaultAdminClient;
-
-    @Mock
-    private VaultPolicyService vaultPolicyService;
-
     private ObjectMapper objectMapper;
 
     @Mock
@@ -101,6 +99,11 @@ public class AuthenticationServiceTest {
 
     @Mock
     private AwsIamRoleArnParser awsIamRoleArnParser;
+
+    private Slugger slugger = new Slugger();
+
+    @Mock
+    private AuthTokenService authTokenService;
 
     private AuthenticationService authenticationService;
 
@@ -110,10 +113,22 @@ public class AuthenticationServiceTest {
     public void setup() {
         initMocks(this);
         objectMapper = CmsConfig.configureObjectMapper();
-        authenticationService = new AuthenticationService(safeDepositBoxDao,
-                awsIamRoleDao, authConnector, kmsService, kmsClientFactory,
-                vaultAdminClient, vaultPolicyService, objectMapper, "foo", MAX_LIMIT,
-                dateTimeSupplier, awsIamRoleArnParser);
+        authenticationService = new AuthenticationService(
+                safeDepositBoxDao,
+                awsIamRoleDao,
+                authConnector,
+                kmsService,
+                kmsClientFactory,
+                objectMapper,
+                "foo",
+                MAX_LIMIT,
+                dateTimeSupplier,
+                awsIamRoleArnParser,
+                slugger,
+                authTokenService,
+                "1h",
+                "1h"
+        );
     }
 
     @Test
@@ -124,15 +139,15 @@ public class AuthenticationServiceTest {
 
         Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(principalArn, region);
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_USERNAME));
-        assertEquals(principalArn, result.get(VaultAuthPrincipal.METADATA_KEY_USERNAME));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_USERNAME));
+        assertEquals(principalArn, result.get(CerberusPrincipal.METADATA_KEY_USERNAME));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_AWS_REGION));
-        assertEquals(region, result.get(VaultAuthPrincipal.METADATA_KEY_AWS_REGION));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_AWS_REGION));
+        assertEquals(region, result.get(CerberusPrincipal.METADATA_KEY_AWS_REGION));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_GROUPS));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_GROUPS));
 
-        assertTrue(result.containsKey(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN));
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
     }
 
     @Test
@@ -166,7 +181,7 @@ public class AuthenticationServiceTest {
 
         when(dateTimeSupplier.get()).thenReturn(now);
 
-        String result = authenticationService.getKeyId(iamPrincipalCredentials);
+        String result = authenticationService.getKmsKeyRecordForIamPrincipal(awsIamRoleRecord, region).getAwsKmsKeyId();
 
         // verify validate is called once interval has passed
         assertEquals(cmkId, result);
@@ -178,35 +193,39 @@ public class AuthenticationServiceTest {
 
         String accountId = "0000000000";
         String roleName = "role/path";
+        String read = "read";
+        String write = "write";
+        String owner = "owner";
         String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
 
         String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
         when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
         when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
 
-        String principalPolicy1 = "principal policy 1";
-        String principalPolicy2 = "principal policy 2";
-        String principalArnSdb1 = "principal arn sdb 1";
-        String principalArnSdb2 = "principal arn sdb 2";
-        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb1);
-        SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(principalArnSdb2);
+        String sdbName1 = "principal arn sdb 1";
+        String sdbName2 = "principal arn sdb 2";
+        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(read).setSafeDepositBoxName(sdbName1);
+        SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(write).setSafeDepositBoxName(sdbName2);
         List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2);
         when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn)).thenReturn(principalArnRecords);
-        when(vaultPolicyService.buildPolicyName(principalArnSdb1, roleName)).thenReturn(principalPolicy1);
-        when(vaultPolicyService.buildPolicyName(principalArnSdb2, roleName)).thenReturn(principalPolicy2);
 
-        String rolePolicy = "role policy";
         String roleArnSdb = "role arn sdb";
-        SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(roleName).setSafeDepositBoxName(roleArnSdb);
+        SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(owner).setSafeDepositBoxName(roleArnSdb);
         List<SafeDepositBoxRoleRecord> roleArnRecords = Lists.newArrayList(roleArnRecord);
         when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(roleArn)).thenReturn(roleArnRecords);
-        when(vaultPolicyService.buildPolicyName(roleArnSdb, roleName)).thenReturn(rolePolicy);
 
-        List<String> expectedPolicies = Lists.newArrayList(principalPolicy1, principalPolicy2, rolePolicy, LOOKUP_SELF_POLICY);
+        List<String> expectedPolicies = Lists.newArrayList(
+                "principal-arn-sdb-1-read",
+                "principal-arn-sdb-2-write",
+                "role-arn-sdb-owner",
+                LOOKUP_SELF_POLICY
+        );
+
         Set<String> expected = Sets.newHashSet(expectedPolicies);
         Set<String> result = authenticationService.buildCompleteSetOfPolicies(principalArn);
 
-        assertEquals(expected, result);
+        assertEquals(expected.size(), result.size());
+        assertTrue(result.containsAll(expected));
     }
 
     @Test
@@ -262,7 +281,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void tests_that_validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize_returns_the_original_payload_if_the_size_can_be_encrypted_by_kms() throws JsonProcessingException {
-        VaultAuthResponse response = new VaultAuthResponse()
+        AuthTokenResponse response = new AuthTokenResponse()
                 .setClientToken(UUID.randomUUID().toString())
                 .setLeaseDuration(3600)
                 .setMetadata(new HashMap<>())
@@ -284,7 +303,7 @@ public class AuthenticationServiceTest {
             policies.add(RandomStringUtils.random(25));
         }
 
-        VaultAuthResponse response = new VaultAuthResponse()
+        AuthTokenResponse response = new AuthTokenResponse()
                 .setClientToken(UUID.randomUUID().toString())
                 .setLeaseDuration(3600)
                 .setMetadata(meta)
@@ -302,9 +321,9 @@ public class AuthenticationServiceTest {
 
     @Test
     public void tests_that_refreshUserToken_throws_access_denied_when_an_iam_principal_tries_to_call_it() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        CerberusPrincipal principal = mock(CerberusPrincipal.class);
 
-        when(principal.isIamPrincipal()).thenReturn(true);
+        when(principal.getPrincipalType()).thenReturn(PrincipalType.IAM);
 
         Exception e = null;
         try {
@@ -314,30 +333,52 @@ public class AuthenticationServiceTest {
         }
 
         assertTrue(e instanceof ApiException);
-        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.IAM_PRINCIPALS_CANNOT_USE_USER_ONLY_RESOURCE));
+        assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.USER_ONLY_RESOURCE));
     }
 
     @Test
     public void tests_that_refreshUserToken_refreshes_token_when_count_is_less_than_limit() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        Integer curCount = MAX_LIMIT - 1;
 
-        when(principal.isIamPrincipal()).thenReturn(false);
-        when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT - 1);
+        CerberusAuthToken authToken = CerberusAuthToken.Builder.create()
+                .withPrincipalType(PrincipalType.USER)
+                .withPrincipal("principal")
+                .withGroups("group1,group2")
+                .withRefreshCount(curCount)
+                .withToken(UUID.randomUUID().toString())
+                .build();
 
-        VaultClientTokenResponse response = mock(VaultClientTokenResponse.class);
+        CerberusPrincipal principal = new CerberusPrincipal(authToken);
 
-        when(principal.getClientToken()).thenReturn(response);
+        OffsetDateTime now = OffsetDateTime.now();
+        when(authTokenService.generateToken(
+                anyString(),
+                any(PrincipalType.class),
+                anyBoolean(),
+                anyString(),
+                anyInt(),
+                anyInt())
+        ).thenReturn(
+                CerberusAuthToken.Builder.create()
+                        .withPrincipalType(PrincipalType.USER)
+                        .withPrincipal("principal")
+                        .withGroups("group1,group2")
+                        .withRefreshCount(curCount + 1)
+                        .withToken(UUID.randomUUID().toString())
+                        .withCreated(now)
+                        .withExpires(now.plusHours(1))
+                        .build()
+        );
 
-        when(response.getId()).thenReturn("");
-
-        authenticationService.refreshUserToken(principal);
+        AuthResponse response = authenticationService.refreshUserToken(principal);
+        assertEquals(curCount + 1, Integer.parseInt(response.getData().getClientToken().getMetadata().get(CerberusPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT)));
     }
 
     @Test
     public void tests_that_refreshUserToken_throws_access_denied_token_when_count_is_eq_or_greater_than_limit() {
-        VaultAuthPrincipal principal = mock(VaultAuthPrincipal.class);
+        CerberusPrincipal principal = mock(CerberusPrincipal.class);
 
-        when(principal.isIamPrincipal()).thenReturn(false);
+        when(principal.getPrincipalType()).thenReturn(PrincipalType.USER);
         when(principal.getTokenRefreshCount()).thenReturn(MAX_LIMIT);
 
         Exception e = null;

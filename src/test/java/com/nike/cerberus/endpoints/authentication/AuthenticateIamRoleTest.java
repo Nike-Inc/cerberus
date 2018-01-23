@@ -19,11 +19,13 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -33,19 +35,25 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AuthenticateIamRoleTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
+    @Mock
     private AuthenticationService authenticationService;
+
+    @Mock
+    private EventProcessorService eventProcessorService;
 
     private AuthenticateIamRole subject;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = mock(AuthenticationService.class);
-        subject = new AuthenticateIamRole(authenticationService);
+        initMocks(this);
+
+        subject = new AuthenticateIamRole(authenticationService, eventProcessorService);
     }
 
     @Test

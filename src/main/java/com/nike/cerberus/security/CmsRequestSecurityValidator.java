@@ -17,11 +17,12 @@
 package com.nike.cerberus.security;
 
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.secret.SecureDataEndpointV1;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.hystrix.HystrixVaultAdminClient;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.service.AuthTokenService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.Endpoint;
@@ -29,60 +30,83 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Request validator responsible for validating that the X-Vault-Token header is present and valid.
+ * Request validator responsible for validating that the X-Vault-Token or X-Cerberus-Token header is present and valid.
  * The client token entity will also be placed in the request context to be referenced downstream.
  */
 public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
-    public static final String HEADER_X_VAULT_TOKEN = "X-Vault-Token";
-
-    public static final String SECURITY_CONTEXT_ATTR_KEY = "vaultSecurityContext";
+    public static final String HEADER_X_CERBERUS_TOKEN = "X-Cerberus-Token";
+    public static final String LEGACY_AUTH_TOKN_HEADER = "X-Vault-Token";
+    public static final String SECURITY_CONTEXT_ATTR_KEY = "cerberusSecurityContext";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Collection<Endpoint<?>> endpointsToValidate;
+    private final AuthTokenService authTokenService;
+    private final EventProcessorService eventProcessorService;
 
-    private final HystrixVaultAdminClient vaultAdminClient;
+    public CmsRequestSecurityValidator(Collection<Endpoint<?>> endpointsToValidate,
+                                       AuthTokenService authTokenService,
+                                       EventProcessorService eventProcessorService) {
 
-    public CmsRequestSecurityValidator(final Collection<Endpoint<?>> endpointsToValidate,
-                                       final HystrixVaultAdminClient vaultAdminClient) {
         this.endpointsToValidate = endpointsToValidate;
-        this.vaultAdminClient = vaultAdminClient;
         this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
+
+        this.authTokenService = authTokenService;
+        this.eventProcessorService = eventProcessorService;
     }
 
     @Override
     public void validateSecureRequestForEndpoint(RequestInfo<?> requestInfo, Endpoint<?> endpoint) {
-        final String vaultToken = requestInfo.getHeaders().get(HEADER_X_VAULT_TOKEN);
+        String token = parseRequiredAuthHeaderFromRequest(requestInfo.getHeaders());
 
-        if (StringUtils.isBlank(vaultToken)) {
-            throw new ApiException(DefaultApiError.AUTH_VAULT_TOKEN_INVALID);
-        }
+        Optional<CerberusAuthToken> authToken = authTokenService.getCerberusAuthToken(token);
 
-        try {
-            final VaultClientTokenResponse clientTokenResponse = vaultAdminClient.lookupToken(vaultToken);
-
-            final VaultAuthPrincipal principal = new VaultAuthPrincipal(clientTokenResponse);
-            final VaultSecurityContext securityContext = new VaultSecurityContext(principal,
+        CerberusPrincipal principal = null;
+        if (! authToken.isPresent()) {
+            // This is a hack, Secure Data Endpoint V1 endpoints need to honor the Vault API contract and
+            // cannot throw backstopper errors, we will handle this in the SecureDataEndpointV1 class
+            if (! (endpoint instanceof SecureDataEndpointV1)) {
+                throw new ApiException(DefaultApiError.AUTH_TOKEN_INVALID);
+            }
+        } else {
+            principal = new CerberusPrincipal(authToken.get());
+            final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
                     URI.create(requestInfo.getUri()).getScheme());
             requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
-        } catch (VaultServerException vse) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_VAULT_TOKEN_INVALID)
-                    .withExceptionCause(vse)
-                    .build();
-        } catch (VaultClientException vce) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
-                    .withExceptionCause(vce)
-                    .build();
         }
+
+        processPrincipalEvent(principal, requestInfo, endpoint);
+    }
+
+    private void processPrincipalEvent(CerberusPrincipal principal,
+                                       RequestInfo<?> requestInfo,
+                                       Endpoint<?> endpoint) {
+
+        if (endpoint instanceof AuditableEventEndpoint) {
+            //noinspection unchecked
+            eventProcessorService.ingestEvent(
+                    ((AuditableEventEndpoint) endpoint).generateAuditableEvent(principal, requestInfo)
+            );
+        }
+    }
+
+    private String parseRequiredAuthHeaderFromRequest(HttpHeaders headers) {
+        final String legacyToken = headers.get(LEGACY_AUTH_TOKN_HEADER);
+        final String cerberusToken = headers.get(HEADER_X_CERBERUS_TOKEN);
+
+        if (StringUtils.isBlank(legacyToken) && StringUtils.isBlank(cerberusToken)) {
+            throw new ApiException(DefaultApiError.AUTH_TOKEN_INVALID);
+        }
+
+        return StringUtils.isNotBlank(legacyToken) ? legacyToken : cerberusToken;
     }
 
     @Override

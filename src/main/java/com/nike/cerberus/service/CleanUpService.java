@@ -20,7 +20,6 @@ package com.nike.cerberus.service;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.nike.cerberus.dao.AwsIamRoleDao;
-import com.nike.cerberus.domain.CleanUpRequest;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -42,10 +41,6 @@ public class CleanUpService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final int DEFAULT_SLEEP_BETWEEN_KMS_CALLS = 10;  // in seconds
-
-    private static final int DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS = 30;
-
     private final KmsService kmsService;
 
     private final AwsIamRoleDao awsIamRoleDao;
@@ -56,35 +51,21 @@ public class CleanUpService {
     public CleanUpService(KmsService kmsService,
                           AwsIamRoleDao awsIamRoleDao,
                           DateTimeSupplier dateTimeSupplier) {
+
         this.kmsService = kmsService;
         this.awsIamRoleDao = awsIamRoleDao;
         this.dateTimeSupplier = dateTimeSupplier;
     }
 
-    public void cleanUp(final CleanUpRequest cleanUpRequest) {
-        Integer expirationPeriodInDays = cleanUpRequest.getKmsExpirationPeriodInDays();
-        int kmsKeysInactiveAfterNDays = (expirationPeriodInDays == null) ? DEFAULT_KMS_KEY_INACTIVE_AFTER_N_DAYS : expirationPeriodInDays;
-
-        cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays);
-        cleanUpOrphanedIamRoles();
-    }
-
     /**
      * Delete all AWS KMS keys and DB records for KMS keys that have not been used recently
      * or are no longer associated with an SDB.
+     * @param kmsKeysInactiveAfterNDays  Consider KMS keys to be inactive after 'n' number of days
+     * @param sleepInSeconds             Sleep for 'n' seconds between AWS calls, to keep from exceeding the API limit
+     *
+     * @return  Number of KMS keys cleaned up
      */
-    protected void cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays) {
-
-        cleanUpInactiveAndOrphanedKmsKeys(kmsKeysInactiveAfterNDays, DEFAULT_SLEEP_BETWEEN_KMS_CALLS);
-    }
-
-    /**
-     * Delete all AWS KMS keys and DB records for KMS keys that have not been used recently
-     * or are no longer associated with an SDB.
-     * @param kmsKeysInactiveAfterNDays - Consider KMS keys to be inactive after 'n' number of days
-     * @param sleepInSeconds - Sleep for 'n' seconds between AWS calls, to keep from exceeding the API limit
-     */
-    protected void cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays, final int sleepInSeconds) {
+    public int cleanUpInactiveAndOrphanedKmsKeys(final int kmsKeysInactiveAfterNDays, final int sleepInSeconds) {
 
         // get orphaned and inactive kms keys (not used in 'n' days)
         final OffsetDateTime inactiveDateTime = dateTimeSupplier.get().minusDays(kmsKeysInactiveAfterNDays);
@@ -116,13 +97,15 @@ public class CleanUpService {
                 }
             });
         }
+
+        return inactiveAndOrphanedKmsKeys.size();
     }
 
     /**
      * Delete all IAM role records that are no longer associated with an SDB.
      */
     @Transactional
-    protected void cleanUpOrphanedIamRoles() {
+    public void cleanUpOrphanedIamRoles() {
 
         // get orphaned iam role ids
         final List<AwsIamRoleRecord> orphanedIamRoleIds = awsIamRoleDao.getOrphanedIamRoles();

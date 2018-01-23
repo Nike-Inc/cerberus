@@ -21,6 +21,7 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.AuthenticationService;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.StandardEndpoint;
@@ -39,9 +40,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
+import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
 
 /**
  * Authentication endpoint for user credentials.  If valid, a client token will be returned.
@@ -51,10 +50,14 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationService authenticationService;
+    private final EventProcessorService eventProcessorService;
 
     @Inject
-    public AuthenticateUser(final AuthenticationService authenticationService) {
+    public AuthenticateUser(final AuthenticationService authenticationService,
+                            EventProcessorService eventProcessorService) {
+
         this.authenticationService = authenticationService;
+        this.eventProcessorService = eventProcessorService;
     }
 
     @Override
@@ -70,11 +73,11 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
     private ResponseInfo<AuthResponse> authenticate(RequestInfo<Void> request) {
         final UserCredentials credentials = extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
 
-        log.info("{}: {}, User Auth Event: the principal: {}  with ip: {} is attempting to authenticate",
-                HEADER_X_CERBERUS_CLIENT,
-                getClientVersion(request),
-                credentials.getUsername(),
-                getXForwardedClientIp(request));
+        eventProcessorService.ingestEvent(auditableEvent(
+                String.format("[ Name: %s ]", credentials.getUsername()), request, getClass().getSimpleName())
+                .withAction("Attempting to authenticate")
+                .build()
+        );
 
         return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
     }

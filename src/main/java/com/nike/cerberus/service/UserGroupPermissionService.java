@@ -40,6 +40,8 @@ import java.util.Set;
 @Singleton
 public class UserGroupPermissionService {
 
+    private static final String OWNER_ROLE_NAME = "owner";
+
     private final UuidSupplier uuidSupplier;
 
     private final RoleService roleService;
@@ -50,6 +52,7 @@ public class UserGroupPermissionService {
     public UserGroupPermissionService(final UuidSupplier uuidSupplier,
                                       final RoleService roleService,
                                       final UserGroupDao userGroupDao) {
+
         this.uuidSupplier = uuidSupplier;
         this.roleService = roleService;
         this.userGroupDao = userGroupDao;
@@ -177,35 +180,25 @@ public class UserGroupPermissionService {
 
     /**
      * Revokes a set of user group permissions.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param userGroupPermissionSet The set of user group permissions
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeUserGroupPermissions(final String safeDepositBoxId,
-                                           final Set<UserGroupPermission> userGroupPermissionSet,
-                                           final String user,
-                                           final OffsetDateTime dateTime) {
+                                           final Set<UserGroupPermission> userGroupPermissionSet) {
         for (final UserGroupPermission userGroupPermission : userGroupPermissionSet) {
-            revokeUserGroupPermission(safeDepositBoxId, userGroupPermission, user, dateTime);
+            revokeUserGroupPermission(safeDepositBoxId, userGroupPermission);
         }
     }
 
     /**
      * Revokes a user group permission.
-     *
-     * @param safeDepositBoxId The safe deposit box id
+     *  @param safeDepositBoxId The safe deposit box id
      * @param userGroupPermission The user group permission
-     * @param user The user making the changes
-     * @param dateTime The time of the changes
      */
     @Transactional
     public void revokeUserGroupPermission(final String safeDepositBoxId,
-                                          final UserGroupPermission userGroupPermission,
-                                          final String user,
-                                          final OffsetDateTime dateTime) {
+                                          final UserGroupPermission userGroupPermission) {
         final Optional<UserGroupRecord> userGroupRecord =
                 userGroupDao.getUserGroupByName(userGroupPermission.getName());
 
@@ -241,6 +234,21 @@ public class UserGroupPermissionService {
         });
 
         return permissionsSet;
+    }
+
+    public int getTotalNumUniqueOwnerGroups() {
+        Role ownerRole = roleService.getRoleByName(OWNER_ROLE_NAME).orElseThrow(() ->
+                new RuntimeException("Could not find ID for owner permissions role"));
+
+        return userGroupDao.getTotalNumUniqueUserGroupsByRole(ownerRole.getId());
+    }
+
+    public int getTotalNumUniqueNonOwnerGroups() {
+        return userGroupDao.getTotalNumUniqueNonOwnerGroups();
+    }
+
+    public int getTotalNumUniqueUserGroups() {
+        return userGroupDao.getTotalNumUniqueUserGroups();
     }
 
     @Transactional

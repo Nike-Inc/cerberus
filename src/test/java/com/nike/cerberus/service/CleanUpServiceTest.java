@@ -88,7 +88,7 @@ public class CleanUpServiceTest {
 
         when(awsIamRoleDao.deleteKmsKeyById(keyRecordId)).thenThrow(new NullPointerException());
 
-        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(inactivePeriod);
+        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(inactivePeriod, 0);
     }
 
     @Test

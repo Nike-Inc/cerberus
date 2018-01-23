@@ -2,7 +2,7 @@ import { createReducer } from '../utils'
 import * as constants from '../constants/actions'
 
 const initialState = {
-    vaultToken: null,
+    cerberusAuthToken: null,
     stateToken: null,
     userName: null,
     isAuthenticated: false,
@@ -32,7 +32,7 @@ export default createReducer(initialState, {
             isAuthenticated: true,
             isSessionExpired: false,
             isAdmin: payload.tokenData.metadata.is_admin,
-            vaultToken: payload.tokenData.client_token,
+            cerberusAuthToken: payload.tokenData.client_token,
             userName: payload.tokenData.metadata.username,
             groups: payload.tokenData.metadata.groups.split(/,/),
             policies: payload.tokenData.policies,

@@ -16,7 +16,7 @@ import { getLogger } from 'logger'
 
 var log = getLogger('authentication-actions')
 
-const AUTH_ACTION_TIMEOUT = 10000 // 10 seconds in milliseconds
+const AUTH_ACTION_TIMEOUT = 60000 // 60 seconds in milliseconds
 
 /**
  * These are the actions for authentication events that will trigger the related reducers to change application state
@@ -70,11 +70,11 @@ function handleUserLogin(response, dispatch, redirectToWelcome=true) {
     const bestGuessOfRequestLatencyInMilliseconds = 120 * millisecondsPerSecond // take 2 minutes off of duration to account for latency
 
     let now = new Date()
-    let vaultTokenExpiresDateInMilliseconds = (now.getTime() + ((leaseDurationInSeconds * millisecondsPerSecond) - bestGuessOfRequestLatencyInMilliseconds))
+    let cerberusAuthTokenExpiresDateInMilliseconds = (now.getTime() + ((leaseDurationInSeconds * millisecondsPerSecond) - bestGuessOfRequestLatencyInMilliseconds))
 
     let tokenExpiresDate = new Date()
     let token = response.data.data.client_token.client_token
-    tokenExpiresDate.setTime(vaultTokenExpiresDateInMilliseconds)
+    tokenExpiresDate.setTime(cerberusAuthTokenExpiresDateInMilliseconds)
 
     log.debug(`Setting session timeout to ${tokenExpiresDate}`)
 
@@ -192,7 +192,7 @@ export function refreshAuth(token, redirectPath='/', redirect=true) {
         dispatch(loginUserRequest())
         return axios({
             url: environmentService.getDomain() + cms.USER_AUTH_PATH_REFRESH,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: AUTH_ACTION_TIMEOUT
         })
         .then(function (response) {
@@ -225,7 +225,7 @@ export function logoutUser(token) {
         return axios({
             method: 'delete',
             url: environmentService.getDomain() + cms.TOKEN_DELETE_PATH,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: AUTH_ACTION_TIMEOUT
         })
         .then(function () {

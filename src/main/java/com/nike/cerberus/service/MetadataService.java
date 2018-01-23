@@ -74,7 +74,7 @@ public class MetadataService {
      * @param sdbMetadata SDB Payload to restore
      */
     public void restoreMetadata(SDBMetadata sdbMetadata, String adminUser) {
-        logger.info("Restoring metadata for SDB: {}", sdbMetadata.getName());
+        logger.info("Restoring metadata for SDB: '{}'", sdbMetadata.getName());
 
         String id = getSdbId(sdbMetadata);
         String categoryId = getCategoryId(sdbMetadata);
@@ -136,7 +136,7 @@ public class MetadataService {
      * @param sdbMetadata the sdb metadata
      * @return id for the sdb
      */
-    private String getSdbId(SDBMetadata sdbMetadata) {
+    public String getSdbId(SDBMetadata sdbMetadata) {
         Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByName(sdbMetadata.getName());
         String id;
         if (sdbId.isPresent()) {

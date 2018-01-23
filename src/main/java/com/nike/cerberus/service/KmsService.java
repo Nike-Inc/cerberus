@@ -23,19 +23,21 @@ import com.amazonaws.services.kms.model.CreateKeyRequest;
 import com.amazonaws.services.kms.model.CreateKeyResult;
 import com.amazonaws.services.kms.model.DescribeKeyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
-import com.amazonaws.services.kms.model.KeyMetadata;
-import com.amazonaws.services.kms.model.KeyState;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
+import com.amazonaws.services.kms.model.Tag;
 import com.google.inject.name.Named;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
@@ -47,6 +49,8 @@ import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 
@@ -58,23 +62,25 @@ public class KmsService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String KMS_ALIAS_FORMAT = "alias/cerberus/%s";
+    private static final String ALIAS_DELIMITER = "/";
+    private static final int MAX_KMS_ALIAS_LENGTH = 256;
 
     private static final String KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE = "cms.kms.policy.validation.interval.millis.override";
 
-    private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = 300000;  // in milliseconds (recommended default: five minutes)
+    private static final Integer DEFAULT_KMS_VALIDATION_INTERVAL = (int) TimeUnit.MINUTES.toMillis(5);  // in milliseconds
 
     public static final Integer SOONEST_A_KMS_KEY_CAN_BE_DELETED = 7;  // in days
 
     private final AwsIamRoleDao awsIamRoleDao;
-
     private final UuidSupplier uuidSupplier;
-
     private final KmsClientFactory kmsClientFactory;
-
     private final KmsPolicyService kmsPolicyService;
-
     private final DateTimeSupplier dateTimeSupplier;
+    private final AwsIamRoleArnParser awsIamRoleArnParser;
+    private final Slugger slugger;
+
+    private final String cmsVersion;
+    private final String environmentName;
 
     @com.google.inject.Inject(optional=true)
     @Named(KMS_POLICY_VALIDATION_INTERVAL_OVERRIDE)
@@ -85,39 +91,85 @@ public class KmsService {
                       final UuidSupplier uuidSupplier,
                       final KmsClientFactory kmsClientFactory,
                       final KmsPolicyService kmsPolicyService,
-                      final DateTimeSupplier dateTimeSupplier) {
+                      final DateTimeSupplier dateTimeSupplier,
+                      AwsIamRoleArnParser awsIamRoleArnParser,
+                      @Named("service.version") String cmsVersion,
+                      @Named("cms.env.name") String environmentName,
+                      final Slugger slugger) {
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
         this.kmsClientFactory = kmsClientFactory;
         this.kmsPolicyService = kmsPolicyService;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.awsIamRoleArnParser = awsIamRoleArnParser;
+        this.cmsVersion = cmsVersion;
+        this.environmentName = environmentName;
+        this.slugger = slugger;
     }
 
     /**
      * Provisions a new KMS CMK in the specified region to be used by the specified role.
      *
-     * @param iamRoleId        The IAM role that this CMK will be associated with
+     * @param iamRoleRecordId        The IAM role that this CMK will be associated with
      * @param iamPrincipalArn  The AWS IAM principal ARN
      * @param awsRegion        The region to provision the key in
      * @param user             The user requesting it
      * @param dateTime         The date of creation
      * @return The AWS Key ID ARN
      */
+    public AwsIamRoleKmsKeyRecord provisionKmsKey(final String iamRoleRecordId,
+                                                  final String iamPrincipalArn,
+                                                  final String awsRegion,
+                                                  final String user,
+                                                  final OffsetDateTime dateTime) {
+        final String kmsKeyRecordId = uuidSupplier.get();
+
+        final String awsKmsKeyArn = createKmsKeyInAws(iamPrincipalArn, kmsKeyRecordId, awsRegion);
+        return createKmsKeyRecord(iamRoleRecordId, kmsKeyRecordId, awsKmsKeyArn,
+                awsRegion,
+                user,
+                dateTime);
+    }
+
     @Transactional
-    public String provisionKmsKey(final String iamRoleId,
-                                  final String iamPrincipalArn,
-                                  final String awsRegion,
-                                  final String user,
-                                  final OffsetDateTime dateTime) {
+    private AwsIamRoleKmsKeyRecord createKmsKeyRecord(final String iamRoleRecordId,
+                                                      final String kmsKeyRecordId,
+                                                      final String awsKmsKeyArn,
+                                                      final String awsRegion,
+                                                      final String user,
+                                                      final OffsetDateTime dateTime) {
+        final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+
+        awsIamRoleKmsKeyRecord.setId(kmsKeyRecordId)
+                .setAwsIamRoleId(iamRoleRecordId)
+                .setAwsKmsKeyId(awsKmsKeyArn)
+                .setAwsRegion(awsRegion)
+                .setCreatedBy(user)
+                .setLastUpdatedBy(user)
+                .setCreatedTs(dateTime)
+                .setLastUpdatedTs(dateTime)
+                .setLastValidatedTs(dateTime);
+
+        awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
+
+        return awsIamRoleKmsKeyRecord;
+    }
+
+    private String createKmsKeyInAws(String iamPrincipalArn, String kmsKeyRecordId, String awsRegion) {
         final AWSKMSClient kmsClient = kmsClientFactory.getClient(awsRegion);
 
-        final String awsIamPrincipalKmsKeyId = uuidSupplier.get();
+        final String policy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
 
-        final CreateKeyRequest request = new CreateKeyRequest();
-        request.setKeyUsage(KeyUsageType.ENCRYPT_DECRYPT);
-        request.setDescription("Key used by Cerberus for IAM role authentication.");
-        String policy = kmsPolicyService.generateStandardKmsPolicy(iamPrincipalArn);
-        request.setPolicy(policy);
+        final CreateKeyRequest request = new CreateKeyRequest()
+                .withKeyUsage(KeyUsageType.ENCRYPT_DECRYPT)
+                .withDescription("Key used by Cerberus " + environmentName + " for IAM role authentication. " + iamPrincipalArn)
+                .withPolicy(policy)
+                .withTags(
+                    createTag("created_by", "cms" + cmsVersion),
+                    createTag("created_for", "cerberus_auth"),
+                    createTag("auth_principal", iamPrincipalArn),
+                    createTag("cerberus_env", environmentName)
+                );
 
         CreateKeyResult result;
         try {
@@ -127,27 +179,29 @@ public class KmsService {
             throw t;
         }
 
-        final CreateAliasRequest aliasRequest = new CreateAliasRequest();
-        aliasRequest.setAliasName(getAliasName(awsIamPrincipalKmsKeyId));
-        KeyMetadata keyMetadata = result.getKeyMetadata();
-        String arn = keyMetadata.getArn();
-        aliasRequest.setTargetKeyId(arn);
-        kmsClient.createAlias(aliasRequest);
+        String kmsKeyAliasName = getAliasName(kmsKeyRecordId, iamPrincipalArn);
+        String kmsKeyArn = result.getKeyMetadata().getArn();
+        try {
+            // alias is only used to provide extra description in AWS console
+            final CreateAliasRequest aliasRequest = new CreateAliasRequest()
+                    .withAliasName(kmsKeyAliasName)
+                    .withTargetKeyId(result.getKeyMetadata().getArn());
+            kmsClient.createAlias(aliasRequest);
+        } catch (RuntimeException re) {
+            logger.error("Failed to create KMS alias: {}, for keyId: {}", kmsKeyAliasName, kmsKeyArn);
+        }
 
-        final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-        awsIamRoleKmsKeyRecord.setId(awsIamPrincipalKmsKeyId);
-        awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
-        awsIamRoleKmsKeyRecord.setAwsKmsKeyId(result.getKeyMetadata().getArn());
-        awsIamRoleKmsKeyRecord.setAwsRegion(awsRegion);
-        awsIamRoleKmsKeyRecord.setCreatedBy(user);
-        awsIamRoleKmsKeyRecord.setLastUpdatedBy(user);
-        awsIamRoleKmsKeyRecord.setCreatedTs(dateTime);
-        awsIamRoleKmsKeyRecord.setLastUpdatedTs(dateTime);
-        awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);
+        return kmsKeyArn;
+    }
 
-        awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
-
-        return result.getKeyMetadata().getArn();
+    /**
+     * Create a KMS tag truncating the key/value as needed to ensure successful operation
+     */
+    private Tag createTag(String key, String value) {
+        // extra safety measures here are probably not needed but just in case there are any weird edge cases
+        return new Tag()
+                .withTagKey(StringUtils.substring(key, 0, 128))
+                .withTagValue(StringUtils.substring(value != null ? value : "unknown", 0, 256));
     }
 
     /**
@@ -189,8 +243,25 @@ public class KmsService {
         awsIamRoleDao.deleteKmsKeyById(kmsKeyId);
     }
 
-    protected String getAliasName(String awsIamRoleKmsKeyId) {
-        return String.format(KMS_ALIAS_FORMAT, awsIamRoleKmsKeyId);
+    /**
+     * Generate a unique and descriptive alias name for a KMS key
+     * @param awsIamRoleKmsKeyId UUID
+     * @param iamPrincipalArn the main ARN this key is being created for.
+     */
+    protected String getAliasName(String awsIamRoleKmsKeyId, String iamPrincipalArn) {
+        // create a descriptive text for the alias including as much info as possible
+        String descriptiveText = "alias/cerberus/" + environmentName + ALIAS_DELIMITER + awsIamRoleArnParser.stripOutDescription(iamPrincipalArn);
+        String validAliasText = slugger.slugifyKmsAliases(descriptiveText);
+
+        // if the descriptive text is too long then truncate it (this seems very unlikely to happen)
+        if (validAliasText.length() + ALIAS_DELIMITER.length() + awsIamRoleKmsKeyId.length() > MAX_KMS_ALIAS_LENGTH) {
+            validAliasText = StringUtils.substring(validAliasText, 0, MAX_KMS_ALIAS_LENGTH - ALIAS_DELIMITER.length() - awsIamRoleKmsKeyId.length());
+            // remove final '/' if it exists
+            validAliasText = StringUtils.stripEnd(validAliasText, ALIAS_DELIMITER);
+        }
+
+        // tack on the UUID onto the end to make sure the alias is unique
+        return validAliasText + ALIAS_DELIMITER + awsIamRoleKmsKeyId;
     }
 
     /**
@@ -213,7 +284,7 @@ public class KmsService {
      */
     public void validateKeyAndPolicy(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
 
-        if (! kmsPolicyNeedsValidation(kmsKeyRecord)) {
+        if (! kmsPolicyNeedsValidation(kmsKeyRecord, iamPrincipalArn)) {
             // Avoiding extra calls to AWS so that we don't get rate limited.
             return;
         }
@@ -232,8 +303,6 @@ public class KmsService {
                 updateKmsKeyPolicy(updatedPolicy, awsKmsKeyArn, kmsCMKRegion);
             }
 
-            validateKmsKeyIsUsable(kmsKeyRecord, iamPrincipalArn);
-
             // update last validated timestamp
             OffsetDateTime now = dateTimeSupplier.get();
             updateKmsKey(kmsKeyRecord.getAwsIamRoleId(), kmsCMKRegion, SYSTEM_USER, now, now);
@@ -242,9 +311,13 @@ public class KmsService {
                             "Deleting the key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}",
                         awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, nfe);
             deleteKmsKeyById(kmsKeyRecord.getId());
-        } catch (Exception e) {
-            logger.warn(String.format("Failed to validate KMS policy for keyId: %s for IAM principal: %s in region: %s due to %s",
-                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString()), e);
+        } catch (AmazonServiceException | HystrixRuntimeException e) {
+            logger.warn("Failed to validate KMS policy for keyId: {} for IAM principal: {} in region: {} due to {}",
+                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion, e.toString());
+        } catch (RejectedExecutionException e) {
+            logger.warn("Hystrix rejected policy lookup, thread pool full, {}", e.toString());
+        } catch (RuntimeException e) {
+            logger.warn("Failed to look up policy, Hystrix is probably short circuited", e);
         }
     }
 
@@ -277,43 +350,6 @@ public class KmsService {
                     "not contain any allow statements for the CMS role", awsKmsKeyId, iae);
         }
 
-    }
-
-    /**
-     * Validate that the KMS key is usable (i.e. the key is not disabled or scheduled for deletion).
-     *
-     * If the key is not usable, then delete the DB record of the key, so that the caller will be given a new KMS key
-     * the next time they authenticate.
-     *
-     * @param kmsKeyRecord - Record of the KMS key to validate
-     * @param iamPrincipalArn - ARN of the authenticating IAM principal
-     */
-    protected void validateKmsKeyIsUsable(AwsIamRoleKmsKeyRecord kmsKeyRecord, String iamPrincipalArn) {
-
-        String kmsCMKRegion = kmsKeyRecord.getAwsRegion();
-        String awsKmsKeyArn = kmsKeyRecord.getAwsKmsKeyId();
-
-        if (kmsKeyIsDisabledOrScheduledForDeletion(awsKmsKeyArn, kmsCMKRegion)) {
-            // This shouldn't happen unless there is a bug in CMS or if someone modified the key outside of Cerberus
-            logger.warn("The KMS key ID: {} for IAM principal: {} is disabled or scheduled for deletion. Deleting the" +
-                            "key record to prevent this from failing again: keyId: {} for IAM principal: {} in region: {}.",
-                    awsKmsKeyArn, iamPrincipalArn, kmsCMKRegion);
-            deleteKmsKeyById(kmsKeyRecord.getId());
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.KMS_KEY_IS_SCHEDULED_FOR_DELETION_OR_DISABLED)
-                    .build();
-        }
-    }
-
-    /**
-     * Return true if the KMS key is disabled or scheduled for deletion, false if not.
-     */
-    protected boolean kmsKeyIsDisabledOrScheduledForDeletion(String awsKmsKeyId, String kmsCMKRegion) {
-
-        String keyState = getKmsKeyState(awsKmsKeyId, kmsCMKRegion);
-
-        return StringUtils.equals(keyState, KeyState.PendingDeletion.toString()) ||
-                StringUtils.equals(keyState, KeyState.Disabled.toString());
     }
 
     /**
@@ -378,11 +414,24 @@ public class KmsService {
      * @param kmsKeyRecord - KMS key record to check for validation
      * @return True if needs validation, False if not
      */
-    protected boolean kmsPolicyNeedsValidation(AwsIamRoleKmsKeyRecord kmsKeyRecord) {
+    protected boolean kmsPolicyNeedsValidation(AwsIamRoleKmsKeyRecord kmsKeyRecord, String arn) {
 
         OffsetDateTime now = dateTimeSupplier.get();
         long timeSinceLastValidatedInMillis = ChronoUnit.MILLIS.between(kmsKeyRecord.getLastValidatedTs(), now);
 
-        return timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
+        boolean needValidation = timeSinceLastValidatedInMillis >= kmsKeyPolicyValidationInterval;
+
+        logger.debug("last validated: {}, time since last validated in millis: {}, " +
+                        "kmsKeyPolicyValidationInterval: {}, needs validation: {}",
+                kmsKeyRecord.getLastValidatedTs(),
+                timeSinceLastValidatedInMillis,
+                kmsKeyPolicyValidationInterval,
+                needValidation);
+
+        if (needValidation) {
+            logger.info("Re-validating kms policy for arn: {}", arn);
+        }
+
+        return needValidation;
     }
 }

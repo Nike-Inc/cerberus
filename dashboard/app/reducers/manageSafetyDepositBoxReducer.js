@@ -8,8 +8,8 @@ const initialState = {
     hasFetchedKeys: false,
     data: {},
     navigatedPath: null,
-    vaultPathKeys: [],
-    vaultSecretsData: {},
+    keysForSecureDataPath: [],
+    secureData: {},
     displayPermissions: false,
     showAddSecretForm: false,
     isEditSubmitting: false
@@ -28,14 +28,14 @@ export default createReducer(initialState, {
             displayPermissions: ! state.displayPermissions
         })
     },
-    [action.FETCHED_VAULT_KEYS]: (state, payload) => {
+    [action.FETCHED_SECURE_DATA_KEYS]: (state, payload) => {
         return Object.assign({}, state, {
-            vaultPathKeys: payload,
+            keysForSecureDataPath: payload,
             hasFetchedKeys: true
         })
     },
-    [action.ADD_VAULT_KEY_IF_NOT_PRESET]: (state, payload) => {
-        let existingList = state.vaultPathKeys
+    [action.ADD_SECURE_DATA_KEY_IF_NOT_PRESET]: (state, payload) => {
+        let existingList = state.keysForSecureDataPath
         let keyToAddIfMissing = payload
         let newList = []
         let isKeyPreset = false
@@ -53,11 +53,11 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultPathKeys: newList
+            keysForSecureDataPath: newList
         })
     },
-    [action.REMOVE_VAULT_KEY_FROM_LOCAL_STORE]: (state, payload) => {
-        let existingList = state.vaultPathKeys
+    [action.REMOVE_KEY_FOR_SECURE_DATA_FROM_LOCAL_STORE]: (state, payload) => {
+        let existingList = state.keysForSecureDataPath
         let newList = []
         let keyToRemove = payload
 
@@ -69,10 +69,10 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultPathKeys: newList
+            keysForSecureDataPath: newList
         })
     },
-    [action.FETCHING_VAULT_KEYS]: (state) => {
+    [action.FETCHING_SECURE_DATA_KEYS]: (state) => {
         return Object.assign({}, state, {
             hasFetchedKeys: false
         })
@@ -81,11 +81,11 @@ export default createReducer(initialState, {
         return Object.assign({}, state, {
             navigatedPath: payload,
             hasFetchedKeys: false,
-            vaultPathKeys: []
+            keysForSecureDataPath: []
         })
     },
-    [action.FETCHING_VAULT_SECRET]: (state, payload) => {
-        let existingMap = state.vaultSecretsData
+    [action.FETCHING_SECURE_DATA]: (state, payload) => {
+        let existingMap = state.secureData
         let newMap = {}
         let fetchingKey = payload
 
@@ -102,11 +102,11 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultSecretsData: newMap
+            secureData: newMap
         })
     },
-    [action.FETCHED_VAULT_SECRET]: (state, payload) => {
-        let existingMap = state.vaultSecretsData
+    [action.FETCHED_SECURE_DATA]: (state, payload) => {
+        let existingMap = state.secureData
         let newMap = {}
         let fetchedKey = payload.key
 
@@ -124,11 +124,11 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultSecretsData: newMap
+            secureData: newMap
         })
     },
     [action.REMOVE_SECRET_FROM_LOCAL_STORE]: (state, payload) => {
-        let existingMap = state.vaultSecretsData
+        let existingMap = state.secureData
         let newMap = new Map()
 
         for (let key in existingMap) {
@@ -138,7 +138,7 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultSecretsData: newMap
+            secureData: newMap
         })
     },
     [action.SHOW_ADD_SECRET_FORM]: (state) => {
@@ -161,14 +161,14 @@ export default createReducer(initialState, {
             isEditSubmitting: false
         })
     },
-    [action.CLEAR_VAULT_DATA]: (state) => {
+    [action.CLEAR_SECURE_DATA]: (state) => {
         return Object.assign({}, state, {
-            vaultPathKeys: [],
-            vaultSecretsData: {}
+            keysForSecureDataPath: [],
+            secureData: {}
         })
     },
-    [action.SAVING_VAULT_SECRET]: (state, payload) => {
-        let existingMap = state.vaultSecretsData
+    [action.SAVING_SECURE_DATA]: (state, payload) => {
+        let existingMap = state.secureData
         let newMap = {}
         let fetchingKey = payload
 
@@ -185,7 +185,7 @@ export default createReducer(initialState, {
         }
 
         return Object.assign({}, state, {
-            vaultSecretsData: newMap
+            secureData: newMap
         })
     },
 

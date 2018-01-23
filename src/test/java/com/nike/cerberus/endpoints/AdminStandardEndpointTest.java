@@ -18,10 +18,11 @@ package com.nike.cerberus.endpoints;
 
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
-import com.nike.cerberus.security.VaultSecurityContext;
-import com.nike.vault.client.model.VaultClientTokenResponse;
+import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.cerberus.security.CerberusSecurityContext;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.Matcher;
@@ -29,6 +30,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Map;
@@ -39,28 +41,36 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AdminStandardEndpointTest {
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
+    @Mock
+    private EventProcessorService eventProcessorService;
+
     private AdminStandardEndpoint<Void, Void> subject;
 
     @Before
-    public void setUp() throws Exception {
+    public void before() throws Exception {
+        initMocks(this);
+
         subject = new AdminStandardEndpointImpl();
+        subject.setEventProcessorService(eventProcessorService);
     }
 
     @Test
     public void execute_validates_user_is_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(
+                CerberusAuthToken.Builder.create()
+                        .withIsAdmin(true)
+                        .withPrincipal("username")
+                        .withGroups("group1,group2")
+                        .build());
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
@@ -82,13 +92,14 @@ public class AdminStandardEndpointTest {
     @Test(expected = ApiException.class)
     public void execute_throws_error_if_principal_not_an_admin() {
         final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.FALSE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        final CerberusPrincipal authPrincipal = new CerberusPrincipal(
+                CerberusAuthToken.Builder.create()
+                        .withIsAdmin(false)
+                        .withPrincipal("username")
+                        .withGroups("group1,group2")
+                        .build());
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
+                new CerberusSecurityContext(authPrincipal, "https"));
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 

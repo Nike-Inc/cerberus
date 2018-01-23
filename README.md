@@ -11,12 +11,6 @@ To learn more about Cerberus, please visit the [Cerberus website](http://enginee
 
 ## Getting Started
 
-### Running with embedded Vault, Mysql
-
-If you do not wish to install and run MySQL and Vault locally you can run these embedded using gradlew see the `Running CMS Locally` section
-
-    gradlew runVaultAndMySQL
-
 ### Running with persistent data,
 
 If you wish to persist data permanently you can install Vault and MySQL locally
@@ -37,22 +31,6 @@ You'll need to create a database and user for it.  Run the following SQL against
 
     GRANT ALL ON cms.* TO 'cms'@'localhost';
 
-**Vault** is required to run the application locally.
-
-To get Vault setup on OS X:
-
-    $ brew install vault
-    $ vault server -dev
-
-This will output a root token, you can now setup vault using the supplied script:
-
-    $ /path/to/project/vault-setup.sh
-
-That will setup the default policy and generate a token for CMS and output:
-
-    export VAULT_ADDR="http://localhost:8200"
-    export VAULT_TOKEN="<token>"
-
 ## Configuration
 
 ### Configurable Properties
@@ -70,15 +48,17 @@ cms.role.arn                                        | Yes      | The arn for the
 cms.admin.group                                     | Yes      | Group that user can be identified by to get admin privileges, currently this just enables users to access `/v1/metadata` see API.md
 cms.admin.roles                                     | No       | Comma separated list of ARNs that can auth and access admin endpoints.
 cms.auth.connector                                  | Yes      | The user authentication connector implementation to use for user auth.
-cms.user.token.ttl.override                         | No       | By default user tokens are created with a TTL of 1h, you can override that with this param
-cms.iam.token.ttl.override                          | No       | By default IAM tokens are created with a TTL of 1h, you can override that with this param
+cms.user.token.ttl                                  | No       | By default user tokens are created with a TTL of 1h, you can override that with this param
+cms.iam.token.ttl                                   | No       | By default IAM tokens are created with a TTL of 1h, you can override that with this param
 cms.kms.policy.validation.interval.millis.override  | No       | By default CMS validates KMS key policies no more than once per minute, you can override that with this param
+cms.auth.token.hash.salt                            | Yes      | The string value which CMS will use to salt auth tokens
+cms.encryption.cmk.arns                             | Yes      | Development AWS KMS CMK ARNs for use in local encryption of secrets
 
 KMS Policies are bound to IAM Principal IDs rather than ARNs themselves. Because of this, we validate the policy at authentication time
 to ensure that if an IAM role has been deleted and re-created, that we grant access to the new principal ID.
 The API limit for this call is low, so the `cms.kms.policy.validation.interval.millis.override` property is used to throttle this validation.
 
-For local dev see `Running CMS Locally`.
+For local dev see the `Development` section.
 
 For deployed environments they are configured via the CLI, which will generate a props file and stuff it into S3 encrypted with KMS.
 
@@ -138,7 +118,7 @@ cms.auth.connector                    | Yes      | com.nike.cerberus.auth.connec
 auth.connector.okta.api_key           | Yes      | The Okta API key
 auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `"https://example.okta.com"` or `"https://example.oktapreview.com"`)
 
-## Running CMS Locally
+## Development
 
 First, a few properties must be configured in `src/main/resources/cms-local-overrides.conf`
 
@@ -149,7 +129,8 @@ You'll need a few pieces of information before you can run the application:
 - The root user ARN for your AWS account
 - The AWS IAM role ARN that represents administrators and CMS instances
 - The authentication connector class that is used to authenticate users and get their group membership
-
+- The string value which CMS will use to salt auth tokens
+- Development AWS KMS CMK ARNs for use in local encryption of secrets
 ```
     # Database connection details.
     JDBC.url="jdbc:mysql://localhost:3306/cms?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false"
@@ -166,41 +147,89 @@ You'll need a few pieces of information before you can run the application:
 
     # Auth Connector
     cms.auth.connector=<YOUR AUTH CONNECTOR CLASS>
+
+    # Encryption
+    cms.auth.token.hash.salt=changeMe 
+    cms.encryption.cmk.arns="arn:aws:kms:<AWS REGION>:<YOUR AWS ACCOUNT ID>:key/<KEY ID 1>,arn:aws:kms:<AWS REGION>:<YOUR AWS ACCOUNT ID>:key/<KEY ID 2>"
 ```
 
-### Using Gradle and embedded dependencies (Vault, MySql and the reverse proxy and Dashboard)
+### Dashboard
 
-This option is for running locally uses embedded Vault, MySQL, and runs the Dashboard with reverse proxy.
+To debug/test changes to the dashboard, run each of the following tasks in new command line terminals (each are blocking tasks).
 
-Run each of the following tasks in new command line terminals (each are blocking tasks).
+Using Embedded MySQL:
 
-Steps:
-
-1. `gradlew runVaultAndMySQL`
-    - Downloads and configures embedded MySQL and Vault,
-    - You can control Vault version with `vaultVersion` in `gradle/develop.gradle`
+1. `gradlew startMysqlAndDashboard`
+    - Starts an embedded instance of MySql in the background
+    - Starts the Dashboard as a blocking process 
     - This task needs to be run as Admin in Windows, ensure that you start the IDE or Terminals as Admin
-    - Once you see `core: post-unseal setup complete` proceed to next step
-2. `gradlew runCMS`
-    - Auto-sets the Vault system props from `runVaultAndMySQL` and starts CMS
-    - To debug attach remote debugger to port 5005
-    - If you wish to do IAM auth in dev mode you will need to make sure you set your env as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
-    - Now you should have a complete CMS system running locally.  The next steps are optional.
-3. `gradlew runDashboardAndReverseProxy` (optional)
-    - Runs the dashboard and reverse proxy to interact with CMS, which sometimes better than curling or using postman.
-    - Runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
-    - By default this command runs the dashboard through Webpack. You can run the Dashboard from the CMS jar by changing the `loadDashboardFromCms` variable in `dashboard/server.js` to true
-4. `gradlew bootstrapData` (optional)
-    - Adds some data test data to Cerberus since `runVaultAndMySQL` is ephemeral and deletes everything when the process ends.
+    - Once you see `successfully started MySQL and Dashboard` proceed to next step
+1. `gradlew runCMS`
+    - Starts CMS as a blocking process
+    - To debug, use the `debugCMS` gradle task instead and attach remote debugger to port 5005
+    - You will need to make sure your env is set as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
+    - Now you should have a complete CMS system running locally.
 
 Above should work on Windows, Mac, and Linux.
 
-### From the IDE
+Using local instance of MySQL server:
 
-With Vault and MySQL running
-Simply run `com.nike.cerberus.Main`.  The following VM arguments should be set:
+1. If setting up for the first time:
+    1.  `mysql` -- Run this command as an admin in your Terminal
+    1.  Run the following in the `mysql` console:
+    ```
+        CREATE DATABASE IF NOT EXISTS cms;
+        CREATE USER 'cms'@'localhost' IDENTIFIED BY '<YOUR PASSWORD HERE>';
+        GRANT ALL ON cms.* TO 'cms'@'localhost’;
+    ```
+1. `mysql.server start`
+    - Starts MySql server
+1. `gradlew runCMS`
+    - Starts CMS as a blocking process
+    - To debug, use the `debugCMS` gradle task instead and attach remote debugger to port 5005
+    - You will need to make sure your env is set as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
+    - Now you should have a complete CMS system running locally.
+1. `gradlew runDashboardAndReverseProxy`
+    - Runs the dashboard and reverse proxy to interact with CMS, which sometimes better than curling or using postman.
+    - Runs an express server and reverse proxy to expose `http://localhost:9001/dashboard/`
+    - By default this command runs the dashboard through Webpack. You can run the Dashboard from the CMS jar by changing the `loadDashboardFromCms` variable in `dashboard/server.js` to true
 
-    -D@appId=cms -D@environment=local -Dvault.addr=http://localhost:8200 -Dvault.token=<token>
+Above should work on Windows, Mac, and Linux.
+
+### Cerberus Management Service (CMS)
+
+To debug/test changes to CMS, run each of the following tasks in new command line terminals (each are blocking tasks).
+
+Using Embedded MySQL:
+
+1. `gradlew startMysqlAndCms`
+    - Starts an embedded instance of MySql in the background
+    - Starts CMS as a blocking process 
+    - This task needs to be run as Admin in Windows, ensure that you start the IDE or Terminals as Admin
+    - Once you see `successfully started MySQL and CMS` proceed to next step
+
+Above should work on Windows, Mac, and Linux.
+
+Using local instance of MySQL server:
+
+1. If setting up for the first time:
+    1.  `mysql` -- Run this command as an admin in your Terminal
+    1.  Run the following in the `mysql` console:
+    ```
+        CREATE DATABASE IF NOT EXISTS cms;
+        CREATE USER 'cms'@'localhost' IDENTIFIED BY '<YOUR PASSWORD HERE>';
+        GRANT ALL ON cms.* TO 'cms'@'localhost’;
+    ```
+1. `mysql.server start`
+    - Starts MySql server
+1. `gradlew runCMS`
+    - Starts CMS as a blocking process
+    - To debug, use the `debugCMS` gradle task instead and attach remote debugger to port 5005
+    - You will need to make sure your env is set as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
+    - Now you should have a complete CMS system running locally.
+    - Navigate to localhost:8080/dashboard in your browser to log in
+
+Above should work on Windows, Mac, and Linux.
 
 ### From the CLI
 

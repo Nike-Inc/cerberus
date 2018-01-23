@@ -23,14 +23,14 @@ export function submitCreateNewSDB(data, token) {
         axios({
             method: 'post',
             url: `${environmentService.getDomain()}${cms.BUCKET_RESOURCE}`,
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             data: formData,
             timeout: 10 * 1000 // 10 seconds
         })
         .then(function(response) {
             dispatch(modalActions.popModal())
             dispatch(authActions.refreshAuth(token, `/manage-safe-deposit-box/${response.data.id}`))
-            dispatch(clearVaultData())
+            dispatch(clearSecureData())
         })
         .catch(function (response) {
             log.error('Failed to create new SDB', response)
@@ -59,8 +59,8 @@ export function resetSubmittingNewSDBRequest() {
     }
 }
 
-export function clearVaultData() {
+export function clearSecureData() {
     return {
-        type: constants.CLEAR_VAULT_DATA
+        type: constants.CLEAR_SECURE_DATA
     }
 }

@@ -40,8 +40,8 @@ public class HealthCheckEndpointTest {
 
     @Test
     public void healthCheckEndpoint_should_always_return_http_status_code_200() {
-        CompletableFuture<ResponseInfo<Void>> responseFuture = subject.execute(null, null, null);
-        ResponseInfo<Void> responseInfo = responseFuture.join();
+        CompletableFuture<ResponseInfo<String>> responseFuture = subject.execute(null, null, null);
+        ResponseInfo<String> responseInfo = responseFuture.join();
 
         assertThat(responseInfo.getHttpStatusCode()).isEqualTo(200);
     }

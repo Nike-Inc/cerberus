@@ -32,6 +32,7 @@ public class SDBMetadata {
     private String lastUpdatedBy;
     private Map<String, String> userGroupPermissions;
     private Map<String, String> iamRolePermissions;
+    private Map<String, Map<String, Object>> data;
 
     public String getName() {
         return name;
@@ -119,5 +120,13 @@ public class SDBMetadata {
 
     public void setIamRolePermissions(Map<String, String> iamRolePermissions) {
         this.iamRolePermissions = iamRolePermissions;
+    }
+
+    public Map<String, Map<String, Object>> getData() {
+        return data;
+    }
+
+    public void setData(Map<String, Map<String, Object>> data) {
+        this.data = data;
     }
 }

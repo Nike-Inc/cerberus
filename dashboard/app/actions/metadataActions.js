@@ -15,7 +15,7 @@ export function fetchMetadata(token, pageNumber, perPage) {
                 limit: perPage,
                 offset: Math.ceil(pageNumber * perPage)
             },
-            headers: {'X-Vault-Token': token},
+            headers: {'X-Cerberus-Token': token},
             timeout: 10000
         })
         .then(function (response) {

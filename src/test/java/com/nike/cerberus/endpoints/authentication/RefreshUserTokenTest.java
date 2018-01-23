@@ -21,12 +21,12 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
+import com.nike.cerberus.domain.AuthTokenResponse;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
-import com.nike.cerberus.security.VaultSecurityContext;
+import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.cerberus.security.CerberusSecurityContext;
 import com.nike.cerberus.service.AuthenticationService;
-import com.nike.vault.client.model.VaultAuthResponse;
-import com.nike.vault.client.model.VaultClientTokenResponse;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.handler.codec.http.HttpMethod;
@@ -51,17 +51,17 @@ public class RefreshUserTokenTest {
 
     private AuthenticationService authenticationService;
 
-    private RefreshUserToken subject;
+    private RefreshUserToken refreshUserTokenEndpoint;
 
     @Before
     public void setUp() throws Exception {
         authenticationService = mock(AuthenticationService.class);
-        subject = new RefreshUserToken(authenticationService);
+        refreshUserTokenEndpoint = new RefreshUserToken(authenticationService);
     }
 
     @Test
     public void requestMatcher_is_http_get() {
-        final Collection<HttpMethod> httpMethods = subject.requestMatcher().matchingMethods();
+        Collection<HttpMethod> httpMethods = refreshUserTokenEndpoint.requestMatcher().matchingMethods();
 
         assertThat(httpMethods).hasSize(1);
         assertThat(httpMethods).contains(HttpMethod.GET);
@@ -69,39 +69,44 @@ public class RefreshUserTokenTest {
 
     @Test
     public void execute_returns_new_token_if_replacing_valid_one() {
-        final Map<String, Object> requestAttributes = Maps.newHashMap();
-        final Map<String, String> meta = Maps.newHashMap();
-        meta.put(VaultAuthPrincipal.METADATA_KEY_IS_ADMIN, Boolean.TRUE.toString());
-        meta.put(VaultAuthPrincipal.METADATA_KEY_USERNAME, "username");
-        meta.put(VaultAuthPrincipal.METADATA_KEY_GROUPS, "group1,group2");
-        final VaultAuthPrincipal authPrincipal = new VaultAuthPrincipal(new VaultClientTokenResponse().setMeta(meta));
+        Map<String, Object> requestAttributes = Maps.newHashMap();
+
+        CerberusPrincipal authPrincipal = new CerberusPrincipal(
+                CerberusAuthToken.Builder.create()
+                        .withIsAdmin(true)
+                        .withPrincipal("username")
+                        .withGroups("group1,group2")
+                        .build());
+
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY,
-                new VaultSecurityContext(authPrincipal, "https"));
-        final VaultAuthResponse vaultAuthResponse = new VaultAuthResponse();
-        final AuthResponse authResponse = new AuthResponse();
+                new CerberusSecurityContext(authPrincipal, "https"));
+        AuthTokenResponse response = new AuthTokenResponse();
+
+        AuthResponse authResponse = new AuthResponse();
         authResponse.setStatus(AuthStatus.SUCCESS);
-        authResponse.setData(new AuthData().setUsername("username").setClientToken(vaultAuthResponse));
-        final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
+        authResponse.setData(new AuthData().setUsername("username").setClientToken(response));
+        RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
         when(authenticationService.refreshUserToken(authPrincipal)).thenReturn(authResponse);
 
-        final CompletableFuture<ResponseInfo<AuthResponse>> completableFuture =
-                subject.execute(requestInfo, executor, null);
-        final ResponseInfo<AuthResponse> responseInfo = completableFuture.join();
+        CompletableFuture<ResponseInfo<AuthResponse>> completableFuture =
+                refreshUserTokenEndpoint.execute(requestInfo, executor, null);
+        
+        ResponseInfo<AuthResponse> responseInfo = completableFuture.join();
 
         assertThat(responseInfo.getContentForFullResponse()).isEqualTo(authResponse);
     }
 
     @Test
     public void execute_throws_api_error_if_no_security_context() {
-        final Map<String, Object> requestAttributes = Maps.newHashMap();
+        Map<String, Object> requestAttributes = Maps.newHashMap();
         requestAttributes.put(CmsRequestSecurityValidator.SECURITY_CONTEXT_ATTR_KEY, null);
-        final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
+        RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
 
         try {
-            final CompletableFuture<ResponseInfo<AuthResponse>> completableFuture =
-                    subject.execute(requestInfo, executor, null);
+            CompletableFuture<ResponseInfo<AuthResponse>> completableFuture =
+                    refreshUserTokenEndpoint.execute(requestInfo, executor, null);
             completableFuture.join();
             fail("Expected exception not thrown.");
         } catch (CompletionException cex) {

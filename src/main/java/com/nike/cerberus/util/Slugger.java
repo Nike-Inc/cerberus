@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -34,5 +36,9 @@ public class Slugger {
         final String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         final String slug = NONLATIN.matcher(normalized).replaceAll("");
         return slug.toLowerCase(Locale.ENGLISH);
+    }
+
+    public String slugifyKmsAliases(String input) {
+        return StringUtils.replacePattern(input, "[^a-zA-Z0-9:/_-]+", "-");
     }
 }

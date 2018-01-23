@@ -24,6 +24,7 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Validator that checks if the owner field is included in the user group permissions.
@@ -41,10 +42,7 @@ public class UniqueOwnerValidator implements ConstraintValidator<UniqueOwner, Sa
             return true;
         }
 
-        final Set<String> userGroupNameSet = new HashSet<>();
-        for (UserGroupPermission userGroupPermission : safeDepositBox.getUserGroupPermissions()) {
-            userGroupNameSet.add(userGroupPermission.getName());
-        }
+        final Set<String> userGroupNameSet = safeDepositBox.getUserGroupPermissions().stream().map(UserGroupPermission::getName).collect(Collectors.toSet());
 
         return !userGroupNameSet.contains(safeDepositBox.getOwner());
     }

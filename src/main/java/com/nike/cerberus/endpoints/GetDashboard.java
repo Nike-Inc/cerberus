@@ -20,6 +20,7 @@ package com.nike.cerberus.endpoints;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.AssetResourceFile;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.security.SecurityHttpHeaders;
 import com.nike.cerberus.service.StaticAssetManager;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -62,6 +63,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private static final String VERSION_FILE_NAME = "version";
 
+
     private final StaticAssetManager dashboardAssetManager;
 
     private final String cmsVersion;
@@ -101,7 +103,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
     }
 
     private FullResponseInfo<byte[]> getDashboardAsset(RequestInfo<Void> request) {
-        logger.info("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
+        logger.debug("{}: {}, Get Dashboard Asset Event: ip: {} is attempting to get dashboard asset: '{}'",
                 HEADER_X_CERBERUS_CLIENT,
                 getClientVersion(request),
                 getXForwardedClientIp(request),
@@ -118,6 +120,7 @@ public class GetDashboard extends StandardEndpoint<Void, byte[]> {
                 .withContentForFullResponse(dashboardResource.getFileContents())
                 .withDesiredContentWriterMimeType(dashboardResource.getMimeType())
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
+                .withHeaders(new SecurityHttpHeaders())
                 .build();
     }
 

@@ -17,15 +17,13 @@
 package com.nike.cerberus.config;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3EncryptionClient;
-import com.amazonaws.services.s3.model.CryptoConfiguration;
+import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.KMSEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.model.S3Object;
 import com.nike.cerberus.ServerInitializationError;
+import com.nike.cerberus.util.CiphertextUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -37,53 +35,81 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import static com.nike.cerberus.service.EncryptionService.decrypt;
+
 /**
- * Polls the vault properties from the Cerberus config bucket and loads them into Archaius.
+ * Reads configuration from the Cerberus config bucket in S3
  */
 public class CmsEnvPropertiesLoader {
 
-    private static final String ENV_PATH = "data/cms/environment.properties";
+    private static final String ENV_PATH = "cms/environment.properties";
+    private static final String CERTIFICATE_PATH = "certificates/%s/cert.pem";
+    private static final String PRIVATE_KEY_PATH = "certificates/%s/pkcs8-key.pem";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final AmazonS3EncryptionClient s3Client;
+    private final AmazonS3 s3Client;
 
     private final String bucketName;
 
-    public CmsEnvPropertiesLoader(final String bucketName, final String region, final String kmsKeyId) {
-        final KMSEncryptionMaterialsProvider materialProvider =
-                new KMSEncryptionMaterialsProvider(kmsKeyId);
+    private final AwsCrypto awsCrypto;
 
-        this.s3Client =
-                new AmazonS3EncryptionClient(
-                        new DefaultAWSCredentialsProviderChain(),
-                        materialProvider,
-                        new CryptoConfiguration()
-                                .withAwsKmsRegion(Region.getRegion(
-                                        Regions.fromName(region))))
-                        .withRegion(Region.getRegion(Regions.fromName(region)));
+    public CmsEnvPropertiesLoader(final String bucketName,
+                                  final String region,
+                                  AwsCrypto awsCrypto) {
+
+        this.s3Client = AmazonS3Client.builder().withRegion(region).build();
 
         this.bucketName = bucketName;
+        this.awsCrypto = awsCrypto;
     }
 
     public Properties getProperties() {
-        final String vaultPropertiesContents = getObject(ENV_PATH);
+        final String propertyContents = getPlainText(ENV_PATH);
 
-        if (StringUtils.isBlank(vaultPropertiesContents)) {
-            throw new IllegalStateException("Vault properties file was blank!");
+        if (StringUtils.isBlank(propertyContents)) {
+            throw new IllegalStateException(ENV_PATH + " file was blank!");
         }
 
-        final Properties vaultProperties = new Properties();
+        final Properties props = new Properties();
         try {
-            vaultProperties.load(new StringReader(vaultPropertiesContents));
+            props.load(new StringReader(propertyContents));
         } catch (IOException e) {
-            throw new ServerInitializationError("Failed to read the vault properties contents!", e);
+            throw new ServerInitializationError("Failed to read " + ENV_PATH + " contents!", e);
         }
 
-        return vaultProperties;
+        return props;
     }
 
-    private String getObject(String path) {
+    /**
+     * Get the value of the Certificate from S3
+     * @param certificateName
+     */
+    public String getCertificate(String certificateName) {
+        return getPlainText(String.format(CERTIFICATE_PATH, certificateName));
+    }
+
+    /**
+     * Get the value of the PKCS8 Private Key from S3.
+     *
+     * The SslContextBuilder and Netty´s SslContext implementations only support PKCS8 keys.
+     *
+     * http://netty.io/wiki/sslcontextbuilder-and-private-key.html
+     * @param certificateName
+     */
+    public String getPrivateKey(String certificateName) {
+        return getPlainText(String.format(PRIVATE_KEY_PATH, certificateName));
+    }
+
+    private final String getPlainText(String path) {
+        try {
+            return decrypt(CiphertextUtils.parse(getCipherText(path)), awsCrypto);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to download and decrypt environment specific properties from s3", e);
+        }
+    }
+
+    private String getCipherText(String path) {
         final GetObjectRequest request = new GetObjectRequest(bucketName, path);
 
         try {

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Component } from 'react'
 import { connect } from 'react-redux'
-import VaultBrowser from '../VaultBrowser/VaultBrowser'
+import SecureDataBrowser from '../SecureDataBrowser/SecureDataBrowser'
 import EditSDBoxForm from '../EditSDBoxForm/EditSDBoxForm'
 
 import * as sdbMActions from '../../actions/manageSafetyDepositBoxActions'
@@ -16,7 +16,7 @@ var log = getLogger('manage-sdb')
 @connect((state) => {
     return {
         // user info
-        vaultToken: state.auth.vaultToken,
+        cerberusAuthToken: state.auth.cerberusAuthToken,
 
         // Domain data
         hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
@@ -27,8 +27,8 @@ var log = getLogger('manage-sdb')
         hasFetchedSDBData: state.manageSafetyDepositBox.hasFetchedSDBData,
         sdbData: state.manageSafetyDepositBox.data,
         navigatedPath: state.manageSafetyDepositBox.navigatedPath,
-        vaultPathKeys: state.manageSafetyDepositBox.vaultPathKeys,
-        vaultSecretsData: state.manageSafetyDepositBox.vaultSecretsData,
+        keysForSecureDataPath: state.manageSafetyDepositBox.keysForSecureDataPath,
+        secureData: state.manageSafetyDepositBox.secureData,
         hasFetchedKeys: state.manageSafetyDepositBox.hasFetchedKeys,
         showAddSecretForm: state.manageSafetyDepositBox.showAddSecretForm,
 
@@ -39,7 +39,7 @@ export default class ManageSDBox extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.routeParams.id != this.props.routeParams.id) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.routeParams.id, this.props.vaultToken))
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.routeParams.id, this.props.cerberusAuthToken))
         }
     }
 
@@ -48,10 +48,10 @@ export default class ManageSDBox extends Component {
      */
     componentDidMount() {
         if (! this.props.hasDomainDataLoaded) {
-            this.props.dispatch(appActions.fetchCmsDomainData(this.props.vaultToken))
+            this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken))
         }
         if (! this.props.hasFetchedSDBData) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.routeParams.id, this.props.vaultToken))
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.routeParams.id, this.props.cerberusAuthToken))
         }
     }
 
@@ -67,12 +67,12 @@ export default class ManageSDBox extends Component {
             roles,
             sdbData,
             navigatedPath,
-            vaultPathKeys,
+            keysForSecureDataPath,
             dispatch,
-            vaultToken,
+            cerberusAuthToken,
             displayPermissions,
             hasFetchedKeys,
-            vaultSecretsData,
+            secureData,
             showAddSecretForm
         } = this.props
 
@@ -95,7 +95,8 @@ export default class ManageSDBox extends Component {
                                 dispatch(modalActions.pushModal(<EditSDBoxForm />))
                             }}></div>
                             <div className="manage-sdb-box-delete" onClick={() => {
-                                dispatch(sdbMActions.deleteSDBConfirm(sdbData.id, vaultToken))
+                                let hasSecureData = keysForSecureDataPath.length > 0
+                                dispatch(sdbMActions.deleteSDBConfirm(sdbData.id, hasSecureData, cerberusAuthToken))
                             }}></div>
                         </div>
                     </div>
@@ -130,12 +131,12 @@ export default class ManageSDBox extends Component {
 
                     </div>
                 </div>
-                <div id="manage-sdb-box-vault-browser-container">
-                    <VaultBrowser vaultToken={vaultToken}
+                <div id="manage-sdb-box-secure-data-browser-container">
+                    <SecureDataBrowser cerberusAuthToken={cerberusAuthToken}
                                   hasFetchedKeys={hasFetchedKeys}
                                   navigatedPath={navigatedPath}
-                                  vaultPathKeys={vaultPathKeys}
-                                  vaultSecretsData={vaultSecretsData}
+                                  keysForSecureDataPath={keysForSecureDataPath}
+                                  secureData={secureData}
                                   showAddSecretForm={showAddSecretForm}
                                   dispatch={dispatch} />
                 </div>

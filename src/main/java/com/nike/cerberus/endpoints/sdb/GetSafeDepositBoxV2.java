@@ -19,13 +19,13 @@ package com.nike.cerberus.endpoints.sdb;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
+import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.security.VaultAuthPrincipal;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
-import com.nike.riposte.server.http.StandardEndpoint;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,15 +39,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static com.nike.cerberus.CerberusHttpHeaders.HEADER_X_CERBERUS_CLIENT;
-import static com.nike.cerberus.CerberusHttpHeaders.getClientVersion;
-import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
-
 /**
  * Extracts the user groups from the security context for the request and attempts to get details about the safe
  * deposit box by its unique id.
  */
-public class GetSafeDepositBoxV2 extends StandardEndpoint<Void, SafeDepositBoxV2> {
+public class GetSafeDepositBoxV2 extends AuditableEventEndpoint<Void, SafeDepositBoxV2> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -73,22 +69,13 @@ public class GetSafeDepositBoxV2 extends StandardEndpoint<Void, SafeDepositBoxV2
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
-            final VaultAuthPrincipal vaultAuthPrincipal = (VaultAuthPrincipal) securityContext.get().getUserPrincipal();
+            final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
             String sdbId = request.getPathParam("id");
-            Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
-            String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
-            log.info("{}: {}, Read SDB Event: the principal: {} from ip: {} is attempting to read sdb name: '{}' and id: '{}'",
-                    HEADER_X_CERBERUS_CLIENT,
-                    getClientVersion(request),
-                    vaultAuthPrincipal.getName(),
-                    getXForwardedClientIp(request),
-                    sdbName,
-                    sdbId);
 
             final SafeDepositBoxV2 safeDepositBox =
                     safeDepositBoxService.getSDBAndValidatePrincipalAssociationV2(
-                            vaultAuthPrincipal,
+                            authPrincipal,
                             sdbId);
 
             return ResponseInfo.newBuilder(safeDepositBox).build();
@@ -100,5 +87,13 @@ public class GetSafeDepositBoxV2 extends StandardEndpoint<Void, SafeDepositBoxV2
     @Override
     public Matcher requestMatcher() {
         return Matcher.match("/v2/safe-deposit-box/{id}", HttpMethod.GET);
+    }
+
+    @Override
+    protected String describeActionForAuditEvent(RequestInfo<Void> request) {
+        String sdbId = request.getPathParam("id");
+        Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+        String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+        return String.format("Fetch details for SDB with name: '%s' and id: '%s'", sdbName, sdbId);
     }
 }
