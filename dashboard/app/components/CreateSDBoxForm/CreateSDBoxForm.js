@@ -114,7 +114,7 @@ export default class CreateSDBoxForm extends Component {
                         <label className='ncss-label'>Name</label>
                         <input type='text'
                                className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm'
-                               placeholder='Enter an immutable name for your new Secrets Safe Deposit Box'
+                               placeholder='Enter an immutable name for your new Safe Deposit Box'
                                maxLength={`${cms.SDB_NAME_MAX_LENGTH}`}
                             {...name}/>
                         {name.touched && name.error && <div className='ncss-error-msg'>{name.error}</div>}
