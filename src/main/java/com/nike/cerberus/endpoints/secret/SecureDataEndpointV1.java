@@ -122,7 +122,10 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
     }
 
     protected SecureDataRequestInfo parseInfoFromPath(String path) {
-        String[] parts = path.split("/", 6);
+        String[] parts = path
+                .replace("//", "/")
+                .split("/", 6);
+
         SecureDataRequestInfo info = new SecureDataRequestInfo();
         if (parts.length >= 4) {
             info.setCategory(parts[3]);
