@@ -193,8 +193,7 @@ logger("com.nike.metrics.newrelic.NewRelicReporter", WARN, allAsyncAppendersArra
 
 logger("com.nike.cerberus", INFO, allAsyncAppendersArray, false)
 
-// TODO revert before merge to master
-logger("com.nike.cerberus.jobs.HystrixMetricsProcessingJob", DEBUG, allAsyncAppendersArray, false)
+logger("com.nike.cerberus.jobs.HystrixMetricsProcessingJob", INFO, allAsyncAppendersArray, false)
 
 logger("VALID_WINGTIPS_SPANS", OFF, allAsyncAppendersArray, false)
 
