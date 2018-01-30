@@ -6,6 +6,8 @@ import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.util.CiphertextUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,7 @@ import javax.inject.Named;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -141,10 +144,19 @@ public class EncryptionService {
      * For decrypt, KMS in at least one region must be available.
      */
     protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns) {
-        List<MasterKeyProvider<KmsMasterKey>> providers = cmkArns.stream()
+        List<MasterKeyProvider<KmsMasterKey>> providers =
+                getSortedArnListByCurrentRegion(cmkArns, Regions.getCurrentRegion()).stream()
                 .map(KmsMasterKeyProvider::new)
                 .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
+    }
+
+    protected static List<String> getSortedArnListByCurrentRegion(List<String> cmkArns, Region currentRegion) {
+        List<String> newList = new LinkedList<>();
+        cmkArns.stream().filter(s -> s.contains(currentRegion.getName())).forEach(newList::add);
+        cmkArns.removeAll(newList);
+        newList.addAll(cmkArns);
+        return newList;
     }
 
     /**
