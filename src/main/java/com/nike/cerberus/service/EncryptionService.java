@@ -143,8 +143,9 @@ public class EncryptionService {
      * For decrypt, KMS in at least one region must be available.
      */
     protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns) {
+        Region region = Regions.getCurrentRegion();
         List<MasterKeyProvider<KmsMasterKey>> providers =
-                getSortedArnListByCurrentRegion(cmkArns, Regions.getCurrentRegion()).stream()
+                getSortedArnListByCurrentRegion(cmkArns, region == null ? Region.getRegion(Regions.DEFAULT_REGION) : region).stream()
                         .map(KmsMasterKeyProvider::new)
                         .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
