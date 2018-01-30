@@ -6,6 +6,8 @@ import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.util.CiphertextUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -141,10 +143,29 @@ public class EncryptionService {
      * For decrypt, KMS in at least one region must be available.
      */
     protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns) {
-        List<MasterKeyProvider<KmsMasterKey>> providers = cmkArns.stream()
-                .map(KmsMasterKeyProvider::new)
-                .collect(Collectors.toList());
+        List<MasterKeyProvider<KmsMasterKey>> providers =
+                getSortedArnListByCurrentRegion(cmkArns, Regions.getCurrentRegion()).stream()
+                        .map(KmsMasterKeyProvider::new)
+                        .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
+    }
+
+    /**
+     * ARN with current region should always go first to minimize latency
+     */
+    protected static List<String> getSortedArnListByCurrentRegion(List<String> cmkArns, Region currentRegion) {
+        return cmkArns.stream().sorted((s1, s2) -> {
+            if (s1.contains(currentRegion.getName())) {
+                // ARN with current region should always go first
+                return -1;
+            } else if (s2.contains(currentRegion.getName())) {
+                // ARN with current region should always go first
+                return 1;
+            } else {
+                // otherwise order isn't that important
+                return s1.compareTo(s2);
+            }
+        }).collect(Collectors.toList());
     }
 
     /**
