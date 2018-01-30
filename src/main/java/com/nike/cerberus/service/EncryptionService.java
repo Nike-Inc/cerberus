@@ -151,12 +151,19 @@ public class EncryptionService {
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
     }
 
+    /**
+     * ARN with current region should always go first to minimize latency
+     */
     protected static List<String> getSortedArnListByCurrentRegion(List<String> cmkArns, Region currentRegion) {
-        List<String> newList = new LinkedList<>();
-        cmkArns.stream().filter(s -> s.contains(currentRegion.getName())).forEach(newList::add);
-        cmkArns.removeAll(newList);
-        newList.addAll(cmkArns);
-        return newList;
+        return cmkArns.stream().sorted((s1, s2) -> {
+            if (s1.contains(currentRegion.getName())) {
+                // ARN with current region should always go first
+                return -1;
+            } else {
+                // otherwise order isn't that important
+                return s1.compareTo(s2);
+            }
+        }).collect(Collectors.toList());
     }
 
     /**
