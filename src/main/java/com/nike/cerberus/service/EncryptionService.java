@@ -20,7 +20,6 @@ import javax.inject.Named;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -146,8 +145,8 @@ public class EncryptionService {
     protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns) {
         List<MasterKeyProvider<KmsMasterKey>> providers =
                 getSortedArnListByCurrentRegion(cmkArns, Regions.getCurrentRegion()).stream()
-                .map(KmsMasterKeyProvider::new)
-                .collect(Collectors.toList());
+                        .map(KmsMasterKeyProvider::new)
+                        .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
     }
 
@@ -159,6 +158,9 @@ public class EncryptionService {
             if (s1.contains(currentRegion.getName())) {
                 // ARN with current region should always go first
                 return -1;
+            } else if (s2.contains(currentRegion.getName())) {
+                // ARN with current region should always go first
+                return 1;
             } else {
                 // otherwise order isn't that important
                 return s1.compareTo(s2);
