@@ -39,14 +39,17 @@ public class EncryptionService {
     private final AwsCrypto awsCrypto;
     private final MasterKeyProvider<KmsMasterKey> encryptProvider;
     private final String cmsVersion;
+    private final Region currentRegion;
 
     @Inject
     public EncryptionService(AwsCrypto awsCrypto,
                              @Named("cms.encryption.cmk.arns") String cmkArns,
                              @Named("service.version") String cmsVersion) {
 
+        Region region = Regions.getCurrentRegion();
+        currentRegion = region == null ? Region.getRegion(Regions.DEFAULT_REGION ) : region;
         this.awsCrypto = awsCrypto;
-        this.encryptProvider = initializeKeyProvider(splitArns(cmkArns));
+        this.encryptProvider = initializeKeyProvider(splitArns(cmkArns), currentRegion);
         this.cmsVersion = cmsVersion;
     }
 
@@ -89,7 +92,11 @@ public class EncryptionService {
      */
     private String decrypt(ParsedCiphertext parsedCiphertext, String sdbPath) {
         validateEncryptionContext(parsedCiphertext, sdbPath);
-        return decrypt(parsedCiphertext, awsCrypto);
+        // Parses the ARNs out of the encryptedPayload so that you can manually rotate the CMKs, if desired
+        // Whatever CMKs were used in the encrypt operation will be used to decrypt
+        List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
+        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
+        return new String(awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -97,11 +104,11 @@ public class EncryptionService {
      *
      * @param parsedCiphertext encryptedPayload
      */
-    public static String decrypt(ParsedCiphertext parsedCiphertext, AwsCrypto awsCrypto) {
+    public static String decrypt(ParsedCiphertext parsedCiphertext, AwsCrypto awsCrypto, Region currentRegion) {
         // Parses the ARNs out of the encryptedPayload so that you can manually rotate the CMKs, if desired
         // Whatever CMKs were used in the encrypt operation will be used to decrypt
         List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
-        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns);
+        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
         return new String(awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
     }
 
@@ -142,10 +149,9 @@ public class EncryptionService {
      * For encrypt, KMS in all regions must be available.
      * For decrypt, KMS in at least one region must be available.
      */
-    protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns) {
-        Region region = Regions.getCurrentRegion();
+    protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns, Region currentRegion) {
         List<MasterKeyProvider<KmsMasterKey>> providers =
-                getSortedArnListByCurrentRegion(cmkArns, region == null ? Region.getRegion(Regions.DEFAULT_REGION) : region).stream()
+                getSortedArnListByCurrentRegion(cmkArns, currentRegion).stream()
                         .map(KmsMasterKeyProvider::new)
                         .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);

@@ -18,6 +18,8 @@ package com.nike.cerberus.config;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -54,10 +56,14 @@ public class CmsEnvPropertiesLoader {
 
     private final AwsCrypto awsCrypto;
 
+    private final Region currentRegion;
+
+
     public CmsEnvPropertiesLoader(final String bucketName,
                                   final String region,
                                   AwsCrypto awsCrypto) {
 
+        currentRegion = Region.getRegion(Regions.fromName(region));
         this.s3Client = AmazonS3Client.builder().withRegion(region).build();
 
         this.bucketName = bucketName;
@@ -101,9 +107,9 @@ public class CmsEnvPropertiesLoader {
         return getPlainText(String.format(PRIVATE_KEY_PATH, certificateName));
     }
 
-    private final String getPlainText(String path) {
+    private String getPlainText(String path) {
         try {
-            return decrypt(CiphertextUtils.parse(getCipherText(path)), awsCrypto);
+            return decrypt(CiphertextUtils.parse(getCipherText(path)), awsCrypto, currentRegion);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to download and decrypt environment specific properties from s3", e);
         }
