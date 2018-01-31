@@ -996,6 +996,40 @@ A 400 response code is given if the job wasn't found.
                 ]
             }
 
+## Restore a safe deposit box [v1/restore-sdb]
+
+### [PUT]
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
+    + Body
+
+            {
+                "name":"example",
+                "path":"app/example/",
+                "category":"Applications",
+                "owner":"Owner",
+                "description":"This is the description",
+                "created_ts":"2016-04-12T12:55:41Z",
+                "created_by":"user@example.com",
+                "last_updated_ts":"2016-08-09T12:41:21Z",
+                "last_updated_by":"guest@example.com",
+                "user_group_permissions":{
+                    "ReadUsers":"read"
+                },
+                "iam_role_permissions":{},
+                "data":{
+                    "category/sdb_name/path":{
+                        "key1":"value1"
+                    }
+                }
+            }
+
++ Response 204 No Content
+
 ## Healthcheck [/healthcheck]
 
 ### Healthcheck [GET]
