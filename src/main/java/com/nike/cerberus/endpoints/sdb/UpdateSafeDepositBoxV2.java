@@ -20,10 +20,12 @@ package com.nike.cerberus.endpoints.sdb;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.validation.group.Updatable;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -59,7 +61,7 @@ public class UpdateSafeDepositBoxV2 extends AuditableEventEndpoint<SafeDepositBo
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<SafeDepositBoxV2>> execute(RequestInfo<SafeDepositBoxV2> request,
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV2>> doExecute(RequestInfo<SafeDepositBoxV2> request,
                                                                      Executor longRunningTaskExecutor,
                                                                      ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
@@ -100,10 +102,12 @@ public class UpdateSafeDepositBoxV2 extends AuditableEventEndpoint<SafeDepositBo
     }
 
     @Override
-    protected String describeActionForAuditEvent(RequestInfo<SafeDepositBoxV2> request) {
+    protected CustomizableAuditData getCustomizableAuditData(RequestInfo<SafeDepositBoxV2> request) {
         String sdbId = request.getPathParam("id");
         Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
         String sdbName = sdbNameOptional.orElseGet(() -> String.format("(Failed to lookup name from id: %s)", sdbId));
-        return String.format("Update details for SDB with name: '%s' and id: '%s'", sdbName, sdbId);
+        return  new CustomizableAuditData()
+                .setDescription(String.format("Update details for SDB with name: '%s' and id: '%s'", sdbName, sdbId))
+                .setSdbNameSlug(sdbNameOptional.map(Slugger::toSlug).orElse("_unknown_"));
     }
 }

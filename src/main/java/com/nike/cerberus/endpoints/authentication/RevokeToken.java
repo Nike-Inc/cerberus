@@ -49,7 +49,7 @@ public class RevokeToken extends AuditableEventEndpoint<Void, Void> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Void>> execute(final RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<Void>> doExecute(final RequestInfo<Void> request,
                                                          final Executor longRunningTaskExecutor,
                                                          final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(

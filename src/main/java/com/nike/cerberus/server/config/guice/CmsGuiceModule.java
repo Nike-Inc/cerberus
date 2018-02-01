@@ -17,7 +17,6 @@
 
 package com.nike.cerberus.server.config.guice;
 
-import com.amazonaws.encryptionsdk.AwsCrypto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
@@ -27,7 +26,6 @@ import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
-import com.nike.cerberus.config.CmsEnvPropertiesLoader;
 import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
@@ -64,17 +62,17 @@ import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.AuthTokenService;
-import com.nike.cerberus.service.EncryptionService;
 import com.nike.cerberus.service.EventProcessorService;
+import com.nike.cerberus.service.S3LogUploaderService;
 import com.nike.cerberus.service.StaticAssetManager;
-import com.nike.cerberus.util.ArchaiusUtils;
+import com.nike.cerberus.service.ConfigService;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
 import com.nike.riposte.server.config.AppInfo;
+import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigValueFactory;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -96,7 +94,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -105,39 +102,29 @@ import java.util.stream.Collectors;
 
 public class CmsGuiceModule extends AbstractModule {
 
-    private static final String KMS_KEY_ID_KEY = "CONFIG_KEY_ID";
-
-    private static final String REGION_KEY = "EC2_REGION";
-
-    private static final String BUCKET_NAME_KEY = "CONFIG_S3_BUCKET";
-
-    private static final String CMS_DISABLE_ENV_LOAD_FLAG = "cms.env.load.disable";
-
     private static final String AUTH_CONNECTOR_IMPL_KEY = "cms.auth.connector";
 
     private static final String DASHBOARD_DIRECTORY_RELATIVE_PATH = "/dashboard/";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Config appConfig;
+    private final ConfigService configService = ConfigService.getInstance();
+
     private final ObjectMapper objectMapper;
-    private CmsEnvPropertiesLoader cmsEnvPropertiesLoader;
 
-    public CmsGuiceModule(Config appConfig, ObjectMapper objectMapper) {
-        if (appConfig == null)
-            throw new IllegalArgumentException("appConfig cannot be null");
+    private boolean addS3LoggerToShutdownHooks = false;
 
-        this.appConfig = appConfig;
+    public CmsGuiceModule(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     protected void configure() {
-        loadEnvProperties();
-
         bind(ObjectMapper.class).toInstance(objectMapper);
+        bind(ConfigService.class).toInstance(configService);
 
-        String className = this.appConfig.getString(AUTH_CONNECTOR_IMPL_KEY);
+        String className = configService.getAppConfigMergedWithCliGeneratedProperties()
+                .getString(AUTH_CONNECTOR_IMPL_KEY);
         try
         {
             Class<?> clazz = Class.forName(className);
@@ -150,29 +137,29 @@ public class CmsGuiceModule extends AbstractModule {
             throw new IllegalArgumentException("class: " + className + " is the wrong type", cce);
         }
 
+        configureAuditLogging();
     }
 
-    private void loadEnvProperties() {
-        if (appConfig.hasPath(CMS_DISABLE_ENV_LOAD_FLAG) && appConfig.getBoolean(CMS_DISABLE_ENV_LOAD_FLAG)) {
-            logger.warn("CMS environment property loading disabled.");
-        } else {
-            cmsEnvPropertiesLoader = new CmsEnvPropertiesLoader(
-                    System.getenv(BUCKET_NAME_KEY),
-                    System.getenv(REGION_KEY),
-                    new AwsCrypto());
-            Properties properties = cmsEnvPropertiesLoader.getProperties();
-
-            // bind the props to named props for guice
-            Names.bindProperties(binder(), properties);
-
-            // properties from cms.conf may be overridden in environment.properties
-            ArchaiusUtils.loadProperties(properties);
-
-            for (String propertyName : properties.stringPropertyNames()) {
-                logger.info("Successfully loaded: {} from the env data stored in S3", propertyName);
-                appConfig = appConfig.withValue(propertyName, ConfigValueFactory.fromAnyRef(properties.getProperty(propertyName)));
-            }
+    private void configureAuditLogging() {
+        boolean isAuditLoggingEnabled = configService.isAuditLoggingEnabled();
+        boolean isS3AuditLogCopyingEnabled = configService.isS3AuditLogCopyingEnabled();
+        logger.info("Configuring Audit Logging. isAuditLoggingEnabled: {}, isS3AuditLogCopyingEnabled: {}",
+                isAuditLoggingEnabled, isS3AuditLogCopyingEnabled);
+        if (isAuditLoggingEnabled && isS3AuditLogCopyingEnabled) {
+            bind(S3LogUploaderService.class).asEagerSingleton();
+            addS3LoggerToShutdownHooks = true;
         }
+    }
+
+    @Provides
+    @Singleton
+    @Named("shutdownHooks")
+    public List<ServerShutdownHook> shutdownHooks(Injector injector) {
+        List<ServerShutdownHook> shutdownHooks = new LinkedList<>();
+        if (addS3LoggerToShutdownHooks) {
+            shutdownHooks.add(injector.getInstance(S3LogUploaderService.class));
+        }
+        return shutdownHooks;
     }
 
     @Provides
@@ -277,11 +264,10 @@ public class CmsGuiceModule extends AbstractModule {
     @Named("eventProcessors")
     public List<EventProcessor> eventProcessors(Injector injector) {
         List<EventProcessor> eventProcessors = new LinkedList<>();
-        appConfig.getList("cms.event.enabledProcessors").forEach(processorClassname -> {
+        configService.getEnabledEventProcessors().forEach(processorClassname -> {
             try {
                 EventProcessor processor = (EventProcessor)
-                        injector.getInstance(Class.forName((String) processorClassname.unwrapped()));
-
+                        injector.getInstance(Class.forName(processorClassname));
                 eventProcessors.add(processor);
             } catch (ClassNotFoundException e) {
                 logger.error("Failed to get instance of Event Processor: {}", e);
@@ -304,10 +290,9 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public CmsRequestSecurityValidator authRequestSecurityValidator(
             @Named("authProtectedEndpoints") List<Endpoint<?>> authProtectedEndpoints,
-            AuthTokenService authTokenService,
-            EventProcessorService eventProcessorService) {
+            AuthTokenService authTokenService) {
 
-        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService, eventProcessorService);
+        return new CmsRequestSecurityValidator(authProtectedEndpoints, authTokenService);
     }
 
     @Provides
@@ -340,7 +325,7 @@ public class CmsGuiceModule extends AbstractModule {
     public SslContext sslContext(@Named("cms.ssl.protocolsEnabled") String protocolsEnabled, Injector injector) throws SSLException, CertificateException {
         Validate.notBlank(protocolsEnabled, "cms.ssl.protocolsEnabled requires a list of SSL protocols, e.g. TLSv1.2");
         logger.info("ssl protocols enabled: " + protocolsEnabled);
-        if (cmsEnvPropertiesLoader == null) {
+        if (configService.isS3ConfigDisabled()) {
             logger.info("initializing SslContext by creating a self-signed certificate");
             SelfSignedCertificate ssc = new SelfSignedCertificate("localhost");
             return SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
@@ -350,8 +335,8 @@ public class CmsGuiceModule extends AbstractModule {
             logger.info("initializing SslContext using certificate from S3");
             String certificateName = injector.getInstance(Key.get(String.class, Names.named("cms.ssl.certificateName")));
             logger.info("Perparing to download and use certificate with identity management name: {}", certificateName);
-            InputStream certificate = IOUtils.toInputStream(cmsEnvPropertiesLoader.getCertificate(certificateName), Charset.defaultCharset());
-            InputStream privateKey = IOUtils.toInputStream(cmsEnvPropertiesLoader.getPrivateKey(certificateName), Charset.defaultCharset());
+            InputStream certificate = IOUtils.toInputStream(configService.getCertificate(certificateName), Charset.defaultCharset());
+            InputStream privateKey = IOUtils.toInputStream(configService.getPrivateKey(certificateName), Charset.defaultCharset());
             return SslContextBuilder.forServer(certificate, privateKey)
                     .protocols(StringUtils.split(protocolsEnabled, ","))
                     .build();

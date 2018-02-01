@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.endpoints.authentication;
 
+import com.nike.backstopper.apierror.ApiError;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.service.AuthenticationService;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
 
@@ -75,12 +78,29 @@ public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, Ia
                 credentials.getAccountId(),
                 credentials.getRoleName());
 
-        eventProcessorService.ingestEvent(auditableEvent(String.format("[ Name: %s ]", arn), request, getClass().getSimpleName())
-                .withAction(String.format("Attempting to authenticate in region %s", credentials.getRegion()))
+        IamRoleAuthResponse authResponse = null;
+        try {
+            authResponse = authenticationService.authenticate(request.getContent());
+        } catch (ApiException e) {
+            eventProcessorService.ingestEvent(auditableEvent(
+                    arn, request, getClass().getSimpleName())
+                    .withAction(String.format("Failed to authenticate in region %s, for reason: %s",
+                            credentials.getRegion(),
+                            String.join(",", e.getApiErrors().stream()
+                                    .map(ApiError::getMessage).collect(Collectors.toList()))))
+                    .withSuccess(false)
+                    .build()
+            );
+            throw e;
+        }
+
+        eventProcessorService.ingestEvent(auditableEvent(
+                arn, request, getClass().getSimpleName())
+                .withAction(String.format("Successfully authenticated in region %s", credentials.getRegion()))
                 .build()
         );
 
-        return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
+        return ResponseInfo.newBuilder(authResponse).build();
     }
 
     @Override

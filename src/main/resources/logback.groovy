@@ -16,11 +16,8 @@
 
 import ch.qos.logback.classic.AsyncAppender
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
-import ch.qos.logback.core.Appender
-import ch.qos.logback.core.ConsoleAppender
-import ch.qos.logback.core.rolling.FixedWindowRollingPolicy
-import ch.qos.logback.core.rolling.RollingFileAppender
-import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy
+import ch.qos.logback.core.util.FileSize
+import com.nike.cerberus.service.ConfigService
 
 import static ch.qos.logback.classic.Level.*
 import static ch.qos.logback.core.spi.ContextAware.addInfo
@@ -118,7 +115,7 @@ if (shouldOutputAccessLogsToConsole()) {
     setupConsoleAppender("AccessLogConsoleAppender", accessLogEncoderPattern, allAsyncAccessLogAppendersArray, defaultAsyncQueueSize)
 }
 
-def LOG_FILE_DIRECTORY_PATH = isLocalEnvironment() ? "logs" : "/var/log/@@APPNAME@@"
+def LOG_FILE_DIRECTORY_PATH = isLocalEnvironment() ? "build/logs" : "/var/log/@@APPNAME@@"
 addInfo("******Outputting app logs to log file in directory ${LOG_FILE_DIRECTORY_PATH}: " + shouldOutputToLogFile())
 println("******Outputting app logs to log file in directory ${LOG_FILE_DIRECTORY_PATH}: " + shouldOutputToLogFile())
 
@@ -203,6 +200,26 @@ def accessLogLevel = OFF
 addInfo("******Access logs disabled: " + disableAccessLog)
 println("******Access logs disabled: " + disableAccessLog)
 logger("ACCESS_LOG", accessLogLevel, allAsyncAccessLogAppendersArray, false)
+
+// Auditable Events
+if (ConfigService.getInstance().isAuditLoggingEnabled()) {
+    def hostname = System.getenv('HOSTNAME')
+    appender("audit-log-appender", FiveMinuteRollingFileAppender) {
+        file = "${LOG_FILE_DIRECTORY_PATH}/${hostname}-audit.log"
+
+        rollingPolicy(AuditLogsS3TimeBasedRollingPolicy) {
+            fileNamePattern = "${LOG_FILE_DIRECTORY_PATH}/${hostname}-audit.%d{yyyy-MM-dd_HH-mm, UTC}.log.gz"
+            maxHistory = 100 // S3FixedWindowRollingPolicy copies files to s3 and then delete the local copy
+            totalSizeCap = FileSize.valueOf("10gb")
+        }
+
+        encoder(PatternLayoutEncoder) {
+            pattern = "%msg%n"
+        }
+    }
+
+    logger("com.nike.cerberus.event.processor.AuditLogProcessor", INFO, ["audit-log-appender"], false)
+}
 
 // Root logger.
 root(INFO, allAsyncAppendersArray)

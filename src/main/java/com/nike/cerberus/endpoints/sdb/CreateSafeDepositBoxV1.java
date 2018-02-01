@@ -20,10 +20,12 @@ import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.util.Slugger;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -65,7 +67,7 @@ public class CreateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBo
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Map<String, String>>> execute(final RequestInfo<SafeDepositBoxV1> request,
+    public CompletableFuture<ResponseInfo<Map<String, String>>> doExecute(final RequestInfo<SafeDepositBoxV1> request,
                                                                         final Executor longRunningTaskExecutor,
                                                                         final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
@@ -105,8 +107,10 @@ public class CreateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBo
     }
 
     @Override
-    protected String describeActionForAuditEvent(RequestInfo<SafeDepositBoxV1> request) {
-        return String.format("Create SDB with name: %s.", request.getContent().getName());
+    protected CustomizableAuditData getCustomizableAuditData(RequestInfo<SafeDepositBoxV1> request) {
+        return new CustomizableAuditData()
+                .setDescription(String.format("Create SDB with name: %s.", request.getContent().getName()))
+                .setSdbNameSlug(Slugger.toSlug(request.getContent().getName()));
     }
 
 }

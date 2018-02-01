@@ -57,7 +57,7 @@ public class GetSafeDepositBoxes extends AuditableEventEndpoint<Void, List<SafeD
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<List<SafeDepositBoxSummary>>> execute(final RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<List<SafeDepositBoxSummary>>> doExecute(final RequestInfo<Void> request,
                                                                                 final Executor longRunningTaskExecutor,
                                                                                 final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(

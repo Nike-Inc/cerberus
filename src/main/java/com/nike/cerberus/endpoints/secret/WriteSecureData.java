@@ -57,10 +57,10 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                             RequestInfo<Object> request,
-                                                             Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Object>> executeSecureDataCall(SecureDataRequestInfo requestInfo,
+                                                                         RequestInfo<Object> request,
+                                                                         Executor longRunningTaskExecutor,
+                                                                         ChannelHandlerContext ctx) {
 
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> writeSecureData(requestInfo, request), ctx),

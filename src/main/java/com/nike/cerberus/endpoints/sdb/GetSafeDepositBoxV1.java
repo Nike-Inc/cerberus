@@ -19,10 +19,12 @@ package com.nike.cerberus.endpoints.sdb;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.util.Slugger;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -55,7 +57,7 @@ public class GetSafeDepositBoxV1 extends AuditableEventEndpoint<Void, SafeDeposi
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<SafeDepositBoxV1>> execute(final RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<SafeDepositBoxV1>> doExecute(final RequestInfo<Void> request,
                                                                      final Executor longRunningTaskExecutor,
                                                                      final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
@@ -89,10 +91,12 @@ public class GetSafeDepositBoxV1 extends AuditableEventEndpoint<Void, SafeDeposi
     }
 
     @Override
-    protected String describeActionForAuditEvent(RequestInfo<Void> request) {
+    protected CustomizableAuditData getCustomizableAuditData(RequestInfo<Void> request) {
         String sdbId = request.getPathParam("id");
         Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
         String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
-        return String.format("Fetch details for SDB with name: '%s' and id: '%s'", sdbName, sdbId);
+        return  new CustomizableAuditData()
+                .setDescription(String.format("Fetch details for SDB with name: '%s' and id: '%s'", sdbName, sdbId))
+                .setSdbNameSlug(sdbNameOptional.map(Slugger::toSlug).orElse("_unknown_"));
     }
 }

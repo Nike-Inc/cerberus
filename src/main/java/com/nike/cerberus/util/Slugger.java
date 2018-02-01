@@ -31,7 +31,7 @@ public class Slugger {
 
     public static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
-    public String toSlug(String input) {
+    public static String toSlug(String input) {
         final String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
         final String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         final String slug = NONLATIN.matcher(normalized).replaceAll("");

@@ -16,14 +16,25 @@
 
 package com.nike.cerberus.event;
 
+import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.wingtips.Span;
+import com.nike.wingtips.Tracer;
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * An event that can be used to describe what a principal is doing with the API
  */
 public class AuditableEvent implements Event {
 
+    public final static String UNKNOWN = "_unknown";
+
     private Object principal;
+    private String traceId;
     private String ipAddress;
     private String xForwardedFor;
     private String clientVersion;
@@ -32,24 +43,90 @@ public class AuditableEvent implements Event {
     private String action;
     private String name;
     private String originatingClass;
+    private OffsetDateTime timestamp;
+    private String sdbNameSlug;
+    private boolean success = true;
+
+    public Optional<CerberusPrincipal> getPrincipalAsCerberusPrincipal() {
+        return principal instanceof CerberusPrincipal ? Optional.of((CerberusPrincipal) principal) : Optional.empty();
+    }
+
+    public String getPrincipalName() {
+        return  principal instanceof CerberusPrincipal ? ((CerberusPrincipal) principal).getName() :
+                principal instanceof String ? (String) principal :
+                principal != null ? principal.toString() :
+                        "Unknown";
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public String getxForwardedFor() {
+        return xForwardedFor;
+    }
+
+    public String getClientVersion() {
+        return clientVersion;
+    }
+
+    public String getMethodAsString() {
+        return method == null ? UNKNOWN : method.toString();
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getOriginatingClass() {
+        return originatingClass;
+    }
+
+    public OffsetDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public String getSdbNameSlug() {
+        return sdbNameSlug;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
 
     @Override
     public String getEventAsString() {
         return new StringBuilder("Event: ").append(name).append(", ")
-                .append("Principal: ").append(principal == null ? "Unknown" : principal).append(", ")
+                .append("Principal: ").append(getPrincipalName()).append(", ")
                 .append("IP Address: ").append(ipAddress).append(", ")
                 .append("X-Forwarded-For: ").append(xForwardedFor).append(", ")
                 .append("Client Version: ").append(clientVersion).append(", ")
                 .append("Method: ").append(method).append(", ")
                 .append("Path: ").append(path).append(", ")
                 .append("Action: ").append('\'').append(action).append("\', ")
-                .append("Originating Class: ").append(originatingClass)
+                .append("Originating Class: ").append(originatingClass).append(", ")
+                .append("SDB Name Slug: ").append(sdbNameSlug).append(", ")
+                .append("Was Success: ").append(success).append(", ")
+                .append("Trace ID: ").append(traceId).append(", ")
+                .append("Event Timestamp: ").append(timestamp.format(DateTimeFormatter.ofPattern("MMM d yyyy, hh:mm:ss a Z")))
                 .toString();
     }
 
-
     public static final class Builder {
         private Object principal;
+        private String traceId;
         private String ipAddress;
         private String xForwardedFor;
         private String clientVersion;
@@ -58,8 +135,12 @@ public class AuditableEvent implements Event {
         private String action;
         private String name;
         private String originatingClass;
+        private String sdbNameSlug = UNKNOWN;
+        private boolean success = true;
 
         private Builder() {
+            Span span = Tracer.getInstance().getCurrentSpan();
+            traceId = span == null ? AuditableEvent.UNKNOWN : span.getTraceId();
         }
 
         public static Builder create() {
@@ -111,6 +192,21 @@ public class AuditableEvent implements Event {
             return this;
         }
 
+        public Builder withSdbNameSlug(String sdbNameSlug) {
+            this.sdbNameSlug = sdbNameSlug;
+            return this;
+        }
+
+        public Builder withSuccess(boolean success) {
+            this.success = success;
+            return this;
+        }
+
+        public Builder withTraceId(String traceId) {
+            this.traceId = traceId;
+            return this;
+        }
+
         public AuditableEvent build() {
             AuditableEvent auditableEvent = new AuditableEvent();
             auditableEvent.action = this.action;
@@ -122,6 +218,10 @@ public class AuditableEvent implements Event {
             auditableEvent.originatingClass = this.originatingClass;
             auditableEvent.path = this.path;
             auditableEvent.xForwardedFor = this.xForwardedFor;
+            auditableEvent.timestamp = OffsetDateTime.now(ZoneId.of("UTC"));
+            auditableEvent.sdbNameSlug = sdbNameSlug;
+            auditableEvent.success = success;
+            auditableEvent.traceId = traceId;
             return auditableEvent;
         }
     }
