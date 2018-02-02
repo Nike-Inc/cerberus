@@ -40,7 +40,7 @@ public class S3LogUploaderServiceTest {
     public void test_that_getPartition_works() {
         String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
         String actual = s3LogUploader.getPartition(fileName);
-        String expected = "partitioned/2018/01/29";
+        String expected = "partitioned/year=2018/month=01/day=29/hour=12";
         assertEquals(expected, actual);
     }
 

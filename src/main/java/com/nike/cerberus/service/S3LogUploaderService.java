@@ -86,16 +86,17 @@ public class S3LogUploaderService implements ServerShutdownHook {
     }
 
     /**
-     * Gets the folder structure to use in S3 to enable dt partitioning
+     * Gets the folder structure to use in S3 to enable dt dynamic partitioning
      */
     protected String getPartition(String fileName) {
         Pattern dtPattern = Pattern.compile(".*?(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})_(?<hour>\\d{2}).*");
         Matcher matcher = dtPattern.matcher(fileName);
         if(matcher.find()) {
-            return String.format("partitioned/%s/%s/%s",
+            return String.format("partitioned/year=%s/month=%s/day=%s/hour=%s",
                     matcher.group("year"),
                     matcher.group("month"),
-                    matcher.group("day"));
+                    matcher.group("day"),
+                    matcher.group("hour"));
         } else {
             return "un-partitioned";
         }
