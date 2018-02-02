@@ -51,29 +51,29 @@ public class AuditLogProcessor implements EventProcessor {
             Optional<CerberusPrincipal> cerberusPrincipal = event.getPrincipalAsCerberusPrincipal();
 
             ImmutableMap<String, String> flattenedAuditEvent = ImmutableMap.<String, String>builder()
-                    .put("event-timestamp", event.getTimestamp().format(ATHENA_DATE_FORMATTER))
-                    .put("principal-name", event.getPrincipalName())
-                    .put("principal-type", cerberusPrincipal
+                    .put("event_timestamp", event.getTimestamp().format(ATHENA_DATE_FORMATTER))
+                    .put("principal_name", event.getPrincipalName())
+                    .put("principal_type", cerberusPrincipal
                             .map(p -> cerberusPrincipal.get().getPrincipalType().getName()).orElse(AuditableEvent.UNKNOWN))
-                    .put("principal-token-created", cerberusPrincipal
+                    .put("principal_token_created", cerberusPrincipal
                             .map(p -> cerberusPrincipal.get().getTokenCreated().format(ATHENA_DATE_FORMATTER))
                             .orElseGet(() -> OffsetDateTime.parse(PARTY_LIKE_ITS_99, ISO_OFFSET_DATE_TIME).format(ATHENA_DATE_FORMATTER)))
-                    .put("principal-token-expires", cerberusPrincipal
+                    .put("principal_token_expires", cerberusPrincipal
                             .map(p -> cerberusPrincipal.get().getTokenExpires().format(ATHENA_DATE_FORMATTER))
                             .orElseGet(() -> OffsetDateTime.parse(PARTY_LIKE_ITS_99, ISO_OFFSET_DATE_TIME).format(ATHENA_DATE_FORMATTER)))
-                    .put("principal-is-admin", cerberusPrincipal
+                    .put("principal_is_admin", cerberusPrincipal
                             .map(p -> String.valueOf(p.isAdmin())).orElseGet(() -> String.valueOf(false)))
-                    .put("ip-address", event.getIpAddress())
-                    .put("x-forwarded-for", event.getxForwardedFor())
-                    .put("client-version", event.getClientVersion())
-                    .put("http-method", event.getMethodAsString())
+                    .put("ip_address", event.getIpAddress())
+                    .put("x_forwarded_for", event.getxForwardedFor())
+                    .put("client_version", event.getClientVersion())
+                    .put("http_method", event.getMethodAsString())
                     .put("path", event.getPath())
                     .put("action", event.getAction())
-                    .put("was-success", String.valueOf(event.isSuccess()))
+                    .put("was_success", String.valueOf(event.isSuccess()))
                     .put("name", event.getName())
-                    .put("sdb-name-slug", event.getSdbNameSlug())
-                    .put("originating-class", event.getOriginatingClass())
-                    .put("trace-id", event.getTraceId())
+                    .put("sdb_name_slug", event.getSdbNameSlug())
+                    .put("originating_class", event.getOriginatingClass())
+                    .put("trace_id", event.getTraceId())
                     .build();
 
             try {

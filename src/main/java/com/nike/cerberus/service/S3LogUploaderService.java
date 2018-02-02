@@ -92,11 +92,10 @@ public class S3LogUploaderService implements ServerShutdownHook {
         Pattern dtPattern = Pattern.compile(".*?(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})_(?<hour>\\d{2}).*");
         Matcher matcher = dtPattern.matcher(fileName);
         if(matcher.find()) {
-            return String.format("partitioned/%s/%s/%s/%s",
+            return String.format("partitioned/%s/%s/%s",
                     matcher.group("year"),
                     matcher.group("month"),
-                    matcher.group("day"),
-                    matcher.group("hour"));
+                    matcher.group("day"));
         } else {
             return "un-partitioned";
         }
