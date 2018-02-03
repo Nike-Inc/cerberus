@@ -78,7 +78,7 @@ public class SecureDataEndpointV1Test {
         }
 
         @Override
-        protected CompletableFuture<ResponseInfo<Void>> doExecute(SecureDataRequestInfo requestInfo, RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
+        protected CompletableFuture<ResponseInfo<Void>> executeSecureDataCall(SecureDataRequestInfo requestInfo, RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {
             return null;
         }
 

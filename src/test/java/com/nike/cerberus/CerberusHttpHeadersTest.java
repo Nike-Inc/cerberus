@@ -26,7 +26,7 @@ public class CerberusHttpHeadersTest {
     public void test_getClientVersion_when_null() {
         RequestInfo request = mock(RequestInfo.class);
 
-        Assert.assertEquals("Unknown", CerberusHttpHeaders.getClientVersion(request));
+        Assert.assertEquals("_unknown", CerberusHttpHeaders.getClientVersion(request));
     }
 
     @Test
@@ -55,6 +55,6 @@ public class CerberusHttpHeadersTest {
     public void test_getXForwardedClientIp_with_null() {
         RequestInfo request = mock(RequestInfo.class);
 
-        Assert.assertEquals("Unknown", CerberusHttpHeaders.getXForwardedClientIp(request));
+        Assert.assertEquals("_unknown", CerberusHttpHeaders.getXForwardedClientIp(request));
     }
 }

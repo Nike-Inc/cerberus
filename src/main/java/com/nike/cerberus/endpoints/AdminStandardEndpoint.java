@@ -24,8 +24,6 @@ import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
@@ -39,16 +37,7 @@ import java.util.concurrent.Executor;
  */
 public abstract class AdminStandardEndpoint<I, O> extends AuditableEventEndpoint<I, O> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
-    protected EventProcessorService eventProcessorService;
-
-    @Inject
-    public void setEventProcessorService(EventProcessorService eventProcessorService) {
-        this.eventProcessorService = eventProcessorService;
-    }
-
-    public final CompletableFuture<ResponseInfo<O>> execute(final RequestInfo<I> request,
+    public final CompletableFuture<ResponseInfo<O>> doExecute(final RequestInfo<I> request,
                                                             final Executor longRunningTaskExecutor,
                                                             final ChannelHandlerContext ctx) {
 
@@ -64,6 +53,7 @@ public abstract class AdminStandardEndpoint<I, O> extends AuditableEventEndpoint
             eventProcessorService.ingestEvent(auditableEvent(cerberusPrincipal, request)
                     .withName(String.format("%s Illegally Invoked", this.getClass().getSimpleName()))
                     .withAction("A non-admin principal attempted to access admin protected endpoint")
+                    .withSuccess(false)
                     .build());
 
             throw new ApiException(DefaultApiError.ACCESS_DENIED);

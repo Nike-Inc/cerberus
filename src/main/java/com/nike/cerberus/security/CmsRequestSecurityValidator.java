@@ -50,17 +50,14 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
 
     private final Collection<Endpoint<?>> endpointsToValidate;
     private final AuthTokenService authTokenService;
-    private final EventProcessorService eventProcessorService;
 
     public CmsRequestSecurityValidator(Collection<Endpoint<?>> endpointsToValidate,
-                                       AuthTokenService authTokenService,
-                                       EventProcessorService eventProcessorService) {
+                                       AuthTokenService authTokenService) {
 
         this.endpointsToValidate = endpointsToValidate;
         this.endpointsToValidate.forEach(endpoint -> log.info("auth protected: {}", endpoint.getClass().getName()));
 
         this.authTokenService = authTokenService;
-        this.eventProcessorService = eventProcessorService;
     }
 
     @Override
@@ -81,20 +78,6 @@ public class CmsRequestSecurityValidator implements RequestSecurityValidator {
             final CerberusSecurityContext securityContext = new CerberusSecurityContext(principal,
                     URI.create(requestInfo.getUri()).getScheme());
             requestInfo.addRequestAttribute(SECURITY_CONTEXT_ATTR_KEY, securityContext);
-        }
-
-        processPrincipalEvent(principal, requestInfo, endpoint);
-    }
-
-    private void processPrincipalEvent(CerberusPrincipal principal,
-                                       RequestInfo<?> requestInfo,
-                                       Endpoint<?> endpoint) {
-
-        if (endpoint instanceof AuditableEventEndpoint) {
-            //noinspection unchecked
-            eventProcessorService.ingestEvent(
-                    ((AuditableEventEndpoint) endpoint).generateAuditableEvent(principal, requestInfo)
-            );
         }
     }
 

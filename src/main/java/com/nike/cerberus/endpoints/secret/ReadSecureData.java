@@ -34,8 +34,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -47,7 +45,6 @@ import java.util.concurrent.Executor;
 
 public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Inject
     protected ReadSecureData(SecureDataService secureDataService,
@@ -66,10 +63,10 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                             RequestInfo<Void> request,
-                                                             Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Object>> executeSecureDataCall(SecureDataRequestInfo requestInfo,
+                                                                         RequestInfo<Void> request,
+                                                                         Executor longRunningTaskExecutor,
+                                                                         ChannelHandlerContext ctx) {
 
         if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
             return CompletableFuture.supplyAsync(

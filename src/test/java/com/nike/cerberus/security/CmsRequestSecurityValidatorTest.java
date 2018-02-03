@@ -55,16 +55,13 @@ public class CmsRequestSecurityValidatorTest {
     @Mock
     private AuthTokenService authTokenService;
 
-    @Mock
-    private EventProcessorService eventProcessorService;
-
     private CmsRequestSecurityValidator subject;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
 
-        subject = new CmsRequestSecurityValidator(securedEndpoints, authTokenService, eventProcessorService);
+        subject = new CmsRequestSecurityValidator(securedEndpoints, authTokenService);
     }
 
     @Test

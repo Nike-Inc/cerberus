@@ -30,6 +30,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import javax.ws.rs.core.SecurityContext;
@@ -50,14 +51,12 @@ public class AdminStandardEndpointTest {
     @Mock
     private EventProcessorService eventProcessorService;
 
-    private AdminStandardEndpoint<Void, Void> subject;
+    @InjectMocks
+    private AdminStandardEndpoint<Void, Void> subject = new AdminStandardEndpointImpl();
 
     @Before
     public void before() throws Exception {
         initMocks(this);
-
-        subject = new AdminStandardEndpointImpl();
-        subject.setEventProcessorService(eventProcessorService);
     }
 
     @Test

@@ -27,6 +27,7 @@ import com.nike.riposte.server.config.impl.DependencyInjectionProvidedServerConf
 import com.nike.riposte.server.error.handler.RiposteErrorHandler;
 import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestValidator;
+import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import io.netty.handler.ssl.SslContext;
 import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
@@ -55,6 +56,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
     public final CmsRequestSecurityValidator cmsRequestSecurityValidator;
     public final List<RequestAndResponseFilter> requestAndResponseFilters;
     public final SslContext sslContext;
+    public final List<ServerShutdownHook> shutdownHooks;
 
     @Inject
     public GuiceProvidedServerConfigValues(@Named("endpoints.port") Integer endpointsPort,
@@ -74,8 +76,8 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
                                            CmsRequestSecurityValidator cmsRequestSecurityValidator,
                                            StrictTransportSecurityRequestAndResponseFilter strictTransportSecurityRequestAndResponseFilter,
                                            HystrixRequestAndResponseFilter hystrixRequestAndResponseFilter,
-                                           SslContext sslContext
-    ) {
+                                           SslContext sslContext,
+                                           @Named("shutdownHooks") List<ServerShutdownHook> shutdownHooks) {
         super(endpointsPort, endpointsSslPort, endpointsUseSsl, numBossThreads, numWorkerThreads, maxRequestSizeInBytes, appEndpoints,
               debugActionsEnabled, debugChannelLifecycleLoggingEnabled);
 
@@ -85,6 +87,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
         this.metricsListener = metricsListener;
         this.appInfoFuture = appInfoFuture;
         this.cmsRequestSecurityValidator = cmsRequestSecurityValidator;
+        this.shutdownHooks = shutdownHooks;
         this.requestAndResponseFilters = Lists.newArrayList(hystrixRequestAndResponseFilter, strictTransportSecurityRequestAndResponseFilter);
         this.sslContext = sslContext;
     }

@@ -9,7 +9,7 @@ public final class CerberusHttpHeaders {
     public static final String HEADER_X_CERBERUS_CLIENT = "X-Cerberus-Client";
     public static final String HEADER_X_REFRESH_TOKEN = "X-Refresh-Token";
     public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
-    private static final String UNKNOWN = "Unknown";
+    private static final String UNKNOWN = "_unknown";
 
     /**
      * Get the value of the X-Cerberus-Client header or "Unknown" if not found.

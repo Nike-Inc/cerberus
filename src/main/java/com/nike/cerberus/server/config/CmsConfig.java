@@ -16,6 +16,10 @@
 
 package com.nike.cerberus.server.config;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
+import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.util.Modules;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
 import com.nike.cerberus.server.config.guice.CerberusBackstopperRiposteGuiceModule;
@@ -26,6 +30,7 @@ import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
 import com.nike.cerberus.server.config.guice.MetricsGuiceModule;
 import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
 import com.nike.cerberus.util.ArchaiusUtils;
+import com.nike.cerberus.service.ConfigService;
 import com.nike.cerberus.util.JobsInitializerUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
 import com.nike.guice.typesafeconfig.TypesafeConfigPropertiesRegistrationGuiceModule;
@@ -36,6 +41,7 @@ import com.nike.riposte.server.error.handler.RiposteErrorHandler;
 import com.nike.riposte.server.error.handler.RiposteUnhandledErrorHandler;
 import com.nike.riposte.server.error.validation.RequestSecurityValidator;
 import com.nike.riposte.server.error.validation.RequestValidator;
+import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 import com.nike.riposte.server.logging.AccessLogger;
@@ -48,7 +54,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.netty.handler.ssl.SslContext;
 
@@ -69,8 +74,6 @@ import java.util.concurrent.CompletableFuture;
  * @author Nic Munroe
  */
 public class CmsConfig implements ServerConfig {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /*
          We use a GuiceProvidedServerConfigValues to generate most of the values we need to return for ServerConfig's methods.
@@ -107,12 +110,11 @@ public class CmsConfig implements ServerConfig {
                 new CmsFlywayModule(),
                 new OneLoginGuiceModule(),
                 new MetricsGuiceModule(),
-                new CerberusBackstopperRiposteGuiceModule()
+                new CerberusBackstopperRiposteGuiceModule(),
+                new CmsGuiceModule(objectMapper)
         ));
 
-        // bind the CMS Guice module last allowing the S3 props file to override any given application property
-        Injector appInjector = Guice.createInjector(Modules.override(appGuiceModules)
-                .with(new CmsGuiceModule(appConfig, objectMapper)));
+        Injector appInjector = Guice.createInjector(appGuiceModules);
 
         // Use the new Guice Injector to create a GuiceProvidedServerConfigValues, which will contain all the guice-provided config stuff for this app.
         this.guiceValues = appInjector.getProvider(GuiceProvidedServerConfigValues.class).get();
@@ -235,4 +237,10 @@ public class CmsConfig implements ServerConfig {
     public List<RequestAndResponseFilter> requestAndResponseFilters() {
         return guiceValues.requestAndResponseFilters;
     }
+
+    @Override
+    public List<ServerShutdownHook> serverShutdownHooks() {
+        return guiceValues.shutdownHooks;
+    }
+
 }

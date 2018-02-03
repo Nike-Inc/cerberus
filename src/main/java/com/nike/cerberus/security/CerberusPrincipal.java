@@ -21,6 +21,7 @@ import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.domain.CerberusAuthToken;
 
 import java.security.Principal;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -103,6 +104,18 @@ public class CerberusPrincipal implements Principal {
 
     public Integer getTokenRefreshCount() {
         return cerberusAuthToken.getRefreshCount();
+    }
+
+    public OffsetDateTime getTokenCreated() {
+        return cerberusAuthToken.getCreated();
+    }
+
+    public OffsetDateTime getTokenExpires() {
+        return cerberusAuthToken.getExpires();
+    }
+
+    public boolean isAdmin() {
+        return cerberusAuthToken.isAdmin();
     }
 
     @Override

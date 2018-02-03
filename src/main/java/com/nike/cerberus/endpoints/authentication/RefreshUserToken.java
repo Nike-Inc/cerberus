@@ -49,7 +49,7 @@ public class RefreshUserToken extends AuditableEventEndpoint<Void, AuthResponse>
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<AuthResponse>> execute(final RequestInfo<Void> request,
+    public CompletableFuture<ResponseInfo<AuthResponse>> doExecute(final RequestInfo<Void> request,
                                                                  final Executor longRunningTaskExecutor,
                                                                  final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(

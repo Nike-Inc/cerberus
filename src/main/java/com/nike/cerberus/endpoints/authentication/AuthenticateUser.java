@@ -47,13 +47,11 @@ import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
  */
 public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
     private final AuthenticationService authenticationService;
     private final EventProcessorService eventProcessorService;
 
     @Inject
-    public AuthenticateUser(final AuthenticationService authenticationService,
+    public AuthenticateUser(AuthenticationService authenticationService,
                             EventProcessorService eventProcessorService) {
 
         this.authenticationService = authenticationService;
@@ -73,13 +71,24 @@ public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
     private ResponseInfo<AuthResponse> authenticate(RequestInfo<Void> request) {
         final UserCredentials credentials = extractCredentials(request.getHeaders().get(HttpHeaders.AUTHORIZATION));
 
-        eventProcessorService.ingestEvent(auditableEvent(
-                String.format("[ Name: %s ]", credentials.getUsername()), request, getClass().getSimpleName())
-                .withAction("Attempting to authenticate")
+        AuthResponse authResponse = null;
+        try {
+            authResponse = authenticationService.authenticate(credentials);
+        } catch (ApiException e) {
+            eventProcessorService.ingestEvent(auditableEvent(credentials.getUsername(), request, getClass().getSimpleName())
+                    .withAction("failed to authenticate")
+                    .withSuccess(false)
+                    .build()
+            );
+            throw e;
+        }
+
+        eventProcessorService.ingestEvent(auditableEvent(credentials.getUsername(), request, getClass().getSimpleName())
+                .withAction("authenticated")
                 .build()
         );
 
-        return ResponseInfo.newBuilder(authenticationService.authenticate(credentials)).build();
+        return ResponseInfo.newBuilder(authResponse).build();
     }
 
     @Override

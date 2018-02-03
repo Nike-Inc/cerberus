@@ -16,6 +16,7 @@
 
 package com.nike.cerberus;
 
+import com.nike.cerberus.service.ConfigService;
 import com.nike.riposte.server.config.ServerConfig;
 import com.nike.riposte.typesafeconfig.TypesafeConfigServer;
 import com.nike.cerberus.server.config.CmsConfig;
@@ -28,6 +29,14 @@ import com.typesafe.config.Config;
  * @author Nic Munroe
  */
 public class Main extends TypesafeConfigServer {
+
+    /**
+     * @return The .conf files merged with the CLI generated properties files
+     */
+    @Override
+    public Config getAppConfig() {
+        return ConfigService.getInstance().getAppConfigMergedWithCliGeneratedProperties();
+    }
 
     @Override
     protected ServerConfig getServerConfig(Config appConfig) {

@@ -60,7 +60,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
         this.safeDepositBoxService = safeDepositBoxService;
     }
 
-    public final CompletableFuture<ResponseInfo<O>> execute(RequestInfo<I> request,
+    public final CompletableFuture<ResponseInfo<O>> doExecute(RequestInfo<I> request,
                                                             Executor longRunningTaskExecutor,
                                                             ChannelHandlerContext ctx) {
 
@@ -114,7 +114,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
         requestInfo.setSdbid(sdbId.get());
 
-        return doExecute(requestInfo, request, longRunningTaskExecutor, ctx);
+        return executeSecureDataCall(requestInfo, request, longRunningTaskExecutor, ctx);
     }
 
     private boolean doesRequestHaveRequiredParams(String category, String sdbSlug) {
@@ -196,11 +196,16 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
     }
 
+    @Override
+    protected String getSlugifiedSdbName(RequestInfo<I> request) {
+        return parseInfoFromPath(request.getPath()).getSdbSlug();
+    }
+
     protected abstract ResponseInfo<O> generateVaultStyleResponse(VaultStyleErrorResponse response, int statusCode);
 
-    protected abstract CompletableFuture<ResponseInfo<O>> doExecute(SecureDataRequestInfo requestInfo,
-                                                                    RequestInfo<I> request,
-                                                                    Executor longRunningTaskExecutor,
-                                                                    ChannelHandlerContext ctx);
+    protected abstract CompletableFuture<ResponseInfo<O>> executeSecureDataCall(SecureDataRequestInfo requestInfo,
+                                                                                RequestInfo<I> request,
+                                                                                Executor longRunningTaskExecutor,
+                                                                                ChannelHandlerContext ctx);
 
 }

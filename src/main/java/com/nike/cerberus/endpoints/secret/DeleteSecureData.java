@@ -53,10 +53,10 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<Object>> doExecute(SecureDataRequestInfo requestInfo,
-                                                             RequestInfo<Void> request,
-                                                             Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Object>> executeSecureDataCall(SecureDataRequestInfo requestInfo,
+                                                                         RequestInfo<Void> request,
+                                                                         Executor longRunningTaskExecutor,
+                                                                         ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> deleteSecureData(requestInfo), ctx),
                 longRunningTaskExecutor

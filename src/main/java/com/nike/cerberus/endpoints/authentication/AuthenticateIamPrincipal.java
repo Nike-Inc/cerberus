@@ -17,6 +17,8 @@
 
 package com.nike.cerberus.endpoints.authentication;
 
+import com.nike.backstopper.apierror.ApiError;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.service.AuthenticationService;
@@ -32,6 +34,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
 
@@ -45,7 +48,7 @@ public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCrede
     private final EventProcessorService eventProcessorService;
 
     @Inject
-    public AuthenticateIamPrincipal(final AuthenticationService authenticationService,
+    public AuthenticateIamPrincipal(AuthenticationService authenticationService,
                                     EventProcessorService eventProcessorService) {
 
         this.authenticationService = authenticationService;
@@ -65,13 +68,29 @@ public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCrede
     private ResponseInfo<IamRoleAuthResponse> authenticate(RequestInfo<IamPrincipalCredentials> request) {
         final IamPrincipalCredentials credentials = request.getContent();
 
+        IamRoleAuthResponse authResponse = null;
+        try {
+            authResponse = authenticationService.authenticate(request.getContent());
+        } catch (ApiException e) {
+            eventProcessorService.ingestEvent(auditableEvent(
+                    credentials.getIamPrincipalArn(), request, getClass().getSimpleName())
+                    .withAction(String.format("Failed to authenticate in region %s, for reason: %s",
+                            credentials.getRegion(),
+                            String.join(",", e.getApiErrors().stream()
+                                    .map(ApiError::getMessage).collect(Collectors.toList()))))
+                    .withSuccess(false)
+                    .build()
+            );
+            throw e;
+        }
+
         eventProcessorService.ingestEvent(auditableEvent(
-                String.format("[ Name: %s ]", credentials.getIamPrincipalArn()), request, getClass().getSimpleName())
-                .withAction(String.format("Attempting to authenticate in region %s", credentials.getRegion()))
+                credentials.getIamPrincipalArn(), request, getClass().getSimpleName())
+                .withAction(String.format("Successfully authenticated in region %s", credentials.getRegion()))
                 .build()
         );
 
-        return ResponseInfo.newBuilder(authenticationService.authenticate(request.getContent())).build();
+        return ResponseInfo.newBuilder(authResponse).build();
     }
 
     @Override

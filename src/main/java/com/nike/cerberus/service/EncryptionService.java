@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Service for performing encryption and decryption of secrets using the 'AWS Encryption SDK'.
  */
+@Singleton
 public class EncryptionService {
 
     /**
