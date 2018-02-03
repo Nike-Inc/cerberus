@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.record;
 
+import java.time.OffsetDateTime;
+
 public class SecureDataRecord {
 
     private Integer id;
@@ -23,6 +25,10 @@ public class SecureDataRecord {
     private String path;
     private String encryptedBlob;
     private Integer topLevelKVCount;
+    private OffsetDateTime createdTs;
+    private String createdBy;
+    private OffsetDateTime lastUpdatedTs;
+    private String lastUpdatedBy;
 
     public Integer getId() {
         return id;
@@ -66,6 +72,42 @@ public class SecureDataRecord {
 
     public SecureDataRecord setTopLevelKVCount(Integer topLevelKVCount) {
         this.topLevelKVCount = topLevelKVCount;
+        return this;
+    }
+
+    public OffsetDateTime getCreatedTs() {
+        return createdTs;
+    }
+
+    public SecureDataRecord setCreatedTs(OffsetDateTime createdTs) {
+        this.createdTs = createdTs;
+        return this;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public SecureDataRecord setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+        return this;
+    }
+
+    public OffsetDateTime getLastUpdatedTs() {
+        return lastUpdatedTs;
+    }
+
+    public SecureDataRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+        this.lastUpdatedTs = lastUpdatedTs;
+        return this;
+    }
+
+    public String getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public SecureDataRecord setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
         return this;
     }
 }

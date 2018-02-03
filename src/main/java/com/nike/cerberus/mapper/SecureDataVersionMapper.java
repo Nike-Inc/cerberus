@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,28 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package com.nike.cerberus.mapper;
 
-import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.ibatis.annotations.Param;
 
-public interface SecureDataMapper {
+import java.util.List;
 
-    int writeSecureData(@Param("record") SecureDataRecord record);
+public interface SecureDataVersionMapper {
 
-    int updateSecureData(@Param("record") SecureDataRecord record);
+    int writeSecureDataVersion(@Param("record") SecureDataVersionRecord record);
 
-    SecureDataRecord readSecureDataByPath(@Param("path") String path);
+    List<SecureDataVersionRecord> listSecureDataVersionsByPath(@Param("path") String path);
 
-    String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
+    SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
 
-    int getTotalNumberOfDataNodes();
+    String[] getVersionPathsByPartialPath(@Param("partialPath") String partialPath);
 
-    int deleteAllSecretsThatStartWithGivenPartialPath(@Param("partialPath") String partialPath);
-
-    int deleteSecret(@Param("path") String path);
-
-    Integer getSumTopLevelKeyValuePairs();
+    int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
 }

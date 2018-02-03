@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.google.common.collect.Sets;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
@@ -69,8 +70,9 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
     }
 
     private ResponseInfo<Object> writeSecureData(SecureDataRequestInfo requestInfo, RequestInfo<Object> request) {
-        secureDataService.writeSecret(requestInfo.getSdbid(), requestInfo.getPath(),
-                request.getRawContent());
+        CerberusPrincipal principal = requestInfo.getPrincipal();
+        secureDataService.writeSecret(requestInfo.getSdbid(), requestInfo.getPath(), request.getRawContent(),
+                principal.getName());
 
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }

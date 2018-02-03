@@ -16,29 +16,31 @@
 
 package com.nike.cerberus.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Maps;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -46,6 +48,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class SecureDataServiceTest {
 
     private String secret = "{\"k1\":\"val\",\"k2\":\"val\"}";
+    private String principal = SYSTEM_USER;
     private String encryptedPayload = "fasl;kej fasdf0978023 alskdf as";
     private String sdbId = UUID.randomUUID().toString();
     private String path = "super/important/secrets";
@@ -57,6 +60,8 @@ public class SecureDataServiceTest {
 
     @Mock private SecureDataDao secureDataDao;
     @Mock private EncryptionService encryptionService;
+    @Mock private DateTimeSupplier dateTimeSupplier;
+    @Mock private SecureDataRecord secureDataRecord;
     private ObjectMapper objectMapper;
 
     private SecureDataService secureDataService;
@@ -65,15 +70,27 @@ public class SecureDataServiceTest {
     public void before() {
         initMocks(this);
         objectMapper = new ObjectMapper();
-        secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper);
+        secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper, dateTimeSupplier);
+    }
+
+    @After
+    public void after() {
+        reset(secureDataDao, encryptionService, dateTimeSupplier);
     }
 
     @Test
-    public void test_that_writeSecret_encrypts_the_payload_before_writing_to_data_store() {
+    public void test_that_writeSecret_encrypts_the_payload_and_calls_update() {
         when(encryptionService.encrypt(secret, path)).thenReturn(encryptedPayload);
 
-        secureDataService.writeSecret(sdbId, path, secret);
-        verify(secureDataDao).writeSecureData(sdbId, path, encryptedPayload, 2);
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+
+        when(secureDataRecord.getCreatedBy()).thenReturn(SYSTEM_USER);
+        when(secureDataRecord.getCreatedTs()).thenReturn(now);
+        when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.of(secureDataRecord));
+
+        secureDataService.writeSecret(sdbId, path, secret, principal);
+        verify(secureDataDao).updateSecureData(sdbId, path, encryptedPayload, 2, SYSTEM_USER, now, SYSTEM_USER, now);
     }
 
     @Test
@@ -86,7 +103,7 @@ public class SecureDataServiceTest {
     }
 
     @Test
-    public void test_that_readSecret_decrypts_the_paload_when_present() {
+    public void test_that_readSecret_decrypts_the_payload_when_present() {
         when(secureDataDao.readSecureDataByPath(path))
                 .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(encryptedPayload)));
 
@@ -174,13 +191,17 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_deleteSecret_proxies_to_dao() {
-        secureDataService.deleteSecret(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+
+        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, principal);
+        verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash, principal, now);
     }
 
     @Test
     public void test_that_restoreSdbSecrets_proxies_to_dao() {
         String sdbId = "sdb-id";
+        String path = "secret/path/one";
         String sdbPath = "category/secret/path/one";
         String secretPath = StringUtils.substringAfter(sdbPath, "/");
 
@@ -192,8 +213,13 @@ public class SecureDataServiceTest {
         String encryptedPayload = "encrypted payload";
         when(encryptionService.encrypt(anyString(), anyString())).thenReturn(encryptedPayload);
 
-        secureDataService.restoreSdbSecrets(sdbId, data);
-        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload, 1);
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+
+        when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.empty());
+
+        secureDataService.restoreSdbSecrets(sdbId, data, principal);
+        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload, 1, principal, now, principal, now);
     }
 
     @Test

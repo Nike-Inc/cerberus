@@ -17,13 +17,18 @@
 package com.nike.cerberus.service;
 
 import com.nike.cerberus.dao.SafeDepositBoxDao;
+import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.dao.UserGroupDao;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.IamRolePermission;
+import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
+import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
@@ -80,6 +85,15 @@ public class SafeDepositBoxServiceTest {
 
     @Mock
     private AwsIamRoleArnParser awsIamRoleArnParser;
+
+    @Mock
+    private SecureDataService secureDataService;
+
+    @Mock
+    private SecureDataVersionDao secureDataVersionDao;
+
+    @Mock
+    private PermissionsService permissionsService;
 
     @InjectMocks
     private SafeDepositBoxService safeDepositBoxService;
@@ -326,4 +340,26 @@ public class SafeDepositBoxServiceTest {
         assertEquals(expectedSdbV2, resultantSDBV1);
     }
 
+    @Test
+    public void test_that_deleteSafeDepositBox_deletes_permissions_secrets_and_versions() {
+        String sdbPathNoCategory = "safedepositbox-zzz-fake";
+        String sdbPath = "category/" + sdbPathNoCategory;
+        CerberusPrincipal principal = new CerberusPrincipal(new CerberusAuthToken());
+        String sdbId = "sdb id";
+        SafeDepositBoxRecord safeDepositBox = new SafeDepositBoxRecord()
+                .setId(sdbId)
+                .setPath(sdbPath);
+
+        when(safeDepositBoxDao.getSafeDepositBox(sdbId)).thenReturn(Optional.of(safeDepositBox));
+        when(roleService.getRoleByName(RoleRecord.ROLE_OWNER)).thenReturn(Optional.of(new Role()));
+
+        when(permissionsService.doesPrincipalHaveReadPermission(principal, sdbId)).thenReturn(true);
+
+        safeDepositBoxService.deleteSafeDepositBox(principal, sdbId);
+
+        verify(iamPrincipalPermissionService).deleteIamPrincipalPermissions(sdbId);
+        verify(userGroupPermissionService).deleteUserGroupPermissions(sdbId);
+        verify(secureDataVersionDao).deleteAllVersionsThatStartWithPartialPath(sdbPathNoCategory);
+        verify(secureDataService).deleteAllSecretsThatStartWithGivenPartialPath(sdbPathNoCategory);
+    }
 }

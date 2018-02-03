@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.google.common.collect.Sets;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
+import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
@@ -64,7 +65,9 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
     }
 
     private ResponseInfo<Object> deleteSecureData(SecureDataRequestInfo requestInfo) {
-        secureDataService.deleteSecret(requestInfo.getPath());
+        CerberusPrincipal principal = requestInfo.getPrincipal();
+
+        secureDataService.deleteSecret(requestInfo.getPath(), principal.getName());
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }
 

@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
+import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.dao.UserGroupDao;
 import com.nike.cerberus.domain.Category;
 import com.nike.cerberus.domain.IamPrincipalPermission;
@@ -84,6 +85,8 @@ public class SafeDepositBoxService {
 
     private final SecureDataService secureDataService;
 
+    private final SecureDataVersionDao secureDataVersionDao;
+
     @Inject
     public SafeDepositBoxService(SafeDepositBoxDao safeDepositBoxDao,
                                  UserGroupDao userGroupDao,
@@ -96,7 +99,8 @@ public class SafeDepositBoxService {
                                  Slugger slugger,
                                  DateTimeSupplier dateTimeSupplier,
                                  AwsIamRoleArnParser awsIamRoleArnParser,
-                                 SecureDataService secureDataService) {
+                                 SecureDataService secureDataService,
+                                 SecureDataVersionDao secureDataVersionDao) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
@@ -110,6 +114,7 @@ public class SafeDepositBoxService {
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.secureDataService = secureDataService;
+        this.secureDataVersionDao = secureDataVersionDao;
     }
 
     /**
@@ -355,9 +360,10 @@ public class SafeDepositBoxService {
         iamPrincipalPermissionService.deleteIamPrincipalPermissions(id);
         userGroupPermissionService.deleteUserGroupPermissions(id);
 
-        // 2. Delete all secrets from the safe deposit box.
+        // 2. Delete all secrets and versions from the safe deposit box.
         String sdbPathWithoutCategory = StringUtils.substringAfter(box.getPath(), "/");
         secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbPathWithoutCategory);
+        secureDataVersionDao.deleteAllVersionsThatStartWithPartialPath(sdbPathWithoutCategory);
 
         // 3. Remove metadata
         safeDepositBoxDao.deleteSafeDepositBox(id);
