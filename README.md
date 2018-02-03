@@ -55,8 +55,8 @@ cms.auth.token.hash.salt                            | Yes      | The string valu
 cms.encryption.cmk.arns                             | Yes      | Development AWS KMS CMK ARNs for use in local encryption of secrets
 cms.event.processors.com.nike.cerberus.event.processor.LoggingEventProcessor | No | defaults to true, Boolean of whether or not to enable event logging, see #events below
 cms.event.processors.com.nike.cerberus.event.processor.AuditLogProcessor | No | defaults to false, Boolean of whether or not to enable audit logging, see #events below
-cms.audit.bucket="bucket-name" | No | see Logging Event Processor below
-cms.audit.bucket_region="bucket-region" | No | see Logging Event Processor below
+cms.audit.bucket="bucket-name" | No | [See Logging Event Processor below](https://github.com/Nike-Inc/cerberus-management-service/tree/feature/audit_logging#audit-log-processor)
+cms.audit.bucket_region="bucket-region" | No | [See Logging Event Processor below](https://github.com/Nike-Inc/cerberus-management-service/tree/feature/audit_logging#audit-log-processor)
 
 KMS Policies are bound to IAM Principal IDs rather than ARNs themselves. Because of this, we validate the policy at authentication time
 to ensure that if an IAM role has been deleted and re-created, that we grant access to the new principal ID.
@@ -103,8 +103,8 @@ This event processor is on by default and takes any event and call asString() an
 
 #### Audit Log Processor
 
-This event processor is special, as when it is enable a custom logback appender is created that logs Auditable Events as flattened JSON to [HOSTNAME]-audit.log
-These files are rolled every 5 minutes and if the following -P props are set (cms.audit.bucket="bucket-name", cms.audit.bucket_region="bucket-region"), they will be sent to S3 every time they are rolled.
+This event processor is special, as when it is enable a custom logback appender is created that logs Auditable Events as flattened JSON to `[HOSTNAME]-audit.log`
+These files are rolled every 5 minutes and if the following `-P` props are set `cms.audit.bucket="bucket-name", cms.audit.bucket_region="bucket-region"`, they will be sent to S3 every time they are rolled.
 The way they are stored as flattened JSON and stored in S3 has been optimized to be used with AWS Athena so that queries can be made against the audit data.
 
 The CLI has commands for creating the S3 Buckets, IAM Roles and permissions and setting up Athena and auto-populating the properties needed to enable.
