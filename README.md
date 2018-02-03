@@ -95,15 +95,15 @@ There are 2 processors included by default the Logging Event Processor and the A
 
 Event processors can be enabled or disabled via the CLI generated configuration -P parameters see above for more information.
 in the default configuration the Logging Event Process is set to `cms.event.processors.com.nike.cerberus.event.processor.LoggingEventProcessor=true` and therefore enabled by default.
-The convention for enabling or disabling a processor is cms.event.processors.[CLASS PATH TO PROCESSOR]=true|false, guice will then attempt to create an instace of the class at runtime.
+The convention for enabling or disabling a processor is `cms.event.processors.[CLASS PATH TO PROCESSOR]=true|false`, guice will then attempt to create an instace of the class at runtime.
 
 #### Logging Event Processor
 
-This event processor is on by default and takes any event and call asString() and logs it.
+This event processor is on by default and takes any event and calls asString() and logs it.
 
 #### Audit Log Processor
 
-This event processor is special, as when it is enable a custom logback appender is created that logs Auditable Events as flattened JSON to `[HOSTNAME]-audit.log`
+This event processor is special, as when it is enabled a custom logback appender is created that logs Auditable Events as flattened JSON to `[HOSTNAME]-audit.log`
 These files are rolled every 5 minutes and if the following `-P` props are set `cms.audit.bucket="bucket-name", cms.audit.bucket_region="bucket-region"`, they will be sent to S3 every time they are rolled.
 The way they are stored as flattened JSON and stored in S3 has been optimized to be used with AWS Athena so that queries can be made against the audit data.
 
