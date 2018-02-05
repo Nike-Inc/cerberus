@@ -113,6 +113,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
         }
 
         requestInfo.setSdbid(sdbId.get());
+        requestInfo.setPrincipal(principal);
 
         return executeSecureDataCall(requestInfo, request, longRunningTaskExecutor, ctx);
     }
@@ -146,6 +147,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
         private String sdbSlug;
         private String sdbid;
         private String subPath;
+        private CerberusPrincipal principal;
 
         public String getCategory() {
             return category;
@@ -176,6 +178,15 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
         public SecureDataRequestInfo setSubPath(String path) {
             this.subPath = path;
+            return this;
+        }
+
+        public CerberusPrincipal getPrincipal() {
+            return principal;
+        }
+
+        public SecureDataRequestInfo setPrincipal(CerberusPrincipal principal) {
+            this.principal = principal;
             return this;
         }
 

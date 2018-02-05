@@ -16,10 +16,11 @@
 
 package com.nike.cerberus.dao;
 
-import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.mapper.SecureDataMapper;
+import com.nike.cerberus.record.SecureDataRecord;
 
 import javax.inject.Inject;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public class SecureDataDao {
@@ -31,14 +32,44 @@ public class SecureDataDao {
         this.secureDataMapper = secureDataMapper;
     }
 
-    public void writeSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount) {
-        secureDataMapper.writeSecureData(
-                new SecureDataRecord()
+    public void writeSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount,
+                                String createdBy,
+                                OffsetDateTime createdTs,
+                                String lastUpdatedBy,
+                                OffsetDateTime lastUpdatedTs) {
+        secureDataMapper.writeSecureData(new SecureDataRecord()
                 .setId(path.hashCode())
                 .setPath(path)
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)
                 .setTopLevelKVCount(topLevelKVPairCount)
+                .setCreatedBy(createdBy)
+                .setCreatedTs(createdTs)
+                .setLastUpdatedBy(lastUpdatedBy)
+                .setLastUpdatedTs(lastUpdatedTs)
+        );
+    }
+
+    public void updateSecureData(String sdbId,
+                                 String path,
+                                 String encryptedPayload,
+                                 int topLevelKVPairCount,
+                                 String createdBy,
+                                 OffsetDateTime createdTs,
+                                 String lastUpdatedBy,
+                                 OffsetDateTime lastUpdatedTs) {
+
+        secureDataMapper.updateSecureData(new SecureDataRecord()
+                .setId(path.hashCode())
+                .setPath(path)
+                .setSdboxId(sdbId)
+                .setEncryptedBlob(encryptedPayload)
+                .setTopLevelKVCount(topLevelKVPairCount)
+                .setCreatedBy(createdBy)
+                .setCreatedTs(createdTs)
+                .setLastUpdatedTs(lastUpdatedTs)
+                .setLastUpdatedBy(lastUpdatedBy)
+
         );
     }
 

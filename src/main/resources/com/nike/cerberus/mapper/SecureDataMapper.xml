@@ -26,24 +26,47 @@
           SDBOX_ID,
           PATH,
           ENCRYPTED_BLOB,
-          TOP_LEVEL_KV_COUNT
+          TOP_LEVEL_KV_COUNT,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS
         )
         VALUES (
           #{record.id},
           #{record.sdboxId},
           #{record.path},
           #{record.encryptedBlob},
-          #{record.topLevelKVCount}
-        ) ON DUPLICATE KEY UPDATE
-          ENCRYPTED_BLOB=VALUES(ENCRYPTED_BLOB)
+          #{record.topLevelKVCount},
+          #{record.createdBy},
+          #{record.createdTs},
+          #{record.lastUpdatedBy},
+          #{record.lastUpdatedTs}
+        )
     </insert>
+
+    <update id="updateSecureData" parameterType="SecureDataRecord">
+        UPDATE
+          SECURE_DATA
+        SET
+          ENCRYPTED_BLOB = #{record.encryptedBlob},
+          TOP_LEVEL_KV_COUNT = #{record.topLevelKVCount},
+          LAST_UPDATED_BY = #{record.lastUpdatedBy},
+          LAST_UPDATED_TS = #{record.lastUpdatedTs}
+        WHERE
+          ID = #{record.id}
+    </update>
 
     <select id="readSecureDataByPath" resultType="SecureDataRecord">
         SELECT
           ID,
-          SDBOX_ID
+          SDBOX_ID,
           PATH,
-          ENCRYPTED_BLOB
+          ENCRYPTED_BLOB,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS
         From
           SECURE_DATA
         WHERE

@@ -20,14 +20,20 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
+import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.record.SecureDataVersionRecord;
+import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,27 +45,55 @@ public class SecureDataService {
     private final SecureDataDao secureDataDao;
     private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper;
+    private final DateTimeSupplier dateTimeSupplier;
+    private final SecureDataVersionDao secureDataVersionDao;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Inject
     public SecureDataService(SecureDataDao secureDataDao,
                              EncryptionService encryptionService,
-                             ObjectMapper objectMapper) {
+                             ObjectMapper objectMapper,
+                             DateTimeSupplier dateTimeSupplier,
+                             SecureDataVersionDao secureDataVersionDao) {
         this.secureDataDao = secureDataDao;
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
+        this.dateTimeSupplier = dateTimeSupplier;
+        this.secureDataVersionDao = secureDataVersionDao;
     }
 
     @Transactional
-    public void writeSecret(String sdbId, String path, String plainTextPayload) {
+    public void writeSecret(String sdbId, String path, String plainTextPayload, String principal) {
         log.debug("Writing secure data: SDB ID: {}, Path: {}", sdbId, path);
 
         String encryptedPayload = encryptionService.encrypt(plainTextPayload, path);
-
         int topLevelKVPairCount = getTopLevelKVPairCount(plainTextPayload);
+        OffsetDateTime now = dateTimeSupplier.get();
 
-        secureDataDao.writeSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount);
+        // this extra DB call is necessary to distinguish between create and update (for auditing) because
+        // both create and update are lumped together under HTTP method "POST"
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        if (secureDataRecordOpt.isPresent()) {
+            SecureDataRecord secureData = secureDataRecordOpt.get();
+
+            secureDataVersionDao.writeSecureDataVersion(sdbId, path, encryptedPayload,
+                    SecureDataVersionRecord.SecretsAction.UPDATE,
+                    secureData.getLastUpdatedBy(),
+                    secureData.getLastUpdatedTs(),
+                    principal,
+                    now
+            );
+
+            secureDataDao.updateSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount,
+                    secureData.getCreatedBy(),
+                    secureData.getCreatedTs(),
+                    principal,
+                    now);
+
+        } else {
+            secureDataDao.writeSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount, principal, now, principal, now);
+        }
     }
 
     /**
@@ -93,12 +127,12 @@ public class SecureDataService {
         return Optional.of(plainText);
     }
 
-    public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data) {
+    public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data, String principal) {
         data.forEach((String path, Map<String, Object> secretsData) -> {
             String pathWithoutCategory = StringUtils.substringAfter(path, "/");
             try {
                 String plainTextSecrets = objectMapper.writeValueAsString(secretsData);
-                writeSecret(sdbId, pathWithoutCategory, plainTextSecrets);
+                writeSecret(sdbId, pathWithoutCategory, plainTextSecrets, principal);
             } catch (JsonProcessingException jpe) {
                 throw new RuntimeException("Failed to parse secrets data for SDB ID: " + sdbId, jpe);
             }
@@ -171,7 +205,24 @@ public class SecureDataService {
      *
      * @param path The sub path to delete all secrets that have paths that start with
      */
-    public void deleteSecret(String path) {
+    public void deleteSecret(String path, String principal) {
+        OffsetDateTime now = dateTimeSupplier.get();
+        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPath(path)
+                .orElseThrow(() ->
+                        new ApiException(DefaultApiError.ENTITY_NOT_FOUND)
+                );
+
+        secureDataVersionDao.writeSecureDataVersion(
+                secureDataRecord.getSdboxId(),
+                secureDataRecord.getPath(),
+                secureDataRecord.getEncryptedBlob(),
+                SecureDataVersionRecord.SecretsAction.DELETE,
+                secureDataRecord.getLastUpdatedBy(),
+                secureDataRecord.getLastUpdatedTs(),
+                principal,
+                now
+        );
+
         secureDataDao.deleteSecret(path);
     }
 
