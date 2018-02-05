@@ -38,22 +38,25 @@ public class SecureDataVersionDao {
         this.uuidSupplier = uuidSupplier;
     }
 
-    public void writeSecureDataVersion(String sdbId, String path, String encryptedPayload,
+    public void writeSecureDataVersion(String sdbId,
+                                       String path,
+                                       String encryptedPayload,
                                        SecureDataVersionRecord.SecretsAction action,
-                                       String originalCreatedBy,
-                                       OffsetDateTime originalCreatedTs,
-                                       String createdBy,
-                                       OffsetDateTime createdTs) {
+                                       String versionCreatedBy,
+                                       OffsetDateTime versionCreatedTs,
+                                       String actionPrincipal,
+                                       OffsetDateTime actionTs) {
+
         secureDataVersionMapper.writeSecureDataVersion(new SecureDataVersionRecord()
                     .setId(uuidSupplier.get())
                     .setPath(path)
                     .setSdboxId(sdbId)
                     .setEncryptedBlob(encryptedPayload)
                     .setAction(action.getName())
-                    .setCreatedBy(createdBy)
-                    .setCreatedTs(createdTs)
-                    .setOriginalCreatedBy(originalCreatedBy)
-                    .setOriginalCreatedTs(originalCreatedTs)
+                    .setActionPrincipal(actionPrincipal)
+                    .setActionTs(actionTs)
+                    .setVersionCreatedBy(versionCreatedBy)
+                    .setVersionCreatedTs(versionCreatedTs)
         );
     }
 

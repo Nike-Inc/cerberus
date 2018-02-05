@@ -20,8 +20,12 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
+import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.guice.transactional.Transactional;
@@ -42,6 +46,7 @@ public class SecureDataService {
     private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper;
     private final DateTimeSupplier dateTimeSupplier;
+    private final SecureDataVersionDao secureDataVersionDao;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -49,11 +54,13 @@ public class SecureDataService {
     public SecureDataService(SecureDataDao secureDataDao,
                              EncryptionService encryptionService,
                              ObjectMapper objectMapper,
-                             DateTimeSupplier dateTimeSupplier) {
+                             DateTimeSupplier dateTimeSupplier,
+                             SecureDataVersionDao secureDataVersionDao) {
         this.secureDataDao = secureDataDao;
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
         this.dateTimeSupplier = dateTimeSupplier;
+        this.secureDataVersionDao = secureDataVersionDao;
     }
 
     @Transactional
@@ -65,10 +72,19 @@ public class SecureDataService {
         OffsetDateTime now = dateTimeSupplier.get();
 
         // this extra DB call is necessary to distinguish between create and update (for auditing) because
-        // they both create and update are lumped together under HTTP method "POST"
+        // both create and update are lumped together under HTTP method "POST"
         Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
         if (secureDataRecordOpt.isPresent()) {
             SecureDataRecord secureData = secureDataRecordOpt.get();
+
+            secureDataVersionDao.writeSecureDataVersion(sdbId, path, encryptedPayload,
+                    SecureDataVersionRecord.SecretsAction.UPDATE,
+                    secureData.getLastUpdatedBy(),
+                    secureData.getLastUpdatedTs(),
+                    principal,
+                    now
+            );
+
             secureDataDao.updateSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount,
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
@@ -191,7 +207,23 @@ public class SecureDataService {
      */
     public void deleteSecret(String path, String principal) {
         OffsetDateTime now = dateTimeSupplier.get();
-        secureDataDao.deleteSecret(path, principal, now);
+        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPath(path)
+                .orElseThrow(() ->
+                        new ApiException(DefaultApiError.ENTITY_NOT_FOUND)
+                );
+
+        secureDataVersionDao.writeSecureDataVersion(
+                secureDataRecord.getSdboxId(),
+                secureDataRecord.getPath(),
+                secureDataRecord.getEncryptedBlob(),
+                SecureDataVersionRecord.SecretsAction.DELETE,
+                secureDataRecord.getLastUpdatedBy(),
+                secureDataRecord.getLastUpdatedTs(),
+                principal,
+                now
+        );
+
+        secureDataDao.deleteSecret(path);
     }
 
     public int getTotalNumberOfKeyValuePairs() {

@@ -28,10 +28,10 @@
           PATH,
           ENCRYPTED_BLOB,
           ACTION,
-          ORIGINAL_CREATED_BY,
-          ORIGINAL_CREATED_TS,
-          CREATED_BY,
-          CREATED_TS
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS
         )
         VALUES (
           #{record.id},
@@ -39,10 +39,10 @@
           #{record.path},
           #{record.encryptedBlob},
           #{record.action},
-          #{record.originalCreatedBy},
-          #{record.originalCreatedTs},
-          #{record.createdBy},
-          #{record.createdTs}
+          #{record.versionCreatedBy},
+          #{record.versionCreatedTs},
+          #{record.actionPrincipal},
+          #{record.actionTs}
         )
     </insert>
 
@@ -53,10 +53,10 @@
           PATH,
           ENCRYPTED_BLOB,
           ACTION,
-          ORIGINAL_CREATED_BY,
-          ORIGINAL_CREATED_TS,
-          CREATED_BY,
-          CREATED_TS
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS
         From
           SECURE_DATA_VERSION
         WHERE
@@ -70,10 +70,10 @@
           PATH,
           ACTION,
           ENCRYPTED_BLOB,
-          ORIGINAL_CREATED_BY,
-          ORIGINAL_CREATED_TS,
-          CREATED_BY,
-          CREATED_TS
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS
         From
           SECURE_DATA_VERSION
         WHERE

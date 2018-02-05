@@ -44,10 +44,10 @@ public class SecureDataVersionDaoTest {
     private final String path = "path";
     private final String encryptedBlob = "encrypted blob";
     private final SecureDataVersionRecord.SecretsAction action = SecureDataVersionRecord.SecretsAction.UPDATE;
-    private final String createdBy = "system";
-    private final String originalCreatedBy = "system";
-    private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
-    private final OffsetDateTime originalCreatedTs = createdTs;
+    private final String actionPrincipal = "system";
+    private final String versionCreatedBy = "system";
+    private final OffsetDateTime actionTs = OffsetDateTime.now(ZoneId.of("UTC"));
+    private final OffsetDateTime versionCreatedTs = actionTs;
 
     private final SecureDataVersionRecord secureDataVersionRecord = new SecureDataVersionRecord()
             .setId(versionId)
@@ -55,10 +55,10 @@ public class SecureDataVersionDaoTest {
             .setAction(action.getName())
             .setPath(path)
             .setEncryptedBlob(encryptedBlob)
-            .setOriginalCreatedBy(originalCreatedBy)
-            .setCreatedBy(createdBy)
-            .setOriginalCreatedTs(originalCreatedTs)
-            .setCreatedTs(createdTs);
+            .setVersionCreatedBy(versionCreatedBy)
+            .setActionPrincipal(actionPrincipal)
+            .setVersionCreatedTs(versionCreatedTs)
+            .setActionTs(actionTs);
 
     private final List<SecureDataVersionRecord> secureDataVersionRecords = Lists.newArrayList(secureDataVersionRecord);
 
@@ -133,8 +133,8 @@ public class SecureDataVersionDaoTest {
         when(uuidSupplier.get()).thenReturn(versionId);
         when(secureDataVersionMapper.writeSecureDataVersion(secureDataVersionRecord)).thenReturn(1);
 
-        subject.writeSecureDataVersion(sdbId, path, encryptedBlob, action, originalCreatedBy, originalCreatedTs, createdBy,
-                createdTs);
+        subject.writeSecureDataVersion(sdbId, path, encryptedBlob, action, versionCreatedBy, versionCreatedTs, actionPrincipal,
+                actionTs);
 
         verify(secureDataVersionMapper).writeSecureDataVersion(anyObject());
     }

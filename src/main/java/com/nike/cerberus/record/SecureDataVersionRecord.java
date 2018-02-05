@@ -26,10 +26,10 @@ public class SecureDataVersionRecord {
     private String path;
     private String encryptedBlob;
     private String action;
-    private String originalCreatedBy;
-    private OffsetDateTime originalCreatedTs;
-    private String createdBy;
-    private OffsetDateTime createdTs;
+    private String versionCreatedBy;
+    private OffsetDateTime versionCreatedTs;
+    private String actionPrincipal;
+    private OffsetDateTime actionTs;
 
     public String getId() {
         return id;
@@ -76,39 +76,39 @@ public class SecureDataVersionRecord {
         return this;
     }
 
-    public String getOriginalCreatedBy() {
-        return originalCreatedBy;
+    public String getVersionCreatedBy() {
+        return versionCreatedBy;
     }
 
-    public SecureDataVersionRecord setOriginalCreatedBy(String originalCreatedBy) {
-        this.originalCreatedBy = originalCreatedBy;
+    public SecureDataVersionRecord setVersionCreatedBy(String versionCreatedBy) {
+        this.versionCreatedBy = versionCreatedBy;
         return this;
     }
 
-    public OffsetDateTime getOriginalCreatedTs() {
-        return originalCreatedTs;
+    public OffsetDateTime getVersionCreatedTs() {
+        return versionCreatedTs;
     }
 
-    public SecureDataVersionRecord setOriginalCreatedTs(OffsetDateTime originalCreatedTs) {
-        this.originalCreatedTs = originalCreatedTs;
+    public SecureDataVersionRecord setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
+        this.versionCreatedTs = versionCreatedTs;
         return this;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getActionPrincipal() {
+        return actionPrincipal;
     }
 
-    public SecureDataVersionRecord setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public SecureDataVersionRecord setActionPrincipal(String actionPrincipal) {
+        this.actionPrincipal = actionPrincipal;
         return this;
     }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
+    public OffsetDateTime getActionTs() {
+        return actionTs;
     }
 
-    public SecureDataVersionRecord setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
+    public SecureDataVersionRecord setActionTs(OffsetDateTime actionTs) {
+        this.actionTs = actionTs;
         return this;
     }
 

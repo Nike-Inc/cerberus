@@ -16,11 +16,8 @@
 
 package com.nike.cerberus.dao;
 
-import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.mapper.SecureDataMapper;
 import com.nike.cerberus.record.SecureDataRecord;
-import com.nike.cerberus.record.SecureDataVersionRecord;
 
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
@@ -30,12 +27,9 @@ public class SecureDataDao {
 
     private final SecureDataMapper secureDataMapper;
 
-    private final SecureDataVersionDao secureDataVersionDao;
-
     @Inject
-    public SecureDataDao(SecureDataMapper secureDataMapper, SecureDataVersionDao secureDataVersionDao) {
+    public SecureDataDao(SecureDataMapper secureDataMapper) {
         this.secureDataMapper = secureDataMapper;
-        this.secureDataVersionDao = secureDataVersionDao;
     }
 
     public void writeSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount,
@@ -56,18 +50,14 @@ public class SecureDataDao {
         );
     }
 
-    public void updateSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount,
+    public void updateSecureData(String sdbId,
+                                 String path,
+                                 String encryptedPayload,
+                                 int topLevelKVPairCount,
                                  String createdBy,
                                  OffsetDateTime createdTs,
                                  String lastUpdatedBy,
                                  OffsetDateTime lastUpdatedTs) {
-        secureDataVersionDao.writeSecureDataVersion(sdbId, path, encryptedPayload,
-                SecureDataVersionRecord.SecretsAction.UPDATE,
-                createdBy,
-                createdTs,
-                lastUpdatedBy,
-                lastUpdatedTs
-        );
 
         secureDataMapper.updateSecureData(new SecureDataRecord()
                 .setId(path.hashCode())
@@ -99,23 +89,7 @@ public class SecureDataDao {
         secureDataMapper.deleteAllSecretsThatStartWithGivenPartialPath(partialPath);
     }
 
-    public void deleteSecret(String path, String lastUpdatedBy, OffsetDateTime lastUpdatedTs) {
-        SecureDataRecord secureDataRecord = readSecureDataByPath(path)
-                .orElseThrow(() ->
-                    new ApiException(DefaultApiError.ENTITY_NOT_FOUND)
-                );
-
-        secureDataVersionDao.writeSecureDataVersion(
-                secureDataRecord.getSdboxId(),
-                secureDataRecord.getPath(),
-                secureDataRecord.getEncryptedBlob(),
-                SecureDataVersionRecord.SecretsAction.DELETE,
-                secureDataRecord.getCreatedBy(),
-                secureDataRecord.getCreatedTs(),
-                lastUpdatedBy,
-                lastUpdatedTs
-        );
-
+    public void deleteSecret(String path) {
         secureDataMapper.deleteSecret(path);
     }
 
