@@ -113,17 +113,7 @@ public class SecureDataVersionRecord {
     }
 
     public enum SecretsAction {
-        UPDATE("update"),
-        DELETE("delete");
-
-        private final String name;
-
-        SecretsAction(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
+        UPDATE,
+        DELETE
     }
 }

@@ -52,7 +52,7 @@ public class SecureDataVersionDao {
                     .setPath(path)
                     .setSdboxId(sdbId)
                     .setEncryptedBlob(encryptedPayload)
-                    .setAction(action.getName())
+                    .setAction(action.name())
                     .setActionPrincipal(actionPrincipal)
                     .setActionTs(actionTs)
                     .setVersionCreatedBy(versionCreatedBy)

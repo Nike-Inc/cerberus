@@ -52,7 +52,7 @@ public class SecureDataVersionDaoTest {
     private final SecureDataVersionRecord secureDataVersionRecord = new SecureDataVersionRecord()
             .setId(versionId)
             .setSdboxId(sdbId)
-            .setAction(action.getName())
+            .setAction(action.name())
             .setPath(path)
             .setEncryptedBlob(encryptedBlob)
             .setVersionCreatedBy(versionCreatedBy)

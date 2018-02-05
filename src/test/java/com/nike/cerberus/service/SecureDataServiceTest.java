@@ -19,6 +19,7 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.dao.SecureDataDao;
+import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
@@ -57,11 +58,12 @@ public class SecureDataServiceTest {
         "apps/checkout-service/api-keys/signal-fx-api-key",
         "apps/checkout-service/api-keys/splunk-api-key"
     };
+    @Mock private SecureDataRecord secureDataRecord;
 
     @Mock private SecureDataDao secureDataDao;
     @Mock private EncryptionService encryptionService;
     @Mock private DateTimeSupplier dateTimeSupplier;
-    @Mock private SecureDataRecord secureDataRecord;
+    @Mock private SecureDataVersionDao secureDataVersionDao;
     private ObjectMapper objectMapper;
 
     private SecureDataService secureDataService;
@@ -70,7 +72,7 @@ public class SecureDataServiceTest {
     public void before() {
         initMocks(this);
         objectMapper = new ObjectMapper();
-        secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper, dateTimeSupplier);
+        secureDataService = new SecureDataService(secureDataDao, encryptionService, objectMapper, dateTimeSupplier, secureDataVersionDao);
     }
 
     @After
@@ -193,9 +195,10 @@ public class SecureDataServiceTest {
     public void test_that_deleteSecret_proxies_to_dao() {
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
+        when(secureDataDao.readSecureDataByPath(partialPathWithoutTrailingSlash)).thenReturn(Optional.of(secureDataRecord));
 
         secureDataService.deleteSecret(partialPathWithoutTrailingSlash, principal);
-        verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash, principal, now);
+        verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
     }
 
     @Test
