@@ -35,7 +35,7 @@ public class AwsIamRoleArnParser {
      *
      * This is also the list of ARN types that are allowed in KMS key policies.
      */
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED = "^arn:aws:(iam|sts)::\\d+:(role|user|federated-user|assumed-role).*/.+$";
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED = "^arn:aws:(iam|sts)::\\d+:(role|user|federated-user|assumed-role).*/.+(?<!\\s)$";
 
     /**
      * Pattern used for generating a role from another ARN.

@@ -160,4 +160,10 @@ public class AwsIamRoleArnParserTest {
         assertEquals("12345678901234/some-value", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:other/some-value"));
         assertEquals("12345678901234/some-profile", awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:instance-profile/some-profile"));
     }
+
+    @Test
+    public void test_that_an_iam_role_can_not_end_with_whitespace() {
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some-role ").matches());
+        assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some-role\t").matches());
+    }
 }
