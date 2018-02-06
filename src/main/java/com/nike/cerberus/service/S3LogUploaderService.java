@@ -21,6 +21,7 @@ import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.nike.cerberus.aws.S3ClientFactory;
 import com.nike.riposte.server.config.ServerConfig;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
 import io.netty.channel.Channel;
@@ -57,15 +58,22 @@ public class S3LogUploaderService implements ServerShutdownHook {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final AmazonS3 amazonS3;
     private final String bucket;
+    private final String bucketRegion;
     private final ConfigService configService;
+    private final AthenaService athenaService;
 
     @Inject
     public S3LogUploaderService(@Named("cms.audit.bucket") String bucket,
                                 @Named("cms.audit.bucket_region") String bucketRegion,
-                                ConfigService configService) {
+                                ConfigService configService,
+                                AthenaService athenaService,
+                                S3ClientFactory s3ClientFactory) {
         this.bucket = bucket;
-        amazonS3 = AmazonS3Client.builder().withRegion(bucketRegion).build();
+        this.bucketRegion = bucketRegion;
         this.configService = configService;
+        this.athenaService = athenaService;
+
+        amazonS3 = s3ClientFactory.getClient(bucketRegion);
 
         // Inject this into the logback rolling policy which was created before guice land exists
         getRollingPolicy().ifPresent(policy -> {
@@ -92,11 +100,12 @@ public class S3LogUploaderService implements ServerShutdownHook {
         Pattern dtPattern = Pattern.compile(".*?(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})_(?<hour>\\d{2}).*");
         Matcher matcher = dtPattern.matcher(fileName);
         if(matcher.find()) {
-            return String.format("partitioned/year=%s/month=%s/day=%s/hour=%s",
-                    matcher.group("year"),
-                    matcher.group("month"),
-                    matcher.group("day"),
-                    matcher.group("hour"));
+            String year = matcher.group("year");
+            String month = matcher.group("month");
+            String day = matcher.group("day");
+            String hour = matcher.group("hour");
+            athenaService.addPartitionIfMissing(bucketRegion, bucket, year, month, day, hour);
+            return String.format("partitioned/year=%s/month=%s/day=%s/hour=%s", year, month, day, hour);
         } else {
             return "un-partitioned";
         }
@@ -116,7 +125,7 @@ public class S3LogUploaderService implements ServerShutdownHook {
      * @param filename The file to upload to s3
      * @param retryCount The retry count
      */
-    private void processLogFile(String filename, int retryCount) {
+    private Optional<String> processLogFile(String filename, int retryCount) {
         log.info("process log file called with filename: {}, retry count: {}", filename, retryCount);
         final File rolledLogFile = new File(filename);
         // poll for 30 seconds waiting for file to exist or bail
@@ -131,7 +140,7 @@ public class S3LogUploaderService implements ServerShutdownHook {
         // if file does not exist or empty, do nothing
         if (!rolledLogFile.exists() || rolledLogFile.length() == 0) {
             log.error("File '{}' does not exist or is empty returning", filename);
-            return;
+            return Optional.empty();
         }
 
         String partition = getPartition(rolledLogFile.getName());
@@ -151,6 +160,7 @@ public class S3LogUploaderService implements ServerShutdownHook {
             }
             throw e;
         }
+        return Optional.of(partition);
     }
 
     /**

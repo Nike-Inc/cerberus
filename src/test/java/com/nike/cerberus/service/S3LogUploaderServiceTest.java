@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.nike.cerberus.aws.S3ClientFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,12 +29,18 @@ public class S3LogUploaderServiceTest {
     @Mock
     private ConfigService configService;
 
+    @Mock
+    AthenaService athenaService;
+
+    @Mock
+    S3ClientFactory s3ClientFactory;
+
     private S3LogUploaderService s3LogUploader;
 
     @Before
     public void before() {
         initMocks(this);
-        s3LogUploader = new S3LogUploaderService("fake-bucket", "us-west-2", configService);
+        s3LogUploader = new S3LogUploaderService("fake-bucket", "us-west-2", configService, athenaService, s3ClientFactory);
     }
 
     @Test
