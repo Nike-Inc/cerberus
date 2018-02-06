@@ -68,7 +68,7 @@ public class AthenaService {
                         .withQueryString(query)
                         .withResultConfiguration(new ResultConfiguration().withOutputLocation(String.format("s3://%s/results/", bucket)))
                 );
-                log.info("Started query: '{}' to add partition: '{}' to table: '{}'", result.getQueryExecutionId(), partition, table);
+                log.debug("Started query: '{}' to add partition: '{}' to table: '{}'", result.getQueryExecutionId(), partition, table);
                 partitions.add(partition);
             } catch (AmazonClientException e) {
                 log.error("Failed to start add partition query for year={}/month={}/day={}/hour={}", year, month, day, hour, e);

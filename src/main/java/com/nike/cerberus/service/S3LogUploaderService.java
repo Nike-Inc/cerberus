@@ -125,7 +125,7 @@ public class S3LogUploaderService implements ServerShutdownHook {
      * @param filename The file to upload to s3
      * @param retryCount The retry count
      */
-    private Optional<String> processLogFile(String filename, int retryCount) {
+    private void processLogFile(String filename, int retryCount) {
         log.info("process log file called with filename: {}, retry count: {}", filename, retryCount);
         final File rolledLogFile = new File(filename);
         // poll for 30 seconds waiting for file to exist or bail
@@ -140,7 +140,7 @@ public class S3LogUploaderService implements ServerShutdownHook {
         // if file does not exist or empty, do nothing
         if (!rolledLogFile.exists() || rolledLogFile.length() == 0) {
             log.error("File '{}' does not exist or is empty returning", filename);
-            return Optional.empty();
+            return;
         }
 
         String partition = getPartition(rolledLogFile.getName());
@@ -160,7 +160,6 @@ public class S3LogUploaderService implements ServerShutdownHook {
             }
             throw e;
         }
-        return Optional.of(partition);
     }
 
     /**
