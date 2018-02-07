@@ -21,6 +21,7 @@ import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface SecureDataVersionMapper {
 
@@ -31,6 +32,8 @@ public interface SecureDataVersionMapper {
     SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
 
     String[] getVersionPathsByPartialPath(@Param("partialPath") String partialPath);
+
+    Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);
 
     int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
 }

@@ -84,6 +84,10 @@
         SELECT DISTINCT PATH From SECURE_DATA_VERSION WHERE PATH LIKE '${partialPath}%';
     </select>
 
+    <select id="getVersionPathsBySdbId" resultType="String">
+        SELECT DISTINCT PATH From SECURE_DATA_VERSION WHERE SDBOX_ID = #{sdbId};
+    </select>
+
     <delete id="deleteAllVersionsThatStartWithPartialPath">
         DELETE FROM SECURE_DATA_VERSION WHERE PATH LIKE '${partialPath}%';
     </delete>

@@ -175,6 +175,10 @@ public class SecureDataService {
         return keys;
     }
 
+    public Set<String> getPathsBySdbId(String sdbId) {
+        return secureDataDao.getPathsBySdbId(sdbId);
+    }
+
     public int getTotalNumberOfDataNodes() {
         return secureDataDao.getTotalNumberOfDataNodes();
     }

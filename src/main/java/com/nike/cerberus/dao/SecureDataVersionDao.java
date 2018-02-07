@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class SecureDataVersionDao {
 
@@ -70,6 +71,10 @@ public class SecureDataVersionDao {
 
     public String[] getVersionPathsByPartialPath(String partialPath) {
         return secureDataVersionMapper.getVersionPathsByPartialPath(partialPath);
+    }
+
+    public Set<String> getVersionPathsBySdbId(String sdbId) {
+        return secureDataVersionMapper.getVersionPathsBySdbId(sdbId);
     }
 
     public void deleteAllVersionsThatStartWithPartialPath(String partialPath) {

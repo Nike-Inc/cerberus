@@ -19,6 +19,8 @@ package com.nike.cerberus.mapper;
 import com.nike.cerberus.record.SecureDataRecord;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Set;
+
 public interface SecureDataMapper {
 
     int writeSecureData(@Param("record") SecureDataRecord record);
@@ -28,6 +30,8 @@ public interface SecureDataMapper {
     SecureDataRecord readSecureDataByPath(@Param("path") String path);
 
     String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
+
+    Set<String> getPathsBySdbId(@Param("sdbId") String sdbId);
 
     int getTotalNumberOfDataNodes();
 

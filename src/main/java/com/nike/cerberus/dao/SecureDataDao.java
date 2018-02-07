@@ -22,6 +22,7 @@ import com.nike.cerberus.record.SecureDataRecord;
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 public class SecureDataDao {
 
@@ -79,6 +80,10 @@ public class SecureDataDao {
 
     public String[] getPathsByPartialPath(String partialPath) {
         return secureDataMapper.getPathsByPartialPath(partialPath);
+    }
+
+    public Set<String> getPathsBySdbId(String sdbId) {
+        return secureDataMapper.getPathsBySdbId(sdbId);
     }
 
     public int getTotalNumberOfDataNodes() {
