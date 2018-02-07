@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.service;
 
-import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.dao.UserGroupDao;
@@ -34,7 +33,6 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
-import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,12 +45,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -366,66 +361,5 @@ public class SafeDepositBoxServiceTest {
         verify(userGroupPermissionService).deleteUserGroupPermissions(sdbId);
         verify(secureDataVersionDao).deleteAllVersionsThatStartWithPartialPath(sdbPathNoCategory);
         verify(secureDataService).deleteAllSecretsThatStartWithGivenPartialPath(sdbPathNoCategory);
-    }
-
-    @Test
-    public void test_that_hasAtLeastReadPermissionToSdb_returns_true() {
-        String sdbId = "sdb id";
-        SafeDepositBoxRecord sdbRecord = mock(SafeDepositBoxRecord.class);
-        when(sdbRecord.getId()).thenReturn(sdbId);
-
-        String userGroup = "user group";
-        CerberusAuthToken userAuthToken = mock(CerberusAuthToken.class);
-        when(userAuthToken.getGroups()).thenReturn(userGroup);
-        when(userAuthToken.getPrincipalType()).thenReturn(PrincipalType.USER);
-        CerberusPrincipal cerberusUserPrincipal = new CerberusPrincipal(userAuthToken);
-
-        String iamPrincipal = "iam principal";
-        CerberusAuthToken iamAuthToken = mock(CerberusAuthToken.class);
-        when(iamAuthToken.getPrincipal()).thenReturn(iamPrincipal);
-        when(iamAuthToken.getPrincipalType()).thenReturn(PrincipalType.IAM);
-        CerberusPrincipal cerberusIamPrincipal = new CerberusPrincipal(iamAuthToken);
-
-        when(safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(Sets.newLinkedHashSet(userGroup)))
-                .thenReturn(Lists.newArrayList(sdbRecord));
-        when(safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(iamPrincipal))
-                .thenReturn(Lists.newArrayList(sdbRecord));
-
-        boolean userResult = safeDepositBoxService.hasAtLeastReadPermissionToSdb(cerberusUserPrincipal, sdbId);
-        boolean iamResult = safeDepositBoxService.hasAtLeastReadPermissionToSdb(cerberusIamPrincipal, sdbId);
-
-        assertTrue(userResult);
-        assertTrue(iamResult);
-    }
-
-    @Test
-    public void test_that_hasAtLeastReadPermissionToSdb_returns_false() {
-        String sdbIdHasAccess = "sdb id has access";
-        String sdbIdDoesNotHaveAccess = "sdb id does not have access";
-        SafeDepositBoxRecord sdbRecordHasAccess = mock(SafeDepositBoxRecord.class);
-        when(sdbRecordHasAccess.getId()).thenReturn(sdbIdHasAccess);
-
-        String userGroup = "user group";
-        CerberusAuthToken userAuthToken = mock(CerberusAuthToken.class);
-        when(userAuthToken.getGroups()).thenReturn(userGroup);
-        when(userAuthToken.getPrincipalType()).thenReturn(PrincipalType.USER);
-        CerberusPrincipal cerberusUserPrincipal = new CerberusPrincipal(userAuthToken);
-
-        String iamPrincipal = "iam principal";
-        CerberusAuthToken iamAuthToken = mock(CerberusAuthToken.class);
-        when(iamAuthToken.getPrincipal()).thenReturn(iamPrincipal);
-        when(iamAuthToken.getPrincipalType()).thenReturn(PrincipalType.IAM);
-        CerberusPrincipal cerberusIamPrincipal = new CerberusPrincipal(iamAuthToken);
-
-        when(safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(Sets.newLinkedHashSet(userGroup)))
-                .thenReturn(Lists.newArrayList(sdbRecordHasAccess));
-        when(safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(iamPrincipal))
-                .thenReturn(Lists.newArrayList(sdbRecordHasAccess));
-
-        boolean userResult = safeDepositBoxService.hasAtLeastReadPermissionToSdb(cerberusUserPrincipal, sdbIdDoesNotHaveAccess);
-        boolean iamResult = safeDepositBoxService.hasAtLeastReadPermissionToSdb(cerberusIamPrincipal, sdbIdDoesNotHaveAccess);
-
-        assertFalse(userResult);
-        assertFalse(iamResult);
     }
 }

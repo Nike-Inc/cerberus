@@ -757,11 +757,4 @@ public class SafeDepositBoxService {
         // return only current version, as full SDB version history is not implemented
         return Lists.newArrayList(getCurrentSafeDepositBoxVersion(sdbId));
     }
-
-    public boolean hasAtLeastReadPermissionToSdb(CerberusPrincipal principal, String sdbId) {
-        List<SafeDepositBoxSummary> sdbSummaries = getAssociatedSafeDepositBoxes(principal);
-
-        return sdbSummaries.stream()
-                .anyMatch(sdb -> sdb.getId().equals(sdbId));
-    }
 }

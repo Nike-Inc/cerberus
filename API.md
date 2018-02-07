@@ -793,6 +793,36 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
 + Response 204
 
+# Versions
+
+## Safe Deposit Box Versioning
+
+### [GET] Safe Deposit Box Versions [v1/safe-deposit-box-versions/{SDB_ID}]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+               "versions": [
+                    {
+                        "id": "1234-4567-8903-0098-7543",
+                        "sdbId": "0000-0000-0000-0000"
+                        "paths": [
+                            "path/to/secret1",
+                            "path/to/secret2"
+                        ]
+                    }
+               ]
+            }
+
 # Group Role
 
 ## Role List [/v1/role]

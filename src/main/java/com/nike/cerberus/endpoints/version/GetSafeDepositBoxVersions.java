@@ -19,12 +19,16 @@ package com.nike.cerberus.endpoints.version;
 
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.record.SafeDepositBoxVersionRecord;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.event.AuditableEvent;
+import com.nike.cerberus.record.SafeDepositBoxVersionRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.util.Slugger;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -52,9 +56,13 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
 
     private final SafeDepositBoxService safeDepositBoxService;
 
+    private final PermissionsService permissionsService;
+
     @Inject
-    public GetSafeDepositBoxVersions(final SafeDepositBoxService safeDepositBoxService) {
+    public GetSafeDepositBoxVersions(SafeDepositBoxService safeDepositBoxService,
+                                     PermissionsService permissionsService) {
         this.safeDepositBoxService = safeDepositBoxService;
+        this.permissionsService = permissionsService;
     }
 
     @Override
@@ -75,11 +83,17 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
             final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
             String sdbId = request.getPathParam("id");
 
-            boolean hasPermissionToSdb = safeDepositBoxService.hasAtLeastReadPermissionToSdb(authPrincipal, sdbId);
+            boolean hasPermissionToSdb = permissionsService.doesPrincipalHaveReadPermission(authPrincipal, sdbId);
             if (hasPermissionToSdb) {
                 return ResponseInfo.newBuilder(
                         safeDepositBoxService.getSafeDepositBoxVersions(sdbId)).build();
             } else {
+                AuditableEvent auditableEvent = auditableEvent(authPrincipal, request, getClass().getSimpleName())
+                        .withAction(String.format("Failed to get version paths for SDB with ID: %s. Permission denied.", sdbId))
+                        .withSuccess(false)
+                        .build();
+                eventProcessorService.ingestEvent(auditableEvent);
+
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.ACCESS_DENIED)
                         .build();
@@ -93,5 +107,15 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
     public Matcher requestMatcher() {
 
         return MultiMatcher.match(Sets.newHashSet("/v1/safe-deposit-box-versions/{id}"), HttpMethod.GET);
+    }
+
+    @Override
+    protected CustomizableAuditData getCustomizableAuditData(RequestInfo<Void> request) {
+        String sdbId = request.getPathParam("id");
+        Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
+        String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
+        return  new CustomizableAuditData()
+                .setDescription(String.format("Listing versions for SDB with name: '%s' and id: '%s'", sdbName, sdbId))
+                .setSdbNameSlug(sdbNameOptional.map(Slugger::toSlug).orElse("_unknown_"));
     }
 }
