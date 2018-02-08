@@ -17,7 +17,6 @@
 
 package com.nike.cerberus.endpoints.version;
 
-import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
@@ -33,7 +32,6 @@ import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
-import com.nike.riposte.util.MultiMatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
@@ -106,7 +104,7 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
     @Override
     public Matcher requestMatcher() {
 
-        return MultiMatcher.match(Sets.newHashSet("/v1/safe-deposit-box-versions/{id}"), HttpMethod.GET);
+        return Matcher.match("/v1/safe-deposit-box-versions/{id}", HttpMethod.GET);
     }
 
     @Override
