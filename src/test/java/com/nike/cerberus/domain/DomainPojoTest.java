@@ -29,6 +29,7 @@ public class DomainPojoTest {
         pojoClasses.remove(PojoClassFactory.getPojoClass(IamPrincipalPermission.Builder.class));
         pojoClasses.remove(PojoClassFactory.getPojoClass(UserGroupPermission.Builder.class));
         pojoClasses.remove(PojoClassFactory.getPojoClass(SafeDepositBoxV2.Builder.class));
+        pojoClasses.remove(PojoClassFactory.getPojoClass(SecureDataRequestInfo.class));
 
         Assert.assertTrue(pojoClasses.size() > 1);
 

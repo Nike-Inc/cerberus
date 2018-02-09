@@ -19,6 +19,8 @@ package com.nike.cerberus.endpoints.secret;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.nike.cerberus.SecureDataRequestInfoFactory;
+import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataResponse;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.service.PermissionsService;
@@ -49,9 +51,10 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
     @Inject
     protected ReadSecureData(SecureDataService secureDataService,
                              PermissionsService permissionService,
-                             SafeDepositBoxService safeDepositBoxService) {
+                             SafeDepositBoxService safeDepositBoxService,
+                             SecureDataRequestInfoFactory secureDataRequestInfoFactory) {
 
-        super(secureDataService, permissionService, safeDepositBoxService);
+        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestInfoFactory);
     }
 
     @Override
