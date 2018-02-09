@@ -29,6 +29,7 @@ import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
+import com.nike.cerberus.record.SafeDepositBoxVersionRecord;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
@@ -728,5 +729,32 @@ public class SafeDepositBoxService {
                     adminUser,
                     now);
         }
+    }
+
+    /**
+     * Get current SDB version
+     * @param sdbId  ID of the SDB
+     * @return  SDB version
+     */
+    public SafeDepositBoxVersionRecord getCurrentSafeDepositBoxVersion(String sdbId) {
+        // retrieve paths for the previous secrets versions from the secure data versions table
+        Set<String> versionPaths = secureDataVersionDao.getVersionPathsBySdbId(sdbId);
+
+        // retrieve paths for the current secrets versions from secure data table
+        versionPaths.addAll(secureDataService.getPathsBySdbId(sdbId));
+
+        return new SafeDepositBoxVersionRecord()
+                .setPaths(versionPaths)
+                .setSdbID(sdbId);
+    }
+
+    /**
+     * Get all versions for SDB
+     * @param sdbId  ID of the SDB
+     * @return  List of SDB versions
+     */
+    public List<SafeDepositBoxVersionRecord> getSafeDepositBoxVersions(String sdbId) {
+        // return only current version, as full SDB version history is not implemented
+        return Lists.newArrayList(getCurrentSafeDepositBoxVersion(sdbId));
     }
 }

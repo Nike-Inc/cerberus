@@ -20,7 +20,7 @@ public class RecordPojoTest {
 
         List<PojoClass> pojoClasses = PojoClassFactory.getPojoClasses("com.nike.cerberus.record");
 
-        Assert.assertEquals(14, pojoClasses.size());
+        Assert.assertEquals(15, pojoClasses.size());
 
         Validator validator = ValidatorBuilder.create()
                 .with(new GetterMustExistRule())

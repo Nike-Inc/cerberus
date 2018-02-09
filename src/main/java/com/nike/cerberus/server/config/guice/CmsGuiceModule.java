@@ -57,6 +57,7 @@ import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.secret.DeleteSecureData;
 import com.nike.cerberus.endpoints.secret.ReadSecureData;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
+import com.nike.cerberus.endpoints.version.GetSafeDepositBoxVersions;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
@@ -72,7 +73,6 @@ import com.nike.riposte.server.config.AppInfo;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
-import com.typesafe.config.Config;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -197,7 +197,8 @@ public class CmsGuiceModule extends AbstractModule {
             ReadSecureData readSecureData,
             DeleteSecureData deleteSecureData,
             TriggerScheduledJob triggerScheduledJob,
-            RestoreSafeDepositBox restoreSafeDepositBox
+            RestoreSafeDepositBox restoreSafeDepositBox,
+            GetSafeDepositBoxVersions getSafeDepositBoxVersions
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -210,7 +211,8 @@ public class CmsGuiceModule extends AbstractModule {
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
                 getSDBMetadata, putSDBMetadata, getDashboardRedirect,
                 writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard,
-                restoreSafeDepositBox
+                restoreSafeDepositBox,
+                getSafeDepositBoxVersions
         ));
     }
 

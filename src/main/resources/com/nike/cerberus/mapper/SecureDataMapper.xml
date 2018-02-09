@@ -77,6 +77,10 @@
         SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%';
     </select>
 
+    <select id="getPathsBySdbId" resultType="String">
+        SELECT DISTINCT PATH From SECURE_DATA WHERE SDBOX_ID = #{sdbId};
+    </select>
+
     <select id="getTotalNumberOfDataNodes" resultType="java.lang.Integer">
         SELECT COUNT(ID) FROM SECURE_DATA
     </select>
