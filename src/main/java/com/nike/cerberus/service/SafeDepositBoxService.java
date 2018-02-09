@@ -737,11 +737,25 @@ public class SafeDepositBoxService {
      * @return  SDB version
      */
     public SafeDepositBoxVersionRecord getCurrentSafeDepositBoxVersion(String sdbId) {
+        Optional<SafeDepositBoxRecord> sdbOpt = safeDepositBoxDao.getSafeDepositBox(sdbId);
+        if (! sdbOpt.isPresent()) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                    .withExceptionMessage("Could not find SDB with ID: " + sdbId)
+                    .build();
+        }
+
         // retrieve paths for the previous secrets versions from the secure data versions table
         Set<String> versionPaths = secureDataVersionDao.getVersionPathsBySdbId(sdbId);
 
         // retrieve paths for the current secrets versions from secure data table
         versionPaths.addAll(secureDataService.getPathsBySdbId(sdbId));
+
+        String sdbPath = sdbOpt.get().getPath();
+        String sdbCategory = StringUtils.substringBefore(sdbPath, "/");
+        versionPaths = versionPaths.stream()
+                .map(secretPath -> String.format("%s/%s", sdbCategory, secretPath))
+                .collect(Collectors.toSet());
 
         return new SafeDepositBoxVersionRecord()
                 .setPaths(versionPaths)
