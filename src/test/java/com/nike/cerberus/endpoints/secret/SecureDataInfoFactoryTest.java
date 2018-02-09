@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.endpoints.secret;
 
-import com.nike.cerberus.SecureDataRequestInfoFactory;
+import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -49,11 +49,11 @@ public class SecureDataInfoFactoryTest {
     @Mock
     private SafeDepositBoxService safeDepositBoxService;
 
-    private SecureDataRequestInfoFactory secureDataRequestInfoFactory;
+    private SecureDataRequestService secureDataRequestService;
 
     @Before public void before() {
         initMocks(this);
-        secureDataRequestInfoFactory = new SecureDataRequestInfoFactory(safeDepositBoxService, permissionService);
+        secureDataRequestService = new SecureDataRequestService(safeDepositBoxService, permissionService);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class SecureDataInfoFactoryTest {
         when(safeDepositBoxService.getSafeDepositBoxIdByPath(sdbPath)).thenReturn(Optional.of(sdbId));
         when(permissionService.doesPrincipalHavePermission(anyObject(), anyObject(), anyObject())).thenReturn(true);
 
-        SecureDataRequestInfo info = secureDataRequestInfoFactory.create(requestInfo);
+        SecureDataRequestInfo info = secureDataRequestService.parseAndValidateRequest(requestInfo);
         assertEquals("okta/api_key", info.getPath());
         assertEquals("shared", info.getCategory());
     }
@@ -91,7 +91,7 @@ public class SecureDataInfoFactoryTest {
         when(safeDepositBoxService.getSafeDepositBoxIdByPath(sdbPath)).thenReturn(Optional.of(sdbId));
         when(permissionService.doesPrincipalHavePermission(anyObject(), anyObject(), anyObject())).thenReturn(true);
 
-        SecureDataRequestInfo info = secureDataRequestInfoFactory.create(requestInfo);
+        SecureDataRequestInfo info = secureDataRequestService.parseAndValidateRequest(requestInfo);
         assertEquals("okta/api_key", info.getPath());
         assertEquals("shared", info.getCategory());
     }

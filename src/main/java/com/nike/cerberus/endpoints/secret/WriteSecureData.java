@@ -17,7 +17,7 @@
 package com.nike.cerberus.endpoints.secret;
 
 import com.google.common.collect.Sets;
-import com.nike.cerberus.SecureDataRequestInfoFactory;
+import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -47,9 +47,9 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
     protected WriteSecureData(SecureDataService secureDataService,
                               PermissionsService permissionService,
                               SafeDepositBoxService safeDepositBoxService,
-                              SecureDataRequestInfoFactory secureDataRequestInfoFactory) {
+                              SecureDataRequestService secureDataRequestService) {
 
-        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestInfoFactory);
+        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService);
     }
 
     @Override

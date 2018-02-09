@@ -32,7 +32,7 @@ import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class SecureDataRequestInfoFactory {
+public class SecureDataRequestService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -42,13 +42,13 @@ public class SecureDataRequestInfoFactory {
 
 
     @Inject
-    public SecureDataRequestInfoFactory(SafeDepositBoxService safeDepositBoxService,
-                                        PermissionsService permissionsService) {
+    public SecureDataRequestService(SafeDepositBoxService safeDepositBoxService,
+                                    PermissionsService permissionsService) {
         this.safeDepositBoxService = safeDepositBoxService;
         this.permissionsService = permissionsService;
     }
 
-    public SecureDataRequestInfo create(RequestInfo requestInfo) throws IllegalArgumentException {
+    public SecureDataRequestInfo parseAndValidateRequest(RequestInfo requestInfo) throws IllegalArgumentException {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(requestInfo);
 
@@ -57,7 +57,7 @@ public class SecureDataRequestInfoFactory {
             throw new IllegalArgumentException("Security context is invalid.");
         }
 
-        SecureDataRequestInfo info = createWithOnlyPathInfo(requestInfo.getPath());
+        SecureDataRequestInfo info = parseRequestPathInfo(requestInfo.getPath());
 
         if (isBlank(info.getCategory()) || isBlank(info.getSdbSlug())) {
             log.error("Required path params missing, PATH: {}", requestInfo.getPath());
@@ -82,7 +82,7 @@ public class SecureDataRequestInfoFactory {
         return info;
     }
 
-    public SecureDataRequestInfo createWithOnlyPathInfo(String requestPath) {
+    public SecureDataRequestInfo parseRequestPathInfo(String requestPath) {
         final SecureDataRequestInfo info = new SecureDataRequestInfo();
 
         String[] parts = requestPath

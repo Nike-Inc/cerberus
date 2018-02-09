@@ -21,7 +21,7 @@ import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
-import com.nike.cerberus.SecureDataRequestInfoFactory;
+import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -44,18 +44,18 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
     protected final SecureDataService secureDataService;
     protected final PermissionsService permissionService;
     protected final SafeDepositBoxService safeDepositBoxService;
-    protected final SecureDataRequestInfoFactory secureDataRequestInfoFactory;
+    protected final SecureDataRequestService secureDataRequestService;
 
     @Inject
     protected SecureDataEndpointV1(SecureDataService secureDataService,
                                    PermissionsService permissionService,
                                    SafeDepositBoxService safeDepositBoxService,
-                                   SecureDataRequestInfoFactory secureDataRequestInfoFactory) {
+                                   SecureDataRequestService secureDataRequestService) {
 
         this.secureDataService = secureDataService;
         this.permissionService = permissionService;
         this.safeDepositBoxService = safeDepositBoxService;
-        this.secureDataRequestInfoFactory = secureDataRequestInfoFactory;
+        this.secureDataRequestService = secureDataRequestService;
     }
 
     public final CompletableFuture<ResponseInfo<O>> doExecute(RequestInfo<I> request,
@@ -64,7 +64,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
         SecureDataRequestInfo requestInfo;
         try {
-            requestInfo = secureDataRequestInfoFactory.create(request);
+            requestInfo = secureDataRequestService.parseAndValidateRequest(request);
         } catch (IllegalArgumentException iae) {
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
@@ -92,7 +92,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
 
     @Override
     protected String getSlugifiedSdbName(RequestInfo<I> request) {
-        SecureDataRequestInfo requestInfo = secureDataRequestInfoFactory.createWithOnlyPathInfo(request.getPath());
+        SecureDataRequestInfo requestInfo = secureDataRequestService.parseRequestPathInfo(request.getPath());
 
         return requestInfo.getSdbSlug();
     }
