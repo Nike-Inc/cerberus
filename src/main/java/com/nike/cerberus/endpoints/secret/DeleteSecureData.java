@@ -17,6 +17,8 @@
 package com.nike.cerberus.endpoints.secret;
 
 import com.google.common.collect.Sets;
+import com.nike.cerberus.SecureDataRequestService;
+import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.PermissionsService;
@@ -40,9 +42,10 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
     @Inject
     protected DeleteSecureData(SecureDataService secureDataService,
                                PermissionsService permissionService,
-                               SafeDepositBoxService safeDepositBoxService) {
+                               SafeDepositBoxService safeDepositBoxService,
+                               SecureDataRequestService secureDataRequestService) {
 
-        super(secureDataService, permissionService, safeDepositBoxService);
+        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService);
     }
 
     @Override
