@@ -15,16 +15,15 @@
  *
  */
 
-package com.nike.cerberus.record;
+package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 
-public class SecureDataVersionRecord {
+public class SecureDataVersionSummary {
 
     private String id;
     private String sdboxId;
     private String path;
-    private String encryptedBlob;
     private String action;
     private String versionCreatedBy;
     private OffsetDateTime versionCreatedTs;
@@ -35,7 +34,7 @@ public class SecureDataVersionRecord {
         return id;
     }
 
-    public SecureDataVersionRecord setId(String id) {
+    public SecureDataVersionSummary setId(String id) {
         this.id = id;
         return this;
     }
@@ -44,7 +43,7 @@ public class SecureDataVersionRecord {
         return sdboxId;
     }
 
-    public SecureDataVersionRecord setSdboxId(String sdboxId) {
+    public SecureDataVersionSummary setSdboxId(String sdboxId) {
         this.sdboxId = sdboxId;
         return this;
     }
@@ -53,17 +52,8 @@ public class SecureDataVersionRecord {
         return path;
     }
 
-    public SecureDataVersionRecord setPath(String path) {
+    public SecureDataVersionSummary setPath(String path) {
         this.path = path;
-        return this;
-    }
-
-    public String getEncryptedBlob() {
-        return encryptedBlob;
-    }
-
-    public SecureDataVersionRecord setEncryptedBlob(String encryptedBlob) {
-        this.encryptedBlob = encryptedBlob;
         return this;
     }
 
@@ -71,7 +61,7 @@ public class SecureDataVersionRecord {
         return action;
     }
 
-    public SecureDataVersionRecord setAction(String action) {
+    public SecureDataVersionSummary setAction(String action) {
         this.action = action;
         return this;
     }
@@ -80,7 +70,7 @@ public class SecureDataVersionRecord {
         return versionCreatedBy;
     }
 
-    public SecureDataVersionRecord setVersionCreatedBy(String versionCreatedBy) {
+    public SecureDataVersionSummary setVersionCreatedBy(String versionCreatedBy) {
         this.versionCreatedBy = versionCreatedBy;
         return this;
     }
@@ -89,7 +79,7 @@ public class SecureDataVersionRecord {
         return versionCreatedTs;
     }
 
-    public SecureDataVersionRecord setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
+    public SecureDataVersionSummary setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
         this.versionCreatedTs = versionCreatedTs;
         return this;
     }
@@ -98,7 +88,7 @@ public class SecureDataVersionRecord {
         return actionPrincipal;
     }
 
-    public SecureDataVersionRecord setActionPrincipal(String actionPrincipal) {
+    public SecureDataVersionSummary setActionPrincipal(String actionPrincipal) {
         this.actionPrincipal = actionPrincipal;
         return this;
     }
@@ -107,7 +97,7 @@ public class SecureDataVersionRecord {
         return actionTs;
     }
 
-    public SecureDataVersionRecord setActionTs(OffsetDateTime actionTs) {
+    public SecureDataVersionSummary setActionTs(OffsetDateTime actionTs) {
         this.actionTs = actionTs;
         return this;
     }

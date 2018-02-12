@@ -21,9 +21,9 @@ import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CerberusSecurityContext;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
-import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
 import io.netty.handler.codec.http.HttpMethod;
 import org.assertj.core.util.Maps;
@@ -40,20 +40,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class SecureDataInfoFactoryTest {
+public class SecureDataRequestServiceTest {
 
-    @Mock
-    private SecureDataService secureDataService;
-    @Mock
-    private PermissionsService permissionService;
-    @Mock
-    private SafeDepositBoxService safeDepositBoxService;
+    @Mock private PermissionsService permissionService;
+    @Mock private SafeDepositBoxService safeDepositBoxService;
+    @Mock private EventProcessorService eventProcessorService;
 
     private SecureDataRequestService secureDataRequestService;
 
     @Before public void before() {
         initMocks(this);
-        secureDataRequestService = new SecureDataRequestService(safeDepositBoxService, permissionService);
+        secureDataRequestService = new SecureDataRequestService(safeDepositBoxService, permissionService, eventProcessorService);
     }
 
     @Test
