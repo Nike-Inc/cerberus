@@ -810,18 +810,74 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
     + Body
 
-            {
-               "versions": [
-                    {
-                        "id": "1234-4567-8903-0098-7543",
-                        "sdbId": "0000-0000-0000-0000"
-                        "paths": [
-                            "path/to/secret1",
-                            "path/to/secret2"
-                        ]
-                    }
-               ]
-            }
+             [
+                 {
+                     "sdb_id": "0000-0000-0000-0000"
+                     "paths": [
+                         "/category/sdb-slug/path/to/secret1",
+                         "/category/sdb-slug/path/to/secret2"
+                     ]
+                 }
+             ]
+
+## Secrets Versioning
+
+### [GET] Secrets Versions [v1/secret-versions/{PATH}]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "id": "1234-4567-8903-0098-7543",
+                    "sdb_id": "0000-0000-0000-0000",
+                    "path": "/category/sdb-slug/path/to/secret1",
+                    "action": "UPDATE",
+                    "version_created_by": "user0@example.com",
+                    "version_created_ts": "2016-04-05T04:19:51Z",
+                    "action_principal": "user@example.com"
+                    "action_ts": "2016-04-05T05:19:59Z",
+                },
+                {
+                    "id": "4567-8903-0098-7543-1234",
+                    "sdb_id": "0000-0000-0000-0000",
+                    "path": "/category/sdb-slug/path/to/secret1",
+                    "action": "UPDATE",
+                    "version_created_by": "user@example.com",
+                    "version_created_ts": "2016-04-05T04:19:51Z",
+                    "action_principal": "admin@example.com"
+                    "action_ts": "2016-03-23T02:32:10Z",
+                },
+                {
+                    "id": "8903-0098-7543-1234-4567",
+                    "sdb_id": "0000-0000-0000-0000",
+                    "path": "/category/sdb-slug/path/to/secret1",
+                    "action": "UPDATE",
+                    "version_created_by": "user2@example.com",
+                    "version_created_ts": "2016-04-05T04:19:51Z",
+                    "action_principal": "guest@example.com"
+                    "action_ts": "2016-02-13T12:05:09Z",
+                },
+                {
+                    "id": "CURRENT",
+                    "sdb_id": "0000-0000-0000-0000",
+                    "path": "/category/sdb-slug/path/to/secret1",
+                    "action": "CREATE",
+                    "version_created_by": "user@example.com",
+                    "version_created_ts": "2016-04-05T04:19:51Z",
+                    "action_principal": "user@example.com"
+                    "action_ts": "2016-04-05T04:19:51Z",
+                }
+            ]
+
 
 # Group Role
 
