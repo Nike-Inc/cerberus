@@ -70,33 +70,26 @@ public class GetSecureDataVersions extends AuditableEventEndpoint<Void, List<Sec
     }
 
     public ResponseInfo<List<SecureDataVersionSummary>> getVersionPathsForSdb(final RequestInfo<Void> request) {
+        SecureDataRequestInfo requestInfo = secureDataRequestService.parseAndValidateRequest(request);
+        String pathToSecret = requestInfo.getPath();
 
-        SecureDataRequestInfo requestInfo;
-        try {
-            requestInfo = secureDataRequestService.parseAndValidateRequest(request);
-            String pathToSecret = requestInfo.getPath();
-            List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecret);
-            if (summaries.isEmpty()) {
-                AuditableEvent auditableEvent = auditableEvent(requestInfo.getPrincipal(), request, getClass().getSimpleName())
-                        .withSuccess(false)
-                        .withAction("Failed to find versions for secret with path: " + pathToSecret)
-                        .build();
-                eventProcessorService.ingestEvent(auditableEvent);
+        List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(
+                pathToSecret,
+                requestInfo.getCategory());
+        if (summaries.isEmpty()) {
+            AuditableEvent auditableEvent = auditableEvent(requestInfo.getPrincipal(), request, getClass().getSimpleName())
+                    .withSuccess(false)
+                    .withAction("Failed to find versions for secret with path: " + pathToSecret)
+                    .build();
+            eventProcessorService.ingestEvent(auditableEvent);
 
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                        .withExceptionMessage(String.format("Secret with path: %s does not exist", pathToSecret))
-                        .build();
-            }
-
-            return ResponseInfo.newBuilder(summaries).build();
-        } catch (IllegalArgumentException iae) {
             throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.ACCESS_DENIED)
-                    .withExceptionCause(iae)
-                    .withExceptionMessage(iae.getMessage())
+                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
                     .build();
         }
+
+        return ResponseInfo.newBuilder(summaries).build();
+
     }
 
     @Override

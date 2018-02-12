@@ -17,9 +17,12 @@
 
 package com.nike.cerberus;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
+import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -30,6 +33,8 @@ import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 
+import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
+import static com.nike.cerberus.event.AuditableEvent.UNKNOWN;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class SecureDataRequestService {
@@ -40,12 +45,16 @@ public class SecureDataRequestService {
 
     private final PermissionsService permissionsService;
 
+    private final EventProcessorService eventProcessorService;
+
 
     @Inject
     public SecureDataRequestService(SafeDepositBoxService safeDepositBoxService,
-                                    PermissionsService permissionsService) {
+                                    PermissionsService permissionsService,
+                                    EventProcessorService eventProcessorService) {
         this.safeDepositBoxService = safeDepositBoxService;
         this.permissionsService = permissionsService;
+        this.eventProcessorService = eventProcessorService;
     }
 
     public SecureDataRequestInfo parseAndValidateRequest(RequestInfo requestInfo) throws IllegalArgumentException {
@@ -53,15 +62,26 @@ public class SecureDataRequestService {
                 CmsRequestSecurityValidator.getSecurityContextForRequest(requestInfo);
 
         if (! securityContext.isPresent() || ! (securityContext.get().getUserPrincipal() instanceof CerberusPrincipal)) {
-            log.error("Security context was null or principal was not instance of Cerberus Principal");
-            throw new IllegalArgumentException("Security context is invalid.");
+            eventProcessorService.ingestEvent(auditableEvent(UNKNOWN, requestInfo, getClass().getSimpleName())
+                    .withAction("Security context was null or principal was not instance of Cerberus Principal")
+                    .withSuccess(false)
+                    .build());
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.AUTH_TOKEN_INVALID)
+                    .build();
         }
 
         SecureDataRequestInfo info = parseRequestPathInfo(requestInfo.getPath());
 
         if (isBlank(info.getCategory()) || isBlank(info.getSdbSlug())) {
-            log.error("Required path params missing, PATH: {}", requestInfo.getPath());
-            throw new IllegalArgumentException("Request path is invalid.");
+            eventProcessorService.ingestEvent(auditableEvent(info.getPrincipal(), requestInfo, getClass().getSimpleName())
+                    .withAction("Required path params missing")
+                    .withSuccess(false)
+                    .build());
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+                    .withExceptionMessage("Request path is invalid.")
+                    .build();
         }
 
         CerberusPrincipal principal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
@@ -71,9 +91,14 @@ public class SecureDataRequestService {
         Optional<String> sdbId = safeDepositBoxService.getSafeDepositBoxIdByPath(sdbBasePath);
         if (! sdbId.isPresent() || ! permissionsService.doesPrincipalHavePermission(principal, sdbId.get(), secureDataAction)) {
 
-            log.error("SDB ID not found or permission was not granted for principal, principal: {}, sdb: {}, path: {}",
-                    principal.getName(), sdbBasePath, requestInfo.getPath());
-            throw new IllegalArgumentException("Could not find SDB with path: " + sdbBasePath);
+            eventProcessorService.ingestEvent(auditableEvent(info.getPrincipal(), requestInfo, getClass().getSimpleName())
+                    .withAction("SDB ID not found or permission was not granted for principal")
+                    .withSuccess(false)
+                    .build());
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+                    .withExceptionMessage("SDB not found or permission was not granted for principal")
+                    .build();
         }
 
         info.setPrincipal(principal);

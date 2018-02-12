@@ -47,7 +47,7 @@ public class SecureDataVersionService {
         this.secureDataService = secureDataService;
     }
 
-    public List<SecureDataVersionSummary> getSecureDataVersionSummariesByPath(String pathToSecureData) {
+    public List<SecureDataVersionSummary> getSecureDataVersionSummariesByPath(String pathToSecureData, String sdbCategory) {
         List<SecureDataVersionSummary> secureDataVersionSummaries = Lists.newArrayList();
 
         // retrieve previous secrets versions from the secure data versions table
@@ -66,7 +66,7 @@ public class SecureDataVersionService {
                     .setActionPrincipal(sdbRecord.getActionPrincipal())
                     .setActionTs(sdbRecord.getActionTs())
                     .setId(sdbRecord.getId())
-                    .setPath(sdbRecord.getPath())
+                    .setPath(String.format("%s/%s", sdbCategory, sdbRecord.getPath()))
                     .setSdboxId(sdbRecord.getSdboxId())
                     .setVersionCreatedBy(sdbRecord.getVersionCreatedBy())
                     .setVersionCreatedTs(sdbRecord.getVersionCreatedTs())

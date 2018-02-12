@@ -60,6 +60,8 @@ public class SecureDataVersionServiceTest {
         OffsetDateTime actionTs = OffsetDateTime.now();
         String versionCreatedBy = "version created by";
         OffsetDateTime versionCreatedTs = OffsetDateTime.now();
+        String sdbCategory = "sdb category";
+        String fullPath = String.format("%s/%s", sdbCategory, pathToSecureData);
 
         SecureDataVersionRecord record = new SecureDataVersionRecord()
                 .setId(versionId)
@@ -76,7 +78,7 @@ public class SecureDataVersionServiceTest {
 
         when(secureDataService.getSecureDataRecordForPath(pathToSecureData)).thenReturn(Optional.empty());
         when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData)).thenReturn(versions);
-        List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecureData);
+        List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecureData, sdbCategory);
         SecureDataVersionSummary result = summaries.get(0);
 
         assertEquals(record.getAction(), result.getAction());
@@ -84,7 +86,7 @@ public class SecureDataVersionServiceTest {
         assertEquals(record.getActionTs(), result.getActionTs());
         assertEquals(record.getSdboxId(), result.getSdboxId());
         assertEquals(record.getId(), result.getId());
-        assertEquals(record.getPath(), result.getPath());
+        assertEquals(fullPath, result.getPath());
         assertEquals(record.getVersionCreatedBy(), result.getVersionCreatedBy());
         assertEquals(record.getVersionCreatedTs(), result.getVersionCreatedTs());
     }

@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.endpoints.secret;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
@@ -65,7 +66,7 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
         SecureDataRequestInfo requestInfo;
         try {
             requestInfo = secureDataRequestService.parseAndValidateRequest(request);
-        } catch (IllegalArgumentException iae) {
+        } catch (ApiException ae) {
             return generateVaultStyleResponse(longRunningTaskExecutor,
                     ctx,
                     VaultStyleErrorResponse.Builder.create()
