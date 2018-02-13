@@ -16,6 +16,10 @@
 
 package com.nike.cerberus.domain;
 
+import com.google.common.collect.Maps;
+
+import java.util.Map;
+
 public class SecureDataResponse {
     private String requestId;
     private String leaseId = "";
@@ -25,6 +29,7 @@ public class SecureDataResponse {
     private Object wrapInfo = null;
     private Object warnings = null;
     private Object auth = null;
+    private Map<String, String> metadata = Maps.newHashMap();
 
     public String getRequestId() {
         return requestId;
@@ -88,5 +93,13 @@ public class SecureDataResponse {
 
     public void setAuth(Object auth) {
         this.auth = auth;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 }

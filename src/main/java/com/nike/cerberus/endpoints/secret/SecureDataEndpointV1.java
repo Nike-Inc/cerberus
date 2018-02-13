@@ -24,6 +24,7 @@ import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.service.SecureDataService;
+import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -46,17 +47,20 @@ public abstract class SecureDataEndpointV1<I, O> extends AuditableEventEndpoint<
     protected final PermissionsService permissionService;
     protected final SafeDepositBoxService safeDepositBoxService;
     protected final SecureDataRequestService secureDataRequestService;
+    protected final SecureDataVersionService secureDataVersionService;
 
     @Inject
     protected SecureDataEndpointV1(SecureDataService secureDataService,
                                    PermissionsService permissionService,
                                    SafeDepositBoxService safeDepositBoxService,
-                                   SecureDataRequestService secureDataRequestService) {
+                                   SecureDataRequestService secureDataRequestService,
+                                   SecureDataVersionService secureDataVersionService) {
 
         this.secureDataService = secureDataService;
         this.permissionService = permissionService;
         this.safeDepositBoxService = safeDepositBoxService;
         this.secureDataRequestService = secureDataRequestService;
+        this.secureDataVersionService = secureDataVersionService;
     }
 
     public final CompletableFuture<ResponseInfo<O>> doExecute(RequestInfo<I> request,
