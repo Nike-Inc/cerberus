@@ -743,7 +743,8 @@ Calling GET on a virtual path without the list=true parameter will return 404.
               },
               "wrap_info" : null,
               "warnings" : null,
-              "auth" : null
+              "auth" : null,
+              "metadata" : {}
             }
         
 + Response 403 (application/json)
@@ -763,6 +764,42 @@ Calling GET on a virtual path without the list=true parameter will return 404.
             {
                 "errors": []
             }
+
+### [GET] Read secret version at a path [v1/secret/{PATH}?versionId={VERSION_ID}]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                 "request_id" : "aa11aaa1-1111-1a1a-1aa1-a1aa11aaa1a1",
+                 "lease_id" : "",
+                 "renewable" : false,
+                 "lease_duration" : 3600,
+                 "data" : {
+                   "password" : "secret",
+                   "username" : "anotheruser"
+                 },
+                 "wrap_info" : null,
+                 "warnings" : null,
+                 "auth" : null,
+                 "metadata" : {
+                     "version_id": "1234-4567-8903-0098-7543",      
+                     "action": "UPDATE",
+                     "version_created_by": "user0@example.com",
+                     "version_created_ts": "2016-04-05T04:19:51Z",
+                     "action_principal": "user@example.com"
+                     "action_ts": "2016-04-05T05:19:59Z"
+                 }
+            }
+
 
 ### Create/Update Secrets at a path [POST]
 

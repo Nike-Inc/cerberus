@@ -35,11 +35,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class SecureDataVersionServiceTest {
 
-    @Mock
-    SecureDataVersionDao secureDataVersionDao;
-
-    @Mock
-    SecureDataService secureDataService;
+    @Mock SecureDataVersionDao secureDataVersionDao;
+    @Mock SecureDataService secureDataService;
+    @Mock EncryptionService encryptionService;
 
     private SecureDataVersionService secureDataVersionService;
 
@@ -47,7 +45,7 @@ public class SecureDataVersionServiceTest {
     public void before() {
         initMocks(this);
 
-        secureDataVersionService = new SecureDataVersionService(secureDataVersionDao, secureDataService);
+        secureDataVersionService = new SecureDataVersionService(secureDataVersionDao, secureDataService, encryptionService);
     }
 
     @Test

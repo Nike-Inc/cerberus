@@ -63,7 +63,7 @@
           PATH = #{path}
     </select>
 
-    <select id="readSecureDataVersionsById" resultType="SecureDataVersionRecord">
+    <select id="readSecureDataVersionById" resultType="SecureDataVersionRecord">
         SELECT
           ID,
           SDBOX_ID,

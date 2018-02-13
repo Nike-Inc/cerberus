@@ -19,15 +19,19 @@ package com.nike.cerberus.service;
 
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class SecureDataVersionService {
@@ -37,14 +41,45 @@ public class SecureDataVersionService {
 
     private final SecureDataVersionDao secureDataVersionDao;
     private final SecureDataService secureDataService;
+    private final EncryptionService encryptionService;
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Inject
     public SecureDataVersionService(SecureDataVersionDao secureDataVersionDao,
-                                    SecureDataService secureDataService) {
+                                    SecureDataService secureDataService,
+                                    EncryptionService encryptionService) {
         this.secureDataVersionDao = secureDataVersionDao;
         this.secureDataService = secureDataService;
+        this.encryptionService = encryptionService;
+    }
+
+    public Optional<SecureDataVersion> getSecureDataVersionById(String versionId, String sdbCategory, String pathToSecureData) {
+        log.debug("Reading secure data version: ID: {}", versionId);
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
+                        getCurrentSecureDataVersion(pathToSecureData) :
+                        secureDataVersionDao.readSecureDataVersionById(versionId);
+
+        if (! secureDataVersionRecord.isPresent() ||
+                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath())) {
+            return Optional.empty();
+        }
+
+        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+        String encryptedBlob = secureDataVersion.getEncryptedBlob();
+        String plainText = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
+
+        return Optional.of(new SecureDataVersion()
+                .setAction(secureDataVersion.getAction())
+                .setActionPrincipal(secureDataVersion.getActionPrincipal())
+                .setActionTs(secureDataVersion.getActionTs())
+                .setData(plainText)
+                .setId(secureDataVersion.getId())
+                .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+                .setSdboxId(secureDataVersion.getSdboxId())
+                .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
+                .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+
     }
 
     public List<SecureDataVersionSummary> getSecureDataVersionSummariesByPath(String pathToSecureData, String sdbCategory) {
@@ -90,6 +125,7 @@ public class SecureDataVersionService {
             newSecureDataVersionRecord = new SecureDataVersionRecord()
                     .setId(DEFAULT_ID_FOR_CURRENT_VERSIONS)
                     .setAction(action.name())
+                    .setEncryptedBlob(currentSecureDataRecord.getEncryptedBlob())
                     .setVersionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
                     .setVersionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
                     .setActionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
@@ -99,5 +135,22 @@ public class SecureDataVersionService {
         }
 
         return Optional.ofNullable(newSecureDataVersionRecord);
+    }
+
+    public Map<String, String> parseVersionMetadata(SecureDataVersion secureDataVersion) {
+        Map<String, String> metadata = Maps.newHashMap();
+
+        if (secureDataVersion == null) {
+            return metadata;
+        }
+
+        metadata.put("version_id", secureDataVersion.getId());
+        metadata.put("action", secureDataVersion.getAction());
+        metadata.put("action_ts", secureDataVersion.getActionTs().toString());
+        metadata.put("action_principal", secureDataVersion.getActionPrincipal());
+        metadata.put("version_created_by", secureDataVersion.getVersionCreatedBy());
+        metadata.put("version_created_ts", secureDataVersion.getVersionCreatedTs().toString());
+
+        return metadata;
     }
 }
