@@ -11,7 +11,6 @@ import ApiError from '../components/ApiError/ApiError'
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
 
 import { getLogger } from 'logger'
-import GenericError from "../components/GenericError/GenericError";
 var log = getLogger('manage-sdb-actions')
 
 export function storeSDBData(data) {
@@ -39,12 +38,6 @@ export function fetchSDBDataFromCMS(sdbId, token) {
             log.error("Failed to fetch SDB", response)
             dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Fetch SDB Data from CMS" response={response} />))
         })
-    }
-}
-
-export function togglePermVis() {
-    return {
-        type: actions.TOGGLE_PERM_VIS
     }
 }
 
@@ -277,31 +270,6 @@ export function deleteSecureDataPath(navigatedPath, label, token) {
     }
 }
 
-export function deleteSDBConfirm(sdbId, hasSecureData, token) {
-    return (dispatch) => {
-        let yes = () => {
-            if (hasSecureData) {
-                log.error("Cannot delete non-empty SDB: %s. Must delete secrets data first.", sdbId)
-                dispatch(messengerActions.addNewMessage(<GenericError errorHeader="Validation Error"
-                                                                      message="Cannot delete non-empty SDB. Must delete secrets data first." />))
-            } else {
-                dispatch(deleteSDB(sdbId, token))
-            }
-            dispatch(modalActions.popModal())
-        }
-        
-        let no = () => {
-            dispatch(modalActions.popModal())
-        }
-        
-        let comp = <ConfirmationBox handleYes={yes} 
-                                    handleNo={no} 
-                                    message="Are you sure you want to delete this Safe Deposit Box."/>
-        
-        dispatch(modalActions.pushModal(comp))
-    }
-}
-
 export function deleteSDB(sdbId, token) {
     return function(dispatch) {
         return axios({
@@ -378,5 +346,12 @@ export function updateStoredKeys(key) {
 export function resetToInitialState() {
     return {
         type: actions.RESET_SDB_DATA
+    }
+}
+
+export function navItemClicked(navItem) {
+    return {
+        type: actions.SDB_NAV_ITEM_SELECT,
+        payload: navItem
     }
 }

@@ -12,7 +12,12 @@ const initialState = {
     secureData: {},
     displayPermissions: false,
     showAddSecretForm: false,
-    isEditSubmitting: false
+    isEditSubmitting: false,
+    nav: {
+        secureDataSelected: true,
+        secureDataVersionsSelected: false,
+        sdbSettingsSelected: false
+    }
 }
 
 export default createReducer(initialState, {
@@ -188,8 +193,18 @@ export default createReducer(initialState, {
             secureData: newMap
         })
     },
-
     [action.RESET_SDB_DATA]: () => {
         return initialState
+    },
+    [action.SDB_NAV_ITEM_SELECT]: (state, payload) => {
+        let navMap = {
+            secureDataSelected: false,
+            secureDataVersionsSelected: false,
+            sdbSettingsSelected: false
+        }
+        navMap[payload+'Selected'] = true
+        return Object.assign({}, state, {
+            nav: navMap
+        })
     }
 })

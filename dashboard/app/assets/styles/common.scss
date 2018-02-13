@@ -16,6 +16,13 @@ body {
   background-color: $snkrs_dark_grey;
 }
 
+.un-selectable {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none;
+}
+
 .show-me-block {
   display: block;
 }
