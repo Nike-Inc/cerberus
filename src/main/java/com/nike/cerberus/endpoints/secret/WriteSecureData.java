@@ -24,6 +24,7 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
+import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -47,9 +48,10 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
     protected WriteSecureData(SecureDataService secureDataService,
                               PermissionsService permissionService,
                               SafeDepositBoxService safeDepositBoxService,
-                              SecureDataRequestService secureDataRequestService) {
+                              SecureDataRequestService secureDataRequestService,
+                              SecureDataVersionService secureDataVersionService) {
 
-        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService);
+        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService, secureDataVersionService);
     }
 
     @Override

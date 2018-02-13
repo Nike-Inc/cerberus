@@ -18,14 +18,17 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataResponse;
+import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
+import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -39,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,9 +56,10 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
     protected ReadSecureData(SecureDataService secureDataService,
                              PermissionsService permissionService,
                              SafeDepositBoxService safeDepositBoxService,
-                             SecureDataRequestService secureDataRequestService) {
+                             SecureDataRequestService secureDataRequestService,
+                             SecureDataVersionService secureDataVersionService) {
 
-        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService);
+        super(secureDataService, permissionService, safeDepositBoxService, secureDataRequestService, secureDataVersionService);
     }
 
     @Override
@@ -71,17 +76,27 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
                                                                          Executor longRunningTaskExecutor,
                                                                          ChannelHandlerContext ctx) {
 
+        ResponseInfo<Object> response;
         if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
-            return CompletableFuture.supplyAsync(
-                    AsyncNettyHelper.supplierWithTracingAndMdc(() -> listKeys(requestInfo), ctx),
-                    longRunningTaskExecutor
-            );
+            response = listKeys(requestInfo);
+        } else if (StringUtils.isNotBlank(request.getQueryParamSingle("versionId"))) {
+            String versionId = request.getQueryParamSingle("versionId");
+            response = readSecureDataVersion(requestInfo, versionId);
+        } else {
+            Optional<String> secureDataOpt = secureDataService.readSecret(requestInfo.getPath());
+
+            if (! secureDataOpt.isPresent()) {
+                response = generateVaultStyleResponse(
+                        VaultStyleErrorResponse.Builder.create().build(),
+                        HttpResponseStatus.NOT_FOUND.code());
+            } else {
+                response = generateSecureDataResponse(secureDataOpt.get(), Maps.newHashMap());
+            }
         }
 
         return CompletableFuture.supplyAsync(
-                AsyncNettyHelper.supplierWithTracingAndMdc(() -> readSecureData(requestInfo), ctx),
-                longRunningTaskExecutor
-        );
+                AsyncNettyHelper.supplierWithTracingAndMdc(() -> response, ctx),
+                longRunningTaskExecutor);
     }
 
     private ResponseInfo<Object> listKeys(SecureDataRequestInfo info) {
@@ -113,19 +128,32 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
                 .withHttpStatusCode(HttpResponseStatus.OK.code())
                 .build();
     }
-    private ResponseInfo<Object> readSecureData(SecureDataRequestInfo info) {
 
-        Optional<String> data = secureDataService.readSecret(info.getPath());
+    private ResponseInfo<Object> readSecureDataVersion(SecureDataRequestInfo requestInfo,
+                                                       String versionId) {
+        Optional<SecureDataVersion> secureDataVersionOpt = secureDataVersionService.getSecureDataVersionById(
+                versionId,
+                requestInfo.getCategory(),
+                requestInfo.getPath());
 
-        if (! data.isPresent()) {
-            return generateVaultStyleResponse(VaultStyleErrorResponse.Builder.create().build(),
+        if (! secureDataVersionOpt.isPresent()) {
+            return generateVaultStyleResponse(
+                    VaultStyleErrorResponse.Builder.create().build(),
                     HttpResponseStatus.NOT_FOUND.code());
         }
 
+        return generateSecureDataResponse(
+                secureDataVersionOpt.get().getData(),
+                secureDataVersionService.parseVersionMetadata(secureDataVersionOpt.get()));
+    }
+
+    private ResponseInfo<Object> generateSecureDataResponse(String secureData, Map<String, String> metadata) {
         SecureDataResponse response = new SecureDataResponse();
         response.setRequestId(UUID.randomUUID().toString());
+        response.setMetadata(metadata);
+
         try {
-            response.setData(new ObjectMapper().readTree(data.get()));
+            response.setData(new ObjectMapper().readTree(secureData));
         } catch (IOException e) {
             log.error("Failed to deserialize stored data", e);
         }
@@ -152,6 +180,9 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
         String path = request.getPath();
         if (StringUtils.equalsIgnoreCase(request.getQueryParamSingle("list"), "true")) {
             return String.format("Listing keys under path: %s", path);
+        } else if (StringUtils.isNotBlank(request.getQueryParamSingle("versionId"))) {
+            String versionId = request.getQueryParamSingle("versionId");
+            return String.format("Reading secret with version id: %s", versionId);
         } else {
             return String.format("Reading secret with path: %s", path);
         }
