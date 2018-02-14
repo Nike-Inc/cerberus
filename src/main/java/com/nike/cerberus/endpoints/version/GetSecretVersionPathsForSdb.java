@@ -22,7 +22,6 @@ import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.AuditableEvent;
-import com.nike.cerberus.record.SafeDepositBoxVersionRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.PermissionsService;
@@ -39,8 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -48,7 +47,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
-public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List<SafeDepositBoxVersionRecord>> {
+public class GetSecretVersionPathsForSdb extends AuditableEventEndpoint<Void, Set<String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -57,34 +56,34 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
     private final PermissionsService permissionsService;
 
     @Inject
-    public GetSafeDepositBoxVersions(SafeDepositBoxService safeDepositBoxService,
-                                     PermissionsService permissionsService) {
+    public GetSecretVersionPathsForSdb(SafeDepositBoxService safeDepositBoxService,
+                                       PermissionsService permissionsService) {
         this.safeDepositBoxService = safeDepositBoxService;
         this.permissionsService = permissionsService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<List<SafeDepositBoxVersionRecord>>> doExecute(final RequestInfo<Void> request,
-                                                                                        final Executor longRunningTaskExecutor,
-                                                                                        final ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<Set<String>>> doExecute(final RequestInfo<Void> request,
+                                                                  final Executor longRunningTaskExecutor,
+                                                                  final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> getVersionPathsForSdb(request), ctx),
                 longRunningTaskExecutor
         );
     }
 
-    public ResponseInfo<List<SafeDepositBoxVersionRecord>> getVersionPathsForSdb(final RequestInfo<Void> request) {
+    public ResponseInfo<Set<String>> getVersionPathsForSdb(final RequestInfo<Void> request) {
         final Optional<SecurityContext> securityContext =
                 CmsRequestSecurityValidator.getSecurityContextForRequest(request);
 
         if (securityContext.isPresent()) {
             final CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.get().getUserPrincipal();
-            String sdbId = request.getPathParam("id");
+            String sdbId = request.getPathParam("sdbId");
 
             boolean hasPermissionToSdb = permissionsService.doesPrincipalHaveReadPermission(authPrincipal, sdbId);
             if (hasPermissionToSdb) {
                 return ResponseInfo.newBuilder(
-                        safeDepositBoxService.getSafeDepositBoxVersions(sdbId)).build();
+                        safeDepositBoxService.getSecureDataVersionPathsForSdb(sdbId)).build();
             } else {
                 AuditableEvent auditableEvent = auditableEvent(authPrincipal, request, getClass().getSimpleName())
                         .withAction(String.format("Failed to get version paths for SDB with ID: %s. Permission denied.", sdbId))
@@ -104,7 +103,7 @@ public class GetSafeDepositBoxVersions extends AuditableEventEndpoint<Void, List
     @Override
     public Matcher requestMatcher() {
 
-        return Matcher.match("/v1/safe-deposit-box-versions/{id}", HttpMethod.GET);
+        return Matcher.match("/v1/sdb-secret-version-paths/{sdbId}", HttpMethod.GET);
     }
 
     @Override
