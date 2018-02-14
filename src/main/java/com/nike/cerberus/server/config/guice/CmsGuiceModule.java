@@ -57,7 +57,7 @@ import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.secret.DeleteSecureData;
 import com.nike.cerberus.endpoints.secret.ReadSecureData;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
-import com.nike.cerberus.endpoints.version.GetSafeDepositBoxVersions;
+import com.nike.cerberus.endpoints.version.GetSecretVersionPathsForSdb;
 import com.nike.cerberus.endpoints.version.GetSecureDataVersions;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.event.processor.EventProcessor;
@@ -199,7 +199,7 @@ public class CmsGuiceModule extends AbstractModule {
             DeleteSecureData deleteSecureData,
             TriggerScheduledJob triggerScheduledJob,
             RestoreSafeDepositBox restoreSafeDepositBox,
-            GetSafeDepositBoxVersions getSafeDepositBoxVersions,
+            GetSecretVersionPathsForSdb getSecretVersionPathsForSdb,
             GetSecureDataVersions getSecureDataVersions
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
@@ -214,7 +214,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getSDBMetadata, putSDBMetadata, getDashboardRedirect,
                 writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard,
                 restoreSafeDepositBox,
-                getSafeDepositBoxVersions, getSecureDataVersions
+                getSecretVersionPathsForSdb, getSecureDataVersions
         ));
     }
 

@@ -33,7 +33,6 @@ import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
-import com.nike.cerberus.record.SafeDepositBoxVersionRecord;
 import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
@@ -736,7 +735,7 @@ public class SafeDepositBoxService {
      * @param sdbId  ID of the SDB
      * @return  SDB version
      */
-    public SafeDepositBoxVersionRecord getCurrentSafeDepositBoxVersion(String sdbId) {
+    public Set<String> getSecureDataVersionPathsForSdb(String sdbId) {
         Optional<SafeDepositBoxRecord> sdbOpt = safeDepositBoxDao.getSafeDepositBox(sdbId);
         if (! sdbOpt.isPresent()) {
             throw ApiException.newBuilder()
@@ -757,18 +756,6 @@ public class SafeDepositBoxService {
                 .map(secretPath -> String.format("%s/%s", sdbCategory, secretPath))
                 .collect(Collectors.toSet());
 
-        return new SafeDepositBoxVersionRecord()
-                .setPaths(versionPaths)
-                .setSdbID(sdbId);
-    }
-
-    /**
-     * Get all versions for SDB
-     * @param sdbId  ID of the SDB
-     * @return  List of SDB versions
-     */
-    public List<SafeDepositBoxVersionRecord> getSafeDepositBoxVersions(String sdbId) {
-        // return only current version, as full SDB version history is not implemented
-        return Lists.newArrayList(getCurrentSafeDepositBoxVersion(sdbId));
+        return versionPaths;
     }
 }

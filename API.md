@@ -842,14 +842,11 @@ Gets a specific version of a secret from the change history stored in Cerberus
 
 # Versions
 
-## Safe Deposit Box Versioning
+## SDB Secret Version Paths
 
-### [GET] Safe Deposit Box Versions [v1/safe-deposit-box-versions/{SDB_ID}]
+### [GET] Secret Version Paths for an SDB [v1/sdb-secret-version-paths/{SDB_ID}]
 
-Gets a list of safe deposit box versions from the change history stored in Cerberus
-
-** Note: This endpoint is currently limited to returning a list of paths to secrets that have a history recorded
- for the current SDB
+Gets a list of paths for secrets that have a change history in Cerberus 
 
 + Parameters
 
@@ -868,13 +865,8 @@ Gets a list of safe deposit box versions from the change history stored in Cerbe
     + Body
 
              [
-                 {
-                     "sdb_id": "0000-0000-0000-0000"
-                     "paths": [
-                         "/category/sdb-slug/path/to/secret1",
-                         "/category/sdb-slug/path/to/secret2"
-                     ]
-                 }
+                 "/category/sdb-slug/path/to/secret1",
+                 "/category/sdb-slug/path/to/secret2"
              ]
 
 ## Secrets Versioning
