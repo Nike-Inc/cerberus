@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
@@ -99,7 +100,7 @@ public class SecureDataServiceTest {
     public void test_that_readSecret_returns_empty_optional_if_dao_returns_nothing() {
         when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.empty());
 
-        Optional<String> result = secureDataService.readSecret(path);
+        Optional<SecureData> result = secureDataService.readSecret(path);
 
         assertFalse(result.isPresent());
     }
@@ -111,10 +112,10 @@ public class SecureDataServiceTest {
 
         when(encryptionService.decrypt(encryptedPayload, path)).thenReturn(secret);
 
-        Optional<String> result = secureDataService.readSecret(path);
+        Optional<SecureData> result = secureDataService.readSecret(path);
 
         assertTrue(result.isPresent());
-        assertTrue(result.get().equals(secret));
+        assertTrue(result.get().getData().equals(secret));
     }
 
     @Test

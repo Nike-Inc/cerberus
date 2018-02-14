@@ -20,9 +20,11 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
@@ -114,17 +116,26 @@ public class SecureDataService {
         return kvCount;
     }
 
-    public Optional<String> readSecret(String path) {
+    public Optional<SecureData> readSecret(String path) {
         log.debug("Reading secure data: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecord = secureDataDao.readSecureDataByPath(path);
-        if (! secureDataRecord.isPresent()) {
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        if (! secureDataRecordOpt.isPresent()) {
             return Optional.empty();
         }
 
-        String encryptedBlob = secureDataRecord.get().getEncryptedBlob();
+        SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
+        String encryptedBlob = secureDataRecordOpt.get().getEncryptedBlob();
         String plainText = encryptionService.decrypt(encryptedBlob, path);
+        SecureData secureData = new SecureData()
+                .setCreatedBy(secureDataRecord.getCreatedBy())
+                .setCreatedTs(secureDataRecord.getCreatedTs())
+                .setData(plainText)
+                .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+                .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+                .setPath(secureDataRecord.getPath())
+                .setSdboxId(secureDataRecord.getSdboxId());
 
-        return Optional.of(plainText);
+        return Optional.of(secureData);
     }
 
     public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data, String principal) {
@@ -244,5 +255,16 @@ public class SecureDataService {
 
     public Optional<SecureDataRecord> getSecureDataRecordForPath(String path) {
         return secureDataDao.readSecureDataByPath(path);
+    }
+
+    public Map<String, String> parseSecretMetadata(SecureData secureData) {
+        Map<String, String> secretMetadata = Maps.newHashMap();
+
+        secretMetadata.put("created_by", secureData.getCreatedBy());
+        secretMetadata.put("created_ts", secureData.getCreatedTs().toString());
+        secretMetadata.put("last_updated_by", secureData.getLastUpdatedBy());
+        secretMetadata.put("last_updated_ts", secureData.getLastUpdatedTs().toString());
+
+        return secretMetadata;
     }
 }
