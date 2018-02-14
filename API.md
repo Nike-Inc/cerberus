@@ -767,6 +767,16 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
 ### [GET] Read secret version at a path [v1/secret/{PATH}?versionId={VERSION_ID}]
 
+Gets a specific version of a secret from the change history stored in Cerberus 
+
++ Parameters
+
+    + path: category/sdb-slug/path/to/secret1 (String) - The path to the secret for which to get versions
+
++ Query Parameters
+
+    + versionId: 1234-4567-8903-0098-7543 (String) - The ID of the desired secret version
+
 + Request (application/json)
 
     + Headers
@@ -836,6 +846,16 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 
 ### [GET] Safe Deposit Box Versions [v1/safe-deposit-box-versions/{SDB_ID}]
 
+Gets a list of safe deposit box versions from the change history stored in Cerberus
+
+** Note: This endpoint is currently limited to returning a list of paths to secrets that have a history recorded
+ for the current SDB
+
++ Parameters
+
+    + sdbId: 0000-0000-0000-0000 (String) - The ID of the SDB for which to get versions
+
+
 + Request (application/json)
 
     + Headers
@@ -860,6 +880,12 @@ Calling GET on a virtual path without the list=true parameter will return 404.
 ## Secrets Versioning
 
 ### [GET] Secrets Versions [v1/secret-versions/{PATH}]
+
+Gets a list of secret version metadata for the secret at the given path
+
++ Parameters
+
+    + path: category/sdb-slug/path/to/secret1 (String) - The path to the secret for which to get versions
 
 + Request (application/json)
 
