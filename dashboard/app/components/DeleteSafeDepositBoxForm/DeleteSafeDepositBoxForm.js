@@ -57,7 +57,7 @@ export default class DeleteSafeDepositBoxForm extends Component {
                         <div className={((verifiedSdbName.touched && verifiedSdbName.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
                             <input type='text'
                                    className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm'
-                                   placeholder='Enter the Safe Deposit Box verifiedSdbName and confirm deletion'
+                                   placeholder='Enter the Safe Deposit Box name and confirm deletion'
                                    autoComplete="off"
                                    {...verifiedSdbName}/>
                             {verifiedSdbName.touched && verifiedSdbName.error && <div className='ncss-error-msg'>{verifiedSdbName.error}</div>}
