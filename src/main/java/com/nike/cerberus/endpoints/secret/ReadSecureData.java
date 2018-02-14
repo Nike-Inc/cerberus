@@ -18,9 +18,9 @@ package com.nike.cerberus.endpoints.secret;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.nike.cerberus.SecureDataRequestService;
+import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataResponse;
 import com.nike.cerberus.domain.SecureDataVersion;
@@ -83,14 +83,16 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
             String versionId = request.getQueryParamSingle("versionId");
             response = readSecureDataVersion(requestInfo, versionId);
         } else {
-            Optional<String> secureDataOpt = secureDataService.readSecret(requestInfo.getPath());
+            Optional<SecureData> secureDataOpt = secureDataService.readSecret(requestInfo.getPath());
 
             if (! secureDataOpt.isPresent()) {
                 response = generateVaultStyleResponse(
                         VaultStyleErrorResponse.Builder.create().build(),
                         HttpResponseStatus.NOT_FOUND.code());
             } else {
-                response = generateSecureDataResponse(secureDataOpt.get(), Maps.newHashMap());
+                SecureData secureData = secureDataOpt.get();
+                Map<String, String> secretMetadata = secureDataService.parseSecretMetadata(secureData);
+                response = generateSecureDataResponse(secureData.getData(), secretMetadata);
             }
         }
 
