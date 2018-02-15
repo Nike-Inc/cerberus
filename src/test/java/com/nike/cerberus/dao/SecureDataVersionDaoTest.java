@@ -82,9 +82,9 @@ public class SecureDataVersionDaoTest {
 
     @Test
     public void listSecureDataVersionsByPath_returns_list_of_version_records() {
-        when(secureDataVersionMapper.listSecureDataVersionsByPath(path)).thenReturn(secureDataVersionRecords);
+        when(secureDataVersionMapper.listSecureDataVersionsByPath(path, 1, 0)).thenReturn(secureDataVersionRecords);
 
-        List<SecureDataVersionRecord> actual = subject.listSecureDataVersionByPath(path);
+        List<SecureDataVersionRecord> actual = subject.listSecureDataVersionByPath(path, 1, 0);
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).hasSameElementsAs(secureDataVersionRecords);

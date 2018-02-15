@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,13 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package com.nike.cerberus.endpoints.admin;
+package com.nike.cerberus.service;
 
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.service.MetadataService;
 import com.nike.riposte.server.http.RequestInfo;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -29,15 +30,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class GetSdbmetadataTest {
+public class PaginationServiceTest {
 
     @InjectMocks
-    private GetSDBMetadata endpoint;
+    private PaginationService paginationService;
 
-    private GetSDBMetadata endpointSpy;
-
-    @Mock
-    MetadataService metadataService;
+    private PaginationService paginationServiceSpy;
 
     @Mock
     RequestInfo<Void> request;
@@ -45,48 +43,48 @@ public class GetSdbmetadataTest {
     @Before
     public void before() {
         initMocks(this);
-        endpointSpy = spy(endpoint);
+        paginationServiceSpy = spy(paginationService);
     }
 
     @Test
     public void test_that_get_limit_returns_default_value_when_no_limit_is_supplied() {
-        assertEquals(GetSDBMetadata.DEFAULT_LIMIT, endpointSpy.getLimit(request));
+        assertEquals(PaginationService.DEFAULT_LIMIT, paginationServiceSpy.getLimit(request));
     }
 
     @Test
     public void test_that_get_offset_returns_default_value_when_no_limit_is_supplied() {
-        assertEquals(GetSDBMetadata.DEFAULT_OFFSET, endpointSpy.getOffset(request));
+        Assert.assertEquals(PaginationService.DEFAULT_OFFSET, paginationServiceSpy.getOffset(request));
     }
 
     @Test
     public void test_that_get_limit_returns_supplied_value_when_limit_is_supplied() {
-        when(request.getQueryParamSingle(GetSDBMetadata.LIMIT_QUERY_KEY)).thenReturn("7");
-        assertEquals(7, endpointSpy.getLimit(request));
+        when(request.getQueryParamSingle(PaginationService.LIMIT_QUERY_KEY)).thenReturn("7");
+        assertEquals(7, paginationServiceSpy.getLimit(request));
     }
 
     @Test
     public void test_that_get_offset_returns_supplied_value_when_limit_is_supplied() {
-        when(request.getQueryParamSingle(GetSDBMetadata.OFFSET_QUERY_KEY)).thenReturn("6");
-        assertEquals(6, endpointSpy.getOffset(request));
+        when(request.getQueryParamSingle(PaginationService.OFFSET_QUERY_KEY)).thenReturn("6");
+        assertEquals(6, paginationServiceSpy.getOffset(request));
     }
 
     @Test(expected = ApiException.class)
     public void test_that_a_bad_request_is_thrown_if_limit_is_less_than_1() {
-        endpoint.validateLimitQuery("0");
+        paginationServiceSpy.validateLimitQuery("0");
     }
 
     @Test(expected = ApiException.class)
     public void test_that_a_bad_request_is_thrown_if_offset_is_less_than_0() {
-        endpoint.validateOffsetQuery("-1");
+        paginationServiceSpy.validateOffsetQuery("-1");
     }
 
     @Test(expected = ApiException.class)
     public void test_that_a_bad_request_is_thrown_if_limit_is_non_numeric() {
-        endpoint.validateLimitQuery("abc");
+        paginationServiceSpy.validateLimitQuery("abc");
     }
 
     @Test(expected = ApiException.class)
     public void test_that_a_bad_request_is_thrown_if_offset_is_non_numeric() {
-        endpoint.validateOffsetQuery("abc");
+        paginationServiceSpy.validateOffsetQuery("abc");
     }
 }

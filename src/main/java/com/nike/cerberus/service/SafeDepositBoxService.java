@@ -731,9 +731,9 @@ public class SafeDepositBoxService {
     }
 
     /**
-     * Get current SDB version
+     * Get a set of paths for secrets that have a change history associated with the given SDB
      * @param sdbId  ID of the SDB
-     * @return  SDB version
+     * @return  Set of paths
      */
     public Set<String> getSecureDataVersionPathsForSdb(String sdbId) {
         Optional<SafeDepositBoxRecord> sdbOpt = safeDepositBoxDao.getSafeDepositBox(sdbId);

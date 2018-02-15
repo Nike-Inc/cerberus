@@ -61,8 +61,12 @@ public class SecureDataVersionDao {
         );
     }
 
-    public List<SecureDataVersionRecord> listSecureDataVersionByPath(String path) {
-        return secureDataVersionMapper.listSecureDataVersionsByPath(path);
+    public Integer getTotalNumVersionsForPath(String path) {
+        return secureDataVersionMapper.getTotalNumVersionsForPath(path);
+    }
+
+    public List<SecureDataVersionRecord> listSecureDataVersionByPath(String path, int limit, int offset) {
+        return secureDataVersionMapper.listSecureDataVersionsByPath(path, limit, offset);
     }
 
     public Optional<SecureDataVersionRecord> readSecureDataVersionById(String id) {

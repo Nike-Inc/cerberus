@@ -20,11 +20,12 @@ package com.nike.cerberus.endpoints.version;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
-import com.nike.cerberus.domain.SecureDataVersionSummary;
+import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.AuditableEvent;
+import com.nike.cerberus.service.PaginationService;
 import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -36,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -44,7 +44,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
-public class GetSecureDataVersions extends AuditableEventEndpoint<Void, List<SecureDataVersionSummary>> {
+public class GetSecureDataVersions extends AuditableEventEndpoint<Void, SecureDataVersionsResult> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -52,31 +52,37 @@ public class GetSecureDataVersions extends AuditableEventEndpoint<Void, List<Sec
 
     private final SecureDataRequestService secureDataRequestService;
 
+    private final PaginationService paginationService;
+
     @Inject
     public GetSecureDataVersions(SecureDataVersionService secureDataVersionService,
-                                 SecureDataRequestService secureDataRequestService) {
+                                 SecureDataRequestService secureDataRequestService,
+                                 PaginationService paginationService) {
         this.secureDataVersionService = secureDataVersionService;
         this.secureDataRequestService = secureDataRequestService;
+        this.paginationService = paginationService;
     }
 
     @Override
-    public CompletableFuture<ResponseInfo<List<SecureDataVersionSummary>>> doExecute(final RequestInfo<Void> request,
-                                                                                     final Executor longRunningTaskExecutor,
-                                                                                     final ChannelHandlerContext ctx) {
+    public CompletableFuture<ResponseInfo<SecureDataVersionsResult>> doExecute(final RequestInfo<Void> request,
+                                                                              final Executor longRunningTaskExecutor,
+                                                                              final ChannelHandlerContext ctx) {
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(() -> getVersionPathsForSdb(request), ctx),
                 longRunningTaskExecutor
         );
     }
 
-    public ResponseInfo<List<SecureDataVersionSummary>> getVersionPathsForSdb(final RequestInfo<Void> request) {
+    public ResponseInfo<SecureDataVersionsResult> getVersionPathsForSdb(final RequestInfo<Void> request) {
         SecureDataRequestInfo requestInfo = secureDataRequestService.parseAndValidateRequest(request);
         String pathToSecret = requestInfo.getPath();
 
-        List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(
+        SecureDataVersionsResult result = secureDataVersionService.getSecureDataVersionSummariesByPath(
                 pathToSecret,
-                requestInfo.getCategory());
-        if (summaries.isEmpty()) {
+                requestInfo.getCategory(),
+                paginationService.getLimit(request),
+                paginationService.getOffset(request));
+        if (result.getSecureDataVersionSummaries().isEmpty()) {
             AuditableEvent auditableEvent = auditableEvent(requestInfo.getPrincipal(), request, getClass().getSimpleName())
                     .withSuccess(false)
                     .withAction("Failed to find versions for secret with path: " + pathToSecret)
@@ -88,7 +94,7 @@ public class GetSecureDataVersions extends AuditableEventEndpoint<Void, List<Sec
                     .build();
         }
 
-        return ResponseInfo.newBuilder(summaries).build();
+        return ResponseInfo.newBuilder(result).build();
 
     }
 

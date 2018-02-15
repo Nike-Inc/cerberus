@@ -46,6 +46,15 @@
         )
     </insert>
 
+    <select id="getTotalNumVersionsForPath" resultType="java.lang.Integer">
+        SELECT
+          COUNT(ID)
+        FROM
+          SECURE_DATA_VERSION
+        WHERE
+          PATH = #{path}
+    </select>
+
     <select id="listSecureDataVersionsByPath" resultType="SecureDataVersionRecord">
         SELECT
           ID,
@@ -61,6 +70,9 @@
           SECURE_DATA_VERSION
         WHERE
           PATH = #{path}
+        ORDER BY ACTION_TS DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
     </select>
 
     <select id="readSecureDataVersionById" resultType="SecureDataVersionRecord">

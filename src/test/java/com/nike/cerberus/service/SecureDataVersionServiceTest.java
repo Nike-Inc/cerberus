@@ -20,6 +20,7 @@ package com.nike.cerberus.service;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
+import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,9 +76,9 @@ public class SecureDataVersionServiceTest {
         List<SecureDataVersionRecord> versions = Lists.newArrayList(record);
 
         when(secureDataService.getSecureDataRecordForPath(pathToSecureData)).thenReturn(Optional.empty());
-        when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData)).thenReturn(versions);
-        List<SecureDataVersionSummary> summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecureData, sdbCategory);
-        SecureDataVersionSummary result = summaries.get(0);
+        when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, 1, 0)).thenReturn(versions);
+        SecureDataVersionsResult summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecureData, sdbCategory, 1, 0);
+        SecureDataVersionSummary result = summaries.getSecureDataVersionSummaries().get(0);
 
         assertEquals(record.getAction(), result.getAction());
         assertEquals(record.getActionPrincipal(), result.getActionPrincipal());

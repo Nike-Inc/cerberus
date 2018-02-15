@@ -27,7 +27,11 @@ public interface SecureDataVersionMapper {
 
     int writeSecureDataVersion(@Param("record") SecureDataVersionRecord record);
 
-    List<SecureDataVersionRecord> listSecureDataVersionsByPath(@Param("path") String path);
+    Integer getTotalNumVersionsForPath(String path);
+
+    List<SecureDataVersionRecord> listSecureDataVersionsByPath(@Param("path") String path,
+                                                               @Param("limit") int limit,
+                                                               @Param("offset") int offset);
 
     SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
 
