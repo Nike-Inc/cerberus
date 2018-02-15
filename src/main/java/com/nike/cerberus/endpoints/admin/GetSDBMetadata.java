@@ -17,12 +17,10 @@
 package com.nike.cerberus.endpoints.admin;
 
 import com.google.inject.Inject;
-import com.nike.backstopper.apierror.ApiErrorBase;
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.MetadataService;
+import com.nike.cerberus.service.PaginationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.server.http.impl.FullResponseInfo;
@@ -30,7 +28,6 @@ import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.concurrent.CompletableFuture;
@@ -41,16 +38,15 @@ import java.util.concurrent.Executor;
  */
 public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResult> {
 
-    protected static final String OFFSET_QUERY_KEY = "offset";
-    protected static final String LIMIT_QUERY_KEY = "limit";
-    protected static final int DEFAULT_OFFSET = 0;
-    protected static final int DEFAULT_LIMIT = 100;
-
     private final MetadataService metadataService;
 
+    private final PaginationService paginationService;
+
     @Inject
-    public GetSDBMetadata(MetadataService metadataService) {
+    public GetSDBMetadata(MetadataService metadataService,
+                          PaginationService paginationService) {
         this.metadataService = metadataService;
+        this.paginationService = paginationService;
     }
 
     @SuppressWarnings("ConstantConditions") // it lies
@@ -66,78 +62,10 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
     }
 
     private FullResponseInfo<SDBMetadataResult> getMetadata(RequestInfo<Void> request) {
-        return ResponseInfo.newBuilder(metadataService.getSDBMetadata(getLimit(request), getOffset(request)))
+        return ResponseInfo.newBuilder(metadataService.getSDBMetadata(
+                paginationService.getLimit(request),
+                paginationService.getOffset(request)))
                 .build();
-    }
-
-    /**
-     * Parses and validates limit query param
-     *
-     * @param request The request
-     * @return default or parsed vaule
-     */
-    protected int getLimit(RequestInfo<Void> request) {
-        String limitQueryValue = request.getQueryParamSingle(LIMIT_QUERY_KEY);
-        int limit = DEFAULT_LIMIT;
-
-        if (limitQueryValue != null) {
-            validateLimitQuery(limitQueryValue);
-            limit = Integer.parseInt(limitQueryValue);
-        }
-
-        return limit;
-    }
-
-    /**
-     * validates that the limit query is a valid number >= 1
-     *
-     * @param limitQueryValue
-     */
-    protected void validateLimitQuery(String limitQueryValue) {
-        if (!StringUtils.isNumeric(limitQueryValue) || Integer.parseInt(limitQueryValue) < 1) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(new ApiErrorBase(
-                            DefaultApiError.INVALID_QUERY_PARAMS.getName(),
-                            DefaultApiError.INVALID_QUERY_PARAMS.getErrorCode(),
-                            String.format("limit query param must be an int >= 1, '%s' given", limitQueryValue),
-                            DefaultApiError.INVALID_QUERY_PARAMS.getHttpStatusCode()
-                    )).build();
-        }
-    }
-
-    /**
-     * Parses and validates offset query param
-     *
-     * @param request The request
-     * @return default or parsed vaule
-     */
-    protected int getOffset(RequestInfo<Void> request) {
-        String offsetQueryValue = request.getQueryParamSingle(OFFSET_QUERY_KEY);
-        int offset = DEFAULT_OFFSET;
-
-        if (offsetQueryValue != null) {
-            validateOffsetQuery(offsetQueryValue);
-            offset = Integer.parseInt(offsetQueryValue);
-        }
-
-        return offset;
-    }
-
-    /**
-     * Validates that the offset value is a number that is >= 0
-     *
-     * @param offsetQueryValue
-     */
-    protected void validateOffsetQuery(String offsetQueryValue) {
-        if (!StringUtils.isNumeric(offsetQueryValue)) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(new ApiErrorBase(
-                            DefaultApiError.INVALID_QUERY_PARAMS.getName(),
-                            DefaultApiError.INVALID_QUERY_PARAMS.getErrorCode(),
-                            String.format("offset query param must be an int >= 0, '%s' given", offsetQueryValue),
-                            DefaultApiError.INVALID_QUERY_PARAMS.getHttpStatusCode()
-                    )).build();
-        }
     }
 
     @Override

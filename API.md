@@ -871,13 +871,18 @@ Gets a list of paths for secrets that have a change history in Cerberus
 
 ## Secrets Versioning
 
-### [GET] Secrets Versions [v1/secret-versions/{PATH}]
+### [GET] Secrets Versions [v1/secret-versions/{PATH}?limit={LIMIT}&offset={OFFSET}]
 
 Gets a list of secret version metadata for the secret at the given path
 
 + Parameters
 
     + path: category/sdb-slug/path/to/secret1 (String) - The path to the secret for which to get versions
+
++ Query Parameters
+
+    + limit (number) - OPTIONAL: The number of records to include in the metadata result. Defaults to 100
+    + offset (number) - OPTIONAL: The offset to use when paginating records. Defaults to 0
 
 + Request (application/json)
 
@@ -890,48 +895,56 @@ Gets a list of secret version metadata for the secret at the given path
 
     + Body
 
-            [
-                {
-                    "id": "1234-4567-8903-0098-7543",
-                    "sdb_id": "0000-0000-0000-0000",
-                    "path": "/category/sdb-slug/path/to/secret1",
-                    "action": "UPDATE",
-                    "version_created_by": "user0@example.com",
-                    "version_created_ts": "2016-04-05T04:19:51Z",
-                    "action_principal": "user@example.com"
-                    "action_ts": "2016-04-05T05:19:59Z",
-                },
-                {
-                    "id": "4567-8903-0098-7543-1234",
-                    "sdb_id": "0000-0000-0000-0000",
-                    "path": "/category/sdb-slug/path/to/secret1",
-                    "action": "UPDATE",
-                    "version_created_by": "user@example.com",
-                    "version_created_ts": "2016-04-05T04:19:51Z",
-                    "action_principal": "admin@example.com"
-                    "action_ts": "2016-03-23T02:32:10Z",
-                },
-                {
-                    "id": "8903-0098-7543-1234-4567",
-                    "sdb_id": "0000-0000-0000-0000",
-                    "path": "/category/sdb-slug/path/to/secret1",
-                    "action": "UPDATE",
-                    "version_created_by": "user2@example.com",
-                    "version_created_ts": "2016-04-05T04:19:51Z",
-                    "action_principal": "guest@example.com"
-                    "action_ts": "2016-02-13T12:05:09Z",
-                },
-                {
-                    "id": "CURRENT",
-                    "sdb_id": "0000-0000-0000-0000",
-                    "path": "/category/sdb-slug/path/to/secret1",
-                    "action": "CREATE",
-                    "version_created_by": "user@example.com",
-                    "version_created_ts": "2016-04-05T04:19:51Z",
-                    "action_principal": "user@example.com"
-                    "action_ts": "2016-04-05T04:19:51Z",
-                }
-            ]
+            {
+                "has_next": false,
+                "next_offset": null,
+                "limit": 100,
+                "offset": 0,
+                "version_count_in_result": 4,
+                "total_version_count": 4,
+                "secure_data_version_summaries": [
+                    {
+                        "id": "1234-4567-8903-0098-7543",
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/path/to/secret1",
+                        "action": "UPDATE",
+                        "version_created_by": "user0@example.com",
+                        "version_created_ts": "2016-04-05T04:19:51Z",
+                        "action_principal": "user@example.com"
+                        "action_ts": "2016-04-05T05:19:59Z",
+                    },
+                    {
+                        "id": "4567-8903-0098-7543-1234",
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/path/to/secret1",
+                        "action": "UPDATE",
+                        "version_created_by": "user@example.com",
+                        "version_created_ts": "2016-04-05T04:19:51Z",
+                        "action_principal": "admin@example.com"
+                        "action_ts": "2016-03-23T02:32:10Z",
+                    },
+                    {
+                        "id": "8903-0098-7543-1234-4567",
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/path/to/secret1",
+                        "action": "UPDATE",
+                        "version_created_by": "user2@example.com",
+                        "version_created_ts": "2016-04-05T04:19:51Z",
+                        "action_principal": "guest@example.com"
+                        "action_ts": "2016-02-13T12:05:09Z",
+                    },
+                    {
+                        "id": "CURRENT",
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/path/to/secret1",
+                        "action": "CREATE",
+                        "version_created_by": "user@example.com",
+                        "version_created_ts": "2016-04-05T04:19:51Z",
+                        "action_principal": "user@example.com"
+                        "action_ts": "2016-04-05T04:19:51Z",
+                    }
+                ]
+            }
 
 
 # Group Role

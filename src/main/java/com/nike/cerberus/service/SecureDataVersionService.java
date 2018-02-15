@@ -23,6 +23,7 @@ import com.google.common.collect.Maps;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
+import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -82,20 +83,34 @@ public class SecureDataVersionService {
 
     }
 
-    public List<SecureDataVersionSummary> getSecureDataVersionSummariesByPath(String pathToSecureData, String sdbCategory) {
-        List<SecureDataVersionSummary> secureDataVersionSummaries = Lists.newArrayList();
+    public SecureDataVersionsResult getSecureDataVersionSummariesByPath(String pathToSecureData,
+                                                                        String sdbCategory,
+                                                                        int limit,
+                                                                        int offset) {
 
-        // retrieve previous secrets versions from the secure data versions table
-        List<SecureDataVersionRecord> secureDataVersions = secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData);
+        List<SecureDataVersionSummary> secureDataVersionSummaries = Lists.newArrayList();
+        List<SecureDataVersionRecord> secureDataVersions = Lists.newArrayList();
+        int actualLimit = limit;
+        int actualOffset = offset;
+        int totalNumVersionsForPath = secureDataVersionDao.getTotalNumVersionsForPath(pathToSecureData);
 
         // retrieve current secrets versions from secure data table
         Optional<SecureDataVersionRecord> currentSecureDataVersionOpt = getCurrentSecureDataVersion(pathToSecureData);
         if (currentSecureDataVersionOpt.isPresent()) {
-            SecureDataVersionRecord currentSecureDataVersion = currentSecureDataVersionOpt.get();
-            secureDataVersions.add(currentSecureDataVersion);
+            if (offset == 0) {
+                SecureDataVersionRecord currentSecureDataVersion = currentSecureDataVersionOpt.get();
+                secureDataVersions.add(currentSecureDataVersion);
+                actualLimit--;
+            } else {
+                actualOffset--;
+            }
+            totalNumVersionsForPath++;
         }  // else, the secret has been deleted and the last version should already be in the list
 
-        secureDataVersions.forEach(sdbRecord -> {
+        // retrieve previous secrets versions from the secure data versions table
+        secureDataVersions.addAll(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, actualLimit, actualOffset));
+
+        secureDataVersions.forEach(sdbRecord ->
             secureDataVersionSummaries.add(new SecureDataVersionSummary()
                     .setAction(sdbRecord.getAction())
                     .setActionPrincipal(sdbRecord.getActionPrincipal())
@@ -105,10 +120,33 @@ public class SecureDataVersionService {
                     .setSdboxId(sdbRecord.getSdboxId())
                     .setVersionCreatedBy(sdbRecord.getVersionCreatedBy())
                     .setVersionCreatedTs(sdbRecord.getVersionCreatedTs())
-            );
-        });
+            )
+        );
 
-        return secureDataVersionSummaries;
+        return generateSecureDataVersionsResult(secureDataVersionSummaries, totalNumVersionsForPath, limit, offset);
+    }
+
+    public SecureDataVersionsResult generateSecureDataVersionsResult(List<SecureDataVersionSummary> summaries,
+                                                                     int totalNumVersionsForPath,
+                                                                     int limit,
+                                                                     int offset) {
+
+        int nextOffset = limit + offset;
+        boolean hasNext = totalNumVersionsForPath > nextOffset;
+
+        SecureDataVersionsResult result = new SecureDataVersionsResult()
+                .setLimit(limit)
+                .setOffset(offset)
+                .setTotalVersionCount(totalNumVersionsForPath)
+                .setVersionCountInResult(summaries.size())
+                .setHasNext(hasNext)
+                .setSecureDataVersionSummaries(summaries);
+
+        if (hasNext) {
+            result.setNextOffset(nextOffset);
+        }
+
+        return result;
     }
 
     private Optional<SecureDataVersionRecord> getCurrentSecureDataVersion(String pathToSecureData) {
