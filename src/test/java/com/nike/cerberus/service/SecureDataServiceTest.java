@@ -238,4 +238,42 @@ public class SecureDataServiceTest {
                 .getTopLevelKVPairCount("{[\"1\",\"2\"]}"));
     }
 
+    @Test
+    public void test_that_secureDataHasBeenUpdated_returns_true_when_updated() {
+        OffsetDateTime now = OffsetDateTime.now();
+        SecureDataRecord differentPrincipals = new SecureDataRecord()
+                .setCreatedBy("principal")
+                .setCreatedTs(now)
+                .setLastUpdatedBy("different principal")
+                .setLastUpdatedTs(now);
+
+        SecureDataRecord differentTs = new SecureDataRecord()
+                .setCreatedBy("principal")
+                .setCreatedTs(now)
+                .setLastUpdatedBy("principal")
+                .setLastUpdatedTs(OffsetDateTime.now());
+
+        SecureDataRecord differentPrincipalsAndTs = new SecureDataRecord()
+                .setCreatedBy("principal")
+                .setCreatedTs(now)
+                .setLastUpdatedBy("different principal")
+                .setLastUpdatedTs(OffsetDateTime.now());
+
+        assertTrue(secureDataService.secureDataHasBeenUpdated(differentPrincipals));
+        assertTrue(secureDataService.secureDataHasBeenUpdated(differentTs));
+        assertTrue(secureDataService.secureDataHasBeenUpdated(differentPrincipalsAndTs));
+    }
+
+    @Test
+    public void test_that_secureDataHasBeenUpdated_returns_false_when_not_updated() {
+        String principal = "principal";
+        OffsetDateTime now = OffsetDateTime.now();
+        SecureDataRecord secureDataRecord = new SecureDataRecord()
+                .setCreatedBy(principal)
+                .setCreatedTs(now)
+                .setLastUpdatedBy(principal)
+                .setLastUpdatedTs(now);
+
+        assertFalse(secureDataService.secureDataHasBeenUpdated(secureDataRecord));
+    }
 }

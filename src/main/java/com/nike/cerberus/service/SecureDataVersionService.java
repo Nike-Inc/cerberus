@@ -156,7 +156,7 @@ public class SecureDataVersionService {
         if (currentSecureDataRecordOpt.isPresent()) {
             SecureDataRecord currentSecureDataRecord = currentSecureDataRecordOpt.get();
             SecureDataVersionRecord.SecretsAction action =
-                    secureDataService.hasSecureDataBeenUpdated(currentSecureDataRecord) ?
+                    secureDataService.secureDataHasBeenUpdated(currentSecureDataRecord) ?
                         SecureDataVersionRecord.SecretsAction.UPDATE :
                         SecureDataVersionRecord.SecretsAction.CREATE;
 
