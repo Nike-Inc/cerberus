@@ -248,9 +248,11 @@ public class SecureDataService {
     /**
      * @return  True if the secret has ever been updated, false if it has not.
      */
-    public boolean hasSecureDataBeenUpdated(SecureDataRecord secureDataRecord) {
-        return secureDataRecord.getCreatedBy().equals(secureDataRecord.getLastUpdatedBy()) &&
-                secureDataRecord.getCreatedTs() == secureDataRecord.getLastUpdatedTs();
+    boolean secureDataHasBeenUpdated(SecureDataRecord secureDataRecord) {
+        boolean createdBySameAsUpdatedBy = secureDataRecord.getCreatedBy().equals(secureDataRecord.getLastUpdatedBy());
+        boolean createdTsSameAsUpdatedTs = secureDataRecord.getCreatedTs() == secureDataRecord.getLastUpdatedTs();
+
+        return ! (createdBySameAsUpdatedBy && createdTsSameAsUpdatedTs);
     }
 
     public Optional<SecureDataRecord> getSecureDataRecordForPath(String path) {
