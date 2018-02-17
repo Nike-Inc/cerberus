@@ -73,13 +73,12 @@ public class SecureDataService {
         int topLevelKVPairCount = getTopLevelKVPairCount(plainTextPayload);
         OffsetDateTime now = dateTimeSupplier.get();
 
-        // this extra DB call is necessary to distinguish between create and update (for auditing) because
-        // both create and update are lumped together under HTTP method "POST"
+        // Fetch the current version if there is one, so that on update it can be moved to the versions table
         Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
         if (secureDataRecordOpt.isPresent()) {
             SecureDataRecord secureData = secureDataRecordOpt.get();
 
-            secureDataVersionDao.writeSecureDataVersion(sdbId, path, encryptedPayload,
+            secureDataVersionDao.writeSecureDataVersion(sdbId, path, secureData.getEncryptedBlob(),
                     SecureDataVersionRecord.SecretsAction.UPDATE,
                     secureData.getLastUpdatedBy(),
                     secureData.getLastUpdatedTs(),
