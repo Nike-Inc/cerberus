@@ -62,7 +62,7 @@ export default class SDBMetadataList extends Component {
                 <div className="ncss h3">SDB Metadata</div>
                 <div className="ncss h4">Total SDBs: {metadata.total_sdbcount}</div>
                 { paginationMenu(metadata, this.options, perPage, this.props.pageNumber, this.handlePerPageSelect, this.handlePageClick) }
-                <div className="matadata-listings">
+                <div className="metadata-listings">
                     {metadata['safe_deposit_box_metadata'].map((sdb, index) =>
                         <SDBMetadata sdbMetadata={sdb}
                                      key={index}/>

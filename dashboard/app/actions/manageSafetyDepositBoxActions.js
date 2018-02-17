@@ -4,8 +4,9 @@ import environmentService from 'EnvironmentService'
 import * as humps from 'humps'
 import * as actions from '../constants/actions'
 import * as cms from '../constants/cms'
+import * as appActions from '../actions/appActions'
 import * as messengerActions from '../actions/messengerActions'
-import * as authActions from '../actions/authenticationActions'
+import { hashHistory } from 'react-router'
 import * as modalActions from '../actions/modalActions'
 import ApiError from '../components/ApiError/ApiError'
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
@@ -280,7 +281,9 @@ export function deleteSDB(sdbId, token) {
         .then((response) => {
             log.debug("Deleted SDB", response)
             dispatch(resetToInitialState())
-            dispatch(authActions.refreshAuth(token, `/`))
+            dispatch(resetVersionBrowserState())
+            dispatch(appActions.fetchSideBarData(token))
+            hashHistory.push('/')
         })
         .catch((response) => {
             log.error("Failed to delete SDB", response)
@@ -353,5 +356,11 @@ export function navItemClicked(navItem) {
     return {
         type: actions.SDB_NAV_ITEM_SELECT,
         payload: navItem
+    }
+}
+
+export function resetVersionBrowserState() {
+    return {
+        type: actions.RESET_VERSION_BROWSER_STATE
     }
 }

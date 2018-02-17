@@ -23,6 +23,10 @@ body {
   user-select: none;
 }
 
+.btn {
+  @extend .un-selectable;
+}
+
 .show-me-block {
   display: block;
 }

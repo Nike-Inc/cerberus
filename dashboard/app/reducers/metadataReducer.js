@@ -14,13 +14,13 @@ export default createReducer(initialState, {
         })
     },
 
-    [constants.UPDATE_PER_PAGE]: (state, payload) => {
+    [constants.UPDATE_METADATA_PER_PAGE]: (state, payload) => {
         return Object.assign({}, state, {
             perPage: payload.perPage
         })
     },
 
-    [constants.UPDATE_PAGE_NUMBER]: (state, payload) => {
+    [constants.UPDATE_METADATA_PAGE_NUMBER]: (state, payload) => {
         return Object.assign({}, state, {
             pageNumber: payload.pageNumber
         })

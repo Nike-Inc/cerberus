@@ -45,7 +45,7 @@ function storeMetadata(metadata) {
 
 export function updatePerPage(perPage) {
     return {
-        type: actions.UPDATE_PER_PAGE,
+        type: actions.UPDATE_METADATA_PER_PAGE,
         payload: {
             perPage: perPage
         }
@@ -54,7 +54,7 @@ export function updatePerPage(perPage) {
 
 export function updatePageNumber(pageNumber) {
     return {
-        type: actions.UPDATE_PAGE_NUMBER,
+        type: actions.UPDATE_METADATA_PAGE_NUMBER,
         payload: {
             pageNumber: pageNumber
         }
