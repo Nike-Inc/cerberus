@@ -261,7 +261,7 @@ Using local instance of MySQL server:
     - To debug, use the `debugCMS` gradle task instead and attach remote debugger to port 5005
     - You will need to make sure your env is set as described http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
     - Now you should have a complete CMS system running locally.
-    - Navigate to localhost:8080/dashboard in your browser to log in
+    - Navigate to http://localhost:8080/dashboard in your browser to log in
 
 Above should work on Windows, Mac, and Linux.
 
