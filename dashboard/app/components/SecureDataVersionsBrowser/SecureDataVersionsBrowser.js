@@ -171,8 +171,8 @@ const generateVersionSummary = (summary, index, handleFetchVersion, versionPathS
         return [
             <div className="version-summary" key={`${index}-deleted`}>
                 <div className="id">Version: <span className="deleted">DELETED</span></div>
-                <div className="principal">
-                    Deleted by {summary['action_principal']} on {summary['action_ts']}
+                <div className="principal-wrapper">
+                    Deleted by <span className="principal">{summary['action_principal']}</span> on <span className="date">{new Date(summary['action_ts']).toLocaleString()}</span>
                 </div>
             </div>,
             versionSummary(summary, index, handleFetchVersion, versionPathSecureDataMap)
@@ -187,8 +187,8 @@ const versionSummary = (summary, index, handleFetchVersion, versionPathSecureDat
     return (
         <div className="version-summary" key={index}>
             <div className="id">Version: <span className={versionId === 'CURRENT' ? 'current' : ''}>{summary.id}</span></div>
-            <div className="principal">
-                Created by {summary['version_created_by']} on {summary['version_created_ts']}
+            <div className="principal-wrapper">
+                Created by <span className="principal">{summary['version_created_by']}</span> on <span className="date">{new Date(summary['version_created_ts']).toLocaleString()}</span>
             </div>
             { dataForVersion ? secureDataForVersion(dataForVersion) : fetchVersionButton(handleFetchVersion, versionId) }
         </div>

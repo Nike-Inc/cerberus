@@ -184,7 +184,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
             return String.format("Listing keys under path: %s", path);
         } else if (StringUtils.isNotBlank(request.getQueryParamSingle("versionId"))) {
             String versionId = request.getQueryParamSingle("versionId");
-            return String.format("Reading secret with version id: %s", versionId);
+            return String.format("Reading secret with path: %s and version id: %s", path, versionId);
         } else {
             return String.format("Reading secret with path: %s", path);
         }

@@ -131,9 +131,22 @@
         margin-top: 5px;
       }
 
-      .principal {
+      .principal-wrapper {
         display: flex;
         flex-flow: row;
+
+        .principal {
+          padding-left: 5px;
+          padding-right: 5px;
+          font-weight: bold;
+        }
+
+        .date {
+          padding-left: 5px;
+          padding-right: 5px;
+          font-weight: bold;
+        }
+
       }
     }
 

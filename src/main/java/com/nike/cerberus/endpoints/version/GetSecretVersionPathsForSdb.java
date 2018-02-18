@@ -108,7 +108,7 @@ public class GetSecretVersionPathsForSdb extends AuditableEventEndpoint<Void, Se
 
     @Override
     protected CustomizableAuditData getCustomizableAuditData(RequestInfo<Void> request) {
-        String sdbId = request.getPathParam("id");
+        String sdbId = request.getPathParam("sdbId");
         Optional<String> sdbNameOptional = safeDepositBoxService.getSafeDepositBoxNameById(sdbId);
         String sdbName = sdbNameOptional.orElse(String.format("(Failed to lookup name from id: %s)", sdbId));
         return  new CustomizableAuditData()

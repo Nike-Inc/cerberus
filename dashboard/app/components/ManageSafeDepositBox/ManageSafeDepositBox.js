@@ -56,6 +56,10 @@ export default class ManageSafeDepositBox extends Component {
     }
 
     handleNavItemClicked(navItem) {
+        if (navItem === 'secureDataVersions') {
+            this.props.dispatch(vActions.resetVersionBrowserState())
+        }
+
         this.props.dispatch(sdbMActions.navItemClicked(navItem))
     }
 
