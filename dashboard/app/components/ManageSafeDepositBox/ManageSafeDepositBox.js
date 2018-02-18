@@ -4,11 +4,12 @@ import { connect } from 'react-redux'
 
 import * as sdbMActions from '../../actions/manageSafetyDepositBoxActions'
 import * as appActions from '../../actions/appActions'
+import * as vActions from '../../actions/versionHistoryBrowserActions'
 import SecureDataBrowser from '../SecureDataBrowser/SecureDataBrowser'
 import SecureDataVersionsBrowser from '../SecureDataVersionsBrowser/SecureDataVersionsBrowser'
 import SafeDepositBoxSettings from '../SafeDepositBoxSettings/SafeDepositBoxSettings'
 
-import './SafeDepositBox.scss'
+import './ManageSafeDepositBox.scss'
 
 // connect to the store for the pieces we care about
 @connect((state) => {
@@ -33,7 +34,7 @@ import './SafeDepositBox.scss'
         nav: state.manageSafetyDepositBox.nav
     }
 })
-export default class SafeDepositBox extends Component {
+export default class ManageSafeDepositBox extends Component {
 
     componentWillReceiveProps(nextProps) {
         // Fetch and load SDB details based on id in uri
@@ -91,14 +92,13 @@ export default class SafeDepositBox extends Component {
                         className={"un-selectable nav-item secure-data" + (nav.secureDataSelected ? ' nav-item-selected' : '')}
                         onClick={() => { this.handleNavItemClicked('secureData')}}
                     >Secure Data</div>
-                    {/* hide the version tab until implemented */}
-                    { false && <div
+                    <div
                         className={"un-selectable nav-item versions" + (nav.secureDataVersionsSelected ? ' nav-item-selected' : '')}
                         onClick={() => {
+                            dispatch(vActions.fetchVersionDataForSdb(sdbData.id, cerberusAuthToken))
                             this.handleNavItemClicked('secureDataVersions')
                         }}
                     >Secure Data Version History</div>
-                    }
                     <div
                         className={"un-selectable nav-item setting" + (nav.sdbSettingsSelected ? ' nav-item-selected' : '')}
                         onClick={() => { this.handleNavItemClicked('sdbSettings')}}
@@ -116,7 +116,7 @@ export default class SafeDepositBox extends Component {
                     }
 
                     {nav.secureDataVersionsSelected &&
-                        <SecureDataVersionsBrowser />
+                        <SecureDataVersionsBrowser safeDepositBoxId={sdbData.id}/>
                     }
 
                     {nav.sdbSettingsSelected &&

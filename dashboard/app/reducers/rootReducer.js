@@ -9,6 +9,7 @@ import messenger from './messengerReducer'
 import manageSafetyDepositBox from './manageSafetyDepositBoxReducer'
 import metadata from './metadataReducer'
 import modal from './modalReducer'
+import versionHistoryBrowser from './versionHistoryBrowserReducer'
 
 export default combineReducers({
     auth,
@@ -20,5 +21,6 @@ export default combineReducers({
     routing: routerReducer,
     form: formReducer,
     messenger,
-    metadata
+    metadata,
+    versionHistoryBrowser
 })

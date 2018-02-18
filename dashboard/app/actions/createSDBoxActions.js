@@ -2,10 +2,11 @@ import React from 'react'
 import axios from 'axios'
 import * as constants from '../constants/actions'
 import * as cms from '../constants/cms'
-import * as authActions from '../actions/authenticationActions'
+import { hashHistory } from 'react-router'
 import environmentService from 'EnvironmentService'
 import * as messengerActions from '../actions/messengerActions'
 import * as modalActions from '../actions/modalActions'
+import * as appActions from '../actions/appActions'
 import ApiError from '../components/ApiError/ApiError'
 import * as humps from 'humps'
 
@@ -29,8 +30,10 @@ export function submitCreateNewSDB(data, token) {
         })
         .then(function(response) {
             dispatch(modalActions.popModal())
-            dispatch(authActions.refreshAuth(token, `/manage-safe-deposit-box/${response.data.id}`))
             dispatch(clearSecureData())
+            dispatch(resetVersionBrowserState())
+            dispatch(appActions.fetchSideBarData(token))
+            hashHistory.push(`/manage-safe-deposit-box/${response.data.id}`)
         })
         .catch(function (response) {
             log.error('Failed to create new SDB', response)
@@ -61,6 +64,12 @@ export function resetSubmittingNewSDBRequest() {
 
 export function clearSecureData() {
     return {
-        type: constants.CLEAR_SECURE_DATA
+        type: constants.RESET_SDB_DATA
+    }
+}
+
+export function resetVersionBrowserState() {
+    return {
+        type: constants.RESET_VERSION_BROWSER_STATE
     }
 }

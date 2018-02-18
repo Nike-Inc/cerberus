@@ -18,6 +18,7 @@ export const fields = [
     return {
         cerberusAuthToken: state.auth.cerberusAuthToken,
         sdbId: state.manageSafetyDepositBox.data.id,
+        sdbName: state.manageSafetyDepositBox.data.name,
 
         initialValues: {
             verifiedSdbName: '',
@@ -40,7 +41,8 @@ export default class DeleteSafeDepositBoxForm extends Component {
             handleSubmit,
             dispatch,
             cerberusAuthToken,
-            sdbId
+            sdbId,
+            sdbName
         } = this.props
 
         return (
@@ -50,7 +52,8 @@ export default class DeleteSafeDepositBoxForm extends Component {
                         dispatch(modalActions.popModal())
                 })}>
                     <div id="form-description" className="ncss-brand">
-                        <h3><span className="attention">ATTENTION:</span>Are you sure you want to delete this SDB?</h3>
+                        <h3><span className="attention">ATTENTION:</span>Are you sure you want to delete this safe deposit box?</h3>
+                        <h4>You are attempting to delete SDB with name: '{sdbName}'</h4>
                         <h4>Deleting a Safe Deposit Box is irreversible and will delete all data associated with this SDB including past versions of secure data.</h4>
                     </div>
 
