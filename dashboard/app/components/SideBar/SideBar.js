@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import * as appActions from '../../actions/appActions'
 import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions'
 import * as vActions from '../../actions/versionHistoryBrowserActions'
-import Category from './views/Category'
 import Loader from '../Loader/Loader'
 import './SideBar.scss'
 import { getLogger } from 'logger'
@@ -38,28 +37,66 @@ export default class SideBar extends Component {
     }
 
     render() {
-        var categories = []
-        for (let key in this.props.data) {
-            if (this.props.data.hasOwnProperty(key)) {
-                var category = this.props.data[key]
-                categories.push(<Category key={category.id}
-                                          id={category.id}
-                                          name={category.name}
-                                          boxes={category.boxes}
-                                          handleMouseClickAddNewBucket={this.handleMouseClickAddNewBucket}
-                                          handleSDBClicked={this.handleSDBClicked}/>)
-            }
-        }
-
         return (
-            <div id='side-bar'>
-                <div id='loader' className={this.props.isFetching ? 'show-me' : 'hide-me'}>
-                    <Loader/>
-                </div>
-                <ul id='sidebar-categories' className={this.props.isFetching ? 'hide-me' : ''}>
-                    {categories}
-                </ul>
+            <div className='sidebar'>
+                <div className="sidebar-header ncss-brand u-uppercase un-selectable">Safe Deposit Boxes</div>
+                { sideBarContent(this.handleMouseClickAddNewBucket, this.handleSDBClicked, this.props) }
             </div>
         )
     }
+}
+
+const sideBarContent = (handleMouseClickAddNewBucket, handleSDBClicked, props) => {
+    if (props.isFetching) {
+        return (
+            <div className='loader'>
+                <Loader/>
+            </div>
+        )
+    }
+
+    return (
+        <div className='sidebar-categories'>
+            {categories(handleMouseClickAddNewBucket, handleSDBClicked, props.data)}
+        </div>
+    )
+}
+
+const categories = (handleMouseClickAddNewBucket, handleSDBClicked, data) => {
+    var categories = []
+    for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+            let category = data[key]
+            categories.push(
+                <div key={category.id}>
+                    <div className='category'>
+                        <div className='category-label ncss-brand u-uppercase un-selectable'>{category.name}</div>
+                    </div>
+                    <div className="add-new-sdb ncss-brand u-uppercase un-selectable sidebar-button"
+                         onClick={() => {
+                             handleMouseClickAddNewBucket(category.id)
+                         }}>
+                        <div className="ncss-glyph-plus-lg icon"></div>
+                        <div className="txt">Create a New SDB</div>
+                    </div>
+                    {bucketComponents(category.boxes, handleSDBClicked)}
+                </div>
+            )
+        }
+    }
+    return categories
+}
+
+const bucketComponents = (boxes, handleSDBClicked) => {
+    let bucketComponents = []
+    for (let box of boxes) {
+        bucketComponents.push(
+            <div className='border-bottom-light-grey sidebar-button un-selectable'
+                 key={box.id}
+                 onClick={handleSDBClicked.bind(this, box.id, box.path)} >
+                <div className='ncss-brand u-uppercase'>{box.name}</div>
+            </div>
+        )
+    }
+    return bucketComponents
 }

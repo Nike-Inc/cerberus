@@ -10,7 +10,7 @@ $snkrs_success: #48BD1F;
 $snkrs_error: #FE0000;
 
 $sectionPadding: 10px;
-$headerHeight: 90px;
+$headerHeight: 55px;
 
 body {
   background-color: $snkrs_dark_grey;
@@ -238,4 +238,12 @@ a {
     -moz-transform:scale(.3);
     background-color:$snkrs_off_white;
   }
+}
+
+@mixin rotate($degrees) {
+  -webkit-transform: rotate($degrees);
+  -moz-transform: rotate($degrees);
+  -ms-transform: rotate($degrees);
+  -o-transform: rotate($degrees);
+  transform: rotate($degrees);
 }

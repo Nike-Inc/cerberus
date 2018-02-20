@@ -88,23 +88,23 @@ export default class ManageSafeDepositBox extends Component {
         return(
             <div className="safe-deposit-box-content-wrapper">
                 <div className="safe-deposit-box-content-section safe-deposit-box-header">
-                    <div className="safe-deposit-box-header-item safe-deposit-box-header-name">{sdbData.name}</div>
+                    <div className="safe-deposit-box-header-item safe-deposit-box-header-name ncss-brand u-uppercase">{sdbData.name}</div>
                     <div className="safe-deposit-box-header-item safe-deposit-box-header-description">{sdbData.description}</div>
                 </div>
                 <div className="safe-deposit-box-content-section safe-deposit-box-nav">
                     <div
-                        className={"un-selectable nav-item secure-data" + (nav.secureDataSelected ? ' nav-item-selected' : '')}
+                        className={"un-selectable nav-item secure-data ncss-brand u-uppercase" + (nav.secureDataSelected ? ' nav-item-selected' : '')}
                         onClick={() => { this.handleNavItemClicked('secureData')}}
                     >Secure Data</div>
                     <div
-                        className={"un-selectable nav-item versions" + (nav.secureDataVersionsSelected ? ' nav-item-selected' : '')}
+                        className={"un-selectable nav-item versions ncss-brand u-uppercase" + (nav.secureDataVersionsSelected ? ' nav-item-selected' : '')}
                         onClick={() => {
                             dispatch(vActions.fetchVersionDataForSdb(sdbData.id, cerberusAuthToken))
                             this.handleNavItemClicked('secureDataVersions')
                         }}
                     >Secure Data Version History</div>
                     <div
-                        className={"un-selectable nav-item setting" + (nav.sdbSettingsSelected ? ' nav-item-selected' : '')}
+                        className={"un-selectable nav-item setting ncss-brand u-uppercase" + (nav.sdbSettingsSelected ? ' nav-item-selected' : '')}
                         onClick={() => { this.handleNavItemClicked('sdbSettings')}}
                     >Settings</div>
                 </div>

@@ -16,11 +16,11 @@ export default class AddButton extends Component {
     render() {
         const {handleClick, message} = this.props
         return (
-            <div className='permissions-add-new-permission-button-container clickable'
+            <div className='permissions-add-new-permission-button-container btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
                  onClick={() => {
                      handleClick()
                  }}>
-                <div className='permissions-add-new-permission-add-icon'></div>
+                <div className='permissions-add-new-permission-add-icon ncss-glyph-plus-lg'></div>
                 <div className='permissions-add-new-permission-add-label'>{message}</div>
             </div>
         )

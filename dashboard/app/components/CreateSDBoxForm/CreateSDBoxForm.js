@@ -149,7 +149,7 @@ export default class CreateSDBoxForm extends Component {
                 
                 <div id="submit-btn-container">
                     <div id='cancel-btn'
-                         className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                         className='btn ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
                          onClick={ () => {
                                 dispatch(modalActions.popModal())
                             }}>Cancel

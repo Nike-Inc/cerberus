@@ -56,11 +56,11 @@ export default class SecureDataBrowser extends Component {
                     {! showAddSecretForm &&
                         <AddButton handleClick={() => {
                             dispatch(mSDBActions.showAddNewSecureData())
-                        }} message="Add New Secret Path" />
+                        }} message="Add New Secure Data Path" />
                     }
                     {showAddSecretForm &&
                         <div id="add-form-container">
-                            <div className="secure-data-form-label">Add a new Secret Path</div>
+                            <div className="secure-data-form-label ncss-brand u-uppercase">Add a new Secure Data Path</div>
                             <SecureDataForm initialValues={{
                                                            kvMap: [{key: null, value: null, revealed: true}],
                                                            path: null

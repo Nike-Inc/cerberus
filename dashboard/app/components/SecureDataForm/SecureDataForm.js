@@ -152,14 +152,14 @@ export default class SecureDataForm extends Component {
                         <div id="submit-btn-container">
                             <div className="btn-wrapper">
                                 <div id='cancel-btn'
-                                        className='ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                                        className='ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase un-selectable'
                                         onClick={() => {
                                             dispatch(mSDBActions.hideAddNewSecureData())
                                         }}>Cancel</div>
                             </div>
                             <div className="btn-wrapper">
                                 <button id='submit-btn'
-                                        className='ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                                        className='ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase un-selectable'
                                         disabled={secureData[navigatedPath + path.value] ? secureData[navigatedPath + path.value].isUpdating : false}>Save
                                 </button>
                             </div>
