@@ -18,7 +18,7 @@ export default class Header extends Component {
                         hashHistory.push('/')
                     }.bind(this, this.props.dispatch)
                     }></div>
-                    <div id='header-title' className='ncss-brand'>Cerberus Management Dashboard</div>
+                    <div id='header-title' className='ncss-brand u-uppercase un-selectable'>Cerberus</div>
                     <UserBox userName={this.props.userName}
                              displayUserContextMenu={this.props.displayUserContextMenu}
                              dispatch={this.props.dispatch}
@@ -57,7 +57,7 @@ class UserBox extends Component {
         let isAdmin = this.props.isAdmin
 
         return (
-            <div id='user-box' className='ncss-brand'>
+            <div id='user-box' className='ncss-brand u-uppercase'>
                 <div id='u-b-container'
                      onClick={this.handleMouseClickUserName}
                      onMouseLeave={this.handleMouseLeaveUserMenuContext} >

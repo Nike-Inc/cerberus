@@ -18,22 +18,22 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    width: 84px;
+    width: 45px;
     margin-left: 20px;
     cursor: pointer;
   }
 
   #header-title {
-    font-size: 45px;
+    font-size: 35px;
     line-height: 1.2;
-    padding-left: 20px;
-    padding-top: 18px;
+    padding-left: 15px;
+    padding-top: 7px;
   }
 
   #user-box{
     margin-left: auto;
     padding-right: 20px;
-    padding-top: 5px;
+    padding-top: 12px;
     font-size: 18px;
 
     #u-b-container {
@@ -46,12 +46,12 @@
       #u-b-name {
         cursor: pointer;
         float: left;
-        padding-right: 5px;
+        padding-right: 3px;
       }
 
       #u-b-ico {
         cursor: pointer;
-        margin-top: -3px;
+        margin-top: -6px;
         font-size: 40px;
       }
     }

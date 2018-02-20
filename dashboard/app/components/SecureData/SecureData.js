@@ -70,15 +70,21 @@ export default class SecureData extends Component {
                     <SecureDataForm initialValues={ (secureData[`${navigatedPath}${label}`] && secureData[`${navigatedPath}${label}`].hasFormInit) ? undefined : {kvMap: this.assembleFormData(sdbData), path: label}}
                                      pathReadOnly={true}
                                      formKey={`${navigatedPath}${label}`} />
-                    <div className="secure-data-delete-btn" onClick={() => {
-                                dispatch(mSDBActions.deleteSecureDataPathConfirm(`${navigatedPath}`,`${label}`, cerberusAuthToken))
-                            }}>
-                        <div className="secure-data-delete-btn-icon"></div>
-                        <div className="secure-data-delete-btn-label">Delete this Secret Path</div>
-                    </div>
+                    { deleteButton(dispatch, navigatedPath, label, cerberusAuthToken) }
                 </div>
                 }
             </div>
         )
     }
+}
+
+const deleteButton = (dispatch, navigatedPath, label, cerberusAuthToken) => {
+    return (
+        <div className="secure-data-delete-btn btn ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase" onClick={() => {
+            dispatch(mSDBActions.deleteSecureDataPathConfirm(`${navigatedPath}`,`${label}`, cerberusAuthToken))
+        }}>
+            <div className="ncss-glyph-plus-lg secure-data-delete-btn-icon"></div>
+            <div className="secure-data-delete-btn-label">Delete this Secure Data Path</div>
+        </div>
+    )
 }

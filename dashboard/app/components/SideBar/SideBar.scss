@@ -1,23 +1,43 @@
 @import '../../assets/styles/common.scss';
 
-#side-bar {
+.sidebar {
   background-color: $snkrs_white;
   width: 25%;
   max-width: 500px;
   display: flex;
+  flex-flow: column;
 
-  .hide-me {
-    display: none;
+  .sidebar-header {
+    background-color: $snkrs_dark_grey;
+    color: $snkrs_off_white;
+    font-size: 23px;
+    padding-left: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-top: 1px solid $snkrs_light_grey;
   }
 
-  .show-me {
+  .add-new-sdb {
+    display: flex;
+    border-bottom: 1px solid $snkrs_medium_grey;
+    .icon {
+      padding-top: 4px;
+      font-size: 20px;
+    }
+
+    .txt {
+      padding-left: 9px;
+    }
+  }
+
+  .loader {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  #sidebar-categories {
+  .sidebar-categories {
     width: 100%;
   }
 }
@@ -27,12 +47,14 @@
   display: flex;
   align-items: center;
   padding-right: 10px;
+  border-bottom: 1px solid $snkrs_dark_grey;
+  border-top: 1px solid $snkrs_dark_grey;
+  margin-top: -1px;
+
 
   .category-label {
+    font-size: 21px;
     padding-left: 10px;
-  }
-  .category-buttons {
-    margin-left: auto;
   }
   .category-button {
 
@@ -48,12 +70,13 @@
   }
 }
 
-.bucket-button {
+.sidebar-button {
   cursor: pointer;
 
-  h3 {
-    padding-left: 15px;
-  }
+  font-size: 18px;
+  padding-left: 20px;
+  padding-top: 1px;
+  padding-bottom: 1px;
 
   &:hover {
     background-color: $snkrs_off_white;
