@@ -21,6 +21,10 @@
     }
 
     .safe-deposit-box-header-description {
+      max-height: 100px;
+      display: inline-block;
+      overflow: scroll;
+      white-space:pre-wrap;
       font-size: 16px;
     }
 
