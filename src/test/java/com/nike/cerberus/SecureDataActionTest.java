@@ -16,6 +16,7 @@
 
 package com.nike.cerberus;
 
+import com.google.common.collect.ImmutableSet;
 import io.netty.handler.codec.http.HttpMethod;
 import org.junit.Test;
 
@@ -30,13 +31,14 @@ public class SecureDataActionTest {
     public void test_that_SecureDataAction_fromMethod_returns_proper_actions() {
         assertEquals(READ, SecureDataAction.fromMethod(HttpMethod.GET));
         assertEquals(WRITE, SecureDataAction.fromMethod(HttpMethod.POST));
+        assertEquals(WRITE, SecureDataAction.fromMethod(HttpMethod.PUT));
         assertEquals(DELETE, SecureDataAction.fromMethod(HttpMethod.DELETE));
     }
 
     @Test
     public void test_that_SecureDataAction_returns_expected_method() {
-        assertEquals(HttpMethod.GET, SecureDataAction.READ.getMethod());
-        assertEquals(HttpMethod.POST, SecureDataAction.WRITE.getMethod());
-        assertEquals(HttpMethod.DELETE, SecureDataAction.DELETE.getMethod());
+        assertEquals(ImmutableSet.of(HttpMethod.GET), SecureDataAction.READ.getMethods());
+        assertEquals(ImmutableSet.of(HttpMethod.POST, HttpMethod.PUT), SecureDataAction.WRITE.getMethods());
+        assertEquals(ImmutableSet.of(HttpMethod.DELETE), SecureDataAction.DELETE.getMethods());
     }
 }
