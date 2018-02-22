@@ -89,7 +89,8 @@ public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
                         String.format("%s/**", BASE_PATH),
                         BASE_PATH
                 ),
-                HttpMethod.POST
+                HttpMethod.POST,
+                HttpMethod.PUT
         );
     }
 }

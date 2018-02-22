@@ -21,39 +21,41 @@ import com.google.common.collect.ImmutableSet;
 import io.netty.handler.codec.http.HttpMethod;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
 import static com.nike.cerberus.record.RoleRecord.ROLE_READ;
 import static com.nike.cerberus.record.RoleRecord.ROLE_WRITE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpMethod.PUT;
 
 public enum SecureDataAction {
 
-    READ(GET, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
-    WRITE(POST, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
-    DELETE(HttpMethod.DELETE, ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
+    READ(ImmutableSet.of(GET), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
+    WRITE(ImmutableSet.of(POST, PUT), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
+    DELETE(ImmutableSet.of(HttpMethod.DELETE), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
 
-    private final HttpMethod method;
+    private final Set<HttpMethod> methods;
 
     private final ImmutableSet<String> allowedRoles;
 
-    public HttpMethod getMethod() {
-        return method;
+    public Set<HttpMethod> getMethods() {
+        return methods;
     }
 
     public ImmutableSet<String> getAllowedRoles() {
         return allowedRoles;
     }
 
-    SecureDataAction(HttpMethod method, ImmutableSet<String> allowedRoles) {
-        this.method = method;
+    SecureDataAction(Set<HttpMethod> methods, ImmutableSet<String> allowedRoles) {
+        this.methods = methods;
         this.allowedRoles = allowedRoles;
     }
 
     public static SecureDataAction fromMethod(HttpMethod method) {
         SecureDataAction action = Arrays.stream(values())
-                .filter(e -> e.method.equals(method))
+                .filter(e -> e.methods.contains(method))
                 .findFirst()
                 .orElse(null);
 
