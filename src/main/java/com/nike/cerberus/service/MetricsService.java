@@ -17,22 +17,31 @@
 
 package com.nike.cerberus.service;
 
+import com.codahale.metrics.Metric;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
+import com.nike.riposte.metrics.codahale.contrib.SignalFxReporterFactory;
+import com.signalfx.codahale.metrics.MetricBuilder;
+import com.signalfx.codahale.metrics.SettableDoubleGauge;
 import com.signalfx.codahale.metrics.SettableLongGauge;
+import com.signalfx.codahale.reporter.MetricMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Map;
 
 public class MetricsService {
 
     private static final Logger log = LoggerFactory.getLogger(MetricsService.class);
 
     private final CodahaleMetricsCollector metricsCollector;
+    private final MetricMetadata metricMetadata;
+
 
     @Inject
-    public MetricsService(CodahaleMetricsCollector metricsCollector) {
+    public MetricsService(CodahaleMetricsCollector metricsCollector, SignalFxReporterFactory signalFxReporterFactory) {
         this.metricsCollector = metricsCollector;
+        this.metricMetadata = signalFxReporterFactory.getReporter(metricsCollector.getMetricRegistry()).getMetricMetadata();
     }
 
     /**
@@ -56,5 +65,35 @@ public class MetricsService {
         } catch (IllegalArgumentException e) {
             log.error("Failed to get or create settable gauge, a non-gauge metric with name: {} is probably registered", name);
         }
+    }
+
+    public SettableDoubleGauge getOrCreateDoubleGauge(String metricName, Map<String, String> dimensions) {
+        return getOrCreate(SettableDoubleGauge.Builder.INSTANCE, metricName, dimensions);
+    }
+
+    public SettableLongGauge getOrCreateLongGauge(String metricName, Map<String, String> dimensions) {
+        return getOrCreate(SettableLongGauge.Builder.INSTANCE, metricName, dimensions);
+    }
+
+    public void setDoubleGaugeValue(String name, double value, Map<String, String> dimensions) {
+        SettableDoubleGauge gauge = getOrCreateDoubleGauge(name, dimensions);
+        gauge.setValue(value);
+    }
+
+    public void setLongGaugeValue(String name, long value, Map<String, String> dimensions) {
+        SettableLongGauge gauge = getOrCreateLongGauge(name, dimensions);
+        gauge.setValue(value);
+    }
+
+    private <M extends Metric> M getOrCreate(MetricBuilder<M> builder, String metricName, Map<String, String> dimensions) {
+        MetricMetadata.BuilderTagger<M> builderTagger = metricMetadata
+                .forBuilder(builder)
+                .withMetricName(metricName);
+        if (dimensions != null) {
+            for (Map.Entry<String, String> entry : dimensions.entrySet()) {
+                builderTagger.withDimension(entry.getKey(), entry.getValue());
+            }
+        }
+        return builderTagger.createOrGet(metricsCollector.getMetricRegistry());
     }
 }
