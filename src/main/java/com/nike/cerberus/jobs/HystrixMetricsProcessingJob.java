@@ -60,7 +60,7 @@ public class HystrixMetricsProcessingJob extends Job {
 
     public void processHystrixCommandMetrics() {
         for (HystrixCommandMetrics metrics : HystrixCommandMetrics.getInstances()) {
-            Map<String, String> circuitDimensions = ImmutableMap.of(
+            Map<String, String> dimensions = ImmutableMap.of(
                     "key", metrics.getCommandKey().name(),
                     "group", metrics.getCommandGroup().name()
             );
@@ -78,13 +78,13 @@ public class HystrixMetricsProcessingJob extends Job {
             );
 
 
-            metricsService.setLongGaugeValue("hystrix.command.circuit_open", isCircuitOpen ? 1 : 0, circuitDimensions);
-            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.mean", metrics.getExecutionTimeMean(), circuitDimensions);
-            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.95th", metrics.getExecutionTimePercentile(95.0), circuitDimensions);
-            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.99th", metrics.getExecutionTimePercentile(99.0), circuitDimensions);
-            metricsService.setLongGaugeValue("hystrix.command.rolling.max_concurrent_execs", metrics.getRollingMaxConcurrentExecutions(), circuitDimensions);
-            metricsService.setLongGaugeValue("hystrix.command.total_count", metrics.getHealthCounts().getTotalRequests(), circuitDimensions);
-            metricsService.setLongGaugeValue("hystrix.command.error_count", metrics.getHealthCounts().getErrorCount(), circuitDimensions);
+            metricsService.setLongGaugeValue("hystrix.command.circuit_open", isCircuitOpen ? 1 : 0, dimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.mean", metrics.getExecutionTimeMean(), dimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.95th", metrics.getExecutionTimePercentile(95.0), dimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.99th", metrics.getExecutionTimePercentile(99.0), dimensions);
+            metricsService.setLongGaugeValue("hystrix.command.rolling.max_concurrent_execs", metrics.getRollingMaxConcurrentExecutions(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.command.total_count", metrics.getHealthCounts().getTotalRequests(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.command.error_count", metrics.getHealthCounts().getErrorCount(), dimensions);
         }
     }
 
