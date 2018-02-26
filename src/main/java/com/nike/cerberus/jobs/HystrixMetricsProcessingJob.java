@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.jobs;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.hystrix.HystrixCircuitBreaker;
@@ -26,6 +27,8 @@ import org.knowm.sundial.Job;
 import org.knowm.sundial.exceptions.JobInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * Periodically print Hystrix metrics to the log.
@@ -57,6 +60,10 @@ public class HystrixMetricsProcessingJob extends Job {
 
     public void processHystrixCommandMetrics() {
         for (HystrixCommandMetrics metrics : HystrixCommandMetrics.getInstances()) {
+            Map<String, String> circuitDimensions = ImmutableMap.of(
+                    "key", metrics.getCommandKey().name(),
+                    "group", metrics.getCommandGroup().name()
+            );
             boolean isCircuitOpen = HystrixCircuitBreaker.Factory.getInstance(metrics.getCommandKey()).isOpen();
 
             log.debug("group:{}, commandKey:{}, CircuitOpen:{}, Mean:{}, 95%:{}, 99%:{}, 99.5%:{}, {}",
@@ -70,22 +77,22 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getHealthCounts()
             );
 
-            String baseMetricName = "hyst.cmd." +
-                    metrics.getCommandGroup().name().toLowerCase() + "." +
-                    metrics.getCommandKey().name().toLowerCase();
 
-            metricsService.setGaugeValue(baseMetricName + ".circuitOpen", isCircuitOpen ? 1 : 0);
-            metricsService.setGaugeValue(baseMetricName + ".mean", metrics.getExecutionTimeMean());
-            metricsService.setGaugeValue(baseMetricName + ".95th", metrics.getExecutionTimePercentile(95.0));
-            metricsService.setGaugeValue(baseMetricName + ".99th", metrics.getExecutionTimePercentile(99.0));
-            metricsService.setGaugeValue(baseMetricName + ".995th", metrics.getExecutionTimePercentile(99.5));
-            metricsService.setGaugeValue(baseMetricName + ".totalCount", metrics.getHealthCounts().getTotalRequests());
-            metricsService.setGaugeValue(baseMetricName + ".errorCount", metrics.getHealthCounts().getErrorCount());
+            metricsService.setLongGaugeValue("hystrix.command.circuit_open", isCircuitOpen ? 1 : 0, circuitDimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.mean", metrics.getExecutionTimeMean(), circuitDimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.95th", metrics.getExecutionTimePercentile(95.0), circuitDimensions);
+            metricsService.setDoubleGaugeValue("hystrix.command.exec_time.99th", metrics.getExecutionTimePercentile(99.0), circuitDimensions);
+            metricsService.setLongGaugeValue("hystrix.command.rolling.max_concurrent_execs", metrics.getExecutionTimePercentile(99.5), circuitDimensions);
+            metricsService.setLongGaugeValue("hystrix.command.total_count", metrics.getHealthCounts().getTotalRequests(), circuitDimensions);
+            metricsService.setLongGaugeValue("hystrix.command.error_count", metrics.getHealthCounts().getErrorCount(), circuitDimensions);
         }
     }
 
     public void processHystrixThreadPoolMetrics() {
         for (HystrixThreadPoolMetrics metrics : HystrixThreadPoolMetrics.getInstances()) {
+            Map<String, String> dimensions = ImmutableMap.of(
+                    "name", metrics.getThreadPoolKey().name()
+            );
             log.debug("threadPool:{}, rollingCounts[rejected:{}, executed:{}, maxActiveThreads:{}], cumulativeCounts[rejected:{}, executed:{}], {}",
                     metrics.getThreadPoolKey().name(),
                     metrics.getRollingCountThreadsRejected(),
@@ -96,17 +103,15 @@ public class HystrixMetricsProcessingJob extends Job {
                     metrics.getThreadPool()
             );
 
-            String baseMetricName = "hyst.tP." + metrics.getThreadPoolKey().name();
-
-            metricsService.setGaugeValue(baseMetricName + ".rol.rejected", metrics.getRollingCountThreadsRejected());
-            metricsService.setGaugeValue(baseMetricName + ".rol.executed", metrics.getRollingCountThreadsExecuted());
-            metricsService.setGaugeValue(baseMetricName + ".rol.maxActiveThreads", metrics.getRollingMaxActiveThreads());
-            metricsService.setGaugeValue(baseMetricName + ".cum.rejected", metrics.getCumulativeCountThreadsRejected());
-            metricsService.setGaugeValue(baseMetricName + ".cum.executed", metrics.getCumulativeCountThreadsExecuted());
-            metricsService.setGaugeValue(baseMetricName + ".tpe.poolSize", metrics.getThreadPool().getPoolSize());
-            metricsService.setGaugeValue(baseMetricName + ".tpe.activeThreads", metrics.getThreadPool().getActiveCount());
-            metricsService.setGaugeValue(baseMetricName + ".tpe.queuedTasks", metrics.getThreadPool().getQueue().size());
-            metricsService.setGaugeValue(baseMetricName + ".tpe.completedTasks", metrics.getThreadPool().getCompletedTaskCount());
+            metricsService.setLongGaugeValue("hystrix.threads.rolling.rejected", metrics.getRollingCountThreadsRejected(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.rolling.executed", metrics.getRollingCountThreadsExecuted(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.rolling.maxActiveThreads", metrics.getRollingMaxActiveThreads(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.cumulative.rejected", metrics.getCumulativeCountThreadsRejected(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.cumulative.executed", metrics.getCumulativeCountThreadsExecuted(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.poolSize", metrics.getThreadPool().getPoolSize(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.activeThreads", metrics.getThreadPool().getActiveCount(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.queuedTasks", metrics.getThreadPool().getQueue().size(), dimensions);
+            metricsService.setLongGaugeValue("hystrix.threads.completedTasks", metrics.getThreadPool().getCompletedTaskCount(), dimensions);
         }
     }
 }
