@@ -82,7 +82,7 @@ public class HystrixMetricsProcessingJob extends Job {
             metricsService.setDoubleGaugeValue("hystrix.command.exec_time.mean", metrics.getExecutionTimeMean(), circuitDimensions);
             metricsService.setDoubleGaugeValue("hystrix.command.exec_time.95th", metrics.getExecutionTimePercentile(95.0), circuitDimensions);
             metricsService.setDoubleGaugeValue("hystrix.command.exec_time.99th", metrics.getExecutionTimePercentile(99.0), circuitDimensions);
-            metricsService.setLongGaugeValue("hystrix.command.rolling.max_concurrent_execs", metrics.getExecutionTimePercentile(99.5), circuitDimensions);
+            metricsService.setLongGaugeValue("hystrix.command.rolling.max_concurrent_execs", metrics.getRollingMaxConcurrentExecutions(), circuitDimensions);
             metricsService.setLongGaugeValue("hystrix.command.total_count", metrics.getHealthCounts().getTotalRequests(), circuitDimensions);
             metricsService.setLongGaugeValue("hystrix.command.error_count", metrics.getHealthCounts().getErrorCount(), circuitDimensions);
         }
@@ -108,7 +108,6 @@ public class HystrixMetricsProcessingJob extends Job {
             metricsService.setLongGaugeValue("hystrix.threads.rolling.maxActiveThreads", metrics.getRollingMaxActiveThreads(), dimensions);
             metricsService.setLongGaugeValue("hystrix.threads.cumulative.rejected", metrics.getCumulativeCountThreadsRejected(), dimensions);
             metricsService.setLongGaugeValue("hystrix.threads.cumulative.executed", metrics.getCumulativeCountThreadsExecuted(), dimensions);
-            metricsService.setLongGaugeValue("hystrix.threads.poolSize", metrics.getThreadPool().getPoolSize(), dimensions);
             metricsService.setLongGaugeValue("hystrix.threads.activeThreads", metrics.getThreadPool().getActiveCount(), dimensions);
             metricsService.setLongGaugeValue("hystrix.threads.queuedTasks", metrics.getThreadPool().getQueue().size(), dimensions);
             metricsService.setLongGaugeValue("hystrix.threads.completedTasks", metrics.getThreadPool().getCompletedTaskCount(), dimensions);
