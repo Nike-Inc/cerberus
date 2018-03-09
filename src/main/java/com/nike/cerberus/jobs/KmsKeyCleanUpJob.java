@@ -36,7 +36,7 @@ public class KmsKeyCleanUpJob extends LockingJob {
 
     @Inject
     public KmsKeyCleanUpJob(CleanUpService cleanUpService,
-                            @Named("cms.jobs.KmsKeyCleanUpJob.deleteKmsKeysOlderThanNDays")
+                            @Named("cms.jobs.KmsCleanUpJob.deleteKmsKeysOlderThanNDays")
                                     int expirationPeriodInDays,
                             @Named("cms.jobs.KmsCleanUpJob.batchPauseTimeInSeconds")
                                     int pauseTimeInSeconds) {
