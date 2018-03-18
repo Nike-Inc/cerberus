@@ -47,7 +47,7 @@ export default class SDBMetadata extends Component {
                 <div className="sdb-metadata">
                     <div className="sdb-metadata-kv">
                         <div className="sdb-metadata-label ncss-brand">Description:</div>
-                        <div className="sdb-metadata-value">{sdbMetadata.description}</div>
+                        <div className="sdb-metadata-value desc">{sdbMetadata.description}</div>
                     </div>
                 </div>
                 <div className="sdb-metadata">
