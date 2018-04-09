@@ -731,6 +731,17 @@ public class SafeDepositBoxService {
     }
 
     /**
+     * Overrides the owner of the SDB. This is an admin function.
+     * @param sdbId the id of the SDB
+     */
+    @Transactional
+    public void overrideOwner(String sdbId, String owner,
+                                      String adminUser) {
+        OffsetDateTime now = dateTimeSupplier.get();
+        updateOwner(sdbId, owner, adminUser, now);
+    }
+
+    /**
      * Get a set of paths for secrets that have a change history associated with the given SDB
      * @param sdbId  ID of the SDB
      * @return  Set of paths

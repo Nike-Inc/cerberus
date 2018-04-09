@@ -84,7 +84,7 @@ public class RoleService {
     }
 
     /**
-     * Retieves the specific role by name.
+     * Retrieves the specific role by name.
      *
      * @param name The name of the role to retrieve.
      * @return The role, if it exists.
