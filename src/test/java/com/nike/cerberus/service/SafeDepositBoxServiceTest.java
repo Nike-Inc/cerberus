@@ -367,10 +367,12 @@ public class SafeDepositBoxServiceTest {
     @Test
     public void test_that_overrideSdbOwner_calls_update_owner() {
         String id = "111";
+        String sdbName = "test sdb name";
         OffsetDateTime offsetDateTime = OffsetDateTime.now(UTC);
         doReturn(offsetDateTime).when(dateTimeSupplier).get();
+        doReturn(Optional.of(id)).when(safeDepositBoxServiceSpy).getSafeDepositBoxIdByName(sdbName);
         doNothing().when(safeDepositBoxServiceSpy).updateOwner(any(), any(), any(), any());
-        safeDepositBoxServiceSpy.overrideOwner(id, "new-owner", "admin-user");
+        safeDepositBoxServiceSpy.overrideOwner(sdbName, "new-owner", "admin-user");
         verify(safeDepositBoxServiceSpy, times(1)).updateOwner(id, "new-owner", "admin-user", offsetDateTime);
     }
 }
