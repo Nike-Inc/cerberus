@@ -23,7 +23,6 @@ import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.error.InvalidCategoryNameApiError;
 import com.nike.cerberus.error.InvalidRoleNameApiError;
 import com.nike.cerberus.util.UuidSupplier;
@@ -150,19 +149,6 @@ public class MetadataService {
             logger.info("No SDB found for {}, creating new SDB", sdbMetadata.getName());
         }
         return id;
-    }
-
-    /**
-     * Overrides the owner of the SDB. This is an admin function.
-     * @param name the name of the SDB
-     */
-    public void overrideOwner(String name, String newOwner, String adminUser) {
-        String sdbId = safeDepositBoxService.getSafeDepositBoxIdByName(name).orElseThrow(
-                () -> ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                        .build()
-        );
-        safeDepositBoxService.overrideOwner(sdbId, newOwner, adminUser);
     }
 
     /**

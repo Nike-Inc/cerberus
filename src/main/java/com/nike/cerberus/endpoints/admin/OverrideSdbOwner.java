@@ -19,8 +19,10 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.security.CerberusPrincipal;
-import com.nike.cerberus.service.MetadataService;
+import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.util.Slugger;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
 import com.nike.riposte.util.AsyncNettyHelper;
@@ -32,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -42,11 +45,11 @@ public class OverrideSdbOwner extends AdminStandardEndpoint<SDBMetadata, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final MetadataService metadataService;
+    private final SafeDepositBoxService safeDepositBoxService;
 
     @Inject
-    public OverrideSdbOwner(MetadataService metadataService) {
-        this.metadataService = metadataService;
+    public OverrideSdbOwner(SafeDepositBoxService safeDepositBoxService) {
+        this.safeDepositBoxService = safeDepositBoxService;
     }
 
     @Override
@@ -63,11 +66,11 @@ public class OverrideSdbOwner extends AdminStandardEndpoint<SDBMetadata, Void> {
 
     private ResponseInfo<Void> overrideSdbOwner(RequestInfo<SDBMetadata> request, SecurityContext securityContext) {
         CerberusPrincipal authPrincipal = (CerberusPrincipal) securityContext.getUserPrincipal();
-        String name = request.getContent().getName();
-        String owner = request.getContent().getOwner();
+        String sdbName = request.getContent().getName();
+        String newOwner = request.getContent().getOwner();
         String principal = authPrincipal.getName();
 
-        metadataService.overrideOwner(name, owner, principal);
+        safeDepositBoxService.overrideOwner(sdbName, newOwner, principal);
 
         return ResponseInfo.<Void>newBuilder()
                 .withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
@@ -77,5 +80,16 @@ public class OverrideSdbOwner extends AdminStandardEndpoint<SDBMetadata, Void> {
     @Override
     public Matcher requestMatcher() {
         return Matcher.match("/v1/admin/override-owner", HttpMethod.PUT);
+    }
+
+    @Override
+    public CustomizableAuditData getCustomizableAuditData(RequestInfo<SDBMetadata> request) {
+        String sdbName = request.getContent().getName();
+        String newOwner = request.getContent().getOwner();
+        Optional<String> sdbIdOptional = safeDepositBoxService.getSafeDepositBoxIdByName(sdbName);
+        String sdbId = sdbIdOptional.orElse(String.format("(Failed to lookup id from name: %s)", sdbName));
+        return new CustomizableAuditData()
+                .setDescription(String.format("Override SDB with name: '%s' and id: '%s' with new owner '%s'.", sdbName, sdbId, newOwner))
+                .setSdbNameSlug((Slugger.toSlug(sdbName)));
     }
 }
