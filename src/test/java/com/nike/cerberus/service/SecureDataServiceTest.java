@@ -52,7 +52,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class SecureDataServiceTest {
 
     private String secret = "{\"k1\":\"val\",\"k2\":\"val\"}";
-    private byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+    private byte[] plaintextBytes = secret.getBytes(StandardCharsets.UTF_8);
     private String principal = SYSTEM_USER;
     private String encryptedPayload = "fasl;kej fasdf0978023 alskdf as";
     private String sdbId = UUID.randomUUID().toString();
@@ -86,8 +86,8 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_writeSecret_encrypts_the_payload_and_calls_update() {
-        byte[] encryptedBytes = encryptedPayload.getBytes(StandardCharsets.UTF_8);
-        when(encryptionService.encrypt(secret.getBytes(), path)).thenReturn(encryptedBytes);
+        byte[] ciphertextBytes = encryptedPayload.getBytes(StandardCharsets.UTF_8);
+        when(encryptionService.encrypt(secret.getBytes(), path)).thenReturn(ciphertextBytes);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
@@ -101,10 +101,10 @@ public class SecureDataServiceTest {
         verify(secureDataDao).updateSecureData(
                 sdbId,
                 path,
-                encryptedBytes,
+                ciphertextBytes,
                 2,
                 SecureDataType.OBJECT,
-                secretBytes.length,
+                plaintextBytes.length,
                 SYSTEM_USER,
                 now,
                 SYSTEM_USER,
@@ -125,7 +125,7 @@ public class SecureDataServiceTest {
         when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT))
                 .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(encryptedPayload.getBytes())));
 
-        when(encryptionService.decrypt(encryptedPayload.getBytes(), path)).thenReturn(secretBytes);
+        when(encryptionService.decrypt(encryptedPayload.getBytes(), path)).thenReturn(plaintextBytes);
 
         Optional<SecureData> result = secureDataService.readSecret(path);
 
@@ -243,11 +243,11 @@ public class SecureDataServiceTest {
         keyValuePairs.put("foo", "bar");
         data.put(sdbPath, keyValuePairs);
 
-        String unencryptedPayload = new ObjectMapper().writeValueAsString(keyValuePairs);
-        byte[] unencryptedBytes = unencryptedPayload.getBytes(StandardCharsets.UTF_8);
-        String encryptedPayload = "encrypted payload";
-        byte[] encryptedBytes = encryptedPayload.getBytes(StandardCharsets.UTF_8);
-        when(encryptionService.encrypt(unencryptedBytes, secretPath)).thenReturn(encryptedBytes);
+        String plaintext = new ObjectMapper().writeValueAsString(keyValuePairs);
+        byte[] plaintextBytes = plaintext.getBytes(StandardCharsets.UTF_8);
+        String ciphertext = "encrypted payload";
+        byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
+        when(encryptionService.encrypt(plaintextBytes, secretPath)).thenReturn(ciphertextBytes);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
@@ -258,10 +258,10 @@ public class SecureDataServiceTest {
         verify(secureDataDao).writeSecureData(
                 sdbId,
                 secretPath,
-                encryptedBytes,
+                ciphertextBytes,
                 1,
                 SecureDataType.OBJECT,
-                unencryptedBytes.length,
+                plaintextBytes.length,
                 principal,
                 now,
                 principal,

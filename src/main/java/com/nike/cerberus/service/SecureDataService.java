@@ -72,9 +72,9 @@ public class SecureDataService {
         log.debug("Writing secure data: SDB ID: {}, Path: {}", sdbId, path);
 
         int topLevelKVPairCount = getTopLevelKVPairCount(plainTextPayload);
-        byte[] unencryptedBytes = plainTextPayload.getBytes(StandardCharsets.UTF_8);
-        int sizeInBytes = unencryptedBytes.length;
-        byte[] encryptedPayload = encryptionService.encrypt(unencryptedBytes, path);
+        byte[] plaintextBytes = plainTextPayload.getBytes(StandardCharsets.UTF_8);
+        int sizeInBytes = plaintextBytes.length;
+        byte[] ciphertextBytes = encryptionService.encrypt(plaintextBytes, path);
         OffsetDateTime now = dateTimeSupplier.get();
 
         // Fetch the current version if there is one, so that on update it can be moved to the versions table
@@ -97,7 +97,7 @@ public class SecureDataService {
                     now
             );
 
-            secureDataDao.updateSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount,
+            secureDataDao.updateSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount,
                     SecureDataType.OBJECT,
                     sizeInBytes,
                     secureData.getCreatedBy(),
@@ -106,7 +106,7 @@ public class SecureDataService {
                     now);
 
         } else {
-            secureDataDao.writeSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount, SecureDataType.OBJECT,
+            secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.OBJECT,
                     sizeInBytes,
                     principal,
                     now,
@@ -141,12 +141,12 @@ public class SecureDataService {
         }
 
         SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
-        byte[] encryptedBlob = secureDataRecordOpt.get().getEncryptedBlob();
-        byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, path);
+        byte[] ciphertextBytes = secureDataRecordOpt.get().getEncryptedBlob();
+        byte[] plaintextBytes = encryptionService.decrypt(ciphertextBytes, path);
         SecureData secureData = new SecureData()
                 .setCreatedBy(secureDataRecord.getCreatedBy())
                 .setCreatedTs(secureDataRecord.getCreatedTs())
-                .setData(new String(unencryptedBlob, StandardCharsets.UTF_8))
+                .setData(new String(plaintextBytes, StandardCharsets.UTF_8))
                 .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
                 .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
                 .setPath(secureDataRecord.getPath())

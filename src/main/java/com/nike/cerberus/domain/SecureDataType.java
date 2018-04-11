@@ -17,6 +17,9 @@
 
 package com.nike.cerberus.domain;
 
+/**
+ * Enum used to distinguish between objects, files, and other types of secrets in the database.
+ */
 public enum SecureDataType {
     OBJECT,
     FILE
