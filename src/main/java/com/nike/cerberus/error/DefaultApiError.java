@@ -250,6 +250,11 @@ public enum DefaultApiError implements ApiError {
     UNKNOWN_PRINCIPAL_TYPE(99234, "The method wasn't configured for the given principal type", SC_INTERNAL_SERVER_ERROR),
 
     /**
+     * Do not allow secure data objects/maps to be overwritten by files, or vice versa.
+     */
+    INVALID_SECURE_DATA_TYPE(99235, "Failed to update secret. The new value is of a different type than the current value (e.g. file vs. key/value map).", SC_BAD_REQUEST),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),

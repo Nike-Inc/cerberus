@@ -69,6 +69,10 @@ public class EncryptionService {
         return awsCrypto.encryptString(encryptProvider, plainTextPayload, buildEncryptionContext(sdbPath)).getResult();
     }
 
+    public byte[] encrypt(byte[] bytes, String sdbPath) {
+        return awsCrypto.encryptData(encryptProvider, bytes, buildEncryptionContext(sdbPath)).getResult();
+    }
+
     /**
      * Decrypt the encryptedPayload.
      * <p>
@@ -88,6 +92,23 @@ public class EncryptionService {
 
     /**
      * Decrypt the encryptedPayload.
+     * <p>
+     * Expects a Base64 encoded String the the 'AWS Encryption SDK Message Format'.
+     * <p>
+     * http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
+     */
+    public byte[] decrypt(byte[] encryptedPayload, String sdbPath) {
+        ParsedCiphertext parsedCiphertext = CiphertextUtils.parse(encryptedPayload);
+        try {
+            return decryptToBytes(parsedCiphertext, sdbPath);
+        } catch (RuntimeException e) {
+            log.error("Decrypt operation failed " + CiphertextUtils.toJson(parsedCiphertext), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Decrypt the encryptedPayload.
      *
      * @param parsedCiphertext encryptedPayload
      * @param sdbPath          the current SDB path
@@ -99,6 +120,21 @@ public class EncryptionService {
         List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
         MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
         return new String(awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Decrypt the encryptedPayload.
+     *
+     * @param parsedCiphertext encryptedPayload
+     * @param sdbPath          the current SDB path
+     */
+    private byte[] decryptToBytes(ParsedCiphertext parsedCiphertext, String sdbPath) {
+        validateEncryptionContext(parsedCiphertext, sdbPath);
+        // Parses the ARNs out of the encryptedPayload so that you can manually rotate the CMKs, if desired
+        // Whatever CMKs were used in the encrypt operation will be used to decrypt
+        List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
+        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
+        return awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult();
     }
 
     /**

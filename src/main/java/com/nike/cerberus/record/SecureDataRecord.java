@@ -16,14 +16,19 @@
 
 package com.nike.cerberus.record;
 
+import com.nike.cerberus.domain.SecureDataType;
+
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 
 public class SecureDataRecord {
 
     private Integer id;
     private String sdboxId;
     private String path;
-    private String encryptedBlob;
+    private byte[] encryptedBlob;
+    private SecureDataType type;
+    private int sizeInBytes;
     private Integer topLevelKVCount;
     private OffsetDateTime createdTs;
     private String createdBy;
@@ -57,12 +62,34 @@ public class SecureDataRecord {
         return this;
     }
 
-    public String getEncryptedBlob() {
-        return encryptedBlob;
+    public byte[] getEncryptedBlob() {
+        return encryptedBlob != null ?
+                Arrays.copyOf(encryptedBlob, encryptedBlob.length) :
+                null;
     }
 
-    public SecureDataRecord setEncryptedBlob(String encryptedBlob) {
-        this.encryptedBlob = encryptedBlob;
+    public SecureDataRecord setEncryptedBlob(byte[] encryptedBlob) {
+        this.encryptedBlob = encryptedBlob != null ?
+                Arrays.copyOf(encryptedBlob, encryptedBlob.length) :
+                null;
+        return this;
+    }
+
+    public SecureDataType getType() {
+        return type;
+    }
+
+    public SecureDataRecord setType(SecureDataType type) {
+        this.type = type;
+        return this;
+    }
+
+    public int getSizeInBytes() {
+        return sizeInBytes;
+    }
+
+    public SecureDataRecord setSizeInBytes(int sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
         return this;
     }
 

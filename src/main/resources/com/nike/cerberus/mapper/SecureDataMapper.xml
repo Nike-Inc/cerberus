@@ -27,6 +27,8 @@
           PATH,
           ENCRYPTED_BLOB,
           TOP_LEVEL_KV_COUNT,
+          `TYPE`,
+          SIZE_IN_BYTES,
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
@@ -38,6 +40,8 @@
           #{record.path},
           #{record.encryptedBlob},
           #{record.topLevelKVCount},
+          #{record.type},
+          #{record.sizeInBytes},
           #{record.createdBy},
           #{record.createdTs},
           #{record.lastUpdatedBy},
@@ -51,6 +55,7 @@
         SET
           ENCRYPTED_BLOB = #{record.encryptedBlob},
           TOP_LEVEL_KV_COUNT = #{record.topLevelKVCount},
+          SIZE_IN_BYTES = #{record.sizeInBytes},
           LAST_UPDATED_BY = #{record.lastUpdatedBy},
           LAST_UPDATED_TS = #{record.lastUpdatedTs}
         WHERE
@@ -63,6 +68,8 @@
           SDBOX_ID,
           PATH,
           ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
@@ -73,8 +80,39 @@
           PATH = #{path}
     </select>
 
+    <select id="readSecureDataByPathAndType" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS
+        From
+          SECURE_DATA
+        WHERE
+          PATH = #{path}
+            AND
+          `TYPE` = #{type}
+    </select>
+
     <select id="getPathsByPartialPath" resultType="String">
         SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%';
+    </select>
+
+    <select id="getPathsByPartialPathAndType" resultType="String">
+        SELECT
+          PATH
+        FROM
+          SECURE_DATA
+        WHERE
+          PATH LIKE '${partialPath}%'
+            AND
+          `TYPE` = #{type};
     </select>
 
     <select id="getPathsBySdbId" resultType="String">
