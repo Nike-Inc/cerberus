@@ -90,6 +90,6 @@ public class OverrideSdbOwner extends AdminStandardEndpoint<SDBMetadata, Void> {
         String sdbId = sdbIdOptional.orElse(String.format("(Failed to lookup id from name: %s)", sdbName));
         return new CustomizableAuditData()
                 .setDescription(String.format("Override SDB with name: '%s' and id: '%s' with new owner '%s'.", sdbName, sdbId, newOwner))
-                .setSdbNameSlug((Slugger.toSlug(sdbName)));
+                .setSdbNameSlug(Slugger.toSlug(sdbName));
     }
 }
