@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.dao;
 
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.mapper.SecureDataMapper;
 import com.nike.cerberus.record.SecureDataRecord;
 
@@ -33,7 +34,9 @@ public class SecureDataDao {
         this.secureDataMapper = secureDataMapper;
     }
 
-    public void writeSecureData(String sdbId, String path, String encryptedPayload, int topLevelKVPairCount,
+    public void writeSecureData(String sdbId, String path, byte[] encryptedPayload, int topLevelKVPairCount,
+                                SecureDataType type,
+                                int sizeInBytes,
                                 String createdBy,
                                 OffsetDateTime createdTs,
                                 String lastUpdatedBy,
@@ -44,6 +47,8 @@ public class SecureDataDao {
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)
                 .setTopLevelKVCount(topLevelKVPairCount)
+                .setSizeInBytes(sizeInBytes)
+                .setType(type)
                 .setCreatedBy(createdBy)
                 .setCreatedTs(createdTs)
                 .setLastUpdatedBy(lastUpdatedBy)
@@ -53,8 +58,10 @@ public class SecureDataDao {
 
     public void updateSecureData(String sdbId,
                                  String path,
-                                 String encryptedPayload,
+                                 byte[] encryptedPayload,
                                  int topLevelKVPairCount,
+                                 SecureDataType type,
+                                 int sizeInBytes,
                                  String createdBy,
                                  OffsetDateTime createdTs,
                                  String lastUpdatedBy,
@@ -66,6 +73,8 @@ public class SecureDataDao {
                 .setSdboxId(sdbId)
                 .setEncryptedBlob(encryptedPayload)
                 .setTopLevelKVCount(topLevelKVPairCount)
+                .setType(type)
+                .setSizeInBytes(sizeInBytes)
                 .setCreatedBy(createdBy)
                 .setCreatedTs(createdTs)
                 .setLastUpdatedTs(lastUpdatedTs)
@@ -78,8 +87,16 @@ public class SecureDataDao {
         return Optional.ofNullable(secureDataMapper.readSecureDataByPath(path));
     }
 
+    public Optional<SecureDataRecord> readSecureDataByPathAndType(String path, SecureDataType type) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByPathAndType(path, type));
+    }
+
     public String[] getPathsByPartialPath(String partialPath) {
         return secureDataMapper.getPathsByPartialPath(partialPath);
+    }
+
+    public String[] getPathsByPartialPathAndType(String partialPath, SecureDataType type) {
+        return secureDataMapper.getPathsByPartialPathAndType(partialPath, type);
     }
 
     public Set<String> getPathsBySdbId(String sdbId) {

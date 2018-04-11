@@ -64,7 +64,7 @@ public class SecureDataVersionServiceTest {
 
         SecureDataVersionRecord record = new SecureDataVersionRecord()
                 .setId(versionId)
-                .setEncryptedBlob("encrypted blob")
+                .setEncryptedBlob("encrypted blob".getBytes())
                 .setActionPrincipal(actionPrincipal)
                 .setSdboxId(sdbId)
                 .setActionTs(actionTs)
