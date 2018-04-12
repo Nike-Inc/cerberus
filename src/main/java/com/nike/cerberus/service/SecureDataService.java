@@ -20,12 +20,16 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.domain.SecureDataType;
+import com.nike.cerberus.domain.SecureFile;
+import com.nike.cerberus.domain.SecureFileSummary;
+import com.nike.cerberus.domain.SecureFileSummaryResult;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
@@ -40,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -115,6 +120,52 @@ public class SecureDataService {
         }
     }
 
+    @Transactional
+    public void writeSecureFile(String sdbId, String path, byte[] bytes, int sizeInBytes, String principal) {
+        log.debug("Writing secure file: SDB ID: {}, Path: {}", sdbId, path);
+
+        byte[] ciphertextBytes = encryptionService.encrypt(bytes, path);
+        int topLevelKVPairCount = 0;
+        OffsetDateTime now = dateTimeSupplier.get();
+
+        // Fetch the current version if there is one, so that on update it can be moved to the versions table
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        if (secureDataRecordOpt.isPresent()) {
+            SecureDataRecord secureData = secureDataRecordOpt.get();
+            if (secureData.getType() != SecureDataType.FILE) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.INVALID_SECURE_DATA_TYPE)
+                        .build();
+            }
+
+            secureDataVersionDao.writeSecureDataVersion(sdbId, path, secureData.getEncryptedBlob(),
+                    SecureDataVersionRecord.SecretsAction.UPDATE,
+                    SecureDataType.FILE,
+                    sizeInBytes,
+                    secureData.getLastUpdatedBy(),
+                    secureData.getLastUpdatedTs(),
+                    principal,
+                    now
+            );
+
+            secureDataDao.updateSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount,
+                    SecureDataType.FILE,
+                    sizeInBytes,
+                    secureData.getCreatedBy(),
+                    secureData.getCreatedTs(),
+                    principal,
+                    now);
+
+        } else {
+            secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.FILE,
+                    sizeInBytes,
+                    principal,
+                    now,
+                    principal,
+                    now);
+        }
+    }
+
     /**
      * Attempts to deserialize the plain text payload and determine how many key value pairs it contains, in order to
      * capture this metadata metric for KPI reporting.
@@ -153,6 +204,51 @@ public class SecureDataService {
                 .setSdboxId(secureDataRecord.getSdboxId());
 
         return Optional.of(secureData);
+    }
+
+    public Optional<SecureFile> readFile(String path) {
+        log.debug("Reading secure file: Path: {}", path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(path, SecureDataType.FILE);
+        if (! secureDataRecordOpt.isPresent()) {
+            return Optional.empty();
+        }
+
+        SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
+        byte[] plaintextBytes = encryptionService.decrypt(secureDataRecord.getEncryptedBlob(), secureDataRecord.getPath());
+
+        SecureFile secureFile = new SecureFile()
+                .setCreatedBy(secureDataRecord.getCreatedBy())
+                .setCreatedTs(secureDataRecord.getCreatedTs())
+                .setData(plaintextBytes)
+                .setSizeInBytes(plaintextBytes.length)
+                .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+                .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+                .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+                .setPath(secureDataRecord.getPath())
+                .setSdboxId(secureDataRecord.getSdboxId());
+
+        return Optional.of(secureFile);
+    }
+
+    public Optional<SecureFileSummary> readFileMetadataOnly(String path) {
+        log.debug("Reading secure file metadata: Path: {}", path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readMetadataByPathAndType(path, SecureDataType.FILE);
+        if (! secureDataRecordOpt.isPresent()) {
+            return Optional.empty();
+        }
+
+        SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
+        SecureFileSummary secureFile = new SecureFileSummary()
+                .setCreatedBy(secureDataRecord.getCreatedBy())
+                .setCreatedTs(secureDataRecord.getCreatedTs())
+                .setSizeInBytes(secureDataRecord.getSizeInBytes())
+                .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+                .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+                .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+                .setPath(secureDataRecord.getPath())
+                .setSdboxId(secureDataRecord.getSdboxId());
+
+        return Optional.of(secureFile);
     }
 
     public void restoreSdbSecrets(String sdbId, Map<String, Map<String, Object>> data, String principal) {
@@ -203,6 +299,55 @@ public class SecureDataService {
         return keys;
     }
 
+    /**
+     * Method to list file metadata in the virtual tree structure
+     * This method is designed to mimic the Vault ?list=true functionality to maintain the existing API contract.
+     *
+     * ex: given the following tree structure
+     * app/foo/bar/bam
+     * app/foo/bam
+     * app/bam/foo
+     *
+     * if you call listSecureFilesSummaries with partialPath = "app/foo" or "app/foo/" you will receive files matching the following set of keys
+     * ["bar/", "bam"]
+     *
+     * @param partialPath path to a node in the data structure that potentially has children
+     * @return Array of keys if the key is a data node it will not end with "/"
+     */
+    public SecureFileSummaryResult listSecureFilesSummaries(String partialPath, int limit, int offset) {
+        if (!partialPath.endsWith("/")) {
+            partialPath = partialPath + "/";
+        }
+
+        int totalNumFiles = secureDataDao.countByType(SecureDataType.FILE);
+        List<SecureFileSummary> fileSummaries = Lists.newArrayList();
+        List<SecureDataRecord> secureDataRecords = secureDataDao.listSecureDataByPartialPathAndType(partialPath, SecureDataType.FILE, limit, offset);
+        secureDataRecords.forEach(secureDataRecord -> {
+            fileSummaries.add(new SecureFileSummary()
+                    .setCreatedBy(secureDataRecord.getCreatedBy())
+                    .setCreatedTs(secureDataRecord.getCreatedTs())
+                    .setSizeInBytes(secureDataRecord.getSizeInBytes())
+                    .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+                    .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+                    .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+                    .setPath(secureDataRecord.getPath())
+                    .setSdboxId(secureDataRecord.getSdboxId()));
+        });
+
+        SecureFileSummaryResult result = new SecureFileSummaryResult();
+        result.setLimit(limit);
+        result.setOffset(offset);
+        result.setSecureFileSummaries(fileSummaries);
+        result.setFileCountInResult(fileSummaries.size());
+        result.setTotalFileCount(totalNumFiles);
+        result.setHasNext(result.getTotalFileCount() > (offset + limit));
+        if (result.isHasNext()) {
+            result.setNextOffset(offset + limit);
+        }
+
+        return result;
+    }
+
     public Set<String> getPathsBySdbId(String sdbId) {
         return secureDataDao.getPathsBySdbId(sdbId);
     }
@@ -237,9 +382,9 @@ public class SecureDataService {
      *
      * @param path The sub path to delete all secrets that have paths that start with
      */
-    public void deleteSecret(String path, String principal) {
+    public void deleteSecret(String path, SecureDataType type, String principal) {
         OffsetDateTime now = dateTimeSupplier.get();
-        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPath(path)
+        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPathAndType(path, type)
                 .orElseThrow(() ->
                         new ApiException(DefaultApiError.ENTITY_NOT_FOUND)
                 );

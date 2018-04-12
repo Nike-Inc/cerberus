@@ -100,6 +100,25 @@
           `TYPE` = #{type}
     </select>
 
+    <select id="readMetadataByPathAndType" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS
+        From
+          SECURE_DATA
+        WHERE
+          PATH = #{path}
+            AND
+          `TYPE` = #{type}
+    </select>
+
     <select id="getPathsByPartialPath" resultType="String">
         SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%';
     </select>
@@ -112,7 +131,39 @@
         WHERE
           PATH LIKE '${partialPath}%'
             AND
-          `TYPE` = #{type};
+          `TYPE` = #{type}
+    </select>
+
+    <select id="listSecureDataByPartialPathAndType" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS
+        FROM
+          SECURE_DATA
+        WHERE
+          PATH LIKE '${partialPath}%'
+            AND
+          `TYPE` = #{type}
+        ORDER BY CREATED_TS DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countByType" resultType="java.lang.Integer">
+        SELECT
+          COUNT(ID)
+        FROM
+          SECURE_DATA
+        WHERE
+          `TYPE` = #{type}
     </select>
 
     <select id="getPathsBySdbId" resultType="String">

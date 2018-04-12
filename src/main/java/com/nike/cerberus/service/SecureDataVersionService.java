@@ -25,6 +25,7 @@ import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
+import com.nike.cerberus.domain.SecureFileVersion;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -78,6 +79,36 @@ public class SecureDataVersionService {
                 .setActionPrincipal(secureDataVersion.getActionPrincipal())
                 .setActionTs(secureDataVersion.getActionTs())
                 .setData(plainText)
+                .setId(secureDataVersion.getId())
+                .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+                .setSdboxId(secureDataVersion.getSdboxId())
+                .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
+                .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+    }
+
+    public Optional<SecureFileVersion> getSecureFileVersionById(String versionId, String sdbCategory, String pathToSecureData) {
+        log.debug("Reading secure data version: ID: {}", versionId);
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
+                getCurrentSecureDataVersion(pathToSecureData) :
+                secureDataVersionDao.readSecureDataVersionById(versionId);
+
+        if (! secureDataVersionRecord.isPresent() ||
+                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath()) ||
+                secureDataVersionRecord.get().getType() != SecureDataType.FILE) {
+            return Optional.empty();
+        }
+
+        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+        byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
+        byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
+
+        return Optional.of(new SecureFileVersion()
+                .setAction(secureDataVersion.getAction())
+                .setActionPrincipal(secureDataVersion.getActionPrincipal())
+                .setActionTs(secureDataVersion.getActionTs())
+                .setData(unencryptedBlob)
+                .setName(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
+                .setSizeInBytes(secureDataVersion.getSizeInBytes())
                 .setId(secureDataVersion.getId())
                 .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
                 .setSdboxId(secureDataVersion.getSdboxId())

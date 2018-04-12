@@ -19,11 +19,13 @@ package com.nike.cerberus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Maps;
@@ -54,7 +56,8 @@ public class SecureDataServiceTest {
     private String secret = "{\"k1\":\"val\",\"k2\":\"val\"}";
     private byte[] plaintextBytes = secret.getBytes(StandardCharsets.UTF_8);
     private String principal = SYSTEM_USER;
-    private String encryptedPayload = "fasl;kej fasdf0978023 alskdf as";
+    private String ciphertext = "fasl;kej fasdf0978023 alskdf as";
+    private byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
     private String sdbId = UUID.randomUUID().toString();
     private String path = "super/important/secrets";
     private String partialPathWithoutTrailingSlash = "apps/checkout-service/api-keys";
@@ -86,7 +89,7 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_writeSecret_encrypts_the_payload_and_calls_update() {
-        byte[] ciphertextBytes = encryptedPayload.getBytes(StandardCharsets.UTF_8);
+        byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
         when(encryptionService.encrypt(secret.getBytes(), path)).thenReturn(ciphertextBytes);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
@@ -123,9 +126,9 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_readSecret_decrypts_the_payload_when_present() {
         when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT))
-                .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(encryptedPayload.getBytes())));
+                .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(ciphertext.getBytes())));
 
-        when(encryptionService.decrypt(encryptedPayload.getBytes(), path)).thenReturn(plaintextBytes);
+        when(encryptionService.decrypt(ciphertext.getBytes(), path)).thenReturn(plaintextBytes);
 
         Optional<SecureData> result = secureDataService.readSecret(path);
 
@@ -225,9 +228,10 @@ public class SecureDataServiceTest {
     public void test_that_deleteSecret_proxies_to_dao() {
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
-        when(secureDataDao.readSecureDataByPath(partialPathWithoutTrailingSlash)).thenReturn(Optional.of(secureDataRecord));
+        when(secureDataDao.readSecureDataByPathAndType(partialPathWithoutTrailingSlash, SecureDataType.OBJECT))
+                .thenReturn(Optional.of(secureDataRecord));
 
-        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, principal);
+        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, SecureDataType.OBJECT, principal);
         verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
     }
 
@@ -317,5 +321,78 @@ public class SecureDataServiceTest {
                 .setLastUpdatedTs(now);
 
         assertFalse(secureDataService.secureDataHasBeenUpdated(secureDataRecord));
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_that_writeSecret_does_now_allow_other_types_to_be_overwritten() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataRecord fileRecord = new SecureDataRecord().setType(SecureDataType.FILE);
+        when(secureDataDao.readSecureDataByPath(pathToFile)).thenReturn(Optional.of(fileRecord));
+
+        secureDataService.writeSecret("sdb id", pathToFile, "plaintext", "principal");
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_that_writeFile_does_now_allow_other_types_to_be_overwritten() {
+        String pathToObject = "app/sdb/object";
+        SecureDataRecord objectRecord = new SecureDataRecord().setType(SecureDataType.OBJECT);
+        when(secureDataDao.readSecureDataByPath(pathToObject)).thenReturn(Optional.of(objectRecord));
+
+        secureDataService.writeSecureFile("sdbId", pathToObject, new byte[] {}, 0, pathToObject);
+    }
+
+    @Test
+    public void test_that_readSecret_reads_secrets_by_the_correct_type() {
+        String pathToObject = "app/sdb/object";
+        SecureDataRecord record = new SecureDataRecord()
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.decrypt(ciphertextBytes, pathToObject)).thenReturn(plaintextBytes);
+        when(secureDataDao.readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT)).thenReturn(Optional.of(record));
+
+        secureDataService.readSecret(pathToObject);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT);
+    }
+
+    @Test
+    public void test_that_readFile_reads_secrets_by_the_correct_type() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(SecureDataType.FILE)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.decrypt(ciphertextBytes, pathToFile)).thenReturn(plaintextBytes);
+        when(secureDataDao.readSecureDataByPathAndType(pathToFile, SecureDataType.FILE)).thenReturn(Optional.of(record));
+
+        secureDataService.readFile(pathToFile);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+    }
+
+    @Test
+    public void test_that_deleteSecret_checks_type_before_deleting() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataType type = SecureDataType.FILE;
+        String principal = "principal";
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(type)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(secureDataDao.readSecureDataByPathAndType(pathToFile, type)).thenReturn(Optional.of(record));
+
+        secureDataService.deleteSecret(pathToFile, SecureDataType.FILE, principal);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+        verify(secureDataVersionDao).writeSecureDataVersion(null, pathToFile, ciphertextBytes,
+                SecureDataVersionRecord.SecretsAction.DELETE,
+                type,
+                ciphertextBytes.length,
+                null,
+                null,
+                principal,
+                null);
     }
 }
