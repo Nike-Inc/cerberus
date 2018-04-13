@@ -61,6 +61,13 @@ export function fetchSideBarData(cerberusAuthToken) {
                 }
             }
 
+            // store the boxes alphabetically
+            boxes.data.sort((a, b) => {
+              if(a.name < b.name) return -1;
+              if(a.name > b.name) return 1;
+              return 0;
+            })
+
             for (var box of boxes.data) {
                 log.debug("parsing box", box)
                 data[box.category_id]['boxes'].push({id: box.id, name: box.name, path: box.path})
