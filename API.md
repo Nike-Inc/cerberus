@@ -715,6 +715,299 @@ list=true parameter will return 404.
               "auth" : null
             }
 
+## Files [v1/secure-file/{PATH}]
+
+### Read Secure File at a path [GET]
+
+Calling GET on a virtual path without the list=true parameter will return 404.
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/octet-stream)
+    
+    + Headers
+
+            Content-Length: 14895
+            Content-Disposition: attachment; filename="cacerts"
+            Content-Type: application/octet-stream
+
+    + Body
+
+        [14895 bytes of binary data]
+            
+        
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
+### [GET] Read secure file version at a path [v1/secure-file/{PATH}?versionId={VERSION_ID}]
+
+Gets a specific version of a secret from the change history stored in Cerberus 
+
++ Parameters
+
+    + path: category/sdb-slug/path/to/secret1 (String) - The path to the secret for which to get versions
+
++ Query Parameters
+
+    + versionId: 1234-4567-8903-0098-7543 (String) - The ID of the desired secret version
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/octet-stream)
+    
+    + Headers
+
+            Content-Length: 14895
+            Content-Disposition: attachment; filename="cacerts"
+            Content-Type: application/octet-stream
+
+    + Body
+
+        [14895 bytes of binary data]
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
+### Create secure file at a path [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+            Content-Type: multipart/form-data; boundary=----------4123509835381001
+
+    + Body
+            
+            ------------4123509835381001
+            Content-Disposition: form-data; name="file-content"; filename="foo.pem"
+            Content-Type: application/x-pem-file
+ 
+ 
+            PEM87a.............,...........D..;
+            ------------4123509835381001
+
++ Response 204
+
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
+
+### Get secure file metadata [HEAD]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200
+
+    + Headers
+
+            Content-Length: 14895
+            Content-Disposition: attachment; filename="cacerts"
+            Content-Type: application/octet-stream
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
+### [GET] List secure file summaries [v1/secure-files]
+
++ Request (application/json)
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200
+
+    + Body
+
+            {
+                "has_next": false,
+                "next_offset": null,
+                "limit": 100,
+                "offset": 0,
+                "file_count_in_result": 3,
+                "total_file_count": 3,
+                file_summaries: [
+                    {
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/ssh.pem",
+                        "name": "ssh.pem",
+                        "size_in_bytes": "1983",
+                        "created_by": "user0@example.com",
+                        "created_ts": "2016-04-05T04:19:51Z",
+                        "last_updated_by": "user@example.com"
+                        "last_updated_ts": "2016-04-05T05:19:59Z",
+                    },
+                    {
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/cacerts",
+                        "name": "cacerts",
+                        "size_in_bytes": "1002",
+                        "created_by": "user0@example.com",
+                        "created_ts": "2016-04-05T04:19:51Z",
+                        "last_updated_by": "user@example.com"
+                        "last_updated_ts": "2016-04-05T05:19:59Z",
+                    },
+                    {
+                        "sdb_id": "0000-0000-0000-0000",
+                        "path": "/category/sdb-slug/bar.privatekey",
+                        "name": "bar.privatekey",
+                        "size_in_bytes": "2087",
+                        "created_by": "user0@example.com",
+                        "created_ts": "2016-04-05T04:19:51Z",
+                        "last_updated_by": "user@example.com"
+                        "last_updated_ts": "2016-04-05T05:19:59Z",
+                    }
+                ]
+            }
+
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
 ## Secrets [v1/secret/{category}/{sdb-name}/{path}]
 
 ### Read Secrets at a path [GET]
@@ -810,7 +1103,6 @@ Gets a specific version of a secret from the change history stored in Cerberus
                  }
             }
 
-
 ### Create/Update Secrets at a path [POST]
 
 + Request (application/json)
@@ -846,7 +1138,9 @@ Gets a specific version of a secret from the change history stored in Cerberus
 
 ### [GET] Secret Version Paths for an SDB [v1/sdb-secret-version-paths/{SDB_ID}]
 
-Gets a list of paths for secrets that have a change history in Cerberus 
+Gets a list of paths for secrets that have a change history in Cerberus
+
+** Note: This endpoint lists version metadata for all secret types (e.g. key-value objects, and files)
 
 + Parameters
 
@@ -873,7 +1167,9 @@ Gets a list of paths for secrets that have a change history in Cerberus
 
 ### [GET] Secrets Versions [v1/secret-versions/{PATH}?limit={LIMIT}&offset={OFFSET}]
 
-Gets a list of secret version metadata for the secret at the given path
+Gets a list of version metadata for the secret at the given path.
+
+** Note: This endpoint lists version metadata for all secret types (e.g. key-value objects, and files)
 
 + Parameters
 
@@ -908,6 +1204,8 @@ Gets a list of secret version metadata for the secret at the given path
                         "sdb_id": "0000-0000-0000-0000",
                         "path": "/category/sdb-slug/path/to/secret1",
                         "action": "UPDATE",
+                        "type": "OBJECT",
+                        "size_in_bytes": "12983",
                         "version_created_by": "user0@example.com",
                         "version_created_ts": "2016-04-05T04:19:51Z",
                         "action_principal": "user@example.com"
@@ -918,6 +1216,8 @@ Gets a list of secret version metadata for the secret at the given path
                         "sdb_id": "0000-0000-0000-0000",
                         "path": "/category/sdb-slug/path/to/secret1",
                         "action": "UPDATE",
+                        "type": "OBJECT",
+                        "size_in_bytes": "12654",
                         "version_created_by": "user@example.com",
                         "version_created_ts": "2016-04-05T04:19:51Z",
                         "action_principal": "admin@example.com"
@@ -928,6 +1228,8 @@ Gets a list of secret version metadata for the secret at the given path
                         "sdb_id": "0000-0000-0000-0000",
                         "path": "/category/sdb-slug/path/to/secret1",
                         "action": "UPDATE",
+                        "type": "OBJECT",
+                        "size_in_bytes": "1987",
                         "version_created_by": "user2@example.com",
                         "version_created_ts": "2016-04-05T04:19:51Z",
                         "action_principal": "guest@example.com"
@@ -938,6 +1240,8 @@ Gets a list of secret version metadata for the secret at the given path
                         "sdb_id": "0000-0000-0000-0000",
                         "path": "/category/sdb-slug/path/to/secret1",
                         "action": "CREATE",
+                        "type": "OBJECT",
+                        "size_in_bytes": "3874",
                         "version_created_by": "user@example.com",
                         "version_created_ts": "2016-04-05T04:19:51Z",
                         "action_principal": "user@example.com"

@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureData;
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.record.SecureDataRecord;
+import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Maps;
@@ -30,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Map;
@@ -41,7 +46,6 @@ import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,8 +54,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class SecureDataServiceTest {
 
     private String secret = "{\"k1\":\"val\",\"k2\":\"val\"}";
+    private byte[] plaintextBytes = secret.getBytes(StandardCharsets.UTF_8);
     private String principal = SYSTEM_USER;
-    private String encryptedPayload = "fasl;kej fasdf0978023 alskdf as";
+    private String ciphertext = "fasl;kej fasdf0978023 alskdf as";
+    private byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
     private String sdbId = UUID.randomUUID().toString();
     private String path = "super/important/secrets";
     private String partialPathWithoutTrailingSlash = "apps/checkout-service/api-keys";
@@ -83,22 +89,34 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_writeSecret_encrypts_the_payload_and_calls_update() {
-        when(encryptionService.encrypt(secret, path)).thenReturn(encryptedPayload);
+        byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
+        when(encryptionService.encrypt(secret.getBytes(), path)).thenReturn(ciphertextBytes);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
 
+        when(secureDataRecord.getType()).thenReturn(SecureDataType.OBJECT);
         when(secureDataRecord.getCreatedBy()).thenReturn(SYSTEM_USER);
         when(secureDataRecord.getCreatedTs()).thenReturn(now);
         when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.of(secureDataRecord));
 
         secureDataService.writeSecret(sdbId, path, secret, principal);
-        verify(secureDataDao).updateSecureData(sdbId, path, encryptedPayload, 2, SYSTEM_USER, now, SYSTEM_USER, now);
+        verify(secureDataDao).updateSecureData(
+                sdbId,
+                path,
+                ciphertextBytes,
+                2,
+                SecureDataType.OBJECT,
+                plaintextBytes.length,
+                SYSTEM_USER,
+                now,
+                SYSTEM_USER,
+                now);
     }
 
     @Test
     public void test_that_readSecret_returns_empty_optional_if_dao_returns_nothing() {
-        when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.empty());
+        when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT)).thenReturn(Optional.empty());
 
         Optional<SecureData> result = secureDataService.readSecret(path);
 
@@ -107,10 +125,10 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_readSecret_decrypts_the_payload_when_present() {
-        when(secureDataDao.readSecureDataByPath(path))
-                .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(encryptedPayload)));
+        when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT))
+                .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(ciphertext.getBytes())));
 
-        when(encryptionService.decrypt(encryptedPayload, path)).thenReturn(secret);
+        when(encryptionService.decrypt(ciphertext.getBytes(), path)).thenReturn(plaintextBytes);
 
         Optional<SecureData> result = secureDataService.readSecret(path);
 
@@ -120,41 +138,51 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_listKeys_appends_a_slash_to_the_partial_path_if_not_present() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(keysRes);
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(keysRes);
         secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
     }
 
     @Test
     public void test_that_listKeys_does_not_append_a_slash_to_the_partial_path_if_already_present() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(keysRes);
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(keysRes);
         secureDataService.listKeys(partialPathWithoutTrailingSlash  + "/");
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
     }
 
     @Test
     public void test_that_listKeys_returns_empty_set_if_dao_returns_null() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(null);
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(null);
         Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash );
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertTrue(res != null && res.isEmpty());
     }
 
     @Test
     public void test_that_listKeys_returns_empty_set_if_dao_returns_empty() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(new String[] {});
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(new String[] {});
         Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash );
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertTrue(res != null && res.isEmpty());
     }
 
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(keysRes);
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(keysRes);
         Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 2 keys", 2, res.size());
         assertTrue("the list of keys should contain the 2 api keys", res.containsAll(ImmutableSet.of("signal-fx-api-key", "splunk-api-key")));
@@ -162,11 +190,13 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys_with_sub_folder_paths_stripped_to_nearest_folder() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(new String[]{
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(new String[]{
                 "apps/checkout-service/api-keys/sub-folder/some-different-key"
         });
         Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 1 key", 1, res.size());
         assertTrue(res.contains("sub-folder/"));
@@ -174,12 +204,14 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys_with_sub_folder_paths_stripped_to_nearest_folder_and_contains_key_without_slash_if_present() {
-        when(secureDataDao.getPathsByPartialPath(partialPathWithoutTrailingSlash + "/")).thenReturn(new String[]{
+        when(secureDataDao.getPathsByPartialPathAndType(
+                partialPathWithoutTrailingSlash + "/",
+                SecureDataType.OBJECT)).thenReturn(new String[]{
                 "apps/checkout-service/api-keys/sub-folder/some-different-key",
                 "apps/checkout-service/api-keys/sub-folder"
         });
         Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPath(partialPathWithoutTrailingSlash + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 2 key", 2, res.size());
         assertTrue(res.contains("sub-folder/"));
@@ -196,14 +228,15 @@ public class SecureDataServiceTest {
     public void test_that_deleteSecret_proxies_to_dao() {
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
-        when(secureDataDao.readSecureDataByPath(partialPathWithoutTrailingSlash)).thenReturn(Optional.of(secureDataRecord));
+        when(secureDataDao.readSecureDataByPathAndType(partialPathWithoutTrailingSlash, SecureDataType.OBJECT))
+                .thenReturn(Optional.of(secureDataRecord));
 
-        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, principal);
+        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, SecureDataType.OBJECT, principal);
         verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
     }
 
     @Test
-    public void test_that_restoreSdbSecrets_proxies_to_dao() {
+    public void test_that_restoreSdbSecrets_proxies_to_dao() throws JsonProcessingException {
         String sdbId = "sdb-id";
         String path = "secret/path/one";
         String sdbPath = "category/secret/path/one";
@@ -214,8 +247,11 @@ public class SecureDataServiceTest {
         keyValuePairs.put("foo", "bar");
         data.put(sdbPath, keyValuePairs);
 
-        String encryptedPayload = "encrypted payload";
-        when(encryptionService.encrypt(anyString(), anyString())).thenReturn(encryptedPayload);
+        String plaintext = new ObjectMapper().writeValueAsString(keyValuePairs);
+        byte[] plaintextBytes = plaintext.getBytes(StandardCharsets.UTF_8);
+        String ciphertext = "encrypted payload";
+        byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
+        when(encryptionService.encrypt(plaintextBytes, secretPath)).thenReturn(ciphertextBytes);
 
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
@@ -223,7 +259,17 @@ public class SecureDataServiceTest {
         when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.empty());
 
         secureDataService.restoreSdbSecrets(sdbId, data, principal);
-        verify(secureDataDao).writeSecureData(sdbId, secretPath, encryptedPayload, 1, principal, now, principal, now);
+        verify(secureDataDao).writeSecureData(
+                sdbId,
+                secretPath,
+                ciphertextBytes,
+                1,
+                SecureDataType.OBJECT,
+                plaintextBytes.length,
+                principal,
+                now,
+                principal,
+                now);
     }
 
     @Test
@@ -275,5 +321,78 @@ public class SecureDataServiceTest {
                 .setLastUpdatedTs(now);
 
         assertFalse(secureDataService.secureDataHasBeenUpdated(secureDataRecord));
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_that_writeSecret_does_now_allow_other_types_to_be_overwritten() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataRecord fileRecord = new SecureDataRecord().setType(SecureDataType.FILE);
+        when(secureDataDao.readSecureDataByPath(pathToFile)).thenReturn(Optional.of(fileRecord));
+
+        secureDataService.writeSecret("sdb id", pathToFile, "plaintext", "principal");
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_that_writeFile_does_now_allow_other_types_to_be_overwritten() {
+        String pathToObject = "app/sdb/object";
+        SecureDataRecord objectRecord = new SecureDataRecord().setType(SecureDataType.OBJECT);
+        when(secureDataDao.readSecureDataByPath(pathToObject)).thenReturn(Optional.of(objectRecord));
+
+        secureDataService.writeSecureFile("sdbId", pathToObject, new byte[] {}, 0, pathToObject);
+    }
+
+    @Test
+    public void test_that_readSecret_reads_secrets_by_the_correct_type() {
+        String pathToObject = "app/sdb/object";
+        SecureDataRecord record = new SecureDataRecord()
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.decrypt(ciphertextBytes, pathToObject)).thenReturn(plaintextBytes);
+        when(secureDataDao.readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT)).thenReturn(Optional.of(record));
+
+        secureDataService.readSecret(pathToObject);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT);
+    }
+
+    @Test
+    public void test_that_readFile_reads_secrets_by_the_correct_type() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(SecureDataType.FILE)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.decrypt(ciphertextBytes, pathToFile)).thenReturn(plaintextBytes);
+        when(secureDataDao.readSecureDataByPathAndType(pathToFile, SecureDataType.FILE)).thenReturn(Optional.of(record));
+
+        secureDataService.readFile(pathToFile);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+    }
+
+    @Test
+    public void test_that_deleteSecret_checks_type_before_deleting() {
+        String pathToFile = "app/sdb/file.pem";
+        SecureDataType type = SecureDataType.FILE;
+        String principal = "principal";
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(type)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(secureDataDao.readSecureDataByPathAndType(pathToFile, type)).thenReturn(Optional.of(record));
+
+        secureDataService.deleteSecret(pathToFile, SecureDataType.FILE, principal);
+
+        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+        verify(secureDataVersionDao).writeSecureDataVersion(null, pathToFile, ciphertextBytes,
+                SecureDataVersionRecord.SecretsAction.DELETE,
+                type,
+                ciphertextBytes.length,
+                null,
+                null,
+                principal,
+                null);
     }
 }

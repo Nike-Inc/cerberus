@@ -15,20 +15,18 @@
  *
  */
 
-package com.nike.cerberus.record;
-
-import com.nike.cerberus.domain.SecureDataType;
+package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 
-public class SecureDataVersionRecord {
+public class SecureFileVersion {
 
     private String id;
     private String sdboxId;
     private String path;
-    private byte[] encryptedBlob;
-    private SecureDataType type;
+    private byte[] data;
+    private String name;
     private int sizeInBytes;
     private String action;
     private String versionCreatedBy;
@@ -40,7 +38,7 @@ public class SecureDataVersionRecord {
         return id;
     }
 
-    public SecureDataVersionRecord setId(String id) {
+    public SecureFileVersion setId(String id) {
         this.id = id;
         return this;
     }
@@ -49,7 +47,7 @@ public class SecureDataVersionRecord {
         return sdboxId;
     }
 
-    public SecureDataVersionRecord setSdboxId(String sdboxId) {
+    public SecureFileVersion setSdboxId(String sdboxId) {
         this.sdboxId = sdboxId;
         return this;
     }
@@ -58,30 +56,26 @@ public class SecureDataVersionRecord {
         return path;
     }
 
-    public SecureDataVersionRecord setPath(String path) {
+    public SecureFileVersion setPath(String path) {
         this.path = path;
         return this;
     }
 
-    public byte[] getEncryptedBlob() {
-        return encryptedBlob != null ?
-                Arrays.copyOf(encryptedBlob, encryptedBlob.length) :
-                null;
+    public byte[] getData() {
+        return Arrays.copyOf(data, data.length);
     }
 
-    public SecureDataVersionRecord setEncryptedBlob(byte[] encryptedBlob) {
-        this.encryptedBlob = encryptedBlob != null ?
-                Arrays.copyOf(encryptedBlob, encryptedBlob.length) :
-                null;
+    public SecureFileVersion setData(byte[] data) {
+        this.data = Arrays.copyOf(data, data.length);
         return this;
     }
 
-    public SecureDataType getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public SecureDataVersionRecord setType(SecureDataType type) {
-        this.type = type;
+    public SecureFileVersion setName(String name) {
+        this.name = name;
         return this;
     }
 
@@ -89,7 +83,7 @@ public class SecureDataVersionRecord {
         return sizeInBytes;
     }
 
-    public SecureDataVersionRecord setSizeInBytes(int sizeInBytes) {
+    public SecureFileVersion setSizeInBytes(int sizeInBytes) {
         this.sizeInBytes = sizeInBytes;
         return this;
     }
@@ -98,7 +92,7 @@ public class SecureDataVersionRecord {
         return action;
     }
 
-    public SecureDataVersionRecord setAction(String action) {
+    public SecureFileVersion setAction(String action) {
         this.action = action;
         return this;
     }
@@ -107,7 +101,7 @@ public class SecureDataVersionRecord {
         return versionCreatedBy;
     }
 
-    public SecureDataVersionRecord setVersionCreatedBy(String versionCreatedBy) {
+    public SecureFileVersion setVersionCreatedBy(String versionCreatedBy) {
         this.versionCreatedBy = versionCreatedBy;
         return this;
     }
@@ -116,7 +110,7 @@ public class SecureDataVersionRecord {
         return versionCreatedTs;
     }
 
-    public SecureDataVersionRecord setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
+    public SecureFileVersion setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
         this.versionCreatedTs = versionCreatedTs;
         return this;
     }
@@ -125,7 +119,7 @@ public class SecureDataVersionRecord {
         return actionPrincipal;
     }
 
-    public SecureDataVersionRecord setActionPrincipal(String actionPrincipal) {
+    public SecureFileVersion setActionPrincipal(String actionPrincipal) {
         this.actionPrincipal = actionPrincipal;
         return this;
     }
@@ -134,7 +128,7 @@ public class SecureDataVersionRecord {
         return actionTs;
     }
 
-    public SecureDataVersionRecord setActionTs(OffsetDateTime actionTs) {
+    public SecureFileVersion setActionTs(OffsetDateTime actionTs) {
         this.actionTs = actionTs;
         return this;
     }

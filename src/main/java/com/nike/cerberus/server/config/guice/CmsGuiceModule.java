@@ -31,6 +31,7 @@ import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
+import com.nike.cerberus.endpoints.admin.OverrideSdbOwner;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
 import com.nike.cerberus.endpoints.admin.RestoreSafeDepositBox;
 import com.nike.cerberus.endpoints.admin.TriggerScheduledJob;
@@ -55,8 +56,13 @@ import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
 import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
 import com.nike.cerberus.endpoints.secret.DeleteSecureData;
+import com.nike.cerberus.endpoints.file.DeleteSecureFile;
+import com.nike.cerberus.endpoints.file.HeadSecureFile;
+import com.nike.cerberus.endpoints.file.GetSecureFiles;
 import com.nike.cerberus.endpoints.secret.ReadSecureData;
+import com.nike.cerberus.endpoints.file.ReadSecureFile;
 import com.nike.cerberus.endpoints.secret.WriteSecureData;
+import com.nike.cerberus.endpoints.file.WriteSecureFile;
 import com.nike.cerberus.endpoints.version.GetSecretVersionPathsForSdb;
 import com.nike.cerberus.endpoints.version.GetSecureDataVersions;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
@@ -191,6 +197,7 @@ public class CmsGuiceModule extends AbstractModule {
             CreateSafeDepositBoxV1 createSafeDepositBoxV1,
             CreateSafeDepositBoxV2 createSafeDepositBoxV2,
             GetSDBMetadata getSDBMetadata,
+            OverrideSdbOwner overrideSdbOwner,
             PutSDBMetadata putSDBMetadata,
             GetDashboardRedirect getDashboardRedirect,
             GetDashboard getDashboard,
@@ -200,7 +207,12 @@ public class CmsGuiceModule extends AbstractModule {
             TriggerScheduledJob triggerScheduledJob,
             RestoreSafeDepositBox restoreSafeDepositBox,
             GetSecretVersionPathsForSdb getSecretVersionPathsForSdb,
-            GetSecureDataVersions getSecureDataVersions
+            GetSecureDataVersions getSecureDataVersions,
+            WriteSecureFile writeSecureFile,
+            ReadSecureFile readSecureFile,
+            HeadSecureFile headSecureFile,
+            GetSecureFiles getSecureFiles,
+            DeleteSecureFile deleteSecureFile
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -211,8 +223,11 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, getDashboardRedirect,
-                writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard,
+                getSDBMetadata, putSDBMetadata, overrideSdbOwner,
+                writeSecureData, readSecureData, deleteSecureData,
+                triggerScheduledJob,
+                getDashboard, getDashboardRedirect,
+                writeSecureFile, readSecureFile, deleteSecureFile, headSecureFile, getSecureFiles,
                 restoreSafeDepositBox,
                 getSecretVersionPathsForSdb, getSecureDataVersions
         ));

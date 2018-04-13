@@ -21,9 +21,11 @@ package com.nike.cerberus.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.cerberus.dao.SecureDataVersionDao;
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
+import com.nike.cerberus.domain.SecureFileVersion;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,19 +65,50 @@ public class SecureDataVersionService {
                         secureDataVersionDao.readSecureDataVersionById(versionId);
 
         if (! secureDataVersionRecord.isPresent() ||
-                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath())) {
+                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath()) ||
+                secureDataVersionRecord.get().getType() != SecureDataType.OBJECT) {
             return Optional.empty();
         }
 
         SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
-        String encryptedBlob = secureDataVersion.getEncryptedBlob();
-        String plainText = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
+        byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
+        String plainText = new String(encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath()), StandardCharsets.UTF_8);
 
         return Optional.of(new SecureDataVersion()
                 .setAction(secureDataVersion.getAction())
                 .setActionPrincipal(secureDataVersion.getActionPrincipal())
                 .setActionTs(secureDataVersion.getActionTs())
                 .setData(plainText)
+                .setId(secureDataVersion.getId())
+                .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+                .setSdboxId(secureDataVersion.getSdboxId())
+                .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
+                .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+    }
+
+    public Optional<SecureFileVersion> getSecureFileVersionById(String versionId, String sdbCategory, String pathToSecureData) {
+        log.debug("Reading secure data version: ID: {}", versionId);
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
+                getCurrentSecureDataVersion(pathToSecureData) :
+                secureDataVersionDao.readSecureDataVersionById(versionId);
+
+        if (! secureDataVersionRecord.isPresent() ||
+                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath()) ||
+                secureDataVersionRecord.get().getType() != SecureDataType.FILE) {
+            return Optional.empty();
+        }
+
+        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+        byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
+        byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
+
+        return Optional.of(new SecureFileVersion()
+                .setAction(secureDataVersion.getAction())
+                .setActionPrincipal(secureDataVersion.getActionPrincipal())
+                .setActionTs(secureDataVersion.getActionTs())
+                .setData(unencryptedBlob)
+                .setName(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
+                .setSizeInBytes(secureDataVersion.getSizeInBytes())
                 .setId(secureDataVersion.getId())
                 .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
                 .setSdboxId(secureDataVersion.getSdboxId())
@@ -110,16 +144,18 @@ public class SecureDataVersionService {
         // retrieve previous secrets versions from the secure data versions table
         secureDataVersions.addAll(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, actualLimit, actualOffset));
 
-        secureDataVersions.forEach(sdbRecord ->
+        secureDataVersions.forEach(versionRecord ->
             secureDataVersionSummaries.add(new SecureDataVersionSummary()
-                    .setAction(sdbRecord.getAction())
-                    .setActionPrincipal(sdbRecord.getActionPrincipal())
-                    .setActionTs(sdbRecord.getActionTs())
-                    .setId(sdbRecord.getId())
-                    .setPath(String.format("%s/%s", sdbCategory, sdbRecord.getPath()))
-                    .setSdboxId(sdbRecord.getSdboxId())
-                    .setVersionCreatedBy(sdbRecord.getVersionCreatedBy())
-                    .setVersionCreatedTs(sdbRecord.getVersionCreatedTs())
+                    .setAction(versionRecord.getAction())
+                    .setActionPrincipal(versionRecord.getActionPrincipal())
+                    .setActionTs(versionRecord.getActionTs())
+                    .setType(versionRecord.getType())
+                    .setSizeInBytes(versionRecord.getSizeInBytes())
+                    .setId(versionRecord.getId())
+                    .setPath(String.format("%s/%s", sdbCategory, versionRecord.getPath()))
+                    .setSdboxId(versionRecord.getSdboxId())
+                    .setVersionCreatedBy(versionRecord.getVersionCreatedBy())
+                    .setVersionCreatedTs(versionRecord.getVersionCreatedTs())
             )
         );
 
@@ -164,6 +200,8 @@ public class SecureDataVersionService {
                     .setId(DEFAULT_ID_FOR_CURRENT_VERSIONS)
                     .setAction(action.name())
                     .setEncryptedBlob(currentSecureDataRecord.getEncryptedBlob())
+                    .setType(currentSecureDataRecord.getType())
+                    .setSizeInBytes(currentSecureDataRecord.getSizeInBytes())
                     .setVersionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
                     .setVersionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
                     .setActionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
