@@ -31,6 +31,7 @@ import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
+import com.nike.cerberus.endpoints.admin.OverrideSdbOwner;
 import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
 import com.nike.cerberus.endpoints.admin.RestoreSafeDepositBox;
 import com.nike.cerberus.endpoints.admin.TriggerScheduledJob;
@@ -191,6 +192,7 @@ public class CmsGuiceModule extends AbstractModule {
             CreateSafeDepositBoxV1 createSafeDepositBoxV1,
             CreateSafeDepositBoxV2 createSafeDepositBoxV2,
             GetSDBMetadata getSDBMetadata,
+            OverrideSdbOwner overrideSdbOwner,
             PutSDBMetadata putSDBMetadata,
             GetDashboardRedirect getDashboardRedirect,
             GetDashboard getDashboard,
@@ -211,7 +213,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, getDashboardRedirect,
+                getSDBMetadata, overrideSdbOwner, putSDBMetadata, getDashboardRedirect,
                 writeSecureData, readSecureData, deleteSecureData, triggerScheduledJob, getDashboard,
                 restoreSafeDepositBox,
                 getSecretVersionPathsForSdb, getSecureDataVersions

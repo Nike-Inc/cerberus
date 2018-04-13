@@ -1154,6 +1154,8 @@ A 400 response code is given if the job wasn't found.
 
 ### [PUT]
 
++ Request
+
     + Headers
 
             X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
@@ -1180,6 +1182,26 @@ A 400 response code is given if the job wasn't found.
                         "key1":"value1"
                     }
                 }
+            }
+
++ Response 204 No Content
+
+## Override the owner of a safe deposit box [/v1/admin/override-owner]
+
+### [PUT]
+
++ Request
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
+    + Body
+
+            {
+                "name":"example",
+                "owner":"example.new.owner"
             }
 
 + Response 204 No Content
