@@ -25,6 +25,8 @@ public class SecureDataVersionSummary {
     private String sdboxId;
     private String path;
     private String action;
+    private SecureDataType type;
+    private int sizeInBytes;
     private String versionCreatedBy;
     private OffsetDateTime versionCreatedTs;
     private String actionPrincipal;
@@ -63,6 +65,24 @@ public class SecureDataVersionSummary {
 
     public SecureDataVersionSummary setAction(String action) {
         this.action = action;
+        return this;
+    }
+
+    public SecureDataType getType() {
+        return type;
+    }
+
+    public SecureDataVersionSummary setType(SecureDataType type) {
+        this.type = type;
+        return this;
+    }
+
+    public int getSizeInBytes() {
+        return sizeInBytes;
+    }
+
+    public SecureDataVersionSummary setSizeInBytes(int sizeInBytes) {
+        this.sizeInBytes = sizeInBytes;
         return this;
     }
 

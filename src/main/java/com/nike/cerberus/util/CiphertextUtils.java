@@ -34,6 +34,13 @@ public class CiphertextUtils {
     }
 
     /**
+     * Parse a Ciphertext in the 'AWS Encryption SDK Message Format' to an object.
+     */
+    public static ParsedCiphertext parse(byte[] ciphertext) {
+        return new ParsedCiphertext(ciphertext);
+    }
+
+    /**
      * Parse CMK ARNs out of the supplied ciphertext in the 'AWS Encryption SDK Message Format'.
      */
     public static List<String> getCustomerMasterKeyArns(ParsedCiphertext parsedCiphertext) {
