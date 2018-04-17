@@ -22,6 +22,7 @@ import com.nike.cerberus.record.SecureDataRecord;
 
 import javax.inject.Inject;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -91,6 +92,10 @@ public class SecureDataDao {
         return Optional.ofNullable(secureDataMapper.readSecureDataByPathAndType(path, type));
     }
 
+    public Optional<SecureDataRecord> readMetadataByPathAndType(String path, SecureDataType type) {
+        return Optional.ofNullable(secureDataMapper.readMetadataByPathAndType(path, type));
+    }
+
     public String[] getPathsByPartialPath(String partialPath) {
         return secureDataMapper.getPathsByPartialPath(partialPath);
     }
@@ -101,6 +106,14 @@ public class SecureDataDao {
 
     public Set<String> getPathsBySdbId(String sdbId) {
         return secureDataMapper.getPathsBySdbId(sdbId);
+    }
+
+    public List<SecureDataRecord> listSecureDataByPartialPathAndType(String partialPath, SecureDataType type, int limit, int offset) {
+        return secureDataMapper.listSecureDataByPartialPathAndType(partialPath, type, limit, offset);
+    }
+
+    public int countByType(SecureDataType type) {
+        return secureDataMapper.countByType(type);
     }
 
     public int getTotalNumberOfDataNodes() {
