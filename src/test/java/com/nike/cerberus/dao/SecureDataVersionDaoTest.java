@@ -18,6 +18,7 @@
 package com.nike.cerberus.dao;
 
 import com.google.common.collect.Lists;
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.mapper.SecureDataVersionMapper;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.UuidSupplier;
@@ -25,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -54,7 +56,7 @@ public class SecureDataVersionDaoTest {
             .setSdboxId(sdbId)
             .setAction(action.name())
             .setPath(path)
-            .setEncryptedBlob(encryptedBlob)
+            .setEncryptedBlob(encryptedBlob.getBytes())
             .setVersionCreatedBy(versionCreatedBy)
             .setActionPrincipal(actionPrincipal)
             .setVersionCreatedTs(versionCreatedTs)
@@ -133,7 +135,16 @@ public class SecureDataVersionDaoTest {
         when(uuidSupplier.get()).thenReturn(versionId);
         when(secureDataVersionMapper.writeSecureDataVersion(secureDataVersionRecord)).thenReturn(1);
 
-        subject.writeSecureDataVersion(sdbId, path, encryptedBlob, action, versionCreatedBy, versionCreatedTs, actionPrincipal,
+        subject.writeSecureDataVersion(
+                sdbId,
+                path,
+                encryptedBlob.getBytes(StandardCharsets.UTF_8),
+                action,
+                SecureDataType.FILE,
+                1024,
+                versionCreatedBy,
+                versionCreatedTs,
+                actionPrincipal,
                 actionTs);
 
         verify(secureDataVersionMapper).writeSecureDataVersion(anyObject());

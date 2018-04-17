@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.dao;
 
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.mapper.SecureDataVersionMapper;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.UuidSupplier;
@@ -41,8 +42,10 @@ public class SecureDataVersionDao {
 
     public void writeSecureDataVersion(String sdbId,
                                        String path,
-                                       String encryptedPayload,
+                                       byte[] encryptedPayload,
                                        SecureDataVersionRecord.SecretsAction action,
+                                       SecureDataType type,
+                                       int sizeInBytes,
                                        String versionCreatedBy,
                                        OffsetDateTime versionCreatedTs,
                                        String actionPrincipal,
@@ -53,6 +56,8 @@ public class SecureDataVersionDao {
                     .setPath(path)
                     .setSdboxId(sdbId)
                     .setEncryptedBlob(encryptedPayload)
+                    .setType(type)
+                    .setSizeInBytes(sizeInBytes)
                     .setAction(action.name())
                     .setActionPrincipal(actionPrincipal)
                     .setActionTs(actionTs)

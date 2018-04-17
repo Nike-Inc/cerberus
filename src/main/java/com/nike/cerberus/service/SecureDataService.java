@@ -25,6 +25,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureData;
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,31 +71,50 @@ public class SecureDataService {
     public void writeSecret(String sdbId, String path, String plainTextPayload, String principal) {
         log.debug("Writing secure data: SDB ID: {}, Path: {}", sdbId, path);
 
-        String encryptedPayload = encryptionService.encrypt(plainTextPayload, path);
         int topLevelKVPairCount = getTopLevelKVPairCount(plainTextPayload);
+        byte[] plaintextBytes = plainTextPayload.getBytes(StandardCharsets.UTF_8);
+        int sizeInBytes = plaintextBytes.length;
+
+        // Make sure to encrypt payload as a String, then convert to bytes to mimic the previous encryption flow
+        String ciphertext = encryptionService.encrypt(plainTextPayload, path);
+        byte[] ciphertextBytes = ciphertext.getBytes(StandardCharsets.UTF_8);
         OffsetDateTime now = dateTimeSupplier.get();
 
         // Fetch the current version if there is one, so that on update it can be moved to the versions table
         Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
         if (secureDataRecordOpt.isPresent()) {
             SecureDataRecord secureData = secureDataRecordOpt.get();
+            if (secureData.getType() != SecureDataType.OBJECT) {
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.INVALID_SECURE_DATA_TYPE)
+                        .build();
+            }
 
             secureDataVersionDao.writeSecureDataVersion(sdbId, path, secureData.getEncryptedBlob(),
                     SecureDataVersionRecord.SecretsAction.UPDATE,
+                    SecureDataType.OBJECT,
+                    sizeInBytes,
                     secureData.getLastUpdatedBy(),
                     secureData.getLastUpdatedTs(),
                     principal,
                     now
             );
 
-            secureDataDao.updateSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount,
+            secureDataDao.updateSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount,
+                    SecureDataType.OBJECT,
+                    sizeInBytes,
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
                     principal,
                     now);
 
         } else {
-            secureDataDao.writeSecureData(sdbId, path, encryptedPayload, topLevelKVPairCount, principal, now, principal, now);
+            secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.OBJECT,
+                    sizeInBytes,
+                    principal,
+                    now,
+                    principal,
+                    now);
         }
     }
 
@@ -117,18 +138,22 @@ public class SecureDataService {
 
     public Optional<SecureData> readSecret(String path) {
         log.debug("Reading secure data: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT);
         if (! secureDataRecordOpt.isPresent()) {
             return Optional.empty();
         }
 
         SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
-        String encryptedBlob = secureDataRecordOpt.get().getEncryptedBlob();
-        String plainText = encryptionService.decrypt(encryptedBlob, path);
+        byte[] ciphertextBytes = secureDataRecordOpt.get().getEncryptedBlob();
+
+        // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
+        // error if the ciphertext was encrypted as a String, but is not decrypted as a String.
+        String ciphertext = new String(ciphertextBytes, StandardCharsets.UTF_8);
+        String plaintext = encryptionService.decrypt(ciphertext, path);
         SecureData secureData = new SecureData()
                 .setCreatedBy(secureDataRecord.getCreatedBy())
                 .setCreatedTs(secureDataRecord.getCreatedTs())
-                .setData(plainText)
+                .setData(plaintext)
                 .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
                 .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
                 .setPath(secureDataRecord.getPath())
@@ -170,7 +195,7 @@ public class SecureDataService {
         }
 
         Set<String> keys = new HashSet<>();
-        String[] pArray = secureDataDao.getPathsByPartialPath(partialPath);
+        String[] pArray = secureDataDao.getPathsByPartialPathAndType(partialPath, SecureDataType.OBJECT);
         if (pArray == null || pArray.length < 1) {
             return keys;
         }
@@ -231,6 +256,8 @@ public class SecureDataService {
                 secureDataRecord.getPath(),
                 secureDataRecord.getEncryptedBlob(),
                 SecureDataVersionRecord.SecretsAction.DELETE,
+                secureDataRecord.getType(),
+                secureDataRecord.getSizeInBytes(),
                 secureDataRecord.getLastUpdatedBy(),
                 secureDataRecord.getLastUpdatedTs(),
                 principal,
