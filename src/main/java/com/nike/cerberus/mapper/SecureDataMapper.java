@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.mapper;
 
+import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.record.SecureDataRecord;
 import org.apache.ibatis.annotations.Param;
 
@@ -29,7 +30,11 @@ public interface SecureDataMapper {
 
     SecureDataRecord readSecureDataByPath(@Param("path") String path);
 
+    SecureDataRecord readSecureDataByPathAndType(@Param("path") String path, @Param("type") SecureDataType type);
+
     String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
+
+    String[] getPathsByPartialPathAndType(@Param("partialPath") String partialPath, @Param("type") SecureDataType type);
 
     Set<String> getPathsBySdbId(@Param("sdbId") String sdbId);
 
