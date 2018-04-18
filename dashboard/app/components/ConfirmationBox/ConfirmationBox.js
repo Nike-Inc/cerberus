@@ -17,7 +17,7 @@ export default class ConfirmationBox extends Component {
         return (
             <div className="confirmation-box-container ncss-brand">
                 <h2>Attention:</h2>
-                <div className="confirmation-box-message">{message}</div>
+                <h4 className="confirmation-box-message">{message}</h4>
                 <div className="confirmation-box-buttons">
                     <div className="confirmation-box-button ncss-btn-dark-grey  u-uppercase" onClick={handleNo}>No</div>
                     <div className="confirmation-box-button ncss-btn-dark-grey u-uppercase" onClick={handleYes}>Yes</div>

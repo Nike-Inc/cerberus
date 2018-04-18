@@ -3,6 +3,7 @@ import axios from 'axios'
 import * as actions from '../constants/actions'
 import * as messengerActions from '../actions/messengerActions'
 import ApiError from '../components/ApiError/ApiError'
+import downloadjs from "downloadjs";
 
 import log from 'logger'
 
@@ -120,10 +121,48 @@ export function fetchVersionedSecureDataForPath(path, versionId, token) {
     }
 }
 
-export function updateVersionedSecureDataForPath(versionId, secureData) {
+export function downloadSecureFileVersion(path, versionId, token) {
+    console.log("Version ID: " + versionId)
+    let request = {
+        url: `/v1/secure-file/${path}`,
+        headers: {
+            'X-Cerberus-Token': token,
+            'Accept': 'application/octet-stream'
+        },
+        responseType: 'blob',
+        timeout: 60 * 1000 // 1 minute
+    }
+
+    if (versionId !== 'CURRENT') {
+        request['params'] = {
+            versionId: versionId
+        }
+    }
+
+    return function(dispatch) {
+        return axios(request)
+            .then((response) => {
+                let reader = new window.FileReader();
+                reader.readAsText(response.data);
+                reader.onload = function() {
+                    let pathParts = path.split('/');
+                    downloadjs(reader.result, pathParts[pathParts.length-1])
+                }
+                // dispatch(updateVersionedSecureDataForPath(versionId, new Uint8Array(response.data), 'FILE'))
+            })
+            .catch((response) => {
+                let msg = 'Failed to fetch version data for secure file path'
+                log.error(msg, response)
+                dispatch(messengerActions.addNewMessage(<ApiError message={msg} response={response} />))
+            })
+    }
+}
+
+export function updateVersionedSecureDataForPath(versionId, secureData, type) {
     return {
         type: actions.ADD_SECURE_DATA_FOR_VERSION,
         payload: {
+            type: type,
             versionId: versionId,
             secureData: secureData
         }

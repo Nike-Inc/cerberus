@@ -16,7 +16,7 @@ export default class SecureData extends Component {
     static propTypes = {
         label: PropTypes.string.isRequired,
         navigatedPath: PropTypes.string.isRequired,
-        secureData: PropTypes.object.isRequired,
+        secureObjectData: PropTypes.object.isRequired,
         isActive: PropTypes.bool.isRequired,
         isFetching: PropTypes.bool.isRequired,
         sdbData: PropTypes.object.isRequired,
@@ -29,7 +29,7 @@ export default class SecureData extends Component {
             this.props.dispatch(mSDBActions.updateNavigatedPath(`${this.props.navigatedPath}${key}`, this.props.cerberusAuthToken))
         } else {
             let fullKey = `${this.props.navigatedPath}${key}`
-            if (fullKey in this.props.secureData) {
+            if (fullKey in this.props.secureObjectData) {
                 log.debug(`deleting from local cache Key: ${fullKey}`)
                 this.props.dispatch(mSDBActions.removeSecureDataFromLocalStore(fullKey))
             } else {
@@ -55,7 +55,7 @@ export default class SecureData extends Component {
     }
 
     render() {
-        const {label, isActive, isFetching, sdbData, navigatedPath, secureData, dispatch, cerberusAuthToken} = this.props
+        const {label, isActive, isFetching, sdbData, navigatedPath, secureObjectData, dispatch, cerberusAuthToken} = this.props
 
         return (
             <div className="secure-data-container">
@@ -67,9 +67,9 @@ export default class SecureData extends Component {
                 </div>
                 {isActive && !isFetching &&
                 <div className="secure-data-data-container">
-                    <SecureDataForm initialValues={ (secureData[`${navigatedPath}${label}`] && secureData[`${navigatedPath}${label}`].hasFormInit) ? undefined : {kvMap: this.assembleFormData(sdbData), path: label}}
-                                     pathReadOnly={true}
-                                     formKey={`${navigatedPath}${label}`} />
+                    <SecureDataForm initialValues={ (secureObjectData[`${navigatedPath}${label}`] && secureObjectData[`${navigatedPath}${label}`].hasFormInit) ? undefined : {kvMap: this.assembleFormData(sdbData), path: label}}
+                                    pathReadOnly={true}
+                                    formKey={`${navigatedPath}${label}`} />
                     { deleteButton(dispatch, navigatedPath, label, cerberusAuthToken) }
                 </div>
                 }

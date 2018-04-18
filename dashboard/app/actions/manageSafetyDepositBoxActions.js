@@ -10,6 +10,7 @@ import { hashHistory } from 'react-router'
 import * as modalActions from '../actions/modalActions'
 import ApiError from '../components/ApiError/ApiError'
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
+import downloadjs from 'downloadjs';
 
 import { getLogger } from 'logger'
 var log = getLogger('manage-sdb-actions')
@@ -44,7 +45,7 @@ export function fetchSDBDataFromCMS(sdbId, token) {
 
 export function fetchSecureDataPathKeys(path, token) {
     return function(dispatch) {
-        dispatch(fetchingKeys())
+        dispatch(fetchingObjectKeys())
         return axios({
             url: `/v1/secret/${path}`,
             params: {
@@ -53,18 +54,47 @@ export function fetchSecureDataPathKeys(path, token) {
             headers: {'X-Cerberus-Token': token},
             timeout: 60 * 1000 // 1 minute
         })
-        .then((response) => {
-            dispatch(updateSecureDataPathKeys(response.data.data.keys))
+            .then((response) => {
+                dispatch(updateSecureDataPathKeys(response.data.data.keys))
+            })
+            .catch((response) => {
+                // no keys for the SDB Yet
+                if (response.status == 404) {
+                    dispatch(updateSecureDataPathKeys([]))
+                } else {
+                    log.error("Failed to fetch keys for secure data path", response)
+                    dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch list of secret keys for Path: ${path} from Cerberus`} response={response} />))
+                }
+            })
+    }
+}
+
+export function fetchSecureFilePathKeys(path, token) {
+    return function(dispatch) {
+        dispatch(fetchingFileKeys())
+        return axios({
+            url: `/v1/secure-files/${path}`,
+            headers: {'X-Cerberus-Token': token},
+            params: {'limit': 1000 },  // do not display more than 1,000 files
+            timeout: 60 * 1000 // 1 minute
         })
-        .catch((response) => {
-            // no keys for the SDB Yet
-            if (response.status == 404) {
-                dispatch(updateSecureDataPathKeys([]))
-            } else {
-                log.error("Failed to fetch keys for secure data path", response)
-                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch list of keys for Path: ${path} from Cerberus`} response={response} />))
-            }
-        })
+            .then((response) => {
+                let files = response.data['secure_file_summaries'];
+                let keys = [];
+                files.forEach(file => {
+                    keys.push(file["name"])
+                });
+                dispatch(updateSecureFilePathKeys(keys))
+            })
+            .catch((response) => {
+                // no keys for the SDB Yet
+                if (response.status == 404) {
+                    dispatch(updateSecureFilePathKeys([]))
+                } else {
+                    log.error("Failed to fetch keys for secure file path", response)
+                    dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to fetch list of file keys for Path: ${path} from Cerberus`} response={response} />))
+                }
+            })
     }
 }
 
@@ -75,9 +105,22 @@ export function updateSecureDataPathKeys(keys) {
     }
 }
 
-export function fetchingKeys() {
+export function updateSecureFilePathKeys(keys) {
     return {
-        type: actions.FETCHING_SECURE_DATA_KEYS
+        type: actions.FETCHED_SECURE_FILE_KEYS,
+        payload: keys
+    }
+}
+
+export function fetchingObjectKeys() {
+    return {
+        type: actions.FETCHING_SECURE_OBJECT_KEYS
+    }
+}
+
+export function fetchingFileKeys() {
+    return {
+        type: actions.FETCHING_SECURE_FILE_KEYS
     }
 }
 
@@ -85,6 +128,7 @@ export function updateNavigatedPath(newPath, token) {
     return function(dispatch) {
         dispatch(storeNewPath(newPath))
         dispatch(fetchSecureDataPathKeys(newPath, token))
+        dispatch(fetchSecureFilePathKeys(newPath, token))
     }
 }
 
@@ -113,9 +157,37 @@ export function getSecureData(path, token) {
     }
 }
 
+export function getSecureFileMetadata(path, token) {
+    return function (dispatch) {
+        dispatch(fetchingSecureFileData(path));
+        axios({
+              method: 'head',
+              url: `/v1/secure-file/${path}`,
+              headers: {
+                  'X-Cerberus-Token': token
+              },
+              timeout: 60 * 1000
+        })
+        .then((response) => {
+            dispatch(storeSecureFileMetadata(path, response.headers['content-length']))
+        })
+        .catch((response) => {
+            log.error('Failed to fetch Secure Data', response)
+            dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch Secret Path: ${path}`} response={response} />))
+        })
+    }
+}
+
 export function fetchingSecureData(path) {
     return {
         type: actions.FETCHING_SECURE_DATA,
+        payload: path
+    }
+}
+
+export function fetchingSecureFileData(path) {
+    return {
+        type: actions.FETCHED_SECURE_FILE_DATA,
         payload: path
     }
 }
@@ -130,6 +202,16 @@ export function storeSecureData(path, data) {
     }
 }
 
+export function storeSecureFileMetadata(path, sizeInBytes) {
+    return {
+        type: actions.FETCHED_SECURE_FILE_DATA,
+        payload: {
+            key: path,
+            sizeInBytes: sizeInBytes
+        }
+    }
+}
+
 export function removeSecureDataFromLocalStore(key) {
     return {
         type: actions.REMOVE_SECRET_FROM_LOCAL_STORE,
@@ -137,9 +219,23 @@ export function removeSecureDataFromLocalStore(key) {
     }
 }
 
+export function removeSecureFileFromLocalStore(key) {
+    return {
+        type: actions.REMOVE_FILE_FROM_LOCAL_STORE,
+        payload: key
+    }
+}
+
 export function removeKeyForSecureDataNodeFromLocalStore(key) {
     return {
         type: actions.REMOVE_KEY_FOR_SECURE_DATA_FROM_LOCAL_STORE,
+        payload: key
+    }
+}
+
+export function removeKeyForSecureFileNodeFromLocalStore(key) {
+    return {
+        type: actions.REMOVE_KEY_FOR_SECURE_FILE_FROM_LOCAL_STORE,
         payload: key
     }
 }
@@ -153,6 +249,18 @@ export function showAddNewSecureData() {
 export function hideAddNewSecureData() {
     return {
         type: actions.HIDE_ADD_SECRET_FORM
+    }
+}
+
+export function showAddNewSecureFile() {
+    return {
+        type: actions.SHOW_ADD_FILE_FORM
+    }
+}
+
+export function hideAddNewSecureFile() {
+    return {
+        type: actions.HIDE_ADD_FILE_FORM
     }
 }
 
@@ -183,13 +291,77 @@ export function commitSecret(navigatedPath, data, token, isNewSecureDataPath) {
         })
         .then((response) => {
             // once saved we can use the data we have locally to update the state, without additional API calls
-            dispatch(updateLocalStateAfterSaveCommit(navigatedPath, key, secureData, isNewSecureDataPath))
+            dispatch(updateLocalStateAfterSaveCommit(navigatedPath, key, secureData, isNewSecureDataPath, false))
         })
         .catch((response) => {
             log.error("Failed to save Secure Data", response)
             dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Secret on Path: ${fullPath}`} response={response} />))
         })
     }
+}
+
+export function uploadFile(token, navigatedPath, secureFileKey, fileData, isNewSecureFilePath) {
+    let fullPath = `${navigatedPath}${secureFileKey}`
+
+    return function (dispatch) {
+        let nestedFolder = secureFileKey.split('/').length > 1;
+        // let the UI / state know that we are saving the secret, so that the user can't spam the save button
+        // but only if not a nested folder
+        if (! nestedFolder) {
+            dispatch(savingSecureFileData(fullPath))
+        }
+
+        let formData = new FormData();
+        formData.append(
+            'file-content',  //name of form part
+            new Blob(
+                [fileData.contents],
+                {type: fileData.type}),
+            fileData.name  //filename
+        );
+
+        //upload the file
+        axios({
+            method: 'post',
+            url: `/v1/secure-file/${fullPath}`,
+            data: formData,
+            headers: {
+                'X-Cerberus-Token': token,
+            },
+            timeout: 60 * 1000 // 1 minute
+        })
+            .then(() => {
+                // once saved we can use the data we have locally to update the state, without additional API calls
+                dispatch(updateLocalStateAfterSaveCommit(navigatedPath, secureFileKey, fileData, isNewSecureFilePath, true))
+                dispatch(secureFileUploaded())
+            })
+            .catch((response) => {
+                log.error('Failed to save Secure File', response)
+                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Secret on Path: ${fullPath}`} response={response} />))
+            })
+    }
+}
+
+export function downloadFile(token, fullPath, filename) {
+    axios({
+        method: 'get',
+        url: `/v1/secure-file/${fullPath}`,
+        headers: {
+            'X-Cerberus-Token': token
+        },
+        responseType: 'blob',
+        timeout: 60 * 1000
+    })
+        .then((response) => {
+            let reader = new window.FileReader();
+            reader.readAsText(response.data);
+            reader.onload = function() {
+                downloadjs(reader.result, filename)
+            }
+        })
+        .catch((response) => {
+            log.error('Failed to fetch Secure File', response)
+        })
 }
 
 /**
@@ -199,8 +371,9 @@ export function commitSecret(navigatedPath, data, token, isNewSecureDataPath) {
  * @param key, the key to the Cerberus Node / Secret
  * @param data, the Cerberus secure data that was saved, we can store this and save an API call
  * @param isNewSecureDataPath, boolean, if its a new secret we need to hide the add new form
+ * @param isFile, boolean, true if the given secret is of type file then, false if of type object
  */
-export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewSecureDataPath) {
+export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewSecureDataPath, isFile) {
     return (dispatch) => {
         // we will only store the data, if its not in a nested virtual folder
         let addSecretData = true;
@@ -213,17 +386,29 @@ export function updateLocalStateAfterSaveCommit(prefix, key, data, isNewSecureDa
             key = pieces[0] + '/'
             addSecretData = false
         }
-        dispatch(updateStoredKeys(key))
 
-        // Update the stored Cerberus secure data for the given complete path, if the key is not a virtual folder
-        if (addSecretData) {
-            log.info('ADDING KEY DATA')
-            dispatch(storeSecureData(`${prefix}${key}`, data))
+        if (isFile === true) {
+            dispatch(updateStoredFileKeys(key))
+
+            // Update the stored Cerberus secure data for the given complete path, if the key is not a virtual folder
+            if (addSecretData) {
+                log.info('ADDING SECURE FILE DATA')
+                dispatch(storeSecureFileMetadata(`${prefix}${key}`, data.sizeInBytes))
+            }
+        } else {
+            dispatch(updateStoredKeys(key))
+
+            // Update the stored Cerberus secure data for the given complete path, if the key is not a virtual folder
+            if (addSecretData) {
+                log.info('ADDING SECRET OBJECT DATA')
+                dispatch(storeSecureData(`${prefix}${key}`, data))
+            }
         }
 
         // if this is a new secure data path remove the create new form
         if (isNewSecureDataPath) {
-            dispatch(hideAddNewSecureData())
+            dispatch(hideAddNewSecureData());
+            dispatch(hideAddNewSecureFile());
         }
 
         // finally lets let the user know we saved there data
@@ -244,10 +429,29 @@ export function deleteSecureDataPathConfirm(navigatedPath, label, token) {
 
         let comp = <ConfirmationBox handleYes={yes}
                                     handleNo={no}
-                                    message="Are you sure you want to delete this Secret Path."/>
+                                    message="Are you sure you want to delete this Secret Path?"/>
 
         dispatch(modalActions.pushModal(comp))
 
+    }
+}
+
+export function deleteSecureFilePathConfirm(navigatedPath, label, token) {
+    return (dispatch) => {
+        let yes = () => {
+            dispatch(deleteSecureFilePath(navigatedPath, label, token))
+            dispatch(modalActions.popModal())
+        }
+
+        let no = () => {
+            dispatch(modalActions.popModal())
+        }
+
+        let comp = <ConfirmationBox handleYes={yes}
+                                    handleNo={no}
+                                    message={`Are you sure you want to delete file: "${label}"?`}/>
+
+        dispatch(modalActions.pushModal(comp))
     }
 }
 
@@ -265,6 +469,26 @@ export function deleteSecureDataPath(navigatedPath, label, token) {
             })
             .catch((response) => {
                 log.error("Failed to delete Secure Data", response)
+                dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Secret: "${label}"`}
+                                                                  response={response}/>))
+            })
+    }
+}
+
+export function deleteSecureFilePath(navigatedPath, label, token) {
+    return function (dispatch) {
+        axios({
+            method: 'delete',
+            url: `/v1/secure-file/${navigatedPath}${label}`,
+            headers: {'X-Cerberus-Token': token},
+            timeout: 60 * 1000 // 1 minute
+        })
+            .then((response) => {
+                dispatch(removeSecureFileFromLocalStore(`${navigatedPath}${label}`))
+                dispatch(removeKeyForSecureFileNodeFromLocalStore(label))
+            })
+            .catch((response) => {
+                log.error('Failed to delete Secure Data', response)
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Secret: ${path}`}
                                                                   response={response}/>))
             })
@@ -339,9 +563,23 @@ export function savingSecureData(path) {
     }
 }
 
+export function savingSecureFileData(path) {
+    return {
+        type: actions.SAVING_SECURE_FILE_DATA,
+        payload: path
+    }
+}
+
 export function updateStoredKeys(key) {
     return {
         type: actions.ADD_SECURE_DATA_KEY_IF_NOT_PRESET,
+        payload: key
+    }
+}
+
+export function updateStoredFileKeys(key) {
+    return {
+        type: actions.ADD_SECURE_FILE_KEY_IF_NOT_PRESET,
         payload: key
     }
 }
@@ -362,5 +600,17 @@ export function navItemClicked(navItem) {
 export function resetVersionBrowserState() {
     return {
         type: actions.RESET_VERSION_BROWSER_STATE
+    }
+}
+
+export function secureFileSelected() {
+    return {
+        type: actions.SECURE_FILE_SELECTED
+    }
+}
+
+export function secureFileUploaded() {
+    return {
+        type: actions.SECURE_FILE_UPLOADED
     }
 }

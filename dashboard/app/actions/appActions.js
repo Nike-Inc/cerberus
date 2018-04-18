@@ -130,9 +130,9 @@ export function addBucketBtnClicked(categoryId) {
  */
 export function loadManageSDBPage(id, path, cerberusAuthToken) {
     return function(dispatch) {
-        dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken))
         dispatch(mSDBActions.resetToInitialState())
         dispatch(mSDBActions.fetchSDBDataFromCMS(id, cerberusAuthToken))
+        dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken))
         hashHistory.push(`/manage-safe-deposit-box/${id}`)
     }
 }
