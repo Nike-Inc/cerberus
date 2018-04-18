@@ -34,7 +34,8 @@ public enum SecureDataAction {
 
     READ(ImmutableSet.of(GET), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
     WRITE(ImmutableSet.of(POST, PUT), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
-    DELETE(ImmutableSet.of(HttpMethod.DELETE), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
+    DELETE(ImmutableSet.of(HttpMethod.DELETE), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
+    HEAD(ImmutableSet.of(HttpMethod.HEAD), ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ));
 
     private final Set<HttpMethod> methods;
 
