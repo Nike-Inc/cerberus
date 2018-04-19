@@ -1,7 +1,12 @@
 @import '../../assets/styles/common.scss';
 
 #secure-data-browser {
-
+  .secure-file-list-header {
+    font-size: 23px;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+  }
 }
 
 #secure-data-path {
@@ -44,12 +49,16 @@
 
   }
 
+  #add-buttons-container {
+    display: flex;
+  }
+
   #add-new-secure-data-container {
     margin-top: 5px;
   }
 }
 
-#add-form-container {
+.add-form-container {
   .secure-data-form-label {
     font-size: 20px;
   }

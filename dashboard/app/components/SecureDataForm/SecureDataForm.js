@@ -9,7 +9,7 @@ import './SecureDataForm.scss'
 import { getLogger } from 'logger'
 const  { DOM: { textarea } } = React
 
-var log = getLogger('create-new-secret')
+var log = getLogger('add-new-secure-data')
 
 const fields = [
     'path',
@@ -50,7 +50,7 @@ const validate = values => {
 })
 @reduxForm(
     {
-        form: 'create-new-secret',
+        form: 'add-new-secure-data',
         fields: fields,
         validate
     }
@@ -75,7 +75,7 @@ export default class SecureDataForm extends Component {
         return(
             <div id="add-new-secure-data-container">
                 <form id='add-new-secure-data-form' onSubmit={handleSubmit( data => {
-                    let isNewSecureDataPath = formKey == 'add-new-secure-data'
+                    let isNewSecureDataPath = formKey === 'add-new-secure-data';
                     dispatch(mSDBActions.commitSecret(navigatedPath, data, cerberusAuthToken, isNewSecureDataPath))
                 })}>
                     <div id='new-secure-data-path'>

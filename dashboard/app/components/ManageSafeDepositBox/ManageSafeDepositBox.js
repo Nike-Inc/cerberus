@@ -27,9 +27,12 @@ import './ManageSafeDepositBox.scss'
         sdbData: state.manageSafetyDepositBox.data,
         navigatedPath: state.manageSafetyDepositBox.navigatedPath,
         keysForSecureDataPath: state.manageSafetyDepositBox.keysForSecureDataPath,
-        secureData: state.manageSafetyDepositBox.secureData,
-        hasFetchedKeys: state.manageSafetyDepositBox.hasFetchedKeys,
+        secureObjectData: state.manageSafetyDepositBox.secureData,
+        secureFileData: state.manageSafetyDepositBox.secureFileData,
+        hasFetchedObjectKeys: state.manageSafetyDepositBox.hasFetchedObjectKeys,
+        hasFetchedFileKeys: state.manageSafetyDepositBox.hasFetchedFileKeys,
         showAddSecretForm: state.manageSafetyDepositBox.showAddSecretForm,
+        showAddFileForm: state.manageSafetyDepositBox.showAddFileForm,
         showDeleteDialog: state.manageSafetyDepositBox.showDeleteDialog,
         nav: state.manageSafetyDepositBox.nav
     }
@@ -72,9 +75,12 @@ export default class ManageSafeDepositBox extends Component {
             keysForSecureDataPath,
             dispatch,
             cerberusAuthToken,
-            hasFetchedKeys,
-            secureData,
+            hasFetchedObjectKeys,
+            hasFetchedFileKeys,
+            secureObjectData,
+            secureFileData,
             showAddSecretForm,
+            showAddFileForm,
             roles,
             categories,
             nav,
@@ -111,11 +117,14 @@ export default class ManageSafeDepositBox extends Component {
                 <div className="safe-deposit-box-content-section safe-deposit-box-sub-component">
                     {nav.secureDataSelected &&
                         <SecureDataBrowser cerberusAuthToken={cerberusAuthToken}
-                                           hasFetchedKeys={hasFetchedKeys}
+                                           hasFetchedObjectKeys={hasFetchedObjectKeys}
+                                           hasFetchedFileKeys={hasFetchedFileKeys}
                                            navigatedPath={navigatedPath}
                                            keysForSecureDataPath={keysForSecureDataPath}
-                                           secureData={secureData}
+                                           secureObjectData={secureObjectData}
+                                           secureFileData={secureFileData}
                                            showAddSecretForm={showAddSecretForm}
+                                           showAddFileForm={showAddFileForm}
                                            dispatch={dispatch} />
                     }
 

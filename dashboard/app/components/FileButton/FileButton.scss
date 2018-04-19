@@ -1,0 +1,14 @@
+.upload-file-button-container {
+  cursor: pointer;
+  display: flex;
+  padding-left: 1px;
+  width: 150px;
+  margin-left: 15px;
+
+  .upload-file-button-add-icon {
+    padding-left: 10px;
+  }
+  .upload-file-button-add-label {
+    padding-left: 7px;
+  }
+}

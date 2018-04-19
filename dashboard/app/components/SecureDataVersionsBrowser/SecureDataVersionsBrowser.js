@@ -67,6 +67,10 @@ export default class SecureDataVersionsBrowser extends Component {
         this.dispatch(vActions.fetchVersionedSecureDataForPath(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken))
     }
 
+    handleDownloadVersion = (versionId) => {
+        this.dispatch(vActions.downloadSecureFileVersion(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken))
+    }
+
     handlePathWithHistoryClick = (path) => {
         this.dispatch(vActions.fetchPathVersionData(path, this.props.cerberusAuthToken, this.props.versionPathPageNumber, this.props.versionPathPerPage))
     }
@@ -89,6 +93,7 @@ export default class SecureDataVersionsBrowser extends Component {
             handlePageClick,
             handleBreadCrumbHomeClick,
             handleFetchVersion,
+            handleDownloadVersion,
             handlePathWithHistoryClick
         } = this
 
@@ -108,7 +113,7 @@ export default class SecureDataVersionsBrowser extends Component {
                 
                 { versionPathSelected && 
                     pathVersionsBrowser(versionPathSelected, hasFetchedVersionPathData, versionPathData, versionPathPerPage,
-                        versionPathPageNumber, versionPathSecureDataMap, handlePerPageSelect, handlePageClick, handleBreadCrumbHomeClick, handleFetchVersion)
+                        versionPathPageNumber, versionPathSecureDataMap, handlePerPageSelect, handlePageClick, handleBreadCrumbHomeClick, handleFetchVersion, handleDownloadVersion)
                 }
             </div>
         )
@@ -139,7 +144,8 @@ const pathVersionsBrowser = ( versionPathSelected,
                               handlePerPageSelect,
                               handlePageClick,
                               handleBreadCrumbHomeClick,
-                              handleFetchVersion ) => {
+                              handleFetchVersion,
+                              handleDownloadVersion) => {
 
     if (! hasFetchedVersionPathData) {
         return (<Loader/>)
@@ -150,47 +156,56 @@ const pathVersionsBrowser = ( versionPathSelected,
             <h3 className="ncss-brand">Version Summaries for Path: {versionPathSelected}</h3>
             <div onClick={() => {handleBreadCrumbHomeClick()}} className="breadcrumb clickable">Back to path list</div>
             { pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick) }
-            { summaries(data['secure_data_version_summaries'], handleFetchVersion, versionPathSecureDataMap)}
+            { summaries(data['secure_data_version_summaries'], handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)}
             { pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick) }
         </div>
     )
 }
 
-const summaries = (summaries, handleFetchVersion, versionPathSecureDataMap) => {
+const summaries = (summaries, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
     return (
         <div className="path-version-summaries">
             {summaries.map((summary, index) =>
-                generateVersionSummary(summary, index, handleFetchVersion, versionPathSecureDataMap).map(it => it)
+                generateVersionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap).map(it => it)
             )}
         </div>
     )
 }
 
-const generateVersionSummary = (summary, index, handleFetchVersion, versionPathSecureDataMap) => {
+const generateVersionSummary = (summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
     if (summary.action === 'DELETE') {
         return [
             <div className="version-summary" key={`${index}-deleted`}>
+                <div className="type">Type: {summary['type']}</div>
                 <div className="id">Version: <span className="deleted">DELETED</span></div>
                 <div className="principal-wrapper">
                     Deleted by <span className="principal">{summary['action_principal']}</span> on <span className="date">{new Date(summary['action_ts']).toLocaleString()}</span>
                 </div>
             </div>,
-            versionSummary(summary, index, handleFetchVersion, versionPathSecureDataMap)
+            versionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)
         ]
     }
-    return [ versionSummary(summary, index, handleFetchVersion, versionPathSecureDataMap) ]
+    return [ versionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) ]
 }
 
-const versionSummary = (summary, index, handleFetchVersion, versionPathSecureDataMap) => {
+const versionSummary = (summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
     let versionId = summary.id
     let dataForVersion = versionPathSecureDataMap.hasOwnProperty(versionId) ? versionPathSecureDataMap[versionId] : false
     return (
         <div className="version-summary" key={index}>
             <div className="id">Version: <span className={versionId === 'CURRENT' ? 'current' : ''}>{summary.id}</span></div>
+            <div className="type">Type: {summary['type']}</div>
+            {summary.type === 'FILE' &&
+                <div className="size-in-bytes">Size: {(summary['size_in_bytes']/1024).toFixed(2)} KB</div>
+            }
             <div className="principal-wrapper">
                 Created by <span className="principal">{summary['version_created_by']}</span> on <span className="date">{new Date(summary['version_created_ts']).toLocaleString()}</span>
             </div>
-            { dataForVersion ? secureDataForVersion(dataForVersion) : fetchVersionButton(handleFetchVersion, versionId) }
+            { summary.type === 'FILE' ?
+                (versionDownloadButton(handleDownloadVersion, versionId))
+                    :
+                (dataForVersion ? secureDataForVersion(dataForVersion) : fetchVersionButton(handleFetchVersion, versionId))
+            }
         </div>
     )
 }
@@ -211,6 +226,15 @@ const fetchVersionButton = (handleFetchVersion, versionId) => {
             className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
             onClick={() => { handleFetchVersion(versionId) }}
         >Show this version</div>
+    )
+}
+
+const versionDownloadButton = (handleDownloadVersion, versionId) => {
+    return (
+        <div
+            className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+            onClick={() => { handleDownloadVersion(versionId) }}
+        >Download</div>
     )
 }
 

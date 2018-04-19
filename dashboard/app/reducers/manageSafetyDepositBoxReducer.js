@@ -5,13 +5,17 @@ var log = getLogger('manage-sdb')
 
 const initialState = {
     hasFetchedSDBData: false,
-    hasFetchedKeys: false,
+    hasFetchedObjectKeys: false,
+    hasFetchedFileKeys: false,
     data: {},
     navigatedPath: null,
-    keysForSecureDataPath: [],
+    keysForSecureDataPath: {},
+    isFileSelected: false,
     secureData: {},
+    secureFileData: {},
     displayPermissions: false,
     showAddSecretForm: false,
+    showAddFileForm: false,
     isEditSubmitting: false,
     nav: {
         secureDataSelected: true,
@@ -34,59 +38,115 @@ export default createReducer(initialState, {
         })
     },
     [action.FETCHED_SECURE_DATA_KEYS]: (state, payload) => {
+        let updatedKeys = state.keysForSecureDataPath
+        payload.forEach((key) =>
+            updatedKeys[key] = {type: 'object'}
+        )
+
         return Object.assign({}, state, {
-            keysForSecureDataPath: payload,
-            hasFetchedKeys: true
+            hasFetchedObjectKeys: true,
+            keysForSecureDataPath: updatedKeys,
+        })
+    },
+    [action.FETCHED_SECURE_FILE_KEYS]: (state, payload) => {
+        let updatedKeys = state.keysForSecureDataPath
+        payload.forEach((key) =>
+            updatedKeys[key] = {type: 'file'}
+        )
+
+        return Object.assign({}, state, {
+            hasFetchedFileKeys: true,
+            keysForSecureDataPath: updatedKeys,
         })
     },
     [action.ADD_SECURE_DATA_KEY_IF_NOT_PRESET]: (state, payload) => {
-        let existingList = state.keysForSecureDataPath
-        let keyToAddIfMissing = payload
-        let newList = []
+        let existingKeysMap = state.keysForSecureDataPath
+        let keyToAdd = payload
+        let newKeyMap = {}
         let isKeyPreset = false
 
-        for (let key in existingList) {
-            let value = existingList[key]
-            if (value == keyToAddIfMissing) {
+        Object.keys(existingKeysMap).forEach((existingKey) => {
+            if (existingKey === keyToAdd) {
                 isKeyPreset = true
             }
-            newList.push(value)
-        }
+            newKeyMap[existingKey] = existingKeysMap[existingKey]
+        });
 
         if (! isKeyPreset) {
-            newList.push(keyToAddIfMissing)
+            newKeyMap[keyToAdd] = {type: 'object'}
         }
 
         return Object.assign({}, state, {
-            keysForSecureDataPath: newList
+            keysForSecureDataPath: newKeyMap
+        })
+    },
+    [action.ADD_SECURE_FILE_KEY_IF_NOT_PRESET]: (state, payload) => {
+        let existingKeysMap = state.keysForSecureDataPath
+        let keyToAdd = payload
+        let newKeyMap = {}
+        let isKeyPreset = false
+
+        Object.keys(existingKeysMap).forEach((existingKey) => {
+            if (existingKey === keyToAdd) {
+                isKeyPreset = true
+            }
+            newKeyMap[existingKey] = existingKeysMap[existingKey]
+        });
+
+        if (! isKeyPreset) {
+            newKeyMap[keyToAdd] = {type: 'file'}
+        }
+
+        return Object.assign({}, state, {
+            keysForSecureDataPath: newKeyMap
         })
     },
     [action.REMOVE_KEY_FOR_SECURE_DATA_FROM_LOCAL_STORE]: (state, payload) => {
-        let existingList = state.keysForSecureDataPath
-        let newList = []
+        let existingMap = state.keysForSecureDataPath
+        let newMap = {}
         let keyToRemove = payload
 
-        for (let key in existingList) {
-            let value = existingList[key]
-            if (keyToRemove != value) {
-                newList.push(value)
+        Object.keys(existingMap).forEach((key) => {
+            if (key !== keyToRemove) {
+                newMap[key] = existingMap[key];
             }
-        }
+        });
 
         return Object.assign({}, state, {
-            keysForSecureDataPath: newList
+            keysForSecureDataPath: newMap
         })
     },
-    [action.FETCHING_SECURE_DATA_KEYS]: (state) => {
+    [action.REMOVE_KEY_FOR_SECURE_FILE_FROM_LOCAL_STORE]: (state, payload) => {
+        let existingMap = state.keysForSecureDataPath
+        let newMap = {}
+        let keyToRemove = payload
+
+        Object.keys(existingMap).forEach((key) => {
+            if (key !== keyToRemove) {
+                newMap[key] = existingMap[key];
+            }
+        });
+
         return Object.assign({}, state, {
-            hasFetchedKeys: false
+            keysForSecureDataPath: newMap
+        })
+    },
+    [action.FETCHING_SECURE_OBJECT_KEYS]: (state) => {
+        return Object.assign({}, state, {
+            hasFetchedObjectKeys: false
+        })
+    },
+    [action.FETCHING_SECURE_FILE_KEYS]: (state) => {
+        return Object.assign({}, state, {
+            hasFetchedFileKeys: false
         })
     },
     [action.UPDATE_NAVIGATED_PATH]: (state, payload) => {
         return Object.assign({}, state, {
             navigatedPath: payload,
-            hasFetchedKeys: false,
-            keysForSecureDataPath: []
+            hasFetchedObjectKeys: false,
+            hasFetchedFileKeys: false,
+            keysForSecureDataPath: {},
         })
     },
     [action.FETCHING_SECURE_DATA]: (state, payload) => {
@@ -108,6 +168,27 @@ export default createReducer(initialState, {
 
         return Object.assign({}, state, {
             secureData: newMap
+        })
+    },
+    [action.FETCHING_SECURE_FILE_DATA]: (state, payload) => {
+        let existingMap = state.secureFileData
+        let newMap = {}
+        let fetchingKey = payload
+
+        for (let key in existingMap) {
+            if (existingMap.hasOwnProperty(key)) {
+                newMap[key] = existingMap[key]
+            }
+        }
+        newMap[fetchingKey] = {
+            isFetching: true,
+            isUpdating: false,
+            isActive: true,
+            data: {}
+        }
+
+        return Object.assign({}, state, {
+            secureFileData: newMap
         })
     },
     [action.FETCHED_SECURE_DATA]: (state, payload) => {
@@ -132,6 +213,30 @@ export default createReducer(initialState, {
             secureData: newMap
         })
     },
+    [action.FETCHED_SECURE_FILE_DATA]: (state, payload) => {
+        let existingMap = state.secureFileData
+        let newMap = {}
+        let fetchedKey = payload.key
+
+        for (let key in existingMap) {
+            if (existingMap.hasOwnProperty(key)) {
+                newMap[key] = existingMap[key]
+            }
+        }
+
+        newMap[fetchedKey] = {
+            isFetching: false,
+            isUpdating: false,
+            isActive: true,
+            data: {
+                "sizeInBytes": payload.sizeInBytes
+            }
+        }
+
+        return Object.assign({}, state, {
+            secureFileData: newMap
+        })
+    },
     [action.REMOVE_SECRET_FROM_LOCAL_STORE]: (state, payload) => {
         let existingMap = state.secureData
         let newMap = new Map()
@@ -146,6 +251,20 @@ export default createReducer(initialState, {
             secureData: newMap
         })
     },
+    [action.REMOVE_FILE_FROM_LOCAL_STORE]: (state, payload) => {
+        let existingMap = state.secureFileData
+        let newMap = new Map()
+
+        for (let key in existingMap) {
+            if (existingMap.hasOwnProperty(key) && key !== payload) {
+                newMap[key] = existingMap[key]
+            }
+        }
+
+        return Object.assign({}, state, {
+            secureFileData: newMap
+        })
+    },
     [action.SHOW_ADD_SECRET_FORM]: (state) => {
         return Object.assign({}, state, {
             showAddSecretForm: true
@@ -154,6 +273,17 @@ export default createReducer(initialState, {
     [action.HIDE_ADD_SECRET_FORM]: (state) => {
         return Object.assign({}, state, {
             showAddSecretForm: false
+        })
+    },
+    [action.SHOW_ADD_FILE_FORM]: (state) => {
+        return Object.assign({}, state, {
+            showAddFileForm: true
+        })
+    },
+    [action.HIDE_ADD_FILE_FORM]: (state) => {
+        return Object.assign({}, state, {
+            showAddFileForm: false,
+            isFileSelected: false,
         })
     },
     [action.SUBMITTING_EDIT_SDB_REQUEST]: (state) => {
@@ -168,14 +298,14 @@ export default createReducer(initialState, {
     },
     [action.CLEAR_SECURE_DATA]: (state) => {
         return Object.assign({}, state, {
-            keysForSecureDataPath: [],
+            keysForSecureDataPath: {},
             secureData: {}
         })
     },
     [action.SAVING_SECURE_DATA]: (state, payload) => {
         let existingMap = state.secureData
         let newMap = {}
-        let fetchingKey = payload
+        let fetchingKey = payload.path
 
         for (let key in existingMap) {
             if (existingMap.hasOwnProperty(key)) {
@@ -193,6 +323,27 @@ export default createReducer(initialState, {
             secureData: newMap
         })
     },
+    [action.SAVING_SECURE_FILE_DATA]: (state, payload) => {
+        let existingMap = state.secureFileData
+        let newMap = {}
+        let fetchingKey = payload.path
+
+        for (let key in existingMap) {
+            if (existingMap.hasOwnProperty(key)) {
+                newMap[key] = existingMap[key]
+            }
+        }
+        newMap[fetchingKey] = {
+            isFetching: false,
+            isUpdating: true,
+            isActive: true,
+            data: existingMap[fetchingKey] ? existingMap[fetchingKey]['data'] : {}
+        }
+
+        return Object.assign({}, state, {
+            secureFileData: newMap
+        })
+    },
     [action.RESET_SDB_DATA]: () => {
         return initialState
     },
@@ -205,6 +356,16 @@ export default createReducer(initialState, {
         navMap[payload+'Selected'] = true
         return Object.assign({}, state, {
             nav: navMap
+        })
+    },
+    [action.SECURE_FILE_SELECTED]: (state) => {
+        return Object.assign({}, state, {
+            isFileSelected: true
+        })
+    },
+    [action.SECURE_FILE_UPLOADED]: (state) => {
+        return Object.assign({}, state, {
+            isFileSelected: false
         })
     }
 })
