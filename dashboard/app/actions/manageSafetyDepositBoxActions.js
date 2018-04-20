@@ -354,7 +354,7 @@ export function downloadFile(token, fullPath, filename) {
     })
         .then((response) => {
             let reader = new window.FileReader();
-            reader.readAsText(response.data);
+            reader.readAsArrayBuffer(response.data);
             reader.onload = function() {
                 downloadjs(reader.result, filename)
             }
