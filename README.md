@@ -5,7 +5,7 @@
 [![][license img]][license]
 
 The Cerberus Management Service (CMS) is a core component of the Cerberus [REST API](http://engineering.nike.com/cerberus/docs/architecture/rest-api)
-that facilities user and AWS IAM role authentication and the management of Safe Deposit Boxes (SDBs), an abstraction on top of Hashicorp's Vault.
+that facilities user and AWS IAM role authentication and the management of Safe Deposit Boxes (SDBs), containers for secrets.
 
 To learn more about Cerberus, please visit the [Cerberus website](http://engineering.nike.com/cerberus/).
 
@@ -13,7 +13,7 @@ To learn more about Cerberus, please visit the [Cerberus website](http://enginee
 
 ### Running with persistent data,
 
-If you wish to persist data permanently you can install Vault and MySQL locally
+If you wish to persist data permanently you can install MySQL locally
 
 **MySQL** is required to run the application locally.
 
@@ -264,14 +264,6 @@ Using local instance of MySQL server:
     - Navigate to http://localhost:8080/dashboard in your browser to log in
 
 Above should work on Windows, Mac, and Linux.
-
-### From the CLI
-
-With Vault and MySQL running
-
-    ./gradlew clean build
-
-    ./debugShadowJar.sh -Dvault.addr=http://localhost:8200 -Dvault.token=<token>
 
 
 ## Setting up your IDE

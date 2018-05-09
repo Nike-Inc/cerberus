@@ -196,10 +196,8 @@ npm-debug.log
 package-lock.json
 /dashboard/reports
 /dashboard/logs
-/dashboard/vault
 /dashboard/*.tar.gz
 
 # embedded mysql stuff
 /target/
 /.proxy-dash.pid.lock
-/.vault-sql.pid.lock
