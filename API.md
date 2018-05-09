@@ -750,7 +750,7 @@ Calling GET on a virtual path without the list=true parameter will return 404.
               "errors": [
                 {
                   "code": 99105,
-                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                  "message": "X-Cerberus-Token header is malformed or invalid."
                 }
               ]
             }
@@ -809,7 +809,7 @@ Gets a specific version of a secret from the change history stored in Cerberus
               "errors": [
                 {
                   "code": 99105,
-                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                  "message": "X-Cerberus-Token header is malformed or invalid."
                 }
               ]
             }
@@ -860,7 +860,7 @@ Gets a specific version of a secret from the change history stored in Cerberus
               "errors": [
                 {
                   "code": 99105,
-                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                  "message": "X-Cerberus-Token header is malformed or invalid."
                 }
               ]
             }
@@ -906,7 +906,7 @@ Gets a specific version of a secret from the change history stored in Cerberus
               "errors": [
                 {
                   "code": 99105,
-                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                  "message": "X-Cerberus-Token header is malformed or invalid."
                 }
               ]
             }
@@ -989,7 +989,46 @@ Gets a specific version of a secret from the change history stored in Cerberus
               "errors": [
                 {
                   "code": 99105,
-                  "message": "X-Vault-Token or X-Cerberus-Token header is malformed or invalid."
+                  "message": "X-Cerberus-Token header is malformed or invalid."
+                }
+              ]
+            }
+
++ Response 404 (application/json)
+
+    + Body
+
+            {
+              "error_id": "6b13cdaa-ce64-473d-9228-5cf9bf0e51a9",
+              "errors": [
+                {
+                  "code": 99996,
+                  "message": "Not found"
+                }
+              ]
+            }
+
+### Delete secure file at a path [DELETE]
+
++ Request
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 204
+
++ Response 401 (application/json)
+
+    + Body
+
+            {
+              "error_id": "9c4dc9de-2ce2-4b55-9bda-dbd8e2397879",
+              "errors": [
+                {
+                  "code": 99105,
+                  "message": "X-Cerberus-Token header is malformed or invalid."
                 }
               ]
             }
