@@ -45,8 +45,7 @@ if (token != null && token != "") {
     let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
         let currentTimeInMillis = new Date().getTime()
         let sessionExpirationTimeInMillis = tokenExpiresDate.getTime()
-        let sessionAlreadyExpired = sessionStorage.getItem('sessionIsExpired') === true
-        if (!sessionAlreadyExpired && currentTimeInMillis >= sessionExpirationTimeInMillis) {
+        if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
             store.dispatch(handleSessionExpiration())
         }
     }, sessionExpirationCheckIntervalInMillis)

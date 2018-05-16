@@ -85,8 +85,7 @@ function handleUserLogin(response, dispatch, redirectToWelcome=true) {
     let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
         let currentTimeInMillis = new Date().getTime()
         let sessionExpirationTimeInMillis = tokenExpiresDate.getTime()
-        let sessionAlreadyExpired = sessionStorage.getItem('sessionIsExpired') === true
-        if (!sessionAlreadyExpired && currentTimeInMillis >= sessionExpirationTimeInMillis) {
+        if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
             dispatch(handleSessionExpiration())
         }
     }, sessionExpirationCheckIntervalInMillis)
@@ -100,7 +99,6 @@ function handleUserLogin(response, dispatch, redirectToWelcome=true) {
     sessionStorage.setItem('token', JSON.stringify(response.data))
     sessionStorage.setItem('tokenExpiresDate', tokenExpiresDate)
     sessionStorage.setItem('userRespondedToSessionWarning', false)
-    sessionStorage.setItem('sessionIsExpired', false)
     dispatch(messengerActions.clearAllMessages())
     dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId))
     dispatch(appActions.fetchSideBarData(token))
@@ -240,7 +238,6 @@ export function logoutUser(token) {
             sessionStorage.removeItem('token')
             sessionStorage.removeItem('tokenExpiresDate')
             sessionStorage.removeItem('userRespondedToSessionWarning')
-            sessionStorage.removeItem('sessionIsExpired')
             dispatch(handleRemoveSessionExpirationCheck())
             dispatch(removeSessionWarningTimeout())
             dispatch(resetAuthState())
@@ -262,7 +259,6 @@ export function handleSessionExpiration() {
         sessionStorage.removeItem('token')
         sessionStorage.removeItem('tokenExpiresDate')
         sessionStorage.removeItem('userRespondedToSessionWarning')
-        sessionStorage.setItem('sessionIsExpired', false)
         dispatch(handleRemoveSessionExpirationCheck())
         dispatch(removeSessionWarningTimeout())
         dispatch(expireSession())
