@@ -12,6 +12,7 @@ import ApiError from '../components/ApiError/ApiError'
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
 import * as modalActions from '../actions/modalActions'
 import * as manageSDBActions from '../actions/manageSafetyDepositBoxActions'
+import * as workerTimers from 'worker-timers'
 import { getLogger } from 'logger'
 
 var log = getLogger('authentication-actions')
@@ -25,15 +26,15 @@ const AUTH_ACTION_TIMEOUT = 60000 // 60 seconds in milliseconds
 /**
  * This action is dispatched when we have a valid response object from the CMS Auth endpoint
  * @param response The json response object from the ldap auth cms endpoint
- * @param authTokenTimeoutId ID of the timeout that expires the user session
+ * @param sessionExpirationCheckIntervalId ID of the interval that checks to see if the user's session has expired
  * @returns {{type: string, payload: {tokenData: *}}} The object to dispatch to trigger the reducer to update the auth state
  */
-export function loginUserSuccess(response, authTokenTimeoutId) {
+export function loginUserSuccess(response, sessionExpirationCheckIntervalId) {
     return {
         type: constants.LOGIN_USER_SUCCESS,
         payload: {
             tokenData: response.data.client_token,
-            authTokenTimeoutId: authTokenTimeoutId
+            sessionExpirationCheckIntervalId: sessionExpirationCheckIntervalId
         }
     }
 }
@@ -80,21 +81,28 @@ function handleUserLogin(response, dispatch, redirectToWelcome=true) {
 
     let timeToExpireTokenInMillis = tokenExpiresDate.getTime() - now.getTime()
 
-    let sessionWarningTimeoutId = setTimeout(() => {
+    let sessionExpirationCheckIntervalInMillis = 2000
+    let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
+        let currentTimeInMillis = new Date().getTime()
+        let sessionExpirationTimeInMillis = tokenExpiresDate.getTime()
+        let sessionAlreadyExpired = sessionStorage.getItem('sessionIsExpired') === true
+        if (!sessionAlreadyExpired && currentTimeInMillis >= sessionExpirationTimeInMillis) {
+            dispatch(handleSessionExpiration())
+        }
+    }, sessionExpirationCheckIntervalInMillis)
+
+    let sessionWarningTimeoutId = workerTimers.setTimeout(() => {
         dispatch(warnSessionExpiresSoon(token))
     }, timeToExpireTokenInMillis - 120000)  // warn two minutes before expiration
 
     dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId))
 
-    let authTokenTimeoutId = setTimeout(() => {
-        dispatch(handleSessionExpiration())
-    }, timeToExpireTokenInMillis)
-
     sessionStorage.setItem('token', JSON.stringify(response.data))
     sessionStorage.setItem('tokenExpiresDate', tokenExpiresDate)
     sessionStorage.setItem('userRespondedToSessionWarning', false)
+    sessionStorage.setItem('sessionIsExpired', false)
     dispatch(messengerActions.clearAllMessages())
-    dispatch(loginUserSuccess(response.data, authTokenTimeoutId))
+    dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId))
     dispatch(appActions.fetchSideBarData(token))
     if (redirectToWelcome) {
         hashHistory.push("/")
@@ -196,9 +204,9 @@ export function refreshAuth(token, redirectPath='/', redirect=true) {
             timeout: AUTH_ACTION_TIMEOUT
         })
         .then(function (response) {
-            dispatch(handleRemoveAuthTokenTimeout())
-            dispatch(handleRemoveSessionWarningTimeout())
-            setTimeout(function(){
+            dispatch(handleRemoveSessionExpirationCheck())
+            dispatch(removeSessionWarningTimeout())
+            workerTimers.setTimeout(function(){
                 handleUserLogin(response, dispatch, false)
                 if (redirect) {
                     hashHistory.push(redirectPath)
@@ -232,8 +240,9 @@ export function logoutUser(token) {
             sessionStorage.removeItem('token')
             sessionStorage.removeItem('tokenExpiresDate')
             sessionStorage.removeItem('userRespondedToSessionWarning')
-            dispatch(handleRemoveAuthTokenTimeout())
-            dispatch(handleRemoveSessionWarningTimeout())
+            sessionStorage.removeItem('sessionIsExpired')
+            dispatch(handleRemoveSessionExpirationCheck())
+            dispatch(removeSessionWarningTimeout())
             dispatch(resetAuthState())
             dispatch(headerActions.mouseOutUsername())
             hashHistory.push('/login')
@@ -253,8 +262,9 @@ export function handleSessionExpiration() {
         sessionStorage.removeItem('token')
         sessionStorage.removeItem('tokenExpiresDate')
         sessionStorage.removeItem('userRespondedToSessionWarning')
-        dispatch(handleRemoveAuthTokenTimeout())
-        dispatch(handleRemoveSessionWarningTimeout())
+        sessionStorage.setItem('sessionIsExpired', false)
+        dispatch(handleRemoveSessionExpirationCheck())
+        dispatch(removeSessionWarningTimeout())
         dispatch(expireSession())
         dispatch(modalActions.clearAllModals())
         dispatch(manageSDBActions.resetToInitialState())
@@ -274,9 +284,9 @@ export function expireSession() {
     }
 }
 
-export function removeAuthTokenTimeoutId() {
+export function removeSessionExpirationCheck() {
     return {
-        type: constants.REMOVE_AUTH_TOKEN_TIMEOUT
+        type: constants.REMOVE_SESSION_EXPIRATION_CHECK_INTERVAL
     }
 }
 
@@ -295,16 +305,30 @@ export function setSessionWarningTimeoutId(id) {
     }
 }
 
-export function handleRemoveAuthTokenTimeout() {
+export function handleRemoveSessionExpirationCheck() {
     return function(dispatch, getState) {
-        clearTimeout(getState().auth.authTokenTimeoutId)
-        dispatch(removeAuthTokenTimeoutId())
+        let sessionExpirationCheckIntervalId = getState().auth.sessionExpirationCheckIntervalId
+        log.debug(`Removing session expiration check interval, id: ${sessionExpirationCheckIntervalId}`)
+        try {
+            workerTimers.clearInterval(sessionExpirationCheckIntervalId)
+        } catch(err) {
+            console.log(`Failed to clear auth token timeout, id=${sessionExpirationCheckIntervalId}`)
+            console.log(err)
+        }
+        dispatch(removeSessionExpirationCheck())
     }
 }
 
-export function handleRemoveSessionWarningTimeout() {
+export function removeSessionWarningTimeout() {
     return function(dispatch, getState) {
-        clearTimeout(getState().auth.sessionWarningTimeoutId)
+        let sessionWarningTimeoutId = getState().auth.sessionWarningTimeoutId
+        log.debug(`Removing warning timeout, id: ${sessionWarningTimeoutId}`)
+        try {
+            workerTimers.clearTimeout(getState().auth.sessionWarningTimeoutId)
+        } catch(err) {
+            console.log(`Failed to clear session warning timeout, id=${sessionWarningTimeoutId}`)
+            console.log(err)
+        }
         dispatch(removeSessionWarningTimeoutId())
     }
 }
@@ -325,7 +349,7 @@ export function setSessionWarningTimeout(timeToWarnInMillis, tokenStr) {
         let userHasRespondedToSessionWarning = sessionStorage.getItem('userRespondedToSessionWarning') === "true";
 
         if (! userHasRespondedToSessionWarning) {
-            let sessionWarningTimeoutId = setTimeout(() => {
+            let sessionWarningTimeoutId = workerTimers.setTimeout(() => {
                 dispatch(warnSessionExpiresSoon(tokenStr))
             }, timeToWarnInMillis)
 

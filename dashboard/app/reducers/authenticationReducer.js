@@ -13,7 +13,7 @@ const initialState = {
     isAdmin: false,
     groups: [],
     policies: null,
-    authTokenTimeoutId: null,
+    sessionExpirationCheckIntervalId: null,
     sessionWarningTimeoutId: null
 }
 
@@ -36,7 +36,7 @@ export default createReducer(initialState, {
             userName: payload.tokenData.metadata.username,
             groups: payload.tokenData.metadata.groups.split(/,/),
             policies: payload.tokenData.policies,
-            authTokenTimeoutId: payload.authTokenTimeoutId,
+            sessionExpirationCheckIntervalId: payload.sessionExpirationCheckIntervalId,
         })
     },
     // logs the user out and resets user data
@@ -65,11 +65,11 @@ export default createReducer(initialState, {
             sessionWarningTimeoutId: payload.sessionWarningTimeoutId,
         })
     },
-    // removes the timeout id of the auth token expire
-    [constants.REMOVE_AUTH_TOKEN_TIMEOUT]: (state) => {
+    // removes the interval id of the session expiration check
+    [constants.REMOVE_SESSION_EXPIRATION_CHECK_INTERVAL]: (state) => {
 
         return Object.assign({}, state, {
-            authTokenTimeoutId: null
+            sessionExpirationCheckIntervalId: null
         })
     },
     // removes the timeout id of the session warning
