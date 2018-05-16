@@ -11,6 +11,7 @@ import ManageSafeDepositBox from './components/ManageSafeDepositBox/ManageSafeDe
 import NotFound from './components/NotFound/NotFound'
 import configureStore from './store/configureStore'
 import { loginUserSuccess, handleSessionExpiration, setSessionWarningTimeout } from './actions/authenticationActions'
+import * as workerTimers from 'worker-timers'
 import { getLogger } from 'logger'
 import './assets/styles/reactSelect.scss'
 
@@ -40,11 +41,16 @@ if (token != null && token != "") {
     // warn two minutes before token expiration
     store.dispatch(setSessionWarningTimeout(dateTokenExpiresInMillis - 120000, token.data.client_token.client_token))
 
-    let authTokenTimeoutId = setTimeout(() => {
-        store.dispatch(handleSessionExpiration())
-    }, dateTokenExpiresInMillis)
+    let sessionExpirationCheckIntervalInMillis = 2000
+    let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
+        let currentTimeInMillis = new Date().getTime()
+        let sessionExpirationTimeInMillis = tokenExpiresDate.getTime()
+        if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
+            store.dispatch(handleSessionExpiration())
+        }
+    }, sessionExpirationCheckIntervalInMillis)
 
-    store.dispatch(loginUserSuccess(token, authTokenTimeoutId))
+    store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId))
 }
 
 // Create an enhanced history that syncs navigation events with the store
