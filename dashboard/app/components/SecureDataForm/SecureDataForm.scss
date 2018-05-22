@@ -1,7 +1,7 @@
 @import '../../assets/styles/common.scss';
 
 #add-new-secure-data-form {
-  width: 700px;
+  width: 1150px;
   #new-secure-data-path {
     display: flex;
     font-size: 16px;
@@ -23,7 +23,7 @@
 
     #new-secure-data-path-user-value {
       padding-left: 5px;
-      flex: 1;
+      flex: .6;
     }
 
     .new-secure-data-path-user-value-read-only {
@@ -36,19 +36,22 @@
 
   #new-secure-data-kv-map {
     padding-top: 10px;
-    padding-left: 25px;
   }
   .new-secure-data-kv-entry {
     padding-bottom: 8px;
     display: flex;
 
     .secure-data-key {
-      flex: .4;
+      flex: 1.2;
     }
 
     .secure-data-value {
-      flex: .6;
+      flex: 1.2;
       padding-left: 10px;
+
+      textarea {
+        resize: vertical;
+      }
     }
   }
 

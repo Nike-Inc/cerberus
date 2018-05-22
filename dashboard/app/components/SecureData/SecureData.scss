@@ -9,7 +9,7 @@
   only screen and (                min-resolution: 192dpi),
   only screen and (                min-resolution: 2dppx)
   {
-     width: 97%;
+     width: 100%;
   }
   @media /* Thunderbolt display */
   only screen and (-webkit-max-device-pixel-ratio: 1.99),
@@ -19,7 +19,7 @@
   only screen and (                max-resolution: 191dpi),
   only screen and (                max-resolution: 1.99dppx)
   {
-    width: 65%;
+    width: 70%;
   }
 
   padding-left: 10px;
