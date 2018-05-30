@@ -112,6 +112,10 @@ public class SecureDataDao {
         return secureDataMapper.listSecureDataByPartialPathAndType(partialPath, type, limit, offset);
     }
 
+    public int countByPartialPathAndType(String partialPath, SecureDataType type) {
+        return secureDataMapper.countByPartialPathAndType(partialPath, type);
+    }
+
     public int countByType(SecureDataType type) {
         return secureDataMapper.countByType(type);
     }

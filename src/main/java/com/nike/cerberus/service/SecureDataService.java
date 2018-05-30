@@ -326,7 +326,7 @@ public class SecureDataService {
             partialPath = partialPath + "/";
         }
 
-        int totalNumFiles = secureDataDao.countByType(SecureDataType.FILE);
+        int totalNumFiles = secureDataDao.countByPartialPathAndType(partialPath, SecureDataType.FILE);
         List<SecureFileSummary> fileSummaries = Lists.newArrayList();
         List<SecureDataRecord> secureDataRecords = secureDataDao.listSecureDataByPartialPathAndType(partialPath, SecureDataType.FILE, limit, offset);
         secureDataRecords.forEach(secureDataRecord -> {

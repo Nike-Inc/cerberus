@@ -45,6 +45,8 @@ public interface SecureDataMapper {
             @Param("limit") int limit,
             @Param("offset") int offset);
 
+    int countByPartialPathAndType(@Param("partialPath") String partialPath, @Param("type") SecureDataType type);
+
     int countByType(@Param("type") SecureDataType type);
 
     Set<String> getPathsBySdbId(@Param("sdbId") String sdbId);

@@ -157,6 +157,17 @@
         OFFSET #{offset}
     </select>
 
+    <select id="countByPartialPathAndType" resultType="java.lang.Integer">
+        SELECT
+          COUNT(ID)
+        FROM
+          SECURE_DATA
+        WHERE
+          PATH LIKE '${partialPath}%'
+            AND
+          `TYPE` = #{type}
+    </select>
+
     <select id="countByType" resultType="java.lang.Integer">
         SELECT
           COUNT(ID)
