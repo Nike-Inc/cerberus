@@ -1,7 +1,8 @@
 @import '../../assets/styles/common.scss';
 
 #add-new-secure-data-form {
-  width: 1150px;
+  width: 100%;
+  max-width: 1150px;
   #new-secure-data-path {
     display: flex;
     font-size: 16px;
