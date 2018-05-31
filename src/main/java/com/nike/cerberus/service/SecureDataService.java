@@ -440,4 +440,8 @@ public class SecureDataService {
 
         return secretMetadata;
     }
+
+    public int getTotalNumberOfFiles() {
+        return secureDataDao.countByType(SecureDataType.FILE);
+    }
 }
