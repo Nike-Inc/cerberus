@@ -1549,6 +1549,34 @@ A 400 response code is given if the job wasn't found.
 
 + Response 204 No Content
 
+## Get all the kms key metadata for all the kms keys creating for IAM auth [/v1/admin/authentication-kms-metadata]
+
+### [PUT]
+
++ Request
+
+    + Headers
+
+            X-Cerberus-Token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            X-Cerberus-Client: MyClientName/1.0.0
+
++ Response 200 (application/json)
+        
+    + Body
+                
+            {
+              "authentication_kms_key_metadata": [
+                {
+                  "aws_iam_role_arn": "arn:aws:iam::222222222222:role/foo-role",
+                  "aws_kms_key_id": "arn:aws:kms:us-west-2:222222222222:key/b74225a6-2222-4444-baf0-abc123456",
+                  "aws_region": "us-west-2",
+                  "created_ts": "2018-06-20T14:39:56-07:00",
+                  "last_updated_ts": "2018-06-20T14:39:56-07:00",
+                  "last_validated_ts": null
+                }
+              ]
+            }
+
 ## Healthcheck [/healthcheck]
 
 ### Healthcheck [GET]

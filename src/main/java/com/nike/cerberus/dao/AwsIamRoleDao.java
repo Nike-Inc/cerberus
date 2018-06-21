@@ -101,4 +101,8 @@ public class AwsIamRoleDao {
     public int deleteKmsKeyById(final String id) {
         return awsIamRoleMapper.deleteKmsKeyById(id);
     }
+
+    public Optional<List<AwsIamRoleKmsKeyRecord>> getAllKmsKeys() {
+        return Optional.ofNullable(awsIamRoleMapper.getAllKmsKeys());
+    }
 }

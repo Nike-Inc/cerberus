@@ -30,11 +30,7 @@ import com.nike.cerberus.endpoints.GetDashboard;
 import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
-import com.nike.cerberus.endpoints.admin.GetSDBMetadata;
-import com.nike.cerberus.endpoints.admin.OverrideSdbOwner;
-import com.nike.cerberus.endpoints.admin.PutSDBMetadata;
-import com.nike.cerberus.endpoints.admin.RestoreSafeDepositBox;
-import com.nike.cerberus.endpoints.admin.TriggerScheduledJob;
+import com.nike.cerberus.endpoints.admin.*;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
@@ -212,7 +208,8 @@ public class CmsGuiceModule extends AbstractModule {
             ReadSecureFile readSecureFile,
             HeadSecureFile headSecureFile,
             GetSecureFiles getSecureFiles,
-            DeleteSecureFile deleteSecureFile
+            DeleteSecureFile deleteSecureFile,
+            GetAuthKmsKeyMetadata getAuthKmsKeyMetadata
     ) {
         return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
                 healthCheckEndpoint,
@@ -229,7 +226,7 @@ public class CmsGuiceModule extends AbstractModule {
                 getDashboard, getDashboardRedirect,
                 writeSecureFile, readSecureFile, deleteSecureFile, headSecureFile, getSecureFiles,
                 restoreSafeDepositBox,
-                getSecretVersionPathsForSdb, getSecureDataVersions
+                getSecretVersionPathsForSdb, getSecureDataVersions, getAuthKmsKeyMetadata
         ));
     }
 
