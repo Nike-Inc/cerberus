@@ -33,6 +33,7 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
+import com.nike.cerberus.domain.AuthKmsKeyMetadata;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
@@ -48,6 +49,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -125,6 +128,9 @@ public class KmsService {
         final String kmsKeyRecordId = uuidSupplier.get();
 
         final String awsKmsKeyArn = createKmsKeyInAws(iamPrincipalArn, kmsKeyRecordId, awsRegion);
+
+        logger.info("Created KMS Key with id: {} for ARN: {}, REGION: {}", awsKmsKeyArn, iamPrincipalArn, awsRegion);
+
         return createKmsKeyRecord(iamRoleRecordId, kmsKeyRecordId, awsKmsKeyArn,
                 awsRegion,
                 user,
@@ -241,6 +247,29 @@ public class KmsService {
     @Transactional
     public void deleteKmsKeyById(final String kmsKeyId) {
         awsIamRoleDao.deleteKmsKeyById(kmsKeyId);
+    }
+
+    public List<AuthKmsKeyMetadata> getAuthenticationKmsMetadata() {
+        List<AuthKmsKeyMetadata> result = new LinkedList<>();
+
+        Optional<List<AwsIamRoleKmsKeyRecord>> keysOptional = awsIamRoleDao.getAllKmsKeys();
+        List<AwsIamRoleKmsKeyRecord> keys = keysOptional.orElse(new LinkedList<>());
+
+        keys.forEach(key -> {
+            AuthKmsKeyMetadata metadata = new AuthKmsKeyMetadata()
+                    .setAwsKmsKeyId(key.getAwsKmsKeyId())
+                    .setAwsRegion(key.getAwsRegion())
+                    .setCreatedTs(key.getCreatedTs())
+                    .setLastUpdatedTs(key.getLastUpdatedTs())
+                    .setLastUpdatedTs(key.getLastUpdatedTs());
+
+            awsIamRoleDao.getIamRoleById(key.getAwsIamRoleId())
+                    .ifPresent(awsIamRoleRecord -> metadata.setAwsIamRoleArn(awsIamRoleRecord.getAwsIamRoleArn()));
+
+            result.add(metadata);
+        });
+
+        return result;
     }
 
     /**

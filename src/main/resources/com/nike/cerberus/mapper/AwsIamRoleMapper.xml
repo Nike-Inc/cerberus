@@ -62,6 +62,13 @@
             AWS_IAM_ROLE.ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID)
   </select>
 
+  <select id="getAllKmsKeys" resultType="AwsIamRoleKmsKeyRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE_KMS_KEY
+  </select>
+
   <select id="getKmsKey" resultType="AwsIamRoleKmsKeyRecord">
     SELECT
       ID,
