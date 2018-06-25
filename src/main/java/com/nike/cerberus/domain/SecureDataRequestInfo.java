@@ -19,6 +19,8 @@ package com.nike.cerberus.domain;
 
 import com.nike.cerberus.security.CerberusPrincipal;
 
+import java.util.Optional;
+
 public class SecureDataRequestInfo {
     private String category;
     private String sdbSlug;
@@ -68,6 +70,6 @@ public class SecureDataRequestInfo {
     }
 
     public String getPath() {
-        return String.format("%s/%s", sdbSlug, subPath);
+        return String.format("%s/%s", sdbSlug, Optional.ofNullable(subPath).orElse(""));
     }
 }
