@@ -93,7 +93,7 @@ public class CreateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBo
             return ResponseInfo.newBuilder(map)
                     .withHeaders(new DefaultHttpHeaders()
                             .set(LOCATION, location)
-                            .set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                            .set(HEADER_X_REFRESH_TOKEN, Boolean.FALSE.toString()))
                     .withHttpStatusCode(HttpResponseStatus.CREATED.code())
                     .build();
         }

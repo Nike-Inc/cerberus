@@ -81,7 +81,7 @@ public class UpdateSafeDepositBoxV2 extends AuditableEventEndpoint<SafeDepositBo
                     authPrincipal,
                     request.getPathParam("id"));
             return ResponseInfo.newBuilder(safeDepositBoxV2)
-                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.FALSE.toString()))
                     .withHttpStatusCode(HttpResponseStatus.OK.code())
                     .build();
         }
