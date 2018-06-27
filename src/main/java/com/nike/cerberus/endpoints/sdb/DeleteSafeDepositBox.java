@@ -78,7 +78,7 @@ public class DeleteSafeDepositBox extends AuditableEventEndpoint<Void, Void> {
 
             safeDepositBoxService.deleteSafeDepositBox(authPrincipal, sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.OK.code())
-                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.FALSE.toString()))
                     .build();
         }
 

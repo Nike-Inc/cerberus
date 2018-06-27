@@ -82,7 +82,7 @@ public class UpdateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBo
                     authPrincipal,
                     sdbId);
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code())
-                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.TRUE.toString()))
+                    .withHeaders(new DefaultHttpHeaders().set(HEADER_X_REFRESH_TOKEN, Boolean.FALSE.toString()))
                     .build();
         }
 
