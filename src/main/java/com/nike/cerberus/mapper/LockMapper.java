@@ -19,7 +19,7 @@ package com.nike.cerberus.mapper;
 import org.apache.ibatis.annotations.Param;
 
 public interface LockMapper {
-    int getLock(@Param("name") String name);
+    Integer getLock(@Param("name") String name);
 
-    int releaseLock(@Param("name") String jobName);
+    Integer releaseLock(@Param("name") String jobName);
 }

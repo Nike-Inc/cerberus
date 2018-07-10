@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.jobs;
 
-import com.nike.cerberus.service.JobCoordinatorService;
+import com.nike.cerberus.service.DistributedLockService;
 import org.knowm.sundial.Job;
 import org.knowm.sundial.exceptions.JobInterruptException;
 import org.slf4j.Logger;
@@ -29,17 +29,17 @@ public abstract class LockingJob extends Job {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private JobCoordinatorService jobCoordinatorService;
+    private DistributedLockService jobCoordinatorService;
 
     @Inject
-    public void setJobCoordinatorService(JobCoordinatorService jobCoordinatorService) {
+    public void setJobCoordinatorService(DistributedLockService jobCoordinatorService) {
         this.jobCoordinatorService = jobCoordinatorService;
     }
 
     @Override
     public void doRun() throws JobInterruptException {
         String jobName = this.getJobContext().getJobName();
-        if (! jobCoordinatorService.acquireLockToRunJob(jobName)) {
+        if (! jobCoordinatorService.acquireLock(jobName)) {
             log.info("Failed to acquire lock, another instance must be running the job. Job Name: {}", jobName);
             return;
         }

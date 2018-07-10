@@ -65,11 +65,7 @@ import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
-import com.nike.cerberus.service.AuthTokenService;
-import com.nike.cerberus.service.EventProcessorService;
-import com.nike.cerberus.service.S3LogUploaderService;
-import com.nike.cerberus.service.StaticAssetManager;
-import com.nike.cerberus.service.ConfigService;
+import com.nike.cerberus.service.*;
 import com.nike.cerberus.util.UuidSupplier;
 import com.nike.riposte.client.asynchttp.ning.AsyncHttpClientHelper;
 import com.nike.riposte.server.config.AppInfo;
@@ -162,6 +158,8 @@ public class CmsGuiceModule extends AbstractModule {
         if (addS3LoggerToShutdownHooks) {
             shutdownHooks.add(injector.getInstance(S3LogUploaderService.class));
         }
+        shutdownHooks.add(injector.getInstance(DistributedLockService.class));
+
         return shutdownHooks;
     }
 

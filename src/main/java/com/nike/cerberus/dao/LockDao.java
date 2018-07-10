@@ -29,11 +29,11 @@ public class LockDao {
         this.lockMapper = lockMapper;
     }
 
-    public int getLock(String name) {
+    public Integer getLock(String name) {
         return lockMapper.getLock(name);
     }
 
-    public int releaseLock(String jobName) {
+    public Integer releaseLock(String jobName) {
         return lockMapper.releaseLock(jobName);
     }
 }
