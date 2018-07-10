@@ -75,6 +75,7 @@ println("Processing logback.groovy, environment: " + getEnvironmentString() + ".
 def SERVICE_ENV_NAME = getEnvironmentString() == null? "NA" : getEnvironmentString()
 
 def encoderPattern = "traceId=%X{traceId} %date{\"yyyy-MM-dd'T'HH:mm:ss,SSSXXX\"} [%thread] appname=@@APPNAME@@ environment=${SERVICE_ENV_NAME} version=@@RELEASE@@ |-%-5level %logger{36} - %msg%n"
+def localEncoderPattern = "[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n"
 def accessLogEncoderPattern = "%msg%n"
 def defaultAsyncQueueSize = 16000
 
@@ -105,7 +106,8 @@ def setupConsoleAppender(String appenderName, String encoderPatternToUse, List a
 }
 
 if (shouldOutputToConsole()) {
-    setupConsoleAppender("ConsoleAppender", encoderPattern, allAsyncAppendersArray, defaultAsyncQueueSize)
+    def patternToUse = isLocalEnvironment() ? localEncoderPattern : encoderPattern
+    setupConsoleAppender("ConsoleAppender", patternToUse, allAsyncAppendersArray, defaultAsyncQueueSize)
 }
 
 addInfo("******Outputting access logs to console: " + shouldOutputAccessLogsToConsole())

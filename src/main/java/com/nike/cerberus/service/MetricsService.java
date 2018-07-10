@@ -25,9 +25,11 @@ import com.signalfx.codahale.metrics.MetricBuilder;
 import com.signalfx.codahale.metrics.SettableDoubleGauge;
 import com.signalfx.codahale.metrics.SettableLongGauge;
 import com.signalfx.codahale.reporter.MetricMetadata;
+import com.signalfx.codahale.reporter.MetricMetadataImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Map;
 
@@ -40,9 +42,15 @@ public class MetricsService {
 
 
     @Inject
-    public MetricsService(CodahaleMetricsCollector metricsCollector, SignalFxReporterFactory signalFxReporterFactory) {
+    public MetricsService(CodahaleMetricsCollector metricsCollector,
+                          @Nullable SignalFxReporterFactory signalFxReporterFactory) {
+
         this.metricsCollector = metricsCollector;
-        this.metricMetadata = signalFxReporterFactory.getReporter(metricsCollector.getMetricRegistry()).getMetricMetadata();
+        if (signalFxReporterFactory != null) {
+            this.metricMetadata = signalFxReporterFactory.getReporter(metricsCollector.getMetricRegistry()).getMetricMetadata();
+        } else {
+            metricMetadata = new MetricMetadataImpl();
+        }
     }
 
     /**
