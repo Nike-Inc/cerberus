@@ -50,7 +50,6 @@ public class DistributedLockService implements ServerShutdownHook {
     private final MetricsService metricsService;
 
     private Map<String, Lock> locks = new HashMap<>();
-    private Map<String, Thread> lockThreads = new HashMap<>();
 
     @Inject
     public DistributedLockService(SqlSessionFactory sqlSessionFactory,
@@ -74,7 +73,7 @@ public class DistributedLockService implements ServerShutdownHook {
         Thread thread = new Thread(lock);
         thread.start();
         locks.put(lockName, lock);
-        lockThreads.put(lockName, thread);
+        lock.lockThread = thread;
 
         // wait for the lock to signal that it finished attempting to acquire the lock
         lock.semaphore.acquireUninterruptibly();
@@ -88,7 +87,6 @@ public class DistributedLockService implements ServerShutdownHook {
         } else {
             // if the lock wasn't acquired clear the thread and lock so it can be garbage collected
             locks.remove(lockName);
-            lockThreads.remove(lockName);
             log.error("Failed to acquire lock, returning false.");
             metricsService.getOrCreateCounter(LOCK_ACQUIRE_FAILURE, ImmutableMap.of("lock-name", lockName)).inc();
         }
@@ -121,7 +119,6 @@ public class DistributedLockService implements ServerShutdownHook {
         if (lock.didRelease) {
             metricsService.getOrCreateCounter(LOCK_RELEASED, ImmutableMap.of("lock-name", lockName)).inc();
             locks.remove(lockName);
-            lockThreads.remove(lockName);
         }
 
         // return the status
@@ -135,24 +132,25 @@ public class DistributedLockService implements ServerShutdownHook {
      */
     @Override
     public void executeServerShutdownHook(ServerConfig serverConfig, Channel channel) {
+        log.info("Received shutdown hook, attempting to shutdown gracefully");
         locks.forEach((name, lock) -> {
             try {
                 lock.release();
                 lock.semaphore.tryAcquire(3, TimeUnit.SECONDS);
                 locks.remove(name);
-                lockThreads.remove(name);
             } catch (InterruptedException e) {
                 log.error("Failed to gracefully release lock: {}, interrupting thread", e);
-                lockThreads.get(name).interrupt();
-                lockThreads.remove(name);
+                lock.interrupt();
             }
         });
+        log.info("Shutdown hook finished");
     }
 
     /**
      * A simple class that can acquire, keep and release a lock in a single thread / mysql transaction.
      */
     class Lock implements Runnable {
+        private Thread lockThread;
         private Semaphore semaphore = new Semaphore(1);
         private AtomicBoolean shouldKeepLock = new AtomicBoolean(false);
         private boolean isLocked = false;
@@ -167,6 +165,12 @@ public class DistributedLockService implements ServerShutdownHook {
         public void release() {
             semaphore.acquireUninterruptibly();
             shouldKeepLock.set(false);
+        }
+
+        public void interrupt() {
+            if (lockThread != null && lockThread.isAlive()) {
+                lockThread.interrupt();
+            }
         }
 
         @Override
