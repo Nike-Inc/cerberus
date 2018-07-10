@@ -1,5 +1,6 @@
 package com.nike.cerberus.service;
 
+import com.codahale.metrics.Counter;
 import com.nike.cerberus.mapper.LockMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +29,9 @@ public class DistributedLockServiceTest {
     @Mock
     private LockMapper lockMapper;
 
+    @Mock
+    private MetricsService metricsService;
+
     private DistributedLockService jobCoordinatorService;
 
     @Before
@@ -33,7 +39,8 @@ public class DistributedLockServiceTest {
         initMocks(this);
         when(sqlSessionFactory.openSession(false)).thenReturn(sqlSession);
         when(sqlSession.getMapper(LockMapper.class)).thenReturn(lockMapper);
-        jobCoordinatorService = new DistributedLockService(sqlSessionFactory);
+        when(metricsService.getOrCreateCounter(anyString(), anyMap())).thenReturn(new Counter());
+        jobCoordinatorService = new DistributedLockService(sqlSessionFactory, metricsService);
     }
 
     @Test

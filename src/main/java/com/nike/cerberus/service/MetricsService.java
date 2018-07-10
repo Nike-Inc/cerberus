@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.service;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Metric;
 import com.nike.riposte.metrics.codahale.CodahaleMetricsCollector;
 import com.nike.riposte.metrics.codahale.contrib.SignalFxReporterFactory;
@@ -83,6 +84,10 @@ public class MetricsService {
     public void setLongGaugeValue(String name, long value, Map<String, String> dimensions) {
         SettableLongGauge gauge = getOrCreateLongGauge(name, dimensions);
         gauge.setValue(value);
+    }
+
+    public Counter getOrCreateCounter(String name, Map<String, String> dimensions) {
+        return getOrCreate(MetricBuilder.COUNTERS, name, dimensions);
     }
 
     private <M extends Metric> M getOrCreate(MetricBuilder<M> builder, String metricName, Map<String, String> dimensions) {

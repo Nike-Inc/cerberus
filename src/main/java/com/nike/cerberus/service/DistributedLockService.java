@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.mapper.LockMapper;
 import com.nike.riposte.server.config.ServerConfig;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
@@ -40,14 +41,23 @@ public class DistributedLockService implements ServerShutdownHook {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    private static final String LOCK_ACQUIRED = "cms.lock-acquired";
+    private static final String LOCK_ACQUIRE_FAILURE = "cms.lock-acquire-failure";
+    private static final String LOCK_RELEASED = "cms.lock-released";
+    private static final String LOCK_RELEASE_FAILURE = "cms.lock-release-failure";
+
     private final SqlSessionFactory sqlSessionFactory;
+    private final MetricsService metricsService;
 
     private Map<String, Lock> locks = new HashMap<>();
     private Map<String, Thread> lockThreads = new HashMap<>();
 
     @Inject
-    public DistributedLockService(SqlSessionFactory sqlSessionFactory) {
+    public DistributedLockService(SqlSessionFactory sqlSessionFactory,
+                                  MetricsService metricsService) {
+
         this.sqlSessionFactory = sqlSessionFactory;
+        this.metricsService = metricsService;
     }
 
     /**
@@ -73,11 +83,14 @@ public class DistributedLockService implements ServerShutdownHook {
         // check to see if the lock was acquired
         boolean didAcquireLock = lock.isLocked;
 
-        // if the lock wasn't acquired clear the thread and lock so it can be garbage collected
-        if (! didAcquireLock) {
-            log.error("Failed to acquire lock, returning false.");
+        if (didAcquireLock) {
+            metricsService.getOrCreateCounter(LOCK_ACQUIRED, ImmutableMap.of("lock-name", lockName)).inc();
+        } else {
+            // if the lock wasn't acquired clear the thread and lock so it can be garbage collected
             locks.remove(lockName);
             lockThreads.remove(lockName);
+            log.error("Failed to acquire lock, returning false.");
+            metricsService.getOrCreateCounter(LOCK_ACQUIRE_FAILURE, ImmutableMap.of("lock-name", lockName)).inc();
         }
 
         // return the result
@@ -106,6 +119,7 @@ public class DistributedLockService implements ServerShutdownHook {
 
         // if the lock was released clean up the objects for garbage collection
         if (lock.didRelease) {
+            metricsService.getOrCreateCounter(LOCK_RELEASED, ImmutableMap.of("lock-name", lockName)).inc();
             locks.remove(lockName);
             lockThreads.remove(lockName);
         }
@@ -187,6 +201,7 @@ public class DistributedLockService implements ServerShutdownHook {
                         didRelease = releaseStatus > 0;
                         if (!didRelease) {
                             try {
+                                metricsService.getOrCreateCounter(LOCK_RELEASE_FAILURE, ImmutableMap.of("lock-name", name)).inc();
                                 log.warn("Failed to release lock for {}, retrying, status: {}", name, releaseStatus);
                                 Thread.sleep(1000);
                             } catch (InterruptedException e) {
