@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class JobCoordinatorServiceTest {
+public class DistributedLockServiceTest {
 
     private static final String JOB_NAME = "the-job-name";
 
@@ -26,20 +26,20 @@ public class JobCoordinatorServiceTest {
     @Mock
     private LockMapper lockMapper;
 
-    private JobCoordinatorService jobCoordinatorService;
+    private DistributedLockService jobCoordinatorService;
 
     @Before
     public void before() {
         initMocks(this);
         when(sqlSessionFactory.openSession(false)).thenReturn(sqlSession);
         when(sqlSession.getMapper(LockMapper.class)).thenReturn(lockMapper);
-        jobCoordinatorService = new JobCoordinatorService(sqlSessionFactory);
+        jobCoordinatorService = new DistributedLockService(sqlSessionFactory);
     }
 
     @Test
     public void test_that_a_lock_can_be_acquired_and_released_happy_path() {
         when(lockMapper.getLock(JOB_NAME)).thenReturn(1);
-        boolean acquired = jobCoordinatorService.acquireLockToRunJob(JOB_NAME);
+        boolean acquired = jobCoordinatorService.acquireLock(JOB_NAME);
         assertTrue(acquired);
 
         when(lockMapper.releaseLock(JOB_NAME)).thenReturn(1);
@@ -50,18 +50,18 @@ public class JobCoordinatorServiceTest {
     @Test
     public void test_that_acquireLockToRunJob_returns_false_cleanly_when_lock_cannot_be_acquired() {
         when(lockMapper.getLock(JOB_NAME)).thenReturn(0);
-        boolean acquired = jobCoordinatorService.acquireLockToRunJob(JOB_NAME);
+        boolean acquired = jobCoordinatorService.acquireLock(JOB_NAME);
         assertFalse(acquired);
 
         when(lockMapper.getLock(JOB_NAME)).thenReturn(1);
-        acquired = jobCoordinatorService.acquireLockToRunJob(JOB_NAME);
+        acquired = jobCoordinatorService.acquireLock(JOB_NAME);
         assertTrue(acquired);
     }
 
     @Test
     public void test_that_release_lock_retries() {
         when(lockMapper.getLock(JOB_NAME)).thenReturn(1);
-        boolean acquired = jobCoordinatorService.acquireLockToRunJob(JOB_NAME);
+        boolean acquired = jobCoordinatorService.acquireLock(JOB_NAME);
         assertTrue(acquired);
 
         when(lockMapper.releaseLock(JOB_NAME)).thenReturn(0).thenReturn(1);
