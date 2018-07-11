@@ -30,4 +30,7 @@ public interface PermissionsMapper {
                                                  @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
                                                  @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 
+    Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(@Param("sdbId") String sdbId,
+                                                          @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
+                                                          @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 }

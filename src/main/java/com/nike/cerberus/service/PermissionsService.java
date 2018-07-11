@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.dao.PermissionsDao;
@@ -30,13 +31,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
 
 @Singleton
 public class PermissionsService {
+
+    public static final String USER_GROUPS_CASE_SENSITIVE = "cms.user.groups.caseSensitive";
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -44,17 +49,20 @@ public class PermissionsService {
     private final UserGroupPermissionService userGroupPermissionService;
     private final IamPrincipalPermissionService iamPrincipalPermissionService;
     private final PermissionsDao permissionsDao;
+    private final boolean userGroupsCaseSensitive;
 
     @Inject
     public PermissionsService(RoleService roleService,
                               UserGroupPermissionService userGroupPermissionService,
                               IamPrincipalPermissionService iamPrincipalPermissionService,
-                              PermissionsDao permissionsDao) {
+                              PermissionsDao permissionsDao,
+                              @Named(USER_GROUPS_CASE_SENSITIVE) boolean userGroupsCaseSensitive) {
 
         this.roleService = roleService;
         this.userGroupPermissionService = userGroupPermissionService;
         this.iamPrincipalPermissionService = iamPrincipalPermissionService;
         this.permissionsDao = permissionsDao;
+        this.userGroupsCaseSensitive = userGroupsCaseSensitive;
     }
 
     /**
@@ -78,9 +86,9 @@ public class PermissionsService {
                 }
                 break;
             case USER:
-                if (principal.getUserGroups().contains(sdb.getOwner())) {
-                    principalHasOwnerPermissions = true;
-                }
+                principalHasOwnerPermissions = userGroupsCaseSensitive ?
+                            principal.getUserGroups().contains(sdb.getOwner()) :
+                            containsIgnoreCase(principal.getUserGroups(), sdb.getOwner());
                 break;
         }
         return principalHasOwnerPermissions;
@@ -124,10 +132,12 @@ public class PermissionsService {
             case USER:
                 // if the the principal is a user principal ensure that one of the users groups is associated with the sdb
                 Set<UserGroupPermission> userGroupPermissions = userGroupPermissionService.getUserGroupPermissions(sdbId);
-                principalHasPermissionAssociationWithSdb = userGroupPermissions
-                        .stream()
-                        .filter(perm -> principal.getUserGroups().contains(perm.getName())) // filter for permissions on the sdb that have groups that the authenticated user belongs too.
-                        .count() > 0; // if there is more than one, then the SDB is has read, write or owner all of which allow read.
+                Set<String> userGroups = userGroupPermissions.stream()
+                        .map(UserGroupPermission::getName)
+                        .collect(Collectors.toSet());
+                principalHasPermissionAssociationWithSdb = userGroupsCaseSensitive ?
+                        doesHaveIntersection(userGroups, principal.getUserGroups()) :
+                        doesHaveIntersectionIgnoreCase(userGroups, principal.getUserGroups());
                 break;
         }
         return principalHasPermissionAssociationWithSdb;
@@ -140,7 +150,9 @@ public class PermissionsService {
                 hasPermission = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, principal.getName(), action.getAllowedRoles());
                 break;
             case USER:
-                hasPermission = permissionsDao.doesUserPrincipalHaveRoleForSdb(sdbId, action.getAllowedRoles(), principal.getUserGroups());
+                hasPermission = userGroupsCaseSensitive ?
+                        permissionsDao.doesUserPrincipalHaveRoleForSdb(sdbId, action.getAllowedRoles(), principal.getUserGroups()) :
+                        permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(sdbId, action.getAllowedRoles(), principal.getUserGroups());
                 break;
             default:
                 log.error("Unknown Principal Type: {}, returning hasPermission: false", principal.getPrincipalType().getName());
@@ -155,5 +167,42 @@ public class PermissionsService {
                 hasPermission);
 
         return hasPermission;
+    }
+
+    /**
+     * Does a case-insensitive check to see if the collection contains the given String
+     * @param items   List of strings from which to search
+     * @param object  String for which to search
+     * @return  True if the object exists in the array, false if not
+     */
+    private boolean containsIgnoreCase(Collection<String> items, String object) {
+        return items.stream()
+                .anyMatch(item -> item.equalsIgnoreCase(object));
+    }
+
+    /**
+     * Checks if any string is contained in both the first collection and the second collection
+     * @return  True if both collections contain any one string, false if not
+     */
+    private boolean doesHaveIntersection(Collection<String> co1, Collection<String> co2) {
+        Set<String> co1LowerCase = co1.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        return co2.stream()
+                .anyMatch(str -> co1LowerCase.contains(str.toLowerCase()));
+    }
+
+    /**
+     * Checks (ignoring case) if any string is contained in both the first collection and the second collection
+     * @return  True if both collections contain any one string, false if not
+     */
+    private boolean doesHaveIntersectionIgnoreCase(Collection<String> co1, Collection<String> co2) {
+        Set<String> co1LowerCase = co1.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        return co2.stream()
+                .anyMatch(str -> co1LowerCase.contains(str.toLowerCase()));
     }
 }
