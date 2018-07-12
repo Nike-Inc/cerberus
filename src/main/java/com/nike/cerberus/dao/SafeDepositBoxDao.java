@@ -49,6 +49,10 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.getUserAssociatedSafeDepositBoxes(userGroups);
     }
 
+    public List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxesIgnoreCase(final Set<String> userGroups) {
+        return safeDepositBoxMapper.getUserAssociatedSafeDepositBoxesIgnoreCase(userGroups);
+    }
+
     public List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(final String iamPrincipalArn) {
         return safeDepositBoxMapper.getIamPrincipalAssociatedSafeDepositBoxes(iamPrincipalArn);
     }

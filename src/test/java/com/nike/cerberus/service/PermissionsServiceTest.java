@@ -33,14 +33,15 @@ import org.mockito.Mock;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.nike.cerberus.PrincipalType.*;
+import static com.nike.cerberus.PrincipalType.IAM;
+import static com.nike.cerberus.PrincipalType.USER;
 import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
 import static com.nike.cerberus.record.RoleRecord.ROLE_READ;
 import static com.nike.cerberus.record.RoleRecord.ROLE_WRITE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -68,11 +69,13 @@ public class PermissionsServiceTest {
     public void before() {
         initMocks(this);
 
+        boolean userGroupsCaseSensitive = true;
         permissionsService = new PermissionsService(
                 roleService,
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
-                permissionsDao
+                permissionsDao,
+                userGroupsCaseSensitive
         );
 
         when(ownerRole.getId()).thenReturn(OWNER_ID);
@@ -274,5 +277,132 @@ public class PermissionsServiceTest {
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create().withPrincipalType(USER).build());
         when(permissionsDao.doesUserPrincipalHaveRoleForSdb(any(), any(), any())).thenReturn(false);
         assertFalse(permissionsService.doesPrincipalHavePermission(principal, SDB_ID, SecureDataAction.READ));
+    }
+
+    @Test
+    public void test_that_doesPrincipalHavePermission_calls_case_insensitive_method_when_case_sensitive_is_false() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                false
+        );
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create().withPrincipalType(USER).build());
+        when(permissionsDao.doesUserPrincipalHaveRoleForSdb(any(), any(), any())).thenReturn(false);
+        when(permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(any(), any(), any())).thenReturn(true);
+        assertTrue(permissionsService.doesPrincipalHavePermission(principal, SDB_ID, SecureDataAction.READ));
+    }
+
+    @Test
+    public void test_that_doesPrincipalHavePermission_calls_case_sensitive_method_when_case_sensitive_is_true() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                true
+        );
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create().withPrincipalType(USER).build());
+        when(permissionsDao.doesUserPrincipalHaveRoleForSdb(any(), any(), any())).thenReturn(false);
+        when(permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(any(), any(), any())).thenReturn(true);
+        assertFalse(permissionsService.doesPrincipalHavePermission(principal, SDB_ID, SecureDataAction.READ));
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveReadPermission_returns_false_when_user_doesnt_have_perms_case_sensitive() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                true);
+
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(USER)
+                .withGroups("Lst-foo")
+                .build());
+
+        when(userGroupPermissionService.getUserGroupPermissions(SDB_ID)).thenReturn(ImmutableSet.of(
+                UserGroupPermission.Builder.create().withName("Lst-Foo").build()
+        ));
+
+        assertFalse("The principal should not have read permissions",
+                permissionsService.doesPrincipalHaveReadPermission(principal, SDB_ID));
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveReadPermission_returns_true_when_user_has_perms_case_insensitive() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                false);
+
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(USER)
+                .withGroups("Lst-foo")
+                .build());
+
+        when(userGroupPermissionService.getUserGroupPermissions(SDB_ID)).thenReturn(ImmutableSet.of(
+                UserGroupPermission.Builder.create().withName("Lst-Foo").build()
+        ));
+
+        assertTrue("The principal should have read permissions",
+                permissionsService.doesPrincipalHaveReadPermission(principal, SDB_ID));
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_user_doesnt_have_perms_case_sensitive() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                true);
+
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(USER)
+                .withGroups("Lst-foo")
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withUserGroupPermissions(
+                        ImmutableSet.of(
+                                UserGroupPermission.Builder.create()
+                                        .withName("Lst-Foo")
+                                        .withRoleId(OWNER_ID)
+                                        .build()
+                        )
+                )
+                .build();
+
+
+        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
+        assertFalse("The principal should not have owner permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveOwnerPermissions_returns_true_when_user_has_perms_case_insensitive() {
+        PermissionsService permissionsService = new PermissionsService(
+                roleService,
+                userGroupPermissionService,
+                iamPrincipalPermissionService,
+                permissionsDao,
+                false);
+
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(USER)
+                .withGroups("Lst-foo")
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withOwner("Lst-Foo")
+                .build();
+
+
+        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
+        assertTrue("The principal should have owner permissions", actual);
     }
 }

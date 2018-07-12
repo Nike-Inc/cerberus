@@ -102,6 +102,34 @@
       SDB.ID ASC
   </select>
 
+  <select id="getUserAssociatedSafeDepositBoxesIgnoreCase" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON SDB.ID = UGP.SDBOX_ID
+      INNER JOIN
+        USER_GROUP UG ON UGP.USER_GROUP_ID = UG.ID
+    WHERE
+      UPPER(UG.NAME) IN
+      <foreach item="item" index="index" collection="userGroups"
+             open="(" separator="," close=")">
+        UPPER(#{item})
+      </foreach>
+    ORDER BY
+      SDB.CATEGORY_ID ASC,
+      SDB.ID ASC
+  </select>
+
   <select id="getIamPrincipalAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
     SELECT
       DISTINCT SDB.ID,

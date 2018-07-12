@@ -23,6 +23,7 @@ import java.util.Set;
 
 public class PermissionsDao {
 
+
     private final PermissionsMapper permissionsMapper;
 
     @Inject
@@ -36,5 +37,9 @@ public class PermissionsDao {
 
     public Boolean doesUserPrincipalHaveRoleForSdb(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {
         return permissionsMapper.doesUserPrincipalHaveGivenRoleForSdb(sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
+    }
+
+    public Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {
+        return permissionsMapper.doesUserHavePermsForRoleAndSdbCaseInsensitive(sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
     }
 }
