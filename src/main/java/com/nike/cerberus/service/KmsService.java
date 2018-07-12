@@ -17,18 +17,15 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.policy.Policy;
+import com.amazonaws.auth.policy.PolicyReaderOptions;
+import com.amazonaws.auth.policy.Statement;
+import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.CreateAliasRequest;
-import com.amazonaws.services.kms.model.CreateKeyRequest;
-import com.amazonaws.services.kms.model.CreateKeyResult;
-import com.amazonaws.services.kms.model.DescribeKeyRequest;
-import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
-import com.amazonaws.services.kms.model.KeyUsageType;
-import com.amazonaws.services.kms.model.NotFoundException;
-import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
-import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
-import com.amazonaws.services.kms.model.Tag;
+import com.amazonaws.services.kms.model.*;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.name.Named;
+import com.netflix.hystrix.exception.HystrixBadRequestException;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
@@ -49,9 +46,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -462,5 +457,116 @@ public class KmsService {
         }
 
         return needValidation;
+    }
+
+    /**
+     * Attempts to download the policy, if something goes wrong, it returns an empty optional.
+     * @param kmsCmkId The KMS CMK that you want the default policy for
+     * @param regionName The region that the KMS CMK resides in.
+     * @return The policy if it can successfully be fetched.
+     */
+    private Optional<Policy> downloadPolicy(String kmsCmkId, String regionName, int retryCount) {
+        final Set<String> unretryableErrors = ImmutableSet.of(
+                "NotFoundException",
+                "InvalidArnException",
+                "AccessDenied"
+        );
+        Policy policy = null;
+        try {
+            policy = kmsPolicyService.getPolicyFromPolicyString(getKmsKeyPolicy(kmsCmkId, regionName));
+            return Optional.of(policy);
+        } catch (HystrixBadRequestException e) {
+            if (e.getCause() instanceof AWSKMSException) {
+                AWSKMSException awsError = (AWSKMSException) e.getCause();
+                logger.error("Failed to download policy, error code: {}", awsError.getErrorCode());
+                if (! unretryableErrors.contains(awsError.getErrorCode()) && retryCount < 10) {
+                    try {
+                        Thread.sleep(500 ^ (retryCount + 1));
+                    } catch (InterruptedException e1) {
+                        return Optional.empty();
+                    }
+                    return downloadPolicy(kmsCmkId, regionName, retryCount + 1);
+                }
+            }
+        }
+        return Optional.ofNullable(policy);
+    }
+
+    /**
+     * Gets all the KMS CMK ids for a given region
+     * @param regionName The region in which you want all the KMS CMK ids
+     * @return A list of of the KMS CMK ids for the requested region.
+     */
+    public Set<String> getKmsKeyIdsForRegion(String regionName) {
+        AWSKMS kms = kmsClientFactory.getClient(regionName);
+        AWSKMS kms2 = AWSKMSClient.builder().withRegion(regionName).build();
+
+        Set<String> kmsKeyIdsForRegion = new HashSet<>();
+
+        String marker = null;
+        do {
+            logger.info("Fetching keys for region: {} and marker: {}", regionName, marker);
+            ListKeysRequest listKeysRequest = new ListKeysRequest();
+            if (marker != null) {
+                listKeysRequest.withMarker(marker);
+            }
+            ListKeysResult listKeysResult = kms.listKeys(listKeysRequest);
+            listKeysResult.getKeys().forEach(keyListEntry -> kmsKeyIdsForRegion.add(keyListEntry.getKeyId()));
+            marker = listKeysResult.getNextMarker();
+        } while (marker != null);
+
+        return kmsKeyIdsForRegion;
+    }
+
+    /**
+     * Downloads the KMS CMK policies to determine if the key was created by this.
+     *
+     * @param allKmsCmkIdsForRegion The list of all the KMS Key.
+     * @param regionName The region.
+     * @return The list of KMS Keys that were created by this.
+     */
+    public Set<String> filterKeysCreatedByKmsService(Set<String> allKmsCmkIdsForRegion, String regionName) {
+        Set<String> keysCreatedByThis = new HashSet<>();
+
+        allKmsCmkIdsForRegion.forEach(kmsCmkId -> {
+            if (wasKeyCreatedByKmsService(kmsCmkId,regionName)) {
+                keysCreatedByThis.add(kmsCmkId);
+            }
+        });
+
+        return keysCreatedByThis;
+    }
+
+    /**
+     * Checks the KMS CMK policy to see if it was created by this environments cms cluster.
+     * @param kmsCmkId The KMS CMK id.
+     * @param regionName The region.
+     * @return true if the kms key was created by CMS for the current env
+     */
+    private boolean wasKeyCreatedByKmsService(String kmsCmkId, String regionName) {
+        boolean wasCreatedByThis = false;
+
+        logger.info("Downloading policy for key: {} in region: {}", kmsCmkId, regionName);
+
+        Optional<Policy> policyOptional = downloadPolicy(kmsCmkId, regionName, 0);
+
+        if (policyOptional.isPresent()) {
+            Policy policy = policyOptional.get();
+            if (policy.getStatements().size() == 4) {
+                Optional<Statement> cmsStatement = policy.getStatements().stream()
+                        .filter(statement -> statement.getId().equals("CMS Role Key Access"))
+                        .findFirst();
+
+                if (cmsStatement.isPresent()) {
+                    wasCreatedByThis = cmsStatement.get().getPrincipals().stream()
+                            .anyMatch(principal -> principal.getId().contains("dev")); // TODO
+                    logger.info("detected cms policy, was created by this env: {}", wasCreatedByThis);
+                }
+            }
+        } else {
+            logger.warn("Failed to fetch policy, skipping...");
+        }
+
+        return wasCreatedByThis;
     }
 }

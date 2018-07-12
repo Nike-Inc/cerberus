@@ -105,7 +105,7 @@ public class KmsPolicyService {
      */
     protected boolean consumerPrincipalIsAnArnAndNotAnId(String policyJson) {
         try {
-            Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+            Policy policy = getPolicyFromPolicyString(policyJson);
             return policy.getStatements()
                     .stream()
                     .anyMatch(statement ->
@@ -127,7 +127,7 @@ public class KmsPolicyService {
      */
     protected boolean cmsHasKeyDeletePermissions(String policyJson) {
         try {
-            Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+            Policy policy = getPolicyFromPolicyString(policyJson);
             return policy.getStatements()
                     .stream()
                     .anyMatch(statement ->
@@ -151,7 +151,7 @@ public class KmsPolicyService {
      * @return - The updated JSON KMS policy containing a regenerated statement for CMS
      */
     protected String overwriteCMSPolicy(String policyJson) {
-        Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+        Policy policy = getPolicyFromPolicyString(policyJson);
         removeStatementFromPolicy(policy, CERBERUS_MANAGEMENT_SERVICE_SID);
         Collection<Statement> statements = policy.getStatements();
         statements.add(generateStandardCMSPolicyStatement());
@@ -169,7 +169,7 @@ public class KmsPolicyService {
      * @return - The updated key policy JSON
      */
     protected String removeConsumerPrincipalFromPolicy(String policyJson) {
-        Policy policy = policyReader.createPolicyFromJsonString(policyJson);
+        Policy policy = getPolicyFromPolicyString(policyJson);
         removeStatementFromPolicy(policy, CERBERUS_CONSUMER_SID);
         return policy.toJson();
     }
@@ -258,5 +258,10 @@ public class KmsPolicyService {
                 iamRoleUsageStatement);
 
         return kmsPolicy.toJson();
+    }
+
+
+    public Policy getPolicyFromPolicyString(String jsonString) {
+        return policyReader.createPolicyFromJsonString(jsonString);
     }
 }
