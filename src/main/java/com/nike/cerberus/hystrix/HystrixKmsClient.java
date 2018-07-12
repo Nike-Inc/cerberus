@@ -2,20 +2,7 @@ package com.nike.cerberus.hystrix;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.CreateAliasRequest;
-import com.amazonaws.services.kms.model.CreateAliasResult;
-import com.amazonaws.services.kms.model.CreateKeyRequest;
-import com.amazonaws.services.kms.model.CreateKeyResult;
-import com.amazonaws.services.kms.model.DescribeKeyRequest;
-import com.amazonaws.services.kms.model.DescribeKeyResult;
-import com.amazonaws.services.kms.model.EncryptRequest;
-import com.amazonaws.services.kms.model.EncryptResult;
-import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
-import com.amazonaws.services.kms.model.GetKeyPolicyResult;
-import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
-import com.amazonaws.services.kms.model.PutKeyPolicyResult;
-import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
-import com.amazonaws.services.kms.model.ScheduleKeyDeletionResult;
+import com.amazonaws.services.kms.model.*;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
@@ -79,6 +66,11 @@ public class HystrixKmsClient extends AWSKMSClient {
     public PutKeyPolicyResult putKeyPolicy(PutKeyPolicyRequest request) {
         // Default AWS limit was 5 as of Aug 2017
         return execute("KmsPutKeyPolicy", () -> client.putKeyPolicy(request));
+    }
+
+    public ListKeysResult listKeys(ListKeysRequest request) {
+        // Default AWS limit was X as of July 2018
+        return execute("ListKeysRequest", () -> client.listKeys(request));
     }
 
     /**

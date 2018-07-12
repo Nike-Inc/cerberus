@@ -1,6 +1,7 @@
 package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 public class AuthKmsKeyMetadata {
 
@@ -63,5 +64,24 @@ public class AuthKmsKeyMetadata {
     public AuthKmsKeyMetadata setLastValidatedTs(OffsetDateTime lastValidatedTs) {
         this.lastValidatedTs = lastValidatedTs;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AuthKmsKeyMetadata that = (AuthKmsKeyMetadata) o;
+        return Objects.equals(awsIamRoleArn, that.awsIamRoleArn) &&
+                Objects.equals(awsKmsKeyId, that.awsKmsKeyId) &&
+                Objects.equals(awsRegion, that.awsRegion) &&
+                Objects.equals(createdTs, that.createdTs) &&
+                Objects.equals(lastUpdatedTs, that.lastUpdatedTs) &&
+                Objects.equals(lastValidatedTs, that.lastValidatedTs);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(awsIamRoleArn, awsKmsKeyId, awsRegion, createdTs, lastUpdatedTs, lastValidatedTs);
     }
 }

@@ -38,12 +38,14 @@ jacoco {
     toolVersion = "0.7.7.201606060606"
     reportsDir = file("$buildDir/reports/jacoco")
 }
+
 jacocoTestReport {
     reports {
         xml.enabled true
         csv.enabled false
     }
 }
+
 test.finalizedBy(project.tasks.jacocoTestReport)
 
 task findbugsHtml {

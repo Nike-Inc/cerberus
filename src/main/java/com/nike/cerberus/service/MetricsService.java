@@ -25,7 +25,6 @@ import com.signalfx.codahale.metrics.MetricBuilder;
 import com.signalfx.codahale.metrics.SettableDoubleGauge;
 import com.signalfx.codahale.metrics.SettableLongGauge;
 import com.signalfx.codahale.reporter.MetricMetadata;
-import com.signalfx.codahale.reporter.MetricMetadataImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ public class MetricsService {
         if (signalFxReporterFactory != null) {
             this.metricMetadata = signalFxReporterFactory.getReporter(metricsCollector.getMetricRegistry()).getMetricMetadata();
         } else {
-            metricMetadata = new MetricMetadataImpl();
+            metricMetadata = null;
         }
     }
 
@@ -99,6 +98,16 @@ public class MetricsService {
     }
 
     private <M extends Metric> M getOrCreate(MetricBuilder<M> builder, String metricName, Map<String, String> dimensions) {
+
+        if (metricMetadata == null) {
+            if (metricsCollector.getMetricRegistry().getMetrics().containsKey(metricName)) {
+                return (M) metricsCollector.getMetricRegistry().getMetrics().get(metricName);
+            } else {
+                M metric = builder.newMetric();
+                return metricsCollector.getMetricRegistry().register(metricName, metric);
+            }
+        }
+
         MetricMetadata.BuilderTagger<M> builderTagger = metricMetadata
                 .forBuilder(builder)
                 .withMetricName(metricName);
