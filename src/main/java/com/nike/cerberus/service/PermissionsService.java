@@ -185,12 +185,8 @@ public class PermissionsService {
      * @return  True if both collections contain any one string, false if not
      */
     private boolean doesHaveIntersection(Collection<String> co1, Collection<String> co2) {
-        Set<String> co1LowerCase = co1.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-
         return co2.stream()
-                .anyMatch(str -> co1LowerCase.contains(str.toLowerCase()));
+                .anyMatch(co1::contains);
     }
 
     /**
