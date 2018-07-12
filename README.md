@@ -57,6 +57,7 @@ cms.event.processors.com.nike.cerberus.event.processor.LoggingEventProcessor | N
 cms.event.processors.com.nike.cerberus.event.processor.AuditLogProcessor | No | defaults to false, Boolean of whether or not to enable audit logging, see #events below
 cms.audit.bucket="bucket-name" | No | [See Logging Event Processor below](https://github.com/Nike-Inc/cerberus-management-service/tree/feature/audit_logging#audit-log-processor)
 cms.audit.bucket_region="bucket-region" | No | [See Logging Event Processor below](https://github.com/Nike-Inc/cerberus-management-service/tree/feature/audit_logging#audit-log-processor)
+cms.user.groups.caseSensitive                       | YES      | Property to enable/disable case-sensitive user AD group permission checks
 
 KMS Policies are bound to IAM Principal IDs rather than ARNs themselves. Because of this, we validate the policy at authentication time
 to ensure that if an IAM role has been deleted and re-created, that we grant access to the new principal ID.
