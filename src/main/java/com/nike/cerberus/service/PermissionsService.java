@@ -199,6 +199,7 @@ public class PermissionsService {
                 .collect(Collectors.toSet());
 
         return co2.stream()
-                .anyMatch(str -> co1LowerCase.contains(str.toLowerCase()));
+                .map(String::toLowerCase)
+                .anyMatch(co1LowerCase::contains);
     }
 }
