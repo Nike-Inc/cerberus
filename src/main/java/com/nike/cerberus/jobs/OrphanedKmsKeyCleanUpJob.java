@@ -11,6 +11,8 @@ import javax.inject.Named;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.nike.cerberus.service.KmsService.SOONEST_A_KMS_KEY_CAN_BE_DELETED;
+
 /**
  * This scans through all KMS keys it can access in all regions and parses the Key Policies to see if it was a key
  * that was created by CMS for the current running env. If it is a key that was created by itself for this env,
@@ -23,14 +25,17 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
 
     private final KmsService kmsService;
     private final boolean isDeleteOrphanKeysInDryMode;
+    private final String environmentName;
 
     @Inject
     public OrphanedKmsKeyCleanUpJob(KmsService kmsService,
                                     @Named("cms.kms.delete_orphaned_keys_job.dry_mode")
-                                            boolean isDeleteOrphanKeysInDryMode) {
+                                            boolean isDeleteOrphanKeysInDryMode,
+                                    @Named("cms.env.name") String environmentName) {
 
         this.kmsService = kmsService;
         this.isDeleteOrphanKeysInDryMode = isDeleteOrphanKeysInDryMode;
+        this.environmentName = environmentName;
     }
 
     @Override
@@ -39,10 +44,11 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
         log.info("Fetching the the keys that are in the database");
         List<AuthKmsKeyMetadata> authKmsKeyMetadataList = kmsService.getAuthenticationKmsMetadata();
 
+        Map<String, Set<String>> orphanedKeysByRegion = new HashMap<>();
+
         // For each region that has KMS
-//        Arrays.stream(Regions.values()).forEach(region -> {
-//            String regionName = region.getName();
-        String regionName = "ap-southeast-1";
+        Arrays.stream(Regions.values()).forEach(region -> {
+            String regionName = region.getName();
 
             // skip china
             if (regionName.startsWith("cn")) {
@@ -59,7 +65,10 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
             // Get the KMS Key Ids that are in the db for the current region
             Set<String> currentKmsCmkIdsForRegion = authKmsKeyMetadataList.stream()
                     .filter(authKmsKeyMetadata -> StringUtils.equalsIgnoreCase(authKmsKeyMetadata.getAwsRegion(), regionName))
-                    .map(AuthKmsKeyMetadata::getAwsKmsKeyId)
+                    .map(authKmsKeyMetadata -> {
+                        String fullArn = authKmsKeyMetadata.getAwsKmsKeyId();
+                        return fullArn.split("/")[1];
+                    })
                     .collect(Collectors.toSet());
 
             log.info("Fetching all KMS CMK ids keys for the region: {}", regionName);
@@ -74,17 +83,46 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
             Set<String> orphanedKmsKeysForRegion = Sets.difference(kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion);
             log.info("Found {} keys that were orphaned for region: {}", orphanedKmsKeysForRegion.size(), regionName);
 
+            printRegionSummary(regionName, kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion, orphanedKmsKeysForRegion);
+
+            orphanedKeysByRegion.put(regionName, orphanedKmsKeysForRegion);
+
             // Delete the orphaned keys
-            orphanedKmsKeysForRegion.forEach(kmsCmkId -> {
-                log.info("Determined that KMS CMK id: {}, in region: {} was created by this Cerberus Environment but is not stored in the data store as an active key so it should be deleted", kmsCmkId, regionName);
-                if (! isDeleteOrphanKeysInDryMode) {
-                    kmsService.deleteKmsKeyById(kmsCmkId);
-                }
-            });
-//        });
+            if (! isDeleteOrphanKeysInDryMode) {
+                orphanedKmsKeysForRegion.forEach(kmsCmkId -> kmsService
+                        .scheduleKmsKeyDeletion(kmsCmkId, regionName, SOONEST_A_KMS_KEY_CAN_BE_DELETED));
+            }
+        });
+
+        printCompleteSummary(orphanedKeysByRegion);
     }
 
+    private void printRegionSummary(String regionName,
+                                    Set<String> kmsCmksCreatedByKmsService,
+                                    Set<String> currentKmsCmkIdsForRegion,
+                                    Set<String> orphanedKmsKeysForRegion) {
 
+        log.info("---------- Orphan KMS Key cleanup job summary for region: {} ------------", regionName);
+        log.debug("The following keys where determined to be created by CMS service for env: {}", environmentName);
+        kmsCmksCreatedByKmsService.forEach(log::debug);
+        log.debug("The following keys were in the data-store for this region");
+        currentKmsCmkIdsForRegion.forEach(log::debug);
+        log.info("The following keys were determined to be orphaned and have been scheduled for deletion? {}", !isDeleteOrphanKeysInDryMode);
+        orphanedKmsKeysForRegion.forEach(log::info);
+        log.info("--------------------------------------------------------------------------------");
 
+    }
 
+    private void printCompleteSummary(Map<String, Set<String>> orphanedKeysByRegion) {
+        log.info("----------- Orphan Kms Key Cleanup Job summary ------------");
+        orphanedKeysByRegion.forEach((regionName, keys) -> {
+            log.info("Region: {}, number of orphaned keys: {}", regionName, keys.size());
+        });
+        if (isDeleteOrphanKeysInDryMode) {
+            log.info("The job was in dry mode so the keys were not deleted");
+        } else {
+            log.info("The job was not in dry mode so the keys have been scheduled for deletion");
+        }
+        log.info("--------------------------------------------------------------------------------");
+    }
 }
