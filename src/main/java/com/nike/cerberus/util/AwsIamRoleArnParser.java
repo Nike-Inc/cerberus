@@ -52,6 +52,8 @@ public class AwsIamRoleArnParser {
 
     private static final String GENERIC_ASSUMED_ROLE_REGEX = "^arn:aws:sts::(?<accountId>\\d+?):assumed-role/.+$";
 
+    public static final String AWS_ACCOUNT_ROOT_ARN_REGEX = "^arn:aws:iam::(?<accountId>\\d+?):root(?<!\\s)$";
+
     /**
      * Pattern used to determine if an ARN should be allowed in DB
      *

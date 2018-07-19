@@ -17,13 +17,15 @@
 
 package com.nike.cerberus.domain;
 
+import com.nike.cerberus.validation.PatternListAnyMatch;
 import com.nike.cerberus.validation.group.Updatable;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.Pattern;
+import javax.validation.Valid;
 import javax.validation.groups.Default;
 import java.time.OffsetDateTime;
 
+import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_ACCOUNT_ROOT_ARN_REGEX;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED;
 
 /**
@@ -36,7 +38,8 @@ public class IamPrincipalPermission {
     @NotBlank(message = "IAM_ROLE_ROLE_ID_INVALID", groups = {Default.class, Updatable.class})
     private String roleId;
 
-    @Pattern(regexp = AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED, message = "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID", groups = {Default.class, Updatable.class})
+    @Valid
+    @PatternListAnyMatch(value = {AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED, AWS_ACCOUNT_ROOT_ARN_REGEX}, groups = {Default.class, Updatable.class})
     private String iamPrincipalArn;
 
     private OffsetDateTime createdTs;
