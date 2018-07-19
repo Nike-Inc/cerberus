@@ -29,7 +29,7 @@ public class LoggingEventProcessor implements EventProcessor {
 
     @Override
     public void process(Event event) {
-        log.debug(event.getEventAsString());
+        log.info(event.getEventAsString());
     }
 
     @Override
