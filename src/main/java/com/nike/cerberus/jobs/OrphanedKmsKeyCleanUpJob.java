@@ -61,46 +61,61 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
                 return;
             }
 
-            log.info("Processing region: {}", regionName);
-            // Get the KMS Key Ids that are in the db for the current region
-            Set<String> currentKmsCmkIdsForRegion = authKmsKeyMetadataList.stream()
-                    .filter(authKmsKeyMetadata -> StringUtils.equalsIgnoreCase(authKmsKeyMetadata.getAwsRegion(), regionName))
-                    .map(authKmsKeyMetadata -> {
-                        String fullArn = authKmsKeyMetadata.getAwsKmsKeyId();
-                        return fullArn.split("/")[1];
-                    })
-                    .collect(Collectors.toSet());
-
-            log.info("Fetching all KMS CMK ids keys for the region: {}", regionName);
-            Set<String> allKmsCmkIdsForRegion = kmsService.getKmsKeyIdsForRegion(regionName);
-            log.info("Found {} keys to process for region: {}", allKmsCmkIdsForRegion.size(), regionName);
-
-            log.info("Filtering out the keys that were not created by this environment");
-            Set<String> kmsCmksCreatedByKmsService = kmsService.filterKeysCreatedByKmsService(allKmsCmkIdsForRegion, regionName);
-            log.info("Found {} keys to created by this environment process for region: {}", kmsCmksCreatedByKmsService.size(), regionName);
-
-            log.info("Calculating difference between the set of keys created by this env to the set of keys in the db");
-            Set<String> orphanedKmsKeysForRegion = Sets.difference(kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion);
-            log.info("Found {} keys that were orphaned for region: {}", orphanedKmsKeysForRegion.size(), regionName);
-
-            printRegionSummary(regionName, kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion, orphanedKmsKeysForRegion);
-
-            orphanedKeysByRegion.put(regionName, orphanedKmsKeysForRegion);
-
-            // Delete the orphaned keys
-            if (! isDeleteOrphanKeysInDryMode) {
-                orphanedKmsKeysForRegion.forEach(kmsCmkId -> kmsService
-                        .scheduleKmsKeyDeletion(kmsCmkId, regionName, SOONEST_A_KMS_KEY_CAN_BE_DELETED));
-            }
+            orphanedKeysByRegion.put(regionName, processRegion(authKmsKeyMetadataList, regionName));
         });
 
-        printCompleteSummary(orphanedKeysByRegion);
+        logCompleteSummary(orphanedKeysByRegion);
     }
 
-    private void printRegionSummary(String regionName,
-                                    Set<String> kmsCmksCreatedByKmsService,
-                                    Set<String> currentKmsCmkIdsForRegion,
-                                    Set<String> orphanedKmsKeysForRegion) {
+    /**
+     * Downloads all the KMS CMK policies for the keys in the given region to determine what keys it created and compares
+     * that set to the set of keys it has in the datastore to find and delete orphaned keys
+     *
+     * @param authKmsKeyMetadataList The kms metadata from the data store
+     * @param regionName The region to process and delete orphaned keys in
+     * @return The set or orphaned keys it found and processed
+     */
+    protected Set<String> processRegion(List<AuthKmsKeyMetadata> authKmsKeyMetadataList, String regionName) {
+        log.info("Processing region: {}", regionName);
+        // Get the KMS Key Ids that are in the db for the current region
+        Set<String> currentKmsCmkIdsForRegion = authKmsKeyMetadataList.stream()
+                .filter(authKmsKeyMetadata -> StringUtils.equalsIgnoreCase(authKmsKeyMetadata.getAwsRegion(), regionName))
+                .map(authKmsKeyMetadata -> {
+                    String fullArn = authKmsKeyMetadata.getAwsKmsKeyId();
+                    return fullArn.split("/")[1];
+                })
+                .collect(Collectors.toSet());
+
+        log.info("Fetching all KMS CMK ids keys for the region: {}", regionName);
+        Set<String> allKmsCmkIdsForRegion = kmsService.getKmsKeyIdsForRegion(regionName);
+        log.info("Found {} keys to process for region: {}", allKmsCmkIdsForRegion.size(), regionName);
+
+        log.info("Filtering out the keys that were not created by this environment");
+        Set<String> kmsCmksCreatedByKmsService = kmsService.filterKeysCreatedByKmsService(allKmsCmkIdsForRegion, regionName);
+        log.info("Found {} keys to created by this environment process for region: {}", kmsCmksCreatedByKmsService.size(), regionName);
+
+        log.info("Calculating difference between the set of keys created by this env to the set of keys in the db");
+        Set<String> orphanedKmsKeysForRegion = Sets.difference(kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion);
+        log.info("Found {} keys that were orphaned for region: {}", orphanedKmsKeysForRegion.size(), regionName);
+
+        logRegionSummary(regionName, kmsCmksCreatedByKmsService, currentKmsCmkIdsForRegion, orphanedKmsKeysForRegion);
+
+        // Delete the orphaned keys
+        if (! isDeleteOrphanKeysInDryMode) {
+            orphanedKmsKeysForRegion.forEach(kmsCmkId -> kmsService
+                    .scheduleKmsKeyDeletion(kmsCmkId, regionName, SOONEST_A_KMS_KEY_CAN_BE_DELETED));
+        }
+
+        return orphanedKmsKeysForRegion;
+    }
+
+    /**
+     * Logs the summary of actions taken for a given region
+     */
+    private void logRegionSummary(String regionName,
+                                  Set<String> kmsCmksCreatedByKmsService,
+                                  Set<String> currentKmsCmkIdsForRegion,
+                                  Set<String> orphanedKmsKeysForRegion) {
 
         log.info("---------- Orphan KMS Key cleanup job summary for region: {} ------------", regionName);
         log.debug("The following keys where determined to be created by CMS service for env: {}", environmentName);
@@ -113,7 +128,10 @@ public class OrphanedKmsKeyCleanUpJob extends LockingJob {
 
     }
 
-    private void printCompleteSummary(Map<String, Set<String>> orphanedKeysByRegion) {
+    /**
+     * Logs a summary for all regions
+     */
+    private void logCompleteSummary(Map<String, Set<String>> orphanedKeysByRegion) {
         log.info("----------- Orphan Kms Key Cleanup Job summary ------------");
         orphanedKeysByRegion.forEach((regionName, keys) -> {
             log.info("Region: {}, number of orphaned keys: {}", regionName, keys.size());
