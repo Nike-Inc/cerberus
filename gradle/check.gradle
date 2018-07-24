@@ -46,16 +46,16 @@ jacocoTestReport {
     }
 }
 
-test {
-    jacoco {
-        excludes = [
-                '*.domain.*',
-                '*.dao.*',
-                '*.record.*',
-                '*.flyway.*'
-        ]
-    }
-}
+//test {
+//    jacoco {
+//        excludes = [
+//                '*.domain.*',
+//                '*.dao.*',
+//                '*.record.*',
+//                '*.flyway.*'
+//        ]
+//    }
+//}
 test.finalizedBy(project.tasks.jacocoTestReport)
 
 task findbugsHtml {
