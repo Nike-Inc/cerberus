@@ -105,6 +105,9 @@ public class AuthenticationServiceTest {
     @Mock
     private AuthTokenService authTokenService;
 
+    @Mock
+    private AwsIamRoleService awsIamRoleService;
+
     private AuthenticationService authenticationService;
 
     private static int MAX_LIMIT = 2;
@@ -127,7 +130,8 @@ public class AuthenticationServiceTest {
                 slugger,
                 authTokenService,
                 "1h",
-                "1h"
+                "1h",
+                awsIamRoleService
         );
     }
 
@@ -267,12 +271,15 @@ public class AuthenticationServiceTest {
         String roleName = "role/path";
         String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
         String roleArn = String.format("arn:aws:iam::%s:role/%s", accountId, roleName);
+        String rootArn = String.format("arn:aws:iam::%s:root", accountId);
 
         when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
         when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.empty());
+        when(awsIamRoleDao.getIamRole(rootArn)).thenReturn(Optional.empty());
 
         when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
         when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
 
         Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
 

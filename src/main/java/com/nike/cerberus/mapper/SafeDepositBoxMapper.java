@@ -32,11 +32,15 @@ public interface SafeDepositBoxMapper {
 
     List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(@Param("awsIamRoleArn") final String awsIamRoleArn);
 
+    List<SafeDepositBoxRoleRecord> getAccountRootAssociatedSafeDepositBoxRoles(@Param("awsAccountRootArn") final String awsAccountRootArn);
+
     List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxes(@Param("userGroups") Set<String> userGroups);
 
     List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxesIgnoreCase(@Param("userGroups") Set<String> userGroups);
 
     List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(@Param("iamPrincipalArn") final String iamPrincipalArn);
+
+    List<SafeDepositBoxRecord> getAccountRootAssociatedSafeDepositBoxes(@Param("awsAccountRootArn") final String awsAccountRootArn);
 
     SafeDepositBoxRecord getSafeDepositBox(@Param("id") String id);
 

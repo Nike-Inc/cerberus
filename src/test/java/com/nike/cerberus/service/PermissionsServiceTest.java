@@ -26,6 +26,7 @@ import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.cerberus.util.AwsIamRoleArnParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -61,6 +62,7 @@ public class PermissionsServiceTest {
     @Mock private Role ownerRole;
     @Mock private Role writeRole;
     @Mock private Role readRole;
+    @Mock private AwsIamRoleArnParser awsIamRoleArnParser;
 
 
     PermissionsService permissionsService;
@@ -75,7 +77,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                userGroupsCaseSensitive
+                userGroupsCaseSensitive,
+                awsIamRoleArnParser
         );
 
         when(ownerRole.getId()).thenReturn(OWNER_ID);
@@ -91,21 +94,45 @@ public class PermissionsServiceTest {
 
     @Test
     public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_a_iam_principal_does_not_have_permissions() {
-
+        String principalArn = "principal arn";
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
                 .build());
 
         SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
                 .withIamPrincipalPermissions(
                         ImmutableSet.of(
                                 IamPrincipalPermission.Builder.create()
+                                        .withIamPrincipalArn(principalArn)
                                         .withRoleId(READ_ID)
                                         .build()
                         )
                 )
                 .build();
 
+        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
+        assertFalse("The principal should not have owner permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_a_iam_principal_does_not_have_owner_permissions() {
+        String principalArn = "principal arn";
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withIamPrincipalPermissions(
+                        ImmutableSet.of(
+                                IamPrincipalPermission.Builder.create()
+                                        .withIamPrincipalArn("arn:aws:iam::0000000000:role/not-the-right-principal")
+                                        .withRoleId(OWNER_ID)
+                                        .build()
+                        )
+                )
+                .build();
 
         Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
         assertFalse("The principal should not have owner permissions", actual);
@@ -113,21 +140,64 @@ public class PermissionsServiceTest {
 
     @Test
     public void test_that_doesPrincipalHaveOwnerPermissions_returns_true_when_a_iam_principal_has_permissions() {
-
+        String principalArn = "principal arn";
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
                 .build());
 
         SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
                 .withIamPrincipalPermissions(
                         ImmutableSet.of(
                                 IamPrincipalPermission.Builder.create()
+                                        .withIamPrincipalArn(principalArn)
                                         .withRoleId(OWNER_ID)
                                         .build()
                         )
                 )
                 .build();
 
+        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
+        assertTrue("The principal should have owner permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveOwnerPermissions_returns_true_when_root_account_arn_gives_permissions() {
+        String principalArn = "arn:aws:iam::0000000000:role/name";
+        String rootArn = "arn:aws:iam::0000000000:root";
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withIamPrincipalPermissions(
+                        ImmutableSet.of(
+                                IamPrincipalPermission.Builder.create()
+                                        .withIamPrincipalArn("arn:aws:iam::0000000000:root")
+                                        .withRoleId(OWNER_ID)
+                                        .build()
+                        )
+                )
+                .build();
+
+        when(awsIamRoleArnParser.arnAccountIdsDoMatch(rootArn, principalArn)).thenReturn(true);
+        when(awsIamRoleArnParser.isAccountRootArn(rootArn)).thenReturn(true);
+        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
+        assertTrue("The principal should have owner permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesPrincipalHaveOwnerPermissions_returns_true_when_a_iam_principal_is_owner() {
+        String principalArn = "principal arn";
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withOwner(principalArn)
+                .build();
 
         Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
         assertTrue("The principal should have owner permissions", actual);
@@ -215,6 +285,24 @@ public class PermissionsServiceTest {
     }
 
     @Test
+    public void test_that_doesPrincipalHaveReadPermission_returns_true_when_account_root_arn_grants_access() {
+        String rootArn = "arn:aws:iam::0000000000:root";
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal("arn:aws:iam::0000000000:role/foo")
+                .build());
+
+        when(iamPrincipalPermissionService.getIamPrincipalPermissions(SDB_ID)).thenReturn(ImmutableSet.of(
+                IamPrincipalPermission.Builder.create().withIamPrincipalArn(rootArn).build()
+        ));
+
+        when(awsIamRoleArnParser.arnAccountIdsDoMatch(rootArn, principal.getName())).thenReturn(true);
+        when(awsIamRoleArnParser.isAccountRootArn(rootArn)).thenReturn(true);
+        assertTrue("The principal should have read permissions",
+                permissionsService.doesPrincipalHaveReadPermission(principal, SDB_ID));
+    }
+
+    @Test
     public void test_that_doesPrincipalHaveReadPermission_returns_false_for_user_princ_when_perms_missing() {
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(USER)
@@ -286,7 +374,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                false
+                false,
+                awsIamRoleArnParser
         );
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create().withPrincipalType(USER).build());
         when(permissionsDao.doesUserPrincipalHaveRoleForSdb(any(), any(), any())).thenReturn(false);
@@ -301,7 +390,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                true
+                true,
+                awsIamRoleArnParser
         );
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create().withPrincipalType(USER).build());
         when(permissionsDao.doesUserPrincipalHaveRoleForSdb(any(), any(), any())).thenReturn(false);
@@ -316,7 +406,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                true);
+                true,
+                awsIamRoleArnParser);
 
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(USER)
@@ -338,7 +429,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                false);
+                false,
+                awsIamRoleArnParser);
 
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(USER)
@@ -360,7 +452,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                true);
+                true,
+                awsIamRoleArnParser);
 
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(USER)
@@ -390,7 +483,8 @@ public class PermissionsServiceTest {
                 userGroupPermissionService,
                 iamPrincipalPermissionService,
                 permissionsDao,
-                false);
+                false,
+                awsIamRoleArnParser);
 
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(USER)

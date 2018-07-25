@@ -35,7 +35,7 @@ public class AwsIamRoleArnParser {
      *
      * This is also the list of ARN types that are allowed in KMS key policies.
      */
-    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED = "^arn:aws:(iam|sts)::\\d+:(role|user|federated-user|assumed-role).*/.+(?<!\\s)$";
+    public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED = "^arn:aws:(iam|sts)::(?<accountId>\\d+?):(role|user|federated-user|assumed-role).*/.+(?<!\\s)$";
 
     /**
      * Pattern used for generating a role from another ARN.
@@ -76,6 +76,10 @@ public class AwsIamRoleArnParser {
 
     private static final Pattern GENERIC_ASSUMED_ROLE_PATTERN = Pattern.compile(GENERIC_ASSUMED_ROLE_REGEX);
 
+    private static final Pattern AWS_ACCOUNT_ROOT_ARN_PATTERN = Pattern.compile(AWS_ACCOUNT_ROOT_ARN_REGEX);
+
+    private static final Pattern AWS_IAM_ARN_ACCOUNT_ID_PATTERN = Pattern.compile("arn:aws:(iam|sts)::(?<accountId>\\d+?):.+");
+
     /**
      * Gets account ID from a 'role' ARN
      * @param roleArn - Role ARN to parse
@@ -109,10 +113,23 @@ public class AwsIamRoleArnParser {
         return iamRoleArnMatcher.find();
     }
 
+    /**
+     * Returns true if the ARN is in format 'arn:aws:iam::000000000:root' and false if not
+     * @param arn - ARN to test
+     * @return - True if is 'role' ARN, False if not
+     */
+    public boolean isAccountRootArn(final String arn) {
+
+        final Matcher accountRootArnMatcher = AWS_ACCOUNT_ROOT_ARN_PATTERN.matcher(arn);
+
+        return accountRootArnMatcher.find();
+    }
+
     public boolean isArnThatCanGoInKeyPolicy(final String arn) {
         final Matcher arnMatcher = IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher(arn);
+        final Matcher rootArnMatcher = AWS_ACCOUNT_ROOT_ARN_PATTERN.matcher(arn);
 
-        return arnMatcher.find();
+        return arnMatcher.find() || rootArnMatcher.find();
     }
 
     /**
@@ -134,6 +151,24 @@ public class AwsIamRoleArnParser {
         final String roleName = getNamedGroupFromRegexPattern(patternToMatch, "roleName", principalArn);
 
         return String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    }
+
+    public String convertPrincipalArnToRootArn(final String principalArn) {
+
+        if (isAccountRootArn(principalArn)) {
+            return principalArn;
+        }
+
+        final String accountId = getNamedGroupFromRegexPattern(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "accountId", principalArn);
+
+        return String.format("arn:aws:iam::%s:root", accountId);
+    }
+
+    public boolean arnAccountIdsDoMatch(String iamPrincipalArn1, String iamPrincipalArn2) {
+        String accountId1 = getNamedGroupFromRegexPattern(AWS_IAM_ARN_ACCOUNT_ID_PATTERN, "accountId", iamPrincipalArn1);
+        String accountId2 = getNamedGroupFromRegexPattern(AWS_IAM_ARN_ACCOUNT_ID_PATTERN, "accountId", iamPrincipalArn2);
+
+        return accountId1.equals(accountId2);
     }
 
     /**
