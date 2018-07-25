@@ -188,22 +188,6 @@ public class PermissionsServiceTest {
     }
 
     @Test
-    public void test_that_doesPrincipalHaveOwnerPermissions_returns_true_when_a_iam_principal_is_owner() {
-        String principalArn = "principal arn";
-        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
-                .withPrincipalType(IAM)
-                .withPrincipal(principalArn)
-                .build());
-
-        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
-                .withOwner(principalArn)
-                .build();
-
-        Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
-        assertTrue("The principal should have owner permissions", actual);
-    }
-
-    @Test
     public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_a_user_principal_does_not_have_permissions() {
 
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()

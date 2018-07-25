@@ -56,22 +56,6 @@
         AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
   </select>
 
-  <select id="getAccountRootAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
-    SELECT
-      SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
-      R.NAME AS ROLE_NAME
-    FROM
-      SAFE_DEPOSIT_BOX SDB
-    INNER JOIN
-      AWS_IAM_ROLE_PERMISSIONS AIRP ON SDB.ID = AIRP.SDBOX_ID
-    INNER JOIN
-      AWS_IAM_ROLE AIR ON AIRP.AWS_IAM_ROLE_ID = AIR.ID
-    INNER JOIN
-      ROLE R ON AIRP.ROLE_ID = R.ID
-    WHERE
-      AIR.AWS_IAM_ROLE_ARN = #{awsAccountRootArn}
-  </select>
-
   <select id="getSafeDepositBoxes" resultType="SafeDepositBoxRecord">
     SELECT
       ID,
@@ -165,27 +149,6 @@
       AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
     WHERE
       AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
-  </select>
-
-  <select id="getAccountRootAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
-    SELECT
-      DISTINCT SDB.ID,
-      SDB.CATEGORY_ID,
-      SDB.NAME,
-      SDB.DESCRIPTION,
-      SDB.PATH,
-      SDB.CREATED_BY,
-      SDB.LAST_UPDATED_BY,
-      SDB.CREATED_TS,
-      SDB.LAST_UPDATED_TS
-    FROM
-      SAFE_DEPOSIT_BOX SDB
-    INNER JOIN
-      AWS_IAM_ROLE_PERMISSIONS ON SDB.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
-    INNER JOIN
-      AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
-    WHERE
-      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{awsAccountRootArn}
   </select>
 
   <select id="getSafeDepositBox" resultType="SafeDepositBoxRecord">

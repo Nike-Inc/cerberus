@@ -478,7 +478,7 @@ public class AuthenticationService {
         final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal =
                 safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn);
         final List<SafeDepositBoxRoleRecord> sdbRolesForAwsAccount =
-                safeDepositBoxDao.getAccountRootAssociatedSafeDepositBoxRoles(accountRootArn);
+                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(accountRootArn);
         sdbRolesForIamPrincipal.addAll(sdbRolesForAwsAccount);
 
         sdbRolesForIamPrincipal.forEach(i -> {

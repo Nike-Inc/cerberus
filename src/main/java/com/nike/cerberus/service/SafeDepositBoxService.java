@@ -138,7 +138,7 @@ public class SafeDepositBoxService {
             case IAM:
                 String rootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
                 List<SafeDepositBoxRecord> sdbRecordsForIamPrincipal = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(principal.getName());
-                List<SafeDepositBoxRecord> sdbRecordsForAccountRoot = safeDepositBoxDao.getAccountRootAssociatedSafeDepositBoxes(rootArn);
+                List<SafeDepositBoxRecord> sdbRecordsForAccountRoot = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(rootArn);
                 sdbRecordsForIamPrincipal.addAll(sdbRecordsForAccountRoot);
                 sdbRecords = sdbRecordsForIamPrincipal;
                 break;
