@@ -19,6 +19,7 @@ package com.nike.cerberus.validation;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -42,13 +43,8 @@ public class PatternListAnyMatchValidator
 
     @Override
     public boolean isValid(String stringToMatch, ConstraintValidatorContext context) {
-        boolean matchesAny = false;
-        for (java.util.regex.Pattern pattern : patterns) {
-            if (pattern.matcher(stringToMatch).matches()) {
-                matchesAny = true;
-            }
-        }
-
-        return matchesAny;
+        return Arrays.stream(patterns)
+                .anyMatch(pattern ->
+                        pattern.matcher(stringToMatch).matches());
     }
 }
