@@ -150,7 +150,9 @@
     INNER JOIN
       AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
     WHERE
-      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+      (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>
 
   <select id="getSafeDepositBox" resultType="SafeDepositBoxRecord">

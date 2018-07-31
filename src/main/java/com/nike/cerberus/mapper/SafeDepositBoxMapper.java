@@ -37,7 +37,8 @@ public interface SafeDepositBoxMapper {
 
     List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxesIgnoreCase(@Param("userGroups") Set<String> userGroups);
 
-    List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(@Param("iamPrincipalArn") final String iamPrincipalArn);
+    List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(@Param("iamPrincipalArn") final String iamPrincipalArn,
+                                                                         @Param("iamRootArn") final String iamRootArn);
 
     SafeDepositBoxRecord getSafeDepositBox(@Param("id") String id);
 
