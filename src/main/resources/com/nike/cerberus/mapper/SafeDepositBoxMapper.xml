@@ -53,7 +53,9 @@
       INNER JOIN
         ROLE R ON AIRP.ROLE_ID = R.ID
     WHERE
-        AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+        (AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>
 
   <select id="getSafeDepositBoxes" resultType="SafeDepositBoxRecord">

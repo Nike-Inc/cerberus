@@ -476,10 +476,7 @@ public class AuthenticationService {
         final String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn);
         final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
         final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal =
-                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn);
-        final List<SafeDepositBoxRoleRecord> sdbRolesForAwsAccount =
-                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(accountRootArn);
-        sdbRolesForIamPrincipal.addAll(sdbRolesForAwsAccount);
+                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn, accountRootArn);
 
         sdbRolesForIamPrincipal.forEach(i -> {
             policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
