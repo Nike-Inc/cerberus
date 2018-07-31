@@ -16,11 +16,11 @@
 
 package com.nike.cerberus.service;
 
+import com.google.common.collect.Sets;
 import com.google.inject.name.Named;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.dao.PermissionsDao;
-import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
+import static com.nike.cerberus.record.RoleRecord.ROLE_READ;
+import static com.nike.cerberus.record.RoleRecord.ROLE_WRITE;
 
 @Singleton
 public class PermissionsService {
@@ -78,23 +80,9 @@ public class PermissionsService {
         boolean principalHasOwnerPermissions = false;
         switch (principal.getPrincipalType()) {
             case IAM:
-                String principalName = principal.getName();
-                String ownerRoleId = roleService.getRoleByName(ROLE_OWNER)
-                        .orElseThrow(() -> ApiException.newBuilder()
-                                .withApiErrors(DefaultApiError.MISCONFIGURED_APP)
-                                .withExceptionMessage("Owner role doesn't exist!")
-                                .build())
-                        .getId();
-                for (IamPrincipalPermission perm : sdb.getIamPrincipalPermissions()) {
-                    String permIamPrincipalArn = perm.getIamPrincipalArn();
-                    if (perm.getRoleId().equals(ownerRoleId)) {
-                        if (principalName.equals(permIamPrincipalArn)) {
-                            principalHasOwnerPermissions = true;
-                        } else if (roleIsAllowedByAccountRootArn(permIamPrincipalArn, principalName)) {
-                            principalHasOwnerPermissions = true;
-                        }
-                    }
-                }
+                String iamPrincipalArn = principal.getName();
+                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
+                principalHasOwnerPermissions = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdb.getId(), iamPrincipalArn, iamRootArn, Sets.newHashSet(ROLE_OWNER));
                 break;
             case USER:
                 principalHasOwnerPermissions = userGroupsCaseSensitive ?
@@ -135,11 +123,9 @@ public class PermissionsService {
         switch (principal.getPrincipalType()) {
             case IAM:
                 // if the authenticated principal is an IAM Principal check to see that the iam principal is associated with the requested sdb
-                principalHasPermissionAssociationWithSdb = iamPrincipalPermissionService.getIamPrincipalPermissions(sdbId)
-                        .stream()
-                        .anyMatch(perm ->
-                                perm.getIamPrincipalArn().equals(principal.getName())
-                                        || roleIsAllowedByAccountRootArn(perm.getIamPrincipalArn(), principal.getName()));
+                String iamPrincipalArn = principal.getName();
+                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
+                principalHasPermissionAssociationWithSdb = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, Sets.newHashSet(ROLE_READ, ROLE_OWNER, ROLE_WRITE));
                 break;
             case USER:
                 // if the the principal is a user principal ensure that one of the users groups is associated with the sdb
@@ -159,9 +145,8 @@ public class PermissionsService {
         boolean hasPermission = false;
         switch (principal.getPrincipalType()) {
             case IAM:
-                String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
-                hasPermission = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, principal.getName(), action.getAllowedRoles())
-                        || permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, accountRootArn, action.getAllowedRoles());
+                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
+                hasPermission = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, principal.getName(), iamRootArn, action.getAllowedRoles());
                 break;
             case USER:
                 hasPermission = userGroupsCaseSensitive ?
@@ -215,10 +200,5 @@ public class PermissionsService {
         return co2.stream()
                 .map(String::toLowerCase)
                 .anyMatch(co1LowerCase::contains);
-    }
-
-    private boolean roleIsAllowedByAccountRootArn(String possibleIamRootArn, String authenticatingPrincipalArn) {
-        return awsIamRoleArnParser.isAccountRootArn(possibleIamRootArn)
-                && awsIamRoleArnParser.arnAccountIdsDoMatch(possibleIamRootArn, authenticatingPrincipalArn);
     }
 }

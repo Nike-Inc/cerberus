@@ -31,8 +31,8 @@ public class PermissionsDao {
         this.permissionsMapper = permissionsMapper;
     }
 
-    public Boolean doesIamPrincipalHaveRoleForSdb(String sdbId, String iamPrincipalArn, Set<String> rolesThatAllowPermission) {
-        return permissionsMapper.doesIamPrincipalHaveGivenRoleForSdb(sdbId, iamPrincipalArn, rolesThatAllowPermission);
+    public Boolean doesIamPrincipalHaveRoleForSdb(String sdbId, String iamPrincipalArn, String iamRootArn, Set<String> rolesThatAllowPermission) {
+        return permissionsMapper.doesIamPrincipalHaveGivenRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, rolesThatAllowPermission);
     }
 
     public Boolean doesUserPrincipalHaveRoleForSdb(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {

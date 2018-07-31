@@ -164,13 +164,6 @@ public class AwsIamRoleArnParser {
         return String.format("arn:aws:iam::%s:root", accountId);
     }
 
-    public boolean arnAccountIdsDoMatch(String iamPrincipalArn1, String iamPrincipalArn2) {
-        String accountId1 = getNamedGroupFromRegexPattern(AWS_IAM_ARN_ACCOUNT_ID_PATTERN, "accountId", iamPrincipalArn1);
-        String accountId2 = getNamedGroupFromRegexPattern(AWS_IAM_ARN_ACCOUNT_ID_PATTERN, "accountId", iamPrincipalArn2);
-
-        return accountId1.equals(accountId2);
-    }
-
     /**
      * Strip out a description from the supplied ARN, e.g. "123456789/role-name" or the empty string
      */

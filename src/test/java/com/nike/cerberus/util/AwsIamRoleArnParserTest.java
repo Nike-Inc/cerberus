@@ -178,44 +178,4 @@ public class AwsIamRoleArnParserTest {
         assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:federated-user/foobaz"));
 
     }
-
-    @Test
-    public void test_arnAccountIdsDoMatch_returns_true_when_account_ids_match() {
-        assertTrue(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::0000000000:root",
-                "arn:aws:iam::0000000000:role/foo"));
-        assertTrue(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::1111111111:role/foo",
-                "arn:aws:iam::1111111111:user/bar"));
-        assertTrue(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::2222222222:user/bar",
-                "arn:aws:sts::2222222222:assumed-role/baz"));
-        assertTrue(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:sts::3333333333:assumed-role/baz",
-                "arn:aws:iam::3333333333:group/foobar"));
-        assertTrue(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::4444:group/foobar",
-                "arn:aws:sts::4444:federated-user/foobaz"));
-
-    }
-
-    @Test
-    public void test_arnAccountIdsDoMatch_returns_false_when_account_ids_do_not_match() {
-        assertFalse(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::0000000000:root",
-                "arn:aws:iam::1111111111:role/foo"));
-        assertFalse(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::1111111111:role/foo",
-                "arn:aws:iam::0000000000:user/bar"));
-        assertFalse(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::2222222222:user/bar",
-                "arn:aws:sts::3333333333:assumed-role/baz"));
-        assertFalse(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:sts::3333333333:assumed-role/baz",
-                "arn:aws:iam::2222222222:group/foobar"));
-        assertFalse(awsIamRoleArnParser.arnAccountIdsDoMatch(
-                "arn:aws:iam::4444:group/foobar",
-                "arn:aws:sts::3333333333:federated-user/foobaz"));
-
-    }
 }
