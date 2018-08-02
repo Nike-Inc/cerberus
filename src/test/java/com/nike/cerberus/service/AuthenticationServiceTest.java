@@ -105,6 +105,9 @@ public class AuthenticationServiceTest {
     @Mock
     private AuthTokenService authTokenService;
 
+    @Mock
+    private AwsIamRoleService awsIamRoleService;
+
     private AuthenticationService authenticationService;
 
     private static int MAX_LIMIT = 2;
@@ -127,7 +130,8 @@ public class AuthenticationServiceTest {
                 slugger,
                 authTokenService,
                 "1h",
-                "1h"
+                "1h",
+                awsIamRoleService
         );
     }
 
@@ -199,20 +203,23 @@ public class AuthenticationServiceTest {
         String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
 
         String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+        String rootArn = String.format("arn:aws:iam::%s:root", accountId);
         when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
         when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(roleArn)).thenReturn(rootArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
 
         String sdbName1 = "principal arn sdb 1";
         String sdbName2 = "principal arn sdb 2";
         SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(read).setSafeDepositBoxName(sdbName1);
         SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(write).setSafeDepositBoxName(sdbName2);
         List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2);
-        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn)).thenReturn(principalArnRecords);
+        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn, rootArn)).thenReturn(principalArnRecords);
 
         String roleArnSdb = "role arn sdb";
         SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(owner).setSafeDepositBoxName(roleArnSdb);
         List<SafeDepositBoxRoleRecord> roleArnRecords = Lists.newArrayList(roleArnRecord);
-        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(roleArn)).thenReturn(roleArnRecords);
+        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(roleArn, rootArn)).thenReturn(roleArnRecords);
 
         List<String> expectedPolicies = Lists.newArrayList(
                 "principal-arn-sdb-1-read",
@@ -267,12 +274,15 @@ public class AuthenticationServiceTest {
         String roleName = "role/path";
         String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
         String roleArn = String.format("arn:aws:iam::%s:role/%s", accountId, roleName);
+        String rootArn = String.format("arn:aws:iam::%s:root", accountId);
 
         when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
         when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.empty());
+        when(awsIamRoleDao.getIamRole(rootArn)).thenReturn(Optional.empty());
 
         when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
         when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
 
         Optional<AwsIamRoleRecord> result = authenticationService.findIamRoleAssociatedWithSdb(principalArn);
 

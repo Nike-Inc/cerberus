@@ -62,6 +62,8 @@ public class SafeDepositBoxDaoTest {
 
     private final String awsIamRoleArn = "AWS_IAM_ROLE_ARN";
 
+    private final String iamRootArn = "IAM_ROOT_ARN";
+
     private final SafeDepositBoxRecord safeDepositBoxRecord = new SafeDepositBoxRecord()
             .setId(safeDepositBoxId)
             .setCategoryId(categoryId)
@@ -105,11 +107,11 @@ public class SafeDepositBoxDaoTest {
 
     @Test
     public void getIamRoleAssociatedSafeDepositBoxRoles_returns_list_of_role_records() {
-        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn))
+        when(safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn, iamRootArn))
                 .thenReturn(safeDepositBoxRoleRecordList);
 
         List<SafeDepositBoxRoleRecord> actual =
-                subject.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn);
+                subject.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn, iamRootArn);
 
         assertThat(actual).isNotEmpty();
         assertThat(actual).hasSameElementsAs(safeDepositBoxRoleRecordList);

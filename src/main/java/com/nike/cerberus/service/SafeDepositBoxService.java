@@ -136,7 +136,8 @@ public class SafeDepositBoxService {
 
         switch (principal.getPrincipalType()) {
             case IAM:
-                sdbRecords = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(principal.getName());
+                String rootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
+                sdbRecords = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(principal.getName(), rootArn);
                 break;
             case USER:
                 sdbRecords = userGroupsCaseSensitive ?

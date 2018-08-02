@@ -24,6 +24,7 @@ public interface PermissionsMapper {
 
     Boolean doesIamPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
                                                 @Param("iamPrincipalArn") String iamPrincipalArn,
+                                                @Param("iamRootArn") String iamRootArn,
                                                 @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
 
     Boolean doesUserPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,

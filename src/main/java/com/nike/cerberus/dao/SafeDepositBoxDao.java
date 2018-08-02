@@ -41,8 +41,9 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.getUserAssociatedSafeDepositBoxRoles(userGroups);
     }
 
-    public List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(final String awsIamRoleArn) {
-        return safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn);
+    public List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(final String awsIamRoleArn,
+                                                                                  final String iamRootArn) {
+        return safeDepositBoxMapper.getIamRoleAssociatedSafeDepositBoxRoles(awsIamRoleArn, iamRootArn);
     }
 
     public List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxes(final Set<String> userGroups) {
@@ -53,8 +54,9 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.getUserAssociatedSafeDepositBoxesIgnoreCase(userGroups);
     }
 
-    public List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(final String iamPrincipalArn) {
-        return safeDepositBoxMapper.getIamPrincipalAssociatedSafeDepositBoxes(iamPrincipalArn);
+    public List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(final String iamPrincipalArn,
+                                                                                final String iamRootArn) {
+        return safeDepositBoxMapper.getIamPrincipalAssociatedSafeDepositBoxes(iamPrincipalArn, iamRootArn);
     }
 
     public List<SafeDepositBoxRecord> getSafeDepositBoxes(final int limit, final int offset) {
