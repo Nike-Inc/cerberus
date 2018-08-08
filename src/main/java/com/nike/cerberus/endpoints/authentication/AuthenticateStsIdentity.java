@@ -81,7 +81,7 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
         final String headerAuthorization = getHeaderAuthorization(request);
 
         if (date == null || headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
-            throw new ApiException(DefaultApiError.GENERIC_BAD_REQUEST);
+            throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
         }
 
         AwsStsHttpHeader header = new AwsStsHttpHeader(date, headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);

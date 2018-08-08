@@ -72,12 +72,20 @@ public class AwsStsHttpClient {
         try {
             Request request = buildRequest(headers);
             Response response =  httpClient.newCall(request).execute();
-            if (!response.isSuccessful()) {
+            if (response.code() >= 400 && response.code() < 500) {
                 final String msg = String.format("Failed to authenticate with AWS, error message: %s",
                         response.body().string());
 
                 throw ApiException.newBuilder()
                         .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
+                        .withExceptionMessage(msg)
+                        .build();
+            } else if (response.code() >= 500){
+                final String msg = String.format("Something is wrong with AWS, error message: %s",
+                        response.body().string());
+
+                throw ApiException.newBuilder()
+                        .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
                         .withExceptionMessage(msg)
                         .build();
             }
