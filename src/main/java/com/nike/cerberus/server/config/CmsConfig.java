@@ -16,12 +16,15 @@
 
 package com.nike.cerberus.server.config;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
-import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
-import com.google.common.collect.ImmutableList;
-import com.google.inject.util.Modules;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
+import com.nike.cerberus.server.config.guice.AwsStsGuiceModule;
 import com.nike.cerberus.server.config.guice.CerberusBackstopperRiposteGuiceModule;
 import com.nike.cerberus.server.config.guice.CmsFlywayModule;
 import com.nike.cerberus.server.config.guice.CmsGuiceModule;
@@ -30,7 +33,6 @@ import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
 import com.nike.cerberus.server.config.guice.MetricsGuiceModule;
 import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
 import com.nike.cerberus.util.ArchaiusUtils;
-import com.nike.cerberus.service.ConfigService;
 import com.nike.cerberus.util.JobsInitializerUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
 import com.nike.guice.typesafeconfig.TypesafeConfigPropertiesRegistrationGuiceModule;
@@ -45,16 +47,7 @@ import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 import com.nike.riposte.server.logging.AccessLogger;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.typesafe.config.Config;
-import org.slf4j.LoggerFactory;
 import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
@@ -109,6 +102,7 @@ public class CmsConfig implements ServerConfig {
                 new BackstopperRiposteConfigGuiceModule(),
                 new CmsFlywayModule(),
                 new OneLoginGuiceModule(),
+                new AwsStsGuiceModule(),
                 new MetricsGuiceModule(),
                 new CerberusBackstopperRiposteGuiceModule(),
                 new CmsGuiceModule(objectMapper)

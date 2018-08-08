@@ -33,6 +33,7 @@ import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.*;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
+import com.nike.cerberus.endpoints.authentication.AuthenticateStsIdentity;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
 import com.nike.cerberus.endpoints.authentication.MfaCheck;
 import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
@@ -181,6 +182,7 @@ public class CmsGuiceModule extends AbstractModule {
             RefreshUserToken refreshUserToken,
             AuthenticateIamRole authenticateIamRole,
             AuthenticateIamPrincipal authenticateIamPrincipal,
+            AuthenticateStsIdentity authenticateStsIdentity,
             RevokeToken revokeToken,
             GetAllRoles getAllRoles,
             GetRole getRole,
@@ -216,7 +218,8 @@ public class CmsGuiceModule extends AbstractModule {
                 robotsEndpoint,
                 // Cerberus endpoints
                 getAllCategories, getCategory, createCategory, deleteCategory,
-                authenticateUser, authenticateIamPrincipal, mfaCheck, refreshUserToken, authenticateIamRole, revokeToken,
+                authenticateUser, authenticateIamPrincipal, authenticateStsIdentity, mfaCheck, refreshUserToken,
+                authenticateIamRole, revokeToken,
                 getAllRoles, getRole,
                 getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
                 deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
@@ -264,6 +267,7 @@ public class CmsGuiceModule extends AbstractModule {
                 || i instanceof MfaCheck
                 || i instanceof AuthenticateIamRole
                 || i instanceof AuthenticateIamPrincipal
+                || i instanceof AuthenticateStsIdentity
                 || i instanceof GetDashboardRedirect
                 || i instanceof GetDashboard)).collect(Collectors.toList());
     }

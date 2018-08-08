@@ -10,6 +10,53 @@ as well as in the [integration tests](https://github.com/Nike-Inc/cerberus-integ
 
 # Group Authentication
 
+## App Login v3 [/v3/auth/sts-identity]
+
+### Authenticate with Cerberus as an App [POST]
+
+This endpoint takes a [signed AWS STS get-caller-identity POST request](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) and returns a payload containing an auth token needed to access Cerberus. 
+
++ Request (application/json)
+
+    + Headers
+
+            Date: Tue, 07 Aug 2018 22:28:20 UTC
+            x-amz-date: 20180807T222820Z
+            x-amz-security-token: AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a
+            Authorization: AWS4-HMAC-SHA256 Credential=ASIAASDF234ASDF/20180807/us-east-1/sts/aws4_request, SignedHeaders=host;x-amz-date, Signature=ab57c7f7d87b
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "client_token" : "AaAAAaaaAAAabCdEF0JkLMNZ01iGabcdefGHIJKLtClQabcCVabEYab1aDaZZz12a",
+              "policies" : [ "foo-bar-read", "lookup-self" ],
+              "metadata" : {
+                "iam_principal_arn" : "arn:aws:iam::111111111:role/fake-role"
+                "username" : "arn:aws:iam::111111111:role/fake-role"
+                "is_admin": "false",
+                "groups": "registered-iam-principals"
+              },
+              "lease_duration" : 3600,
+              "renewable" : true
+            }
+            
++ Response 401 (application/json)
+
+    + Body
+
+            {
+                "error_id":"ccc1cc1c-e111-11e1-11ce-111e11a111f1",
+                "errors": [
+                    {
+                        "code":99106,
+                        "message":"Invalid credentials"
+                    }
+                ]
+            }
+
 ## User Login [/v2/auth/user]
 
 ### Authenticate with Cerberus as a User [GET]

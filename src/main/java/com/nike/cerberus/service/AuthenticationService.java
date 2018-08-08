@@ -224,6 +224,13 @@ public class AuthenticationService {
         return authenticate(credentials, authPrincipalMetadata);
     }
 
+    public AuthTokenResponse keylessAuthenticate(final String iamPrincipalArn) {
+        final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
+        authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
+
+        return keylessAuthenticate(iamPrincipalArn, authPrincipalMetadata);
+    }
+
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
         final AwsIamRoleKmsKeyRecord kmsKeyRecord;
         final AwsIamRoleRecord iamRoleRecord;
@@ -267,6 +274,15 @@ public class AuthenticationService {
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
         return iamRoleAuthResponse;
+    }
+
+    private AuthTokenResponse keylessAuthenticate(String iamPrincipalArn, Map<String, String> authPrincipalMetadata) {
+        final AwsIamRoleRecord iamRoleRecord;
+        iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
+
+        final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
+        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
+        return authResponse;
     }
 
     private AuthTokenResponse createToken(String principal,
@@ -598,12 +614,10 @@ public class AuthenticationService {
      * Generate map of Token metadata that is common to all principals
      *
      * @param iamPrincipalArn - The authenticating IAM principal ARN
-     * @param region - The AWS region
      * @return - Map of token metadata
      */
-    protected Map<String, String> generateCommonIamPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
+    protected Map<String, String> generateCommonIamPrincipalAuthMetadata(final String iamPrincipalArn) {
         Map<String, String> metadata = Maps.newHashMap();
-        metadata.put(CerberusPrincipal.METADATA_KEY_AWS_REGION, region);
         metadata.put(CerberusPrincipal.METADATA_KEY_USERNAME, iamPrincipalArn);
         metadata.put(CerberusPrincipal.METADATA_KEY_IS_IAM_PRINCIPAL, Boolean.TRUE.toString());
 
@@ -619,6 +633,19 @@ public class AuthenticationService {
         }
         metadata.put(CerberusPrincipal.METADATA_KEY_GROUPS, StringUtils.join(groups, ','));
 
+        return metadata;
+    }
+
+    /**
+     * Generate map of Token metadata that is common to all principals
+     *
+     * @param iamPrincipalArn - The authenticating IAM principal ARN
+     * @param region - The AWS region
+     * @return - Map of token metadata
+     */
+    protected Map<String, String> generateCommonIamPrincipalAuthMetadata(final String iamPrincipalArn, final String region) {
+        Map<String, String> metadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
+        metadata.put(CerberusPrincipal.METADATA_KEY_AWS_REGION, region);
         return metadata;
     }
 
