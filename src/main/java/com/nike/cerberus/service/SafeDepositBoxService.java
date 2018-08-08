@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.util.LinkedList;
@@ -52,6 +53,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.nike.cerberus.service.PermissionsService.USER_GROUPS_CASE_SENSITIVE;
 
 /**
  * Business logic for interacting with safe deposit boxes.
@@ -87,6 +90,8 @@ public class SafeDepositBoxService {
 
     private final SecureDataVersionDao secureDataVersionDao;
 
+    private final Boolean userGroupsCaseSensitive;
+
     @Inject
     public SafeDepositBoxService(SafeDepositBoxDao safeDepositBoxDao,
                                  UserGroupDao userGroupDao,
@@ -100,7 +105,8 @@ public class SafeDepositBoxService {
                                  DateTimeSupplier dateTimeSupplier,
                                  AwsIamRoleArnParser awsIamRoleArnParser,
                                  SecureDataService secureDataService,
-                                 SecureDataVersionDao secureDataVersionDao) {
+                                 SecureDataVersionDao secureDataVersionDao,
+                                 @Named(USER_GROUPS_CASE_SENSITIVE) Boolean userGroupsCaseSensitive){
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.userGroupDao = userGroupDao;
@@ -115,6 +121,7 @@ public class SafeDepositBoxService {
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.secureDataService = secureDataService;
         this.secureDataVersionDao = secureDataVersionDao;
+        this.userGroupsCaseSensitive = userGroupsCaseSensitive;
     }
 
     /**
@@ -129,10 +136,13 @@ public class SafeDepositBoxService {
 
         switch (principal.getPrincipalType()) {
             case IAM:
-                sdbRecords = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(principal.getName());
+                String rootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
+                sdbRecords = safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(principal.getName(), rootArn);
                 break;
             case USER:
-                sdbRecords = safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(principal.getUserGroups());
+                sdbRecords = userGroupsCaseSensitive ?
+                        safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(principal.getUserGroups()) :
+                        safeDepositBoxDao.getUserAssociatedSafeDepositBoxesIgnoreCase(principal.getUserGroups());
                 break;
             default:
                 throw new ApiException(DefaultApiError.UNKNOWN_PRINCIPAL_TYPE);

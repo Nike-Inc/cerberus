@@ -24,10 +24,14 @@ public interface PermissionsMapper {
 
     Boolean doesIamPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
                                                 @Param("iamPrincipalArn") String iamPrincipalArn,
+                                                @Param("iamRootArn") String iamRootArn,
                                                 @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
 
     Boolean doesUserPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
                                                  @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
                                                  @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 
+    Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(@Param("sdbId") String sdbId,
+                                                          @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
+                                                          @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 }

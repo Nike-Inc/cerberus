@@ -166,4 +166,16 @@ public class AwsIamRoleArnParserTest {
         assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some-role ").matches());
         assertFalse(IAM_PRINCIPAL_ARN_PATTERN_ALLOWED.matcher("arn:aws:iam::12345678901234:role/some-role\t").matches());
     }
+
+    @Test
+    public void test_isAccountRootArn() {
+        assertTrue(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:root"));
+
+        assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:role/foo"));
+        assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:user/bar"));
+        assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:assumed-role/baz"));
+        assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:group/foobar"));
+        assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:federated-user/foobaz"));
+
+    }
 }

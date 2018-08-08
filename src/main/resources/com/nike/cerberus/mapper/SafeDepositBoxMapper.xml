@@ -53,7 +53,9 @@
       INNER JOIN
         ROLE R ON AIRP.ROLE_ID = R.ID
     WHERE
-        AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+        (AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>
 
   <select id="getSafeDepositBoxes" resultType="SafeDepositBoxRecord">
@@ -102,6 +104,34 @@
       SDB.ID ASC
   </select>
 
+  <select id="getUserAssociatedSafeDepositBoxesIgnoreCase" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON SDB.ID = UGP.SDBOX_ID
+      INNER JOIN
+        USER_GROUP UG ON UGP.USER_GROUP_ID = UG.ID
+    WHERE
+      UPPER(UG.NAME) IN
+      <foreach item="item" index="index" collection="userGroups"
+             open="(" separator="," close=")">
+        UPPER(#{item})
+      </foreach>
+    ORDER BY
+      SDB.CATEGORY_ID ASC,
+      SDB.ID ASC
+  </select>
+
   <select id="getIamPrincipalAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
     SELECT
       DISTINCT SDB.ID,
@@ -120,7 +150,9 @@
     INNER JOIN
       AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
     WHERE
-      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+      (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>
 
   <select id="getSafeDepositBox" resultType="SafeDepositBoxRecord">

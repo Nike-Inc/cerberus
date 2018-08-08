@@ -31,7 +31,9 @@
           WHERE
             SAFE_DEPOSIT_BOX.ID = #{sdbId}
           AND
-            AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+            (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+              OR
+            AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
           AND
             ROLE.NAME IN
             <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
@@ -60,6 +62,29 @@
             <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
                 #{role}
             </foreach>
+        ) as HAS_PERMS
+    </select>
+
+    <select id="doesUserHavePermsForRoleAndSdbCaseInsensitive" resultType="Boolean">
+        SELECT NOT 0 >= (
+            SELECT
+              COUNT(*)
+            FROM SAFE_DEPOSIT_BOX
+              LEFT JOIN USER_GROUP_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = USER_GROUP_PERMISSIONS.SDBOX_ID
+              LEFT JOIN USER_GROUP ON USER_GROUP_PERMISSIONS.USER_GROUP_ID = USER_GROUP.ID
+              LEFT JOIN ROLE ON USER_GROUP_PERMISSIONS.ROLE_ID = ROLE.ID
+            WHERE
+              SAFE_DEPOSIT_BOX.ID = #{sdbId}
+            AND
+              UPPER(USER_GROUP.NAME) IN
+              <foreach item="userGroup" collection="userGroupsThatPrincipalBelongsTo" separator="," open="(" close=")">
+                  UPPER(#{userGroup})
+              </foreach>
+            AND
+              ROLE.NAME IN
+              <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+                  #{role}
+              </foreach>
         ) as HAS_PERMS
     </select>
 

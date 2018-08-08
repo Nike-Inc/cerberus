@@ -114,6 +114,7 @@ public class AuthenticationService {
     private final AuthTokenService authTokenService;
     private final String userTokenTTL;
     private final String iamTokenTTL;
+    private final AwsIamRoleService awsIamRoleService;
     private final int maxTokenRefreshCount;
 
     @Inject(optional=true)
@@ -136,7 +137,8 @@ public class AuthenticationService {
                                  Slugger slugger,
                                  AuthTokenService authTokenService,
                                  @Named(USER_TOKEN_TTL) String userTokenTTL,
-                                 @Named(IAM_TOKEN_TTL) String iamTokenTTL) {
+                                 @Named(IAM_TOKEN_TTL) String iamTokenTTL,
+                                 AwsIamRoleService awsIamRoleService) {
 
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
@@ -152,6 +154,7 @@ public class AuthenticationService {
         this.authTokenService = authTokenService;
         this.userTokenTTL = userTokenTTL;
         this.iamTokenTTL = iamTokenTTL;
+        this.awsIamRoleService = awsIamRoleService;
     }
 
     /**
@@ -491,11 +494,12 @@ public class AuthenticationService {
      * @return Set of policies to be associated
      */
     private Set<String> buildPolicySet(final String iamRoleArn) {
+        final String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn);
         final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
-        final List<SafeDepositBoxRoleRecord> sdbRoles =
-                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn);
+        final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal =
+                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn, accountRootArn);
 
-        sdbRoles.forEach(i -> {
+        sdbRolesForIamPrincipal.forEach(i -> {
             policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
         });
 
@@ -670,6 +674,15 @@ public class AuthenticationService {
             final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
             iamRole = awsIamRoleDao.getIamRole(iamPrincipalInRoleFormat);
+        }
+
+        if ( !iamRole.isPresent() ) {
+            String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
+            boolean rootArnExists = awsIamRoleDao.getIamRole(accountRootArn).isPresent();
+            if (rootArnExists) {
+                AwsIamRoleRecord newAwsIamRoleRecord = awsIamRoleService.createIamRole(iamPrincipalArn);
+                iamRole = Optional.of(newAwsIamRoleRecord);
+            }
         }
 
         return iamRole;
