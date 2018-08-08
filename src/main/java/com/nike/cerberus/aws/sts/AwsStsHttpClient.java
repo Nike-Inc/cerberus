@@ -44,11 +44,11 @@ public class AwsStsHttpClient {
 
     private static final MediaType DEFAULT_ACCEPTED_MEDIA_TYPE = MediaType.parse("application/json");
 
-    private final String DEFAULT_AWS_STS_ENDPOINT = "https://sts.amazonaws.com";
+    private static final String DEFAULT_AWS_STS_ENDPOINT = "https://sts.amazonaws.com";
 
-    private final String DEFAULT_GET_CALLER_IDENTITY_ACTION = "Action=GetCallerIdentity&Version=2011-06-15";
+    private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION = "Action=GetCallerIdentity&Version=2011-06-15";
 
-    private final String DEFAULT_METHOD = "POST";
+    private static final String DEFAULT_METHOD = "POST";
 
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
