@@ -26,19 +26,23 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A HttpClient for interacting with AWS STS
  */
 @Singleton
 public class AwsStsHttpClient {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private static final MediaType DEFAULT_CONTENT_MEDIA_TYPE = MediaType.parse("application/x-www-form-urlencoded");
 
@@ -49,6 +53,10 @@ public class AwsStsHttpClient {
     private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION = "Action=GetCallerIdentity&Version=2011-06-15";
 
     private static final String DEFAULT_METHOD = "POST";
+
+    protected static final int DEFAULT_AUTH_RETRIES = 3;
+
+    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
 
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -71,7 +79,7 @@ public class AwsStsHttpClient {
                             final Class<M> responseClass) {
         try {
             Request request = buildRequest(headers);
-            Response response =  httpClient.newCall(request).execute();
+            Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
             if (response.code() >= 400 && response.code() < 500) {
                 final String msg = String.format("Failed to authenticate with AWS, error message: %s",
                         response.body().string());
@@ -116,21 +124,11 @@ public class AwsStsHttpClient {
     }
 
     protected ApiException toApiException(IOException e) {
-        if (e instanceof SSLException
-                && e.getMessage() != null
-                && e.getMessage().contains("Unrecognized SSL message, plaintext connection?")) {
-            return ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("I/O error while communicating with AWS STS. Unrecognized SSL message may be due to a web proxy e.g. AnyConnect")
-                    .build();
-        } else {
-            return ApiException.newBuilder()
+        return ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
                     .withExceptionCause(e)
                     .withExceptionMessage("I/O error while communicating with AWS STS.")
                     .build();
-        }
     }
 
     /**
@@ -150,6 +148,46 @@ public class AwsStsHttpClient {
                     .withExceptionCause(e)
                     .withExceptionMessage("Error parsing the response body from AWS STS.")
                     .build();
+        }
+    }
+
+    /**
+     * Executes an HTTP request and retries if a 500 level error is returned
+     * @param request                The request to execute
+     * @param numRetries             The maximum number of times to retry
+     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep.
+     * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
+     * @throws IOException  If an IOException occurs during the last retry, then rethrow the error
+     */
+    protected Response executeRequestWithRetry(Request request, int numRetries, int sleepIntervalInMillis) throws IOException {
+        IOException exception = null;
+        Response response = null;
+        for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
+            try {
+                response = httpClient.newCall(request).execute();
+                if (response.code() < 500) {
+                    return response;
+                }
+            } catch (IOException ioe) {
+                LOGGER.debug(String.format("Failed to call %s %s. Retrying...", request.method(), request.url()), ioe);
+                exception = ioe;
+            }
+            sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
+        }
+
+        if (exception != null) {
+            throw exception;
+        } else {
+            return response;
+        }
+    }
+
+
+    private void sleep(long milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(milliseconds);
+        } catch (InterruptedException ie) {
+            LOGGER.warn("Sleep interval interrupted.", ie);
         }
     }
 }

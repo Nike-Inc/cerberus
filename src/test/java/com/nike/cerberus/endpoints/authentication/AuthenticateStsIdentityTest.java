@@ -97,7 +97,7 @@ public class AuthenticateStsIdentityTest {
         final RequestInfo<Void> requestInfo = mock(RequestInfo.class);
         when(requestInfo.getContent()).thenReturn(null);
         when(requestInfo.getHeaders()).thenReturn(httpHeaders);
-        when(authenticationService.keylessAuthenticate("test arn")).thenReturn(authTokenResponse);
+        when(authenticationService.stsAuthenticate("test arn")).thenReturn(authTokenResponse);
 
         final CompletableFuture<ResponseInfo<AuthTokenResponse>> completableFuture =
                 subject.execute(requestInfo, executor, null);

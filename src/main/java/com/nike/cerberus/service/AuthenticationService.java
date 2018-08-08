@@ -229,11 +229,11 @@ public class AuthenticationService {
      * @param iamPrincipalArn IAM role ARN
      * @return Unencrypted auth response
      */
-    public AuthTokenResponse keylessAuthenticate(final String iamPrincipalArn) {
+    public AuthTokenResponse stsAuthenticate(final String iamPrincipalArn) {
         final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-        return keylessAuthenticate(iamPrincipalArn, authPrincipalMetadata);
+        return stsAuthenticate(iamPrincipalArn, authPrincipalMetadata);
     }
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
@@ -281,7 +281,7 @@ public class AuthenticationService {
         return iamRoleAuthResponse;
     }
 
-    private AuthTokenResponse keylessAuthenticate(String iamPrincipalArn, Map<String, String> authPrincipalMetadata) {
+    private AuthTokenResponse stsAuthenticate(String iamPrincipalArn, Map<String, String> authPrincipalMetadata) {
         final AwsIamRoleRecord iamRoleRecord;
         iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
 

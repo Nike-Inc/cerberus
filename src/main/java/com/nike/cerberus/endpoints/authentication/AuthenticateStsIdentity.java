@@ -89,7 +89,7 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
         String iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
         AuthTokenResponse authResponse = null;
         try {
-            authResponse = authenticationService.keylessAuthenticate(iamPrincipalArn);
+            authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
         } catch (ApiException e) {
             eventProcessorService.ingestEvent(auditableEvent(
                     iamPrincipalArn, request, getClass().getSimpleName())

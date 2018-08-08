@@ -38,7 +38,7 @@ public class AwsStsClientTest {
     }
 
     @Test
-    public void test_createSessionLoginToken() {
+    public void test_getCallerIdentity() {
 
         setupMocks();
 

@@ -31,11 +31,11 @@ import okhttp3.ResponseBody;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 
+import static com.nike.cerberus.aws.sts.AwsStsHttpClient.DEFAULT_AUTH_RETRIES;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -94,12 +94,6 @@ public class AwsStsHttpClientTest {
     }
 
     @Test
-    public void test_toApiException_ssl_plain_text_error() {
-        SSLException sslException = new SSLException("Unrecognized SSL message, plaintext connection?");
-        assertTrue(awsStsHttpClient.toApiException(sslException).getMessage().contains("Unrecognized SSL message may be due to a web proxy"));
-    }
-
-    @Test
     public void test_toApiException_with_generic_error() {
         assertEquals("I/O error while communicating with AWS STS.", awsStsHttpClient.toApiException(new IOException()).getMessage());
     }
@@ -134,6 +128,49 @@ public class AwsStsHttpClientTest {
         awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
     }
 
+    @Test
+    public void test_does_not_retry_on_2xx() throws IOException {
+        Call failCall = mock(Call.class);
+        when(failCall.execute()).thenReturn(createFakeResponse(500, "err message"));
+
+        Call successCall = mock(Call.class);
+        when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
+
+        when(httpClient.newCall(any())).thenReturn(successCall).thenReturn(failCall);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        assertThat(actualResponse).isNotNull();
+        assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
+    }
+
+    @Test(expected = ApiException.class)
+    public void test_does_not_retry_on_4xx() throws IOException {
+        Call failCall = mock(Call.class);
+        when(failCall.execute()).thenReturn(createFakeResponse(400, "err message"));
+
+        Call successCall = mock(Call.class);
+        when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
+
+        when(httpClient.newCall(any())).thenReturn(failCall).thenReturn(successCall);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        assertThat(actualResponse).isNotNull();
+        assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
+    }
+
+    @Test
+    public void test_retries_on_5xx_errors() throws IOException {
+        assertEquals(3, DEFAULT_AUTH_RETRIES);
+
+        Call failCall = mock(Call.class);
+        when(failCall.execute()).thenReturn(createFakeResponse(500, "err message"));
+
+        Call successCall = mock(Call.class);
+        when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
+
+        when(httpClient.newCall(any())).thenReturn(failCall).thenReturn(failCall).thenReturn(successCall);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        assertThat(actualResponse).isNotNull();
+        assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
+    }
 
     private Response createFakeResponse(int statusCode, String testArn) throws JsonProcessingException {
         GetCallerIdentityResult result = new GetCallerIdentityResult();
