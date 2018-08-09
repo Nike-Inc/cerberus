@@ -44,8 +44,6 @@ redwire.http('http://localhost:' + reverseProxyPort + '/v1', '127.0.0.1:' + cmsP
 redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v1', '127.0.0.1:' + cmsPort + '/v1')
 redwire.http('http://localhost:' + reverseProxyPort + '/v2', '127.0.0.1:' + cmsPort + '/v2')
 redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v2', '127.0.0.1:' + cmsPort + '/v2')
-redwire.http('http://localhost:' + reverseProxyPort + '/v3', '127.0.0.1:' + cmsPort + '/v3')
-redwire.http('http://127.0.0.1:' + reverseProxyPort + '/v3', '127.0.0.1:' + cmsPort + '/v3')
 
 
 // configure proxy for hot module web socket

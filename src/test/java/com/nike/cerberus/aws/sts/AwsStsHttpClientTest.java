@@ -121,7 +121,7 @@ public class AwsStsHttpClientTest {
     @Test(expected = ApiException.class)
     public void test_4xx_response() throws Exception {
         Call call = mock(Call.class);
-        when(call.execute()).thenReturn(createFakeResponse(400, "test arn"));
+        when(call.execute()).thenReturn(createFakeErrorResponse(400, "SignatureDoesNotMatch"));
         when(httpClient.newCall(any())).thenReturn(call);
 
         // invoke method under test
@@ -145,7 +145,7 @@ public class AwsStsHttpClientTest {
     @Test(expected = ApiException.class)
     public void test_does_not_retry_on_4xx() throws IOException {
         Call failCall = mock(Call.class);
-        when(failCall.execute()).thenReturn(createFakeResponse(400, "err message"));
+        when(failCall.execute()).thenReturn(createFakeErrorResponse(400, "err code"));
 
         Call successCall = mock(Call.class);
         when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
@@ -181,6 +181,22 @@ public class AwsStsHttpClientTest {
         value.setGetCallerIdentityResponse(response);
 
         String body = objectMapper.writeValueAsString(value);
+
+        return new Response.Builder()
+                .request(new Request.Builder().url("https://example.com/fake").build())
+                .body(ResponseBody.create(null, body))
+                .protocol(Protocol.HTTP_2)
+                .code(statusCode)
+                .build();
+    }
+
+    private Response createFakeErrorResponse(int statusCode, String code) throws JsonProcessingException {
+        Error error = new Error();
+        error.setCode(code);
+        ErrorResponse response = new ErrorResponse();
+        response.setError(error);
+
+        String body = objectMapper.writeValueAsString(response);
 
         return new Response.Builder()
                 .request(new Request.Builder().url("https://example.com/fake").build())

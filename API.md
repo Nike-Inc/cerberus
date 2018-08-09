@@ -10,11 +10,11 @@ as well as in the [integration tests](https://github.com/Nike-Inc/cerberus-integ
 
 # Group Authentication
 
-## App Login v3 [/v3/auth/sts-identity]
+## App Login (STS) v2 [/v2/auth/sts-identity]
 
 ### Authenticate with Cerberus as an App [POST]
 
-This endpoint takes a [signed AWS STS get-caller-identity POST request](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) and returns a payload containing an auth token needed to access Cerberus. 
+This endpoint takes a [signed AWS STS get-caller-identity POST request](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) and returns a payload containing an auth token needed to access Cerberus. Region is limited to "us-east-1" only and host is limited to "host:sts.amazonaws.com" only during the signing process.
 
 + Request (application/json)
 

@@ -26,6 +26,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,13 +82,21 @@ public class AwsStsHttpClient {
             Request request = buildRequest(headers);
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
             if (response.code() >= 400 && response.code() < 500) {
-                final String msg = String.format("Failed to authenticate with AWS, error message: %s",
-                        response.body().string());
+                ApiException.Builder builder = ApiException.newBuilder();
 
-                throw ApiException.newBuilder()
-                        .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                        .withExceptionMessage(msg)
-                        .build();
+                Error error = parseResponseBody(response, ErrorResponse.class).getError();
+                if (StringUtils.equals("SignatureDoesNotMatch", error.getCode())) {
+                    builder.withApiErrors(DefaultApiError.SIGNATURE_DOES_NOT_MATCH);
+                } else if (StringUtils.equals("ExpiredToken", error.getCode())) {
+                    builder.withApiErrors(DefaultApiError.EXPIRED_AWS_TOKEN);
+                } else {
+                    builder.withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS);
+                }
+
+                final String msg = String.format("Failed to authenticate with AWS, error message: %s",
+                        error.getMessage());
+
+                throw builder.withExceptionMessage(msg).build();
             } else if (response.code() >= 500){
                 final String msg = String.format("Something is wrong with AWS, error message: %s",
                         response.body().string());

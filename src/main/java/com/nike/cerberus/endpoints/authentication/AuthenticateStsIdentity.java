@@ -75,16 +75,15 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
     }
 
     private ResponseInfo<AuthTokenResponse> authenticate(RequestInfo<Void> request) {
-        final String date = getDate(request);
         final String headerXAmzDate = getHeaderXAmzDate(request);
         final String headerXAmzSecurityToken = getHeaderXAmzSecurityToken(request);
         final String headerAuthorization = getHeaderAuthorization(request);
 
-        if (date == null || headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
+        if (headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
             throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
         }
 
-        AwsStsHttpHeader header = new AwsStsHttpHeader(date, headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+        AwsStsHttpHeader header = new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
         GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
         String iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
         AuthTokenResponse authResponse = null;
@@ -113,6 +112,6 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
 
     @Override
     public Matcher requestMatcher() {
-        return Matcher.match("/v3/auth/sts-identity", HttpMethod.POST);
+        return Matcher.match("/v2/auth/sts-identity", HttpMethod.POST);
     }
 }

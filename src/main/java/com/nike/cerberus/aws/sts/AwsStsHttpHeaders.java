@@ -21,21 +21,9 @@ import io.netty.handler.codec.http.HttpHeaders;
 
 public final class AwsStsHttpHeaders {
 
-    public static final String HEADER_DATE = "Date";
     public static final String HEADER_X_AMZ_DATE = "x-amz-date";
     public static final String HEADER_X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
     public static final String HEADER_AUTHORIZATION = "Authorization";
-
-    /**
-     * Get the value of the Date header
-     */
-    public static String getDate(RequestInfo request) {
-        final HttpHeaders headers = request.getHeaders();
-        if (headers != null) {
-            return headers.get(HEADER_DATE);
-        }
-        return null;
-    }
 
     /**
      * Get the value of the x-amz-date header

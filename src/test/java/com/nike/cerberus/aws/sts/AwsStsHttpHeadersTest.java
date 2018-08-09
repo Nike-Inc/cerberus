@@ -28,24 +28,6 @@ import static org.mockito.Mockito.when;
 public class AwsStsHttpHeadersTest {
 
     @Test
-    public void test_get_date() {
-        String date = "Tue, 07 Aug 2018 22:28:20 UTC";
-        HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(AwsStsHttpHeaders.HEADER_DATE, date);
-        RequestInfo request = mock(RequestInfo.class);
-        when(request.getHeaders()).thenReturn(headers);
-
-        Assert.assertEquals(date, AwsStsHttpHeaders.getDate(request));
-    }
-
-    @Test
-    public void test_get_date_when_null() {
-        RequestInfo request = mock(RequestInfo.class);
-
-        Assert.assertEquals(null, AwsStsHttpHeaders.getDate(request));
-    }
-
-    @Test
     public void test_get_x_amz_date() {
         String date = "20180807T222820Z";
         HttpHeaders headers = new DefaultHttpHeaders();

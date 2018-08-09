@@ -33,7 +33,7 @@ public class AwsStsClientTest {
     public void setup() {
         httpClient = mock(AwsStsHttpClient.class);
         awsStsClient = new AwsStsClient(httpClient);
-        awsStsHttpHeader = new AwsStsHttpHeader("test date", "test amz date",
+        awsStsHttpHeader = new AwsStsHttpHeader("test amz date",
                 "test amz security token", "test authorization");
     }
 

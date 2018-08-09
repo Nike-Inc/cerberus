@@ -27,18 +27,15 @@ import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.*;
  * POJO representing AWS Signature Version 4 headers
  */
 public final class AwsStsHttpHeader {
-    private String date;
     private String amzDate;
     private String amzSecurityToken;
     private String authorization;
 
-    public AwsStsHttpHeader(String date, String amzDate, String amzSecurityToken, String authorization) {
-        Preconditions.checkNotNull(date);
+    public AwsStsHttpHeader(String amzDate, String amzSecurityToken, String authorization) {
         Preconditions.checkNotNull(amzDate);
         Preconditions.checkNotNull(amzSecurityToken);
         Preconditions.checkNotNull(authorization);
 
-        this.date = date;
         this.amzDate = amzDate;
         this.amzSecurityToken = amzSecurityToken;
         this.authorization = authorization;
@@ -46,20 +43,10 @@ public final class AwsStsHttpHeader {
 
     public Map<String, String> generateHeaders() {
         Map<String, String> headers = Maps.newHashMap();
-        headers.put(HEADER_DATE, date);
         headers.put(HEADER_AUTHORIZATION, authorization);
         headers.put(HEADER_X_AMZ_DATE, amzDate);
         headers.put(HEADER_X_AMZ_SECURITY_TOKEN, amzSecurityToken);
         return headers;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public AwsStsHttpHeader setDate(String date) {
-        this.date = date;
-        return this;
     }
 
     public String getAmzDate() {

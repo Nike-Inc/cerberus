@@ -236,7 +236,12 @@ public class AuthenticationService {
         final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-        return stsAuthenticate(iamPrincipalArn, authPrincipalMetadata);
+        final AwsIamRoleRecord iamRoleRecord;
+        iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
+
+        final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
+        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
+        return authResponse;
     }
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
@@ -282,15 +287,6 @@ public class AuthenticationService {
         IamRoleAuthResponse iamRoleAuthResponse = new IamRoleAuthResponse();
         iamRoleAuthResponse.setAuthData(Base64.encodeBase64String(encryptedAuthResponse));
         return iamRoleAuthResponse;
-    }
-
-    private AuthTokenResponse stsAuthenticate(String iamPrincipalArn, Map<String, String> authPrincipalMetadata) {
-        final AwsIamRoleRecord iamRoleRecord;
-        iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
-
-        final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
-        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
-        return authResponse;
     }
 
     private AuthTokenResponse createToken(String principal,
