@@ -21,7 +21,9 @@ import com.google.common.collect.Maps;
 
 import java.util.Map;
 
-import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.*;
+import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.HEADER_AUTHORIZATION;
+import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.HEADER_X_AMZ_DATE;
+import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.HEADER_X_AMZ_SECURITY_TOKEN;
 
 /**
  * POJO representing AWS Signature Version 4 headers
