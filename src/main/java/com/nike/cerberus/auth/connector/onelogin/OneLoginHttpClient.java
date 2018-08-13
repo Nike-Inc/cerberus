@@ -41,7 +41,7 @@ public class OneLoginHttpClient {
 
     @Inject
     public OneLoginHttpClient(@Named("auth.connector.onelogin.api_region") final String oneloginApiRegion,
-                              final OkHttpClient httpClient,
+                              @Named(OneLoginGuiceModule.ONE_LOGIN_HTTP_CLIENT_NAME) final OkHttpClient httpClient,
                               @Named(OneLoginGuiceModule.ONE_LOGIN_OBJECT_MAPPER_NAME) final ObjectMapper objectMapper) {
         Preconditions.checkArgument(VALID_API_REGIONS.contains(oneloginApiRegion),
                 "OneLogin API region is invalid! Valid values: %s, %s",

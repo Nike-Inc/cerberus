@@ -255,6 +255,21 @@ public enum DefaultApiError implements ApiError {
     INVALID_SECURE_DATA_TYPE(99235, "Failed to update secret. The new value is of a different type than the current value (e.g. file vs. key/value map).", SC_BAD_REQUEST),
 
     /**
+     * One or more AWS signature headers are missing.
+     */
+    MISSING_AWS_SIGNATURE_HEADERS(99236, "One or more required headers (x-amz-date, x-amz-security-token, and Authorization) are missing.", SC_BAD_REQUEST),
+
+    /**
+     * Signature does not match. Either the request is invalid or the request is signed with invalid region and/or wrong host.
+     */
+    SIGNATURE_DOES_NOT_MATCH(99237, "Signature does not match. Make sure the request is signed with us-east-1 as region and sts.amazonaws.com as host.", SC_BAD_REQUEST),
+
+    /**
+     * AWS token expired.
+     */
+    EXPIRED_AWS_TOKEN(99238, "The security token included in the request is expired.", SC_UNAUTHORIZED),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),
