@@ -24,7 +24,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class KmsKeyCleanUpJob extends LockingJob {
+/**
+ * Scans through the data store and deletes in-active KMS CMKs
+ */
+public class InactiveKmsKeyCleanUpJob extends LockingJob {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -35,10 +38,10 @@ public class KmsKeyCleanUpJob extends LockingJob {
     private final int pauseTimeInSeconds;
 
     @Inject
-    public KmsKeyCleanUpJob(CleanUpService cleanUpService,
-                            @Named("cms.jobs.KmsCleanUpJob.deleteKmsKeysOlderThanNDays")
+    public InactiveKmsKeyCleanUpJob(CleanUpService cleanUpService,
+                                    @Named("cms.jobs.KmsCleanUpJob.deleteKmsKeysOlderThanNDays")
                                     int expirationPeriodInDays,
-                            @Named("cms.jobs.KmsCleanUpJob.batchPauseTimeInSeconds")
+                                    @Named("cms.jobs.KmsCleanUpJob.batchPauseTimeInSeconds")
                                     int pauseTimeInSeconds) {
 
         this.cleanUpService = cleanUpService;

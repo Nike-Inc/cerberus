@@ -1514,7 +1514,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
 
 ### Trigger Scheduled Job [POST]
 
-Manually trigger a job, e.g. ExpiredTokenCleanUpJob, HystrixMetricsProcessingJob, KmsKeyCleanUpJob, KpiMetricsProcessingJob.
+Manually trigger a job, e.g. ExpiredTokenCleanUpJob, HystrixMetricsProcessingJob, InactiveKmsKeyCleanUpJob, KpiMetricsProcessingJob.
 A 400 response code is given if the job wasn't found.
 
 + Request

@@ -12,6 +12,8 @@ import com.amazonaws.services.kms.model.EncryptRequest;
 import com.amazonaws.services.kms.model.EncryptResult;
 import com.amazonaws.services.kms.model.GetKeyPolicyRequest;
 import com.amazonaws.services.kms.model.GetKeyPolicyResult;
+import com.amazonaws.services.kms.model.ListKeysRequest;
+import com.amazonaws.services.kms.model.ListKeysResult;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
 import com.amazonaws.services.kms.model.PutKeyPolicyResult;
 import com.amazonaws.services.kms.model.ScheduleKeyDeletionRequest;
@@ -79,6 +81,11 @@ public class HystrixKmsClient extends AWSKMSClient {
     public PutKeyPolicyResult putKeyPolicy(PutKeyPolicyRequest request) {
         // Default AWS limit was 5 as of Aug 2017
         return execute("KmsPutKeyPolicy", () -> client.putKeyPolicy(request));
+    }
+
+    public ListKeysResult listKeys(ListKeysRequest request) {
+        // Default AWS limit was X as of July 2018
+        return execute("ListKeysRequest", () -> client.listKeys(request));
     }
 
     /**

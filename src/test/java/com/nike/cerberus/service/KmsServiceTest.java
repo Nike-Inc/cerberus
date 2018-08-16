@@ -1,6 +1,9 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.policy.Policy;
+import com.amazonaws.auth.policy.Principal;
+import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.CreateAliasRequest;
 import com.amazonaws.services.kms.model.CreateKeyRequest;
@@ -12,11 +15,15 @@ import com.amazonaws.services.kms.model.KeyMetadata;
 import com.amazonaws.services.kms.model.KeyState;
 import com.amazonaws.services.kms.model.KeyUsageType;
 import com.amazonaws.services.kms.model.Tag;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
+import com.nike.cerberus.domain.AuthKmsKeyMetadata;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
+import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
@@ -26,17 +33,17 @@ import org.junit.Test;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static com.nike.cerberus.service.KmsPolicyService.CERBERUS_MANAGEMENT_SERVICE_SID;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class KmsServiceTest {
 
@@ -291,6 +298,111 @@ public class KmsServiceTest {
         String result = kmsService.getKmsKeyState(kmsKeyId, awsRegion);
 
         assertEquals(state, result);
+    }
+
+    @Test
+    public void test_deleteKmsKeyById_proxies_the_dao() {
+        String key = "the-key-id";
+
+        kmsService.deleteKmsKeyById(key);
+
+        verify(awsIamRoleDao, times(1)).deleteKmsKeyById(key);
+    }
+
+    @Test
+    public void test_that_getAuthenticationKmsMetadata_returns_empty_list_when_there_are_no_keys() {
+        when(awsIamRoleDao.getAllKmsKeys()).thenReturn(Optional.empty());
+
+        assertEquals(new LinkedList<AuthKmsKeyMetadata>(), kmsService.getAuthenticationKmsMetadata());
+    }
+
+    @Test
+    public void test_that_getAuthenticationKmsMetadata_returns_AuthKmsKeyMetadata_from_dao_data() {
+        OffsetDateTime create = OffsetDateTime.now().plus(5, ChronoUnit.MINUTES);
+        OffsetDateTime update = OffsetDateTime.now().plus(3, ChronoUnit.MINUTES);
+        OffsetDateTime validate = OffsetDateTime.now().plus(7, ChronoUnit.MINUTES);
+        List<AwsIamRoleKmsKeyRecord> keyRecords = ImmutableList.of(
+            new AwsIamRoleKmsKeyRecord()
+                .setAwsIamRoleId("iam-role-id")
+                .setAwsKmsKeyId("key-id")
+                .setAwsRegion("us-west-2")
+                .setCreatedTs(create)
+                .setLastUpdatedTs(update)
+                .setLastValidatedTs(validate)
+        );
+
+        List<AuthKmsKeyMetadata> expected = ImmutableList.of(
+            new AuthKmsKeyMetadata()
+                .setAwsIamRoleArn("iam-role-arn")
+                .setAwsKmsKeyId("key-id")
+                .setAwsRegion("us-west-2")
+                .setCreatedTs(create)
+                .setLastUpdatedTs(update)
+                .setLastValidatedTs(validate)
+        );
+
+        when(awsIamRoleDao.getAllKmsKeys()).thenReturn(Optional.ofNullable(keyRecords));
+        when(awsIamRoleDao.getIamRoleById("iam-role-id")).thenReturn(Optional.of(
+                new AwsIamRoleRecord().setAwsIamRoleArn("iam-role-arn")
+        ));
+
+        assertArrayEquals(expected.toArray(), kmsService.getAuthenticationKmsMetadata().toArray());
+    }
+
+    @Test
+    public void test_that_filterKeysCreatedByKmsService_filters_out_keys_that_do_not_contain_expected_arn_prefix() {
+
+        Policy policyThatShouldBeInSet = new Policy().withStatements(
+                new Statement(Statement.Effect.Allow)
+                        .withId(CERBERUS_MANAGEMENT_SERVICE_SID)
+                        .withPrincipals(new Principal("arn:aws:iam:123456:role/" + ENV + "-cms-role-alk234khsdf")),
+
+                new Statement(Statement.Effect.Allow),
+                new Statement(Statement.Effect.Allow),
+                new Statement(Statement.Effect.Allow)
+        );
+
+        Policy policyThatShouldNotBeInSet = new Policy().withStatements(
+                new Statement(Statement.Effect.Allow)
+                        .withId(CERBERUS_MANAGEMENT_SERVICE_SID)
+                        .withPrincipals(new Principal("arn:aws:iam:123456:role/prod-cms-role-alk234khsdf")),
+
+                new Statement(Statement.Effect.Allow),
+                new Statement(Statement.Effect.Allow),
+                new Statement(Statement.Effect.Allow)
+        );
+
+        Policy policyThatWasntCreatedByCms = new Policy().withStatements(
+                new Statement(Statement.Effect.Allow)
+                        .withId("foo-bar")
+                        .withPrincipals(new Principal("arn:aws:iam:123456:role/" + ENV + "-cms-role-alk234khsdf"))
+        );
+
+        KmsService kmsServiceSpy = spy(kmsService);
+
+        Set<String> allKmsCmkIdsForRegion = ImmutableSet.of(
+                "key1",
+                "key2",
+                "key3",
+                "key4",
+                "key5"
+        );
+
+        String region = "us-west-2";
+
+        Set<String> expectedKeys = ImmutableSet.of(
+                "key3"
+        );
+
+        doReturn(Optional.of(policyThatShouldNotBeInSet)).when(kmsServiceSpy).downloadPolicy("key1", region, 0);
+        doReturn(Optional.of(policyThatShouldNotBeInSet)).when(kmsServiceSpy).downloadPolicy("key2", region, 0);
+        doReturn(Optional.of(policyThatShouldBeInSet)).when(kmsServiceSpy).downloadPolicy("key3", region, 0);
+        doReturn(Optional.of(policyThatShouldNotBeInSet)).when(kmsServiceSpy).downloadPolicy("key4", region, 0);
+        doReturn(Optional.of(policyThatWasntCreatedByCms)).when(kmsServiceSpy).downloadPolicy("key5", region, 0);
+
+        Set<String> actual = kmsServiceSpy.filterKeysCreatedByKmsService(allKmsCmkIdsForRegion, region);
+
+        assertEquals(expectedKeys, actual);
     }
 
 }
