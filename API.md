@@ -972,7 +972,7 @@ Gets a specific version of a secret from the change history stored in Cerberus
               ]
             }
 
-### [GET] List secure file summaries [v1/secure-files]
+### [GET] List secure file summaries [v1/secure-files/{category}/{sdb-name}/]
 
 + Request (application/json)
 
