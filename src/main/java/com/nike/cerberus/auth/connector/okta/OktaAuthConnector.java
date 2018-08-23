@@ -80,8 +80,7 @@ public class OktaAuthConnector implements AuthConnector {
                                 ImmutableSet.of("push", "call", "sms").contains(type));
                     }).collect(Collectors.toList());
 
-//            Do we need to move this after the filtering in order to properly set the message to address
-//            that MFA might not work because they need to have Okta Verify or Google Authenticator set up?
+
             oktaClientResponseUtils.validateUserFactors(factors);
 
             factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()

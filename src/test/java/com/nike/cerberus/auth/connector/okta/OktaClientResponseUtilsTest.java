@@ -81,18 +81,6 @@ public class OktaClientResponseUtilsTest {
     }
 
     @Test
-    public void getDeviceName() {
-
-        String provider = "provider";
-        Factor factor = mock(Factor.class);
-        when(factor.getProvider()).thenReturn(provider);
-
-        String result = this.oktaClientResponseUtils.getDeviceName(factor);
-
-        assertEquals(StringUtils.capitalize(provider), result);
-    }
-
-    @Test
     public void getDeviceNameGoogleTotp() {
 
         Factor factor = new Factor();
@@ -108,7 +96,7 @@ public class OktaClientResponseUtilsTest {
     public void getDeviceNameOktaTotp() {
 
         Factor factor = new Factor();
-        factor.setFactorType("totp");
+        factor.setFactorType("token:software:totp");
         factor.setProvider("OKTA");
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
@@ -234,4 +222,5 @@ public class OktaClientResponseUtilsTest {
 
         this.oktaClientResponseUtils.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }
+
 }

@@ -138,7 +138,6 @@ public class OktaMFAAuthConnectorTest {
         assertEquals(email, result.getData().getUsername());
         assertEquals(1, result.getData().getDevices().size());
         assertEquals(deviceId, result.getData().getDevices().get(0).getId());
-        assertEquals(StringUtils.capitalize(provider), result.getData().getDevices().get(0).getName());
     }
 
     @Test(expected = ApiException.class)
@@ -198,7 +197,6 @@ public class OktaMFAAuthConnectorTest {
         assertEquals(email, result.getData().getUsername());
         assertEquals(1, result.getData().getDevices().size());
         assertEquals(deviceId, result.getData().getDevices().get(0).getId());
-        assertEquals(StringUtils.capitalize(provider), result.getData().getDevices().get(0).getName());
     }
 
     @Test

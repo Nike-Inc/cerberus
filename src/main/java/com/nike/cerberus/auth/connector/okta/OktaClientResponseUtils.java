@@ -171,8 +171,7 @@ public class OktaClientResponseUtils {
                     .withApiErrors(new ApiErrorBase(
                             DefaultApiError.MFA_SETUP_REQUIRED.getName(),
                             DefaultApiError.MFA_SETUP_REQUIRED.getErrorCode(),
-                            "MFA is required, but user has not set up any devices in Okta.\n" +
-                                    "Please set up a MFA device in Okta: " + baseUrl,
+                            "MFA is required. Please set up a supported device, either Okta Verify or Google Authenticator. " + baseUrl,
                             DefaultApiError.MFA_SETUP_REQUIRED.getHttpStatusCode()))
                     .withExceptionMessage("MFA is required, but user has not set up any devices in Okta.")
                     .build();
