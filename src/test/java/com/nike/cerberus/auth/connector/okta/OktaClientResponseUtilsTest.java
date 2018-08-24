@@ -17,7 +17,10 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
@@ -28,9 +31,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static groovy.util.GroovyTestCase.assertEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,31 +64,81 @@ public class OktaClientResponseUtilsTest {
         baseUrl = "base url";
 
         // create test object
-        this.oktaClientResponseUtils = new OktaClientResponseUtils(objectMapper, baseUrl);
+        this.oktaClientResponseUtils = new OktaClientResponseUtils(baseUrl);
     }
 
     @Test
-    public void getDeviceName() {
+    public void getFactorKey() {
 
-        String provider = "provider";
-        Factor factor = mock(Factor.class);
-        when(factor.getProvider()).thenReturn(provider);
+        Factor factor = new Factor();
+        factor.setFactorType("push");
+        factor.setProvider("OKTA");
 
-        String result = this.oktaClientResponseUtils.getDeviceName(factor);
+        String expected = "okta-push";
+        String actual = oktaClientResponseUtils.getFactorKey(factor);
 
-        assertEquals(StringUtils.capitalize(provider), result);
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void getDeviceNameGoogle() {
+    public void getDeviceNameGoogleTotp() {
 
-        String provider = "GOOGLE";
-        Factor factor = mock(Factor.class);
-        when(factor.getProvider()).thenReturn(provider);
+        Factor factor = new Factor();
+        factor.setFactorType("token:software:totp");
+        factor.setProvider("GOOGLE");
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
         assertEquals("Google Authenticator", result);
+    }
+
+    @Test
+    public void getDeviceNameOktaTotp() {
+
+        Factor factor = new Factor();
+        factor.setFactorType("token:software:totp");
+        factor.setProvider("OKTA");
+
+        String result = this.oktaClientResponseUtils.getDeviceName(factor);
+
+        assertEquals("Okta Verify TOTP", result);
+    }
+
+    @Test
+    public void getDeviceNameOktaPush() {
+
+        Factor factor = new Factor();
+        factor.setFactorType("push");
+        factor.setProvider("OKTA");
+
+        String result = this.oktaClientResponseUtils.getDeviceName(factor);
+
+        assertEquals("Okta Verify Push", result);
+
+    }
+
+    @Test
+    public void getDeviceNameOktaCall() {
+
+        Factor factor = new Factor();
+        factor.setFactorType("call");
+        factor.setProvider("OKTA");
+
+        String result = this.oktaClientResponseUtils.getDeviceName(factor);
+
+        assertEquals("Okta Voice Call", result);
+    }
+
+    @Test
+    public void getDeviceNameOktaSms() {
+
+        Factor factor = new Factor();
+        factor.setFactorType("sms");
+        factor.setProvider("OKTA");
+
+        String result = this.oktaClientResponseUtils.getDeviceName(factor);
+
+        assertEquals("Okta Text Message Code", result);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -166,4 +222,5 @@ public class OktaClientResponseUtilsTest {
 
         this.oktaClientResponseUtils.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }
+
 }

@@ -17,6 +17,7 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -45,19 +46,35 @@ public class OktaClientResponseUtils {
     public static final String MFA_FACTOR_NOT_SETUP_STATUS = "NOT_SETUP";
 
     private static final ImmutableMap<String, String> MFA_FACTOR_NAMES = ImmutableMap.of(
-            "google", "Google Authenticator",
-            "okta"  , "Okta Verify");
+            "google-token:software:totp",   "Google Authenticator",
+            "okta-token:software:totp",     "Okta Verify TOTP",
+            "okta-push",                    "Okta Verify Push",
+            "okta-call",                    "Okta Voice Call",
+            "okta-sms",                     "Okta Text Message Code");
 
     private final ObjectMapper objectMapper;
 
     private final String baseUrl;
 
     @Inject
-    public OktaClientResponseUtils(final ObjectMapper objectMapper,
-                                   @Named("auth.connector.okta.base_url") final String baseUrl) {
+    public OktaClientResponseUtils(@Named("auth.connector.okta.base_url") final String baseUrl) {
 
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Combine the provider and factor type to create factor key
+     * @param factor
+     * @return factor key
+     */
+    protected String getFactorKey(Factor factor) {
+
+        final String factorProvider = factor.getProvider().toLowerCase();
+        final String factorType = factor.getFactorType().toLowerCase();
+
+        return factorProvider + "-" + factorType;
     }
 
     /**
@@ -69,12 +86,13 @@ public class OktaClientResponseUtils {
 
         Preconditions.checkArgument(factor != null, "factor cannot be null.");
 
-        final String factorProvider = factor.getProvider().toLowerCase();
-        if (MFA_FACTOR_NAMES.containsKey(factorProvider)) {
-            return MFA_FACTOR_NAMES.get(factorProvider);
+        final String factorKey = getFactorKey(factor);
+
+        if (MFA_FACTOR_NAMES.containsKey(factorKey)) {
+            return MFA_FACTOR_NAMES.get(factorKey);
         }
 
-        return WordUtils.capitalizeFully(factorProvider);
+        return WordUtils.capitalizeFully(factorKey);
     }
 
     /**
@@ -153,8 +171,7 @@ public class OktaClientResponseUtils {
                     .withApiErrors(new ApiErrorBase(
                             DefaultApiError.MFA_SETUP_REQUIRED.getName(),
                             DefaultApiError.MFA_SETUP_REQUIRED.getErrorCode(),
-                            "MFA is required, but user has not set up any devices in Okta.\n" +
-                                    "Please set up a MFA device in Okta: " + baseUrl,
+                            "MFA is required. Please set up a supported device, either Okta Verify or Google Authenticator. " + baseUrl,
                             DefaultApiError.MFA_SETUP_REQUIRED.getHttpStatusCode()))
                     .withExceptionMessage("MFA is required, but user has not set up any devices in Okta.")
                     .build();

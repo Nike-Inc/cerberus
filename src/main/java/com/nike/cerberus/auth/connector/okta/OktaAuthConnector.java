@@ -18,6 +18,7 @@
 package com.nike.cerberus.auth.connector.okta;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthMfaDevice;
@@ -32,6 +33,7 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Okta version 1 API implementation of the AuthConnector interface.
@@ -41,6 +43,8 @@ public class OktaAuthConnector implements AuthConnector {
     private final OktaApiClientHelper oktaApiClientHelper;
 
     private final OktaClientResponseUtils oktaClientResponseUtils;
+
+    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of("push", "call", "sms");
 
     @Inject
     public OktaAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
@@ -62,19 +66,28 @@ public class OktaAuthConnector implements AuthConnector {
                 .setUsername(userLogin);
         final AuthResponse authResponse = new AuthResponse().setData(authData);
 
-        final List<Factor> factors;
         if (StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_REQUIRED_STATUS) ||
                 StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS)) {
 
             authData.setStateToken(authResult.getStateToken());
             authResponse.setStatus(AuthStatus.MFA_REQUIRED);
 
-            factors = oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult);
+            final List<Factor> factors = oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult)
+                    .stream()
+                    // Filter out Okta push, call, and sms because we don't currently support them.
+                    .filter(factor -> {
+                        String type = factor.getFactorType().toLowerCase();
+                        String provider = factor.getProvider();
+                        return ! (provider.equalsIgnoreCase("okta") &&
+                                UNSUPPORTED_OKTA_MFA_TYPES.contains(type));
+                    }).collect(Collectors.toList());
+
+
             oktaClientResponseUtils.validateUserFactors(factors);
 
             factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
-                    .setId(factor.getId())
-                    .setName(oktaClientResponseUtils.getDeviceName(factor))));
+                .setId(factor.getId())
+                .setName(oktaClientResponseUtils.getDeviceName(factor))));
         }
         else {
             authResponse.setStatus(AuthStatus.SUCCESS);

@@ -124,9 +124,17 @@ public class OktaAuthConnectorTest {
 
         String email = "email";
         String id = "id";
-        String provider = "provider";
+        String provider = "okta";
+        String type = "token:software:totp";
         String deviceId = "device id";
-        Factor factor = mockFactor(provider, deviceId, true);
+        String status = "status";
+        String deviceName = "Okta Verify TOTP";
+
+        Factor factor = new Factor();
+        factor.setProvider(provider);
+        factor.setId(deviceId);
+        factor.setStatus(status);
+        factor.setFactorType(type);
 
         AuthResult authResult = mock(AuthResult.class);
         when(authResult.getStateToken()).thenReturn("state token");
@@ -136,6 +144,7 @@ public class OktaAuthConnectorTest {
         when(oktaClientResponseUtils.getUserIdFromAuthResult(authResult)).thenReturn(id);
         when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
         when(oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult)).thenReturn(Lists.newArrayList(factor));
+        when(oktaClientResponseUtils.getDeviceName(factor)).thenReturn(deviceName);
 
         // do the call
         AuthResponse result = this.oktaAuthConnector.authenticate(username, password);
@@ -145,7 +154,7 @@ public class OktaAuthConnectorTest {
         assertEquals(email, result.getData().getUsername());
         assertEquals(1, result.getData().getDevices().size());
         assertEquals(deviceId, result.getData().getDevices().get(0).getId());
-        assertEquals(StringUtils.capitalize(provider), result.getData().getDevices().get(0).getName());
+        assertEquals(StringUtils.capitalize(deviceName), result.getData().getDevices().get(0).getName());
     }
 
     @Test(expected = ApiException.class)
@@ -172,6 +181,46 @@ public class OktaAuthConnectorTest {
         // verify results
         assertEquals(id, result.getData().getUserId());
         assertEquals(email, result.getData().getUsername());
+    }
+
+    // We currently do not support Okta push, call, and sms.
+    @Test
+    public void authenticateFailsNoSupportedDevicesEnrolled() throws Exception {
+
+        String username = "username";
+        String password = "password";
+
+        String email = "email";
+        String id = "id";
+        String provider = "okta";
+        String type = "sms";
+        String deviceId = "device id";
+        String status = "status";
+        String deviceName = "Okta Text Message Code";
+
+        Factor factor = new Factor();
+        factor.setProvider(provider);
+        factor.setId(deviceId);
+        factor.setStatus(status);
+        factor.setFactorType(type);
+
+        AuthResult authResult = mock(AuthResult.class);
+        when(authResult.getStateToken()).thenReturn("state token");
+
+        when(oktaApiClientHelper.authenticateUser(username, password, null)).thenReturn(authResult);
+        when(authResult.getStatus()).thenReturn(OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS);
+        when(oktaClientResponseUtils.getUserIdFromAuthResult(authResult)).thenReturn(id);
+        when(oktaClientResponseUtils.getUserLoginFromAuthResult(authResult)).thenReturn(email);
+        when(oktaClientResponseUtils.getDeviceName(factor)).thenReturn(deviceName);
+        when(oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult)).thenReturn(Lists.newArrayList(factor));
+
+        // do the call
+        AuthResponse result = this.oktaAuthConnector.authenticate(username, password);
+
+        // verify results
+        assertEquals(id, result.getData().getUserId());
+        assertEquals(email, result.getData().getUsername());
+        assertEquals(0, result.getData().getDevices().size());
     }
 
     @Test
