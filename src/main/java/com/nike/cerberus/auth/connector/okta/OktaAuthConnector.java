@@ -44,6 +44,8 @@ public class OktaAuthConnector implements AuthConnector {
 
     private final OktaClientResponseUtils oktaClientResponseUtils;
 
+    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of("push", "call", "sms");
+
     @Inject
     public OktaAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
                              final OktaClientResponseUtils oktaClientResponseUtils) {
@@ -77,7 +79,7 @@ public class OktaAuthConnector implements AuthConnector {
                         String type = factor.getFactorType().toLowerCase();
                         String provider = factor.getProvider();
                         return ! (provider.equalsIgnoreCase("okta") &&
-                                ImmutableSet.of("push", "call", "sms").contains(type));
+                                UNSUPPORTED_OKTA_MFA_TYPES.contains(type));
                     }).collect(Collectors.toList());
 
 
