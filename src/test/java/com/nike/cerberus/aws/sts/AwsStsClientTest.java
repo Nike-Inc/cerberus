@@ -33,8 +33,11 @@ public class AwsStsClientTest {
     public void setup() {
         httpClient = mock(AwsStsHttpClient.class);
         awsStsClient = new AwsStsClient(httpClient);
-        awsStsHttpHeader = new AwsStsHttpHeader("test amz date",
-                "test amz security token", "test authorization");
+        awsStsHttpHeader = new AwsStsHttpHeader(
+                "test amz date",
+                "test amz security token",
+                "AWS4-HMAC-SHA256 Credential=ASIA5S2FQS2GYQLK5FFF/20180904/us-west-2/sts/aws4_request, SignedHeaders=host;x-amz-date, Signature=ddb9417d2b9bfe6f8b03e31a8f5d8ab98e0f4alkj12312098asdf"
+        );
     }
 
     @Test
@@ -44,7 +47,7 @@ public class AwsStsClientTest {
 
         GetCallerIdentityFullResponse response = mock(GetCallerIdentityFullResponse.class);
 
-        when(httpClient.execute(awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
+        when(httpClient.execute(awsStsHttpHeader.getRegion(), awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
                 .thenReturn(response);
 
         // invoke method under test
@@ -57,7 +60,7 @@ public class AwsStsClientTest {
 
         GetCallerIdentityFullResponse response = new GetCallerIdentityFullResponse();
 
-        when(httpClient.execute(awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
+        when(httpClient.execute(awsStsHttpHeader.getRegion(), awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
                 .thenReturn(response);
     }
 }

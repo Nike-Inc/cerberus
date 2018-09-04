@@ -66,7 +66,7 @@ public class AwsStsHttpClientTest {
         when(httpClient.newCall(any())).thenReturn(call);
 
         // invoke method under test
-        awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
     }
 
     @Test(expected = ApiException.class)
@@ -77,7 +77,7 @@ public class AwsStsHttpClientTest {
         when(httpClient.newCall(any())).thenReturn(call);
 
         // invoke method under test
-        awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
     }
 
     @Test
@@ -85,10 +85,10 @@ public class AwsStsHttpClientTest {
         String method = "POST";
 
         // invoke method under test
-        Request request = awsStsHttpClient.buildRequest(Maps.newHashMap());
+        Request request = awsStsHttpClient.buildRequest("us-west-2", Maps.newHashMap());
 
         assertEquals(2, request.headers().size());
-        assertEquals("https://sts.amazonaws.com/", request.url().uri().toString());
+        assertEquals("https://sts.us-west-2.amazonaws.com/", request.url().uri().toString());
         assertEquals(method, request.method());
         assertEquals(43, request.body().contentLength());
     }
@@ -125,7 +125,7 @@ public class AwsStsHttpClientTest {
         when(httpClient.newCall(any())).thenReturn(call);
 
         // invoke method under test
-        awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
     }
 
     @Test
@@ -137,7 +137,7 @@ public class AwsStsHttpClientTest {
         when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
 
         when(httpClient.newCall(any())).thenReturn(successCall).thenReturn(failCall);
-        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
         assertThat(actualResponse).isNotNull();
         assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
     }
@@ -151,7 +151,7 @@ public class AwsStsHttpClientTest {
         when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
 
         when(httpClient.newCall(any())).thenReturn(failCall).thenReturn(successCall);
-        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
         assertThat(actualResponse).isNotNull();
         assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
     }
@@ -167,7 +167,7 @@ public class AwsStsHttpClientTest {
         when(successCall.execute()).thenReturn(createFakeResponse(200, "test arn"));
 
         when(httpClient.newCall(any())).thenReturn(failCall).thenReturn(failCall).thenReturn(successCall);
-        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, GetCallerIdentityFullResponse.class);
+        GetCallerIdentityFullResponse actualResponse = awsStsHttpClient.execute(null, null, GetCallerIdentityFullResponse.class);
         assertThat(actualResponse).isNotNull();
         assertThat(actualResponse.getGetCallerIdentityResponse().getGetCallerIdentityResult().getArn()).isEqualToIgnoringCase("test arn");
     }
