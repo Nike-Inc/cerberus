@@ -33,7 +33,7 @@ public class AwsStsClient {
     }
 
     public GetCallerIdentityResponse getCallerIdentity(AwsStsHttpHeader header) {
-        GetCallerIdentityFullResponse response = httpClient.execute(header.generateHeaders(), GetCallerIdentityFullResponse.class);
+        GetCallerIdentityFullResponse response = httpClient.execute(header.getRegion(), header.generateHeaders(), GetCallerIdentityFullResponse.class);
         return response.getGetCallerIdentityResponse();
     }
 }

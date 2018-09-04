@@ -16,10 +16,15 @@
 
 package com.nike.cerberus.aws.sts;
 
+import com.amazonaws.regions.Regions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.error.DefaultApiError;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.HEADER_AUTHORIZATION;
 import static com.nike.cerberus.aws.sts.AwsStsHttpHeaders.HEADER_X_AMZ_DATE;
@@ -49,6 +54,33 @@ public final class AwsStsHttpHeader {
         headers.put(HEADER_X_AMZ_DATE, amzDate);
         headers.put(HEADER_X_AMZ_SECURITY_TOKEN, amzSecurityToken);
         return headers;
+    }
+
+    public String getRegion() {
+        Pattern pattern = Pattern.compile(".*Credential=.*?/\\d+/(?<region>.*?)/.*");
+        Matcher matcher = pattern.matcher(authorization);
+        boolean didMatch = matcher.matches();
+
+        if (!didMatch) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+                    .withExceptionMessage(String.format("Failed to determine region from header %s.", authorization))
+                    .build();
+        }
+
+        String region = matcher.group("region");
+
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            Regions.fromName(region);
+        } catch (IllegalArgumentException e) {
+            throw ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+                    .withExceptionMessage(String.format("Invalid region supplied %s.", region))
+                    .build();
+        }
+
+        return region;
     }
 
     public String getAmzDate() {

@@ -49,7 +49,7 @@ public class AwsStsHttpClient {
 
     private static final MediaType DEFAULT_ACCEPTED_MEDIA_TYPE = MediaType.parse("application/json");
 
-    private static final String DEFAULT_AWS_STS_ENDPOINT = "https://sts.amazonaws.com";
+    private static final String AWS_STS_ENDPOINT_TEMPLATE = "https://sts.%s.amazonaws.com";
 
     private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION = "Action=GetCallerIdentity&Version=2011-06-15";
 
@@ -72,14 +72,16 @@ public class AwsStsHttpClient {
     /**
      * Executes the HTTP request based on the input parameters.
      *
-     * @param headers     HTTP Headers to include in the request
+     * @param region        The region to call sts get caller identity in.
+     * @param headers       HTTP Headers to include in the request
      * @param responseClass The class of the response object
      * @return Response from the server
      */
-    public <M> M execute(final Map<String, String> headers,
-                            final Class<M> responseClass) {
+    public <M> M execute(final String region,
+                         final Map<String, String> headers,
+                         final Class<M> responseClass) {
         try {
-            Request request = buildRequest(headers);
+            Request request = buildRequest(region, headers);
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
             if (response.code() >= 400 && response.code() < 500) {
                 ApiException.Builder builder = ApiException.newBuilder();
@@ -117,8 +119,8 @@ public class AwsStsHttpClient {
      *
      * @throws JsonProcessingException
      */
-    protected Request buildRequest(Map<String, String> headers) {
-        Request.Builder requestBuilder = new Request.Builder().url(DEFAULT_AWS_STS_ENDPOINT)
+    protected Request buildRequest(String region, Map<String, String> headers) {
+        Request.Builder requestBuilder = new Request.Builder().url(String.format(AWS_STS_ENDPOINT_TEMPLATE, region))
                 .addHeader("Accept", DEFAULT_ACCEPTED_MEDIA_TYPE.toString());
 
         if (headers != null) {
