@@ -270,17 +270,17 @@ public enum DefaultApiError implements ApiError {
     EXPIRED_AWS_TOKEN(99238, "The security token included in the request is expired.", SC_UNAUTHORIZED),
 
     /**
-     * AWS token expired.
+     * Login failed either from incorrect email or password or from a completable future timeout.
      */
     LOGIN_FAILED(99239, "Failed to login. Please confirm email and password and try again.", SC_UNAUTHORIZED),
 
     /**
-     * AWS token expired.
+     * Failed to wait for Okta Auth Completeable Future to complete.
      */
     AUTH_RESPONSE_WAIT_FAILED(99240, "Failed to wait for Okta Auth Response to complete.", SC_UNAUTHORIZED),
 
     /**
-     * AWS token expired.
+     * Unable to read MFA factor type because it is not one of the standard types.
      */
     FAILED_TO_READ_FACTOR(99241, "Failed to read Okta MFA factor type.", SC_UNAUTHORIZED),
 
