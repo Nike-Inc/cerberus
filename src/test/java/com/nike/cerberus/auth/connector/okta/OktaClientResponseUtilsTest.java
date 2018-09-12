@@ -17,27 +17,21 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
-import com.okta.sdk.models.auth.AuthResult;
-import com.okta.sdk.models.factors.Factor;
-import org.apache.commons.lang3.StringUtils;
+import com.okta.authn.sdk.client.AuthenticationClient;
+import com.okta.authn.sdk.impl.resource.DefaultFactor;
+import com.okta.authn.sdk.resource.AuthenticationResponse;
+import com.okta.sdk.resource.user.factor.FactorProvider;
+import com.okta.sdk.resource.user.factor.FactorType;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
+import java.util.concurrent.CompletableFuture;
 import static groovy.util.GroovyTestCase.assertEquals;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -50,29 +44,24 @@ public class OktaClientResponseUtilsTest {
     // class under test
     private OktaClientResponseUtils oktaClientResponseUtils;
 
-    // dependencies
-    @Mock
-    private ObjectMapper objectMapper;
-
-    private String baseUrl;
-
 
     @Before
     public void setup() {
 
         initMocks(this);
-        baseUrl = "base url";
+        String baseUrl = "base url";
 
         // create test object
         this.oktaClientResponseUtils = new OktaClientResponseUtils(baseUrl);
+
     }
 
     @Test
     public void getFactorKey() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("push");
-        factor.setProvider("OKTA");
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(FactorType.PUSH);
+        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
 
         String expected = "okta-push";
         String actual = oktaClientResponseUtils.getFactorKey(factor);
@@ -80,12 +69,42 @@ public class OktaClientResponseUtilsTest {
         assertEquals(expected, actual);
     }
 
+
+    @Test
+    public void isSupportedFactorFalse() {
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(FactorType.PUSH);
+        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
+
+        boolean expected = false;
+        boolean actual = oktaClientResponseUtils.isSupportedFactor(factor);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void isSupportedFactorTrue() {
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
+        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
+
+        boolean expected = true;
+        boolean actual = oktaClientResponseUtils.isSupportedFactor(factor);
+
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void getDeviceNameGoogleTotp() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("token:software:totp");
-        factor.setProvider("GOOGLE");
+        FactorProvider provider = FactorProvider.GOOGLE;
+        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(type);
+        when(factor.getProvider()).thenReturn(provider);
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
@@ -95,9 +114,12 @@ public class OktaClientResponseUtilsTest {
     @Test
     public void getDeviceNameOktaTotp() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("token:software:totp");
-        factor.setProvider("OKTA");
+        FactorProvider provider = FactorProvider.OKTA;
+        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(type);
+        when(factor.getProvider()).thenReturn(provider);
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
@@ -107,9 +129,12 @@ public class OktaClientResponseUtilsTest {
     @Test
     public void getDeviceNameOktaPush() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("push");
-        factor.setProvider("OKTA");
+        FactorProvider provider = FactorProvider.OKTA;
+        FactorType type = FactorType.PUSH;
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(type);
+        when(factor.getProvider()).thenReturn(provider);
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
@@ -120,9 +145,12 @@ public class OktaClientResponseUtilsTest {
     @Test
     public void getDeviceNameOktaCall() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("call");
-        factor.setProvider("OKTA");
+        FactorProvider provider = FactorProvider.OKTA;
+        FactorType type = FactorType.CALL;
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(type);
+        when(factor.getProvider()).thenReturn(provider);
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
@@ -132,9 +160,12 @@ public class OktaClientResponseUtilsTest {
     @Test
     public void getDeviceNameOktaSms() {
 
-        Factor factor = new Factor();
-        factor.setFactorType("sms");
-        factor.setProvider("OKTA");
+        FactorProvider provider = FactorProvider.OKTA;
+        FactorType type = FactorType.SMS;
+
+        DefaultFactor factor = mock(DefaultFactor.class);
+        when(factor.getType()).thenReturn(type);
+        when(factor.getProvider()).thenReturn(provider);
 
         String result = this.oktaClientResponseUtils.getDeviceName(factor);
 
@@ -149,52 +180,11 @@ public class OktaClientResponseUtilsTest {
     }
 
     @Test
-    public void getUserFactorsFromAuthResultHappy() throws Exception {
-
-        String factorId = "factor id";
-        String provider = "GOOGLE";
-
-        Factor factor = new Factor();
-        factor.setProvider(provider);
-        factor.setId(factorId);
-        List<Factor> factors = Lists.newArrayList(factor);
-
-        String embeddedStr = "embedded string";
-        Map<String, Object> embedded = Maps.newHashMap();
-        embedded.put("factors", factors);
-
-        AuthResult authResult = new AuthResult();
-        authResult.setEmbedded(embedded);
-
-        EmbeddedAuthResponseDataV1 embeddedAuthResponseDataV1 = new EmbeddedAuthResponseDataV1();
-        embeddedAuthResponseDataV1.setFactors(factors);
-        when(objectMapper.writeValueAsString(embedded)).thenReturn(embeddedStr);
-        when(objectMapper.readValue(embeddedStr, EmbeddedAuthResponseDataV1.class)).thenReturn(embeddedAuthResponseDataV1);
-
-        List<Factor> result = this.oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult);
-
-        assertEquals(1, result.size());
-        assertEquals(provider, result.get(0).getProvider());
-        assertEquals(factorId, result.get(0).getId());
-    }
-
-    @Test(expected = ApiException.class)
-    public void getUserFactorsFromAuthResultEmbeddedNull() throws Exception {
-
-        AuthResult authResult = new AuthResult();
-        authResult.setEmbedded(null);
-
-        // do the call
-        this.oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult);
-    }
-
-    @Test
     public void validateUserFactorsSuccess() {
 
-        Factor factor1 = new Factor();
-        factor1.setStatus(OktaClientResponseUtils.MFA_FACTOR_NOT_SETUP_STATUS);
-
-        Factor factor2 = new Factor();
+        DefaultFactor factor1 = mock(DefaultFactor.class);
+        when(factor1.getStatus()).thenReturn(OktaClientResponseUtils.MFA_FACTOR_NOT_SETUP_STATUS);
+        DefaultFactor factor2 = mock(DefaultFactor.class);
 
         this.oktaClientResponseUtils.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }
@@ -214,11 +204,13 @@ public class OktaClientResponseUtilsTest {
     @Test(expected = ApiException.class)
     public void validateUserFactorsFailsAllFactorsNotSetUp() {
 
-        Factor factor1 = new Factor();
-        factor1.setStatus(OktaClientResponseUtils.MFA_FACTOR_NOT_SETUP_STATUS);
+        String status = OktaClientResponseUtils.MFA_FACTOR_NOT_SETUP_STATUS;
 
-        Factor factor2 = new Factor();
-        factor2.setStatus(OktaClientResponseUtils.MFA_FACTOR_NOT_SETUP_STATUS);
+        DefaultFactor factor1 = mock(DefaultFactor.class);
+        when(factor1.getStatus()).thenReturn(status);
+
+        DefaultFactor factor2 = mock(DefaultFactor.class);
+        when(factor2.getStatus()).thenReturn(status);
 
         this.oktaClientResponseUtils.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }

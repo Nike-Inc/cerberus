@@ -21,19 +21,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
-import com.okta.sdk.models.auth.AuthResult;
-import com.okta.sdk.models.factors.Factor;
+import com.okta.authn.sdk.resource.Factor;
+import com.okta.sdk.resource.user.factor.FactorProvider;
+import com.okta.sdk.resource.user.factor.FactorType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
-
 import javax.inject.Named;
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+
 
 public class OktaClientResponseUtils {
 
@@ -52,27 +52,27 @@ public class OktaClientResponseUtils {
             "okta-call",                    "Okta Voice Call",
             "okta-sms",                     "Okta Text Message Code");
 
-    private final ObjectMapper objectMapper;
+    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of(FactorType.PUSH, FactorType.CALL, FactorType.SMS);
 
     private final String baseUrl;
 
     @Inject
     public OktaClientResponseUtils(@Named("auth.connector.okta.base_url") final String baseUrl) {
 
-        this.objectMapper = new ObjectMapper();
+        final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.baseUrl = baseUrl;
     }
 
     /**
      * Combine the provider and factor type to create factor key
-     * @param factor
+     * @param factor Okta MFA factor
      * @return factor key
      */
     protected String getFactorKey(Factor factor) {
 
-        final String factorProvider = factor.getProvider().toLowerCase();
-        final String factorType = factor.getFactorType().toLowerCase();
+        final String factorProvider = factor.getProvider().toString().toLowerCase();
+        final String factorType = factor.getType().toString().toLowerCase();
 
         return factorProvider + "-" + factorType;
     }
@@ -96,66 +96,18 @@ public class OktaClientResponseUtils {
     }
 
     /**
-     * Get list of enrolled MFA factors for a user from their authentication result
-     * @param authResult  Okta response object after successful authentication
-     * @return List of factors
+     * Determines if a MFA factor is currently supported by Cerberus or not
+     * @param factor Okta MFA factor
+     * @return boolean
      */
-    protected List<Factor> getUserFactorsFromAuthResult(final AuthResult authResult) {
+    protected boolean isSupportedFactor(Factor factor) {
 
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
+        final FactorType type = factor.getType();
+        final FactorProvider provider = factor.getProvider();
 
-        if (embeddedAuthData != null && embeddedAuthData.getFactors() != null) {
-            return embeddedAuthData.getFactors();
-        } else {
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionMessage("Could not parse user factors from Okta response.")
-                    .build();
-        }
+        return ! (provider.equals(FactorProvider.OKTA) &&
+                UNSUPPORTED_OKTA_MFA_TYPES.contains(type));
     }
-
-    /**
-     * Get user id from authentication result
-     * @param authResult Okta response object after successful authentication
-     * @return The u
-     * ser ID
-     */
-    protected String getUserIdFromAuthResult(final AuthResult authResult) {
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
-
-        if (embeddedAuthData.getUser() != null) {
-            return embeddedAuthData.getUser().getId();
-        } else {
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionMessage("Could not parse user data from Okta response.")
-                    .build();
-        }
-    }
-
-    /**
-     * Get username from authentication result
-     * @param authResult Okta response object after successful authentication
-     * @return The username
-     */
-    String getUserLoginFromAuthResult(final AuthResult authResult) {
-        final EmbeddedAuthResponseDataV1 embeddedAuthData = getEmbeddedAuthData(authResult);
-
-        if (embeddedAuthData == null ||
-                embeddedAuthData.getUser() == null ||
-                embeddedAuthData.getUser().getProfile() == null ||
-                embeddedAuthData.getUser().getProfile().getLogin() == null) {
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionMessage("Could not parse user data from Okta response.")
-                    .build();
-        }
-
-        return embeddedAuthData.getUser().getProfile().getLogin();
-}
 
     /**
      * Ensure the user has at least one active MFA device set up.
@@ -178,29 +130,4 @@ public class OktaClientResponseUtils {
         }
     }
 
-
-
-    /**
-     * Convenience method for parsing the Okta response and mapping it to a class.
-     *
-     * @param authResult  The Okta authentication result object
-     * @return Deserialized object from the response body
-     */
-    private EmbeddedAuthResponseDataV1 getEmbeddedAuthData(final AuthResult authResult) {
-
-        Preconditions.checkArgument(authResult != null, "auth result cannot be null.");
-
-        final Map<String, Object> embedded = authResult.getEmbedded();
-
-        try {
-            final String embeddedJson = objectMapper.writeValueAsString(embedded);
-            return objectMapper.readValue(embeddedJson, EmbeddedAuthResponseDataV1.class);
-        } catch (IOException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("Error parsing the embedded auth data from Okta.")
-                    .build();
-        }
-    }
 }

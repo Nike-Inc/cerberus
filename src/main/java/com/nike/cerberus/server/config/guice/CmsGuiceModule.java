@@ -35,7 +35,7 @@ import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
 import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
 import com.nike.cerberus.endpoints.authentication.AuthenticateStsIdentity;
 import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
-import com.nike.cerberus.endpoints.authentication.MfaCheck;
+import com.nike.cerberus.endpoints.authentication.TotpMfaCheck;
 import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
 import com.nike.cerberus.endpoints.authentication.RevokeToken;
 import com.nike.cerberus.endpoints.category.CreateCategory;
@@ -176,7 +176,7 @@ public class CmsGuiceModule extends AbstractModule {
             CreateCategory createCategory,
             DeleteCategory deleteCategory,
             AuthenticateUser authenticateUser,
-            MfaCheck mfaCheck,
+            TotpMfaCheck mfaCheck,
             RefreshUserToken refreshUserToken,
             AuthenticateIamRole authenticateIamRole,
             AuthenticateIamPrincipal authenticateIamPrincipal,
@@ -262,7 +262,7 @@ public class CmsGuiceModule extends AbstractModule {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
                 || i instanceof RobotsEndpoint
                 || i instanceof AuthenticateUser
-                || i instanceof MfaCheck
+                || i instanceof TotpMfaCheck
                 || i instanceof AuthenticateIamRole
                 || i instanceof AuthenticateIamPrincipal
                 || i instanceof AuthenticateStsIdentity
