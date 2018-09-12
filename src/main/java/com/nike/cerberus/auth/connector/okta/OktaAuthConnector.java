@@ -118,7 +118,7 @@ public class OktaAuthConnector implements AuthConnector {
             // Filter out Okta push, call, and sms because we don't currently support them.
             final List<Factor> factors = oktaAuthResponse.getFactors()
                     .stream()
-                    .filter(factor -> (oktaClientResponseUtils.isSupportedFactor(factor)))
+                    .filter(factor -> oktaClientResponseUtils.isSupportedFactor(factor))
                     .collect(Collectors.toList());
 
             oktaClientResponseUtils.validateUserFactors(factors);

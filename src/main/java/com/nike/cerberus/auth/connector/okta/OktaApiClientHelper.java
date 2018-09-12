@@ -21,13 +21,9 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
-import com.okta.sdk.clients.AuthApiClient;
-import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserGroupApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.framework.PagedResults;
-import com.okta.sdk.models.auth.AuthResult;
-import com.okta.sdk.models.factors.Factor;
 import com.okta.sdk.models.usergroups.UserGroup;
 
 import javax.inject.Named;
@@ -41,22 +37,14 @@ import java.util.List;
 @SuppressWarnings("CdiManagedBeanInconsistencyInspection")
 public class OktaApiClientHelper {
 
-    private final AuthApiClient authClient;
-
     private final UserGroupApiClient userGroupApiClient;
-
-    private final FactorsApiClient factorsApiClient;
 
     private final String baseUrl;
 
-    protected OktaApiClientHelper(AuthApiClient authClient,
-                                  UserGroupApiClient userGroupApiClient,
-                                  FactorsApiClient factorsApiClient,
+    protected OktaApiClientHelper(UserGroupApiClient userGroupApiClient,
                                   String baseUrl) {
 
-        this.authClient = authClient;
         this.userGroupApiClient = userGroupApiClient;
-        this.factorsApiClient = factorsApiClient;
         this.baseUrl = baseUrl;
     }
 
@@ -70,9 +58,7 @@ public class OktaApiClientHelper {
         this.baseUrl = baseUrl;
 
         final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(baseUrl, oktaApiKey);
-        authClient = new AuthApiClient(clientConfiguration);
         userGroupApiClient = new UserGroupApiClient(clientConfiguration);
-        factorsApiClient = new FactorsApiClient(clientConfiguration);
     }
 
     /**
@@ -127,77 +113,6 @@ public class OktaApiClientHelper {
                     .build();
         }
         return userGroups;
-    }
-
-    /**
-     * Request for verifying a MFA factor.
-     *
-     * @param factorId MFA factor id
-     * @param stateToken State token
-     * @param passCode One Time Passcode from MFA factor
-     * @return Session login token
-     */
-    protected AuthResult verifyFactor(final String factorId,
-                                      final String stateToken,
-                                      final String passCode) {
-
-        final AuthResult authResult;
-        try {
-            authResult = authClient.authenticateWithFactor(stateToken, factorId, passCode);
-        } catch (IOException ioe) {
-            final String msg = String.format("stateToken: %s failed to verify 2nd factor for reason: %s",
-                    stateToken, ioe.getMessage());
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                    .withExceptionMessage(msg)
-                    .build();
-        }
-
-        return authResult;
-    }
-
-    /**
-     * Authenticate a user with Okta
-     *
-     * @param username   Okta username
-     * @param password   Okta password
-     * @param relayState Deep link to redirect user to after authentication
-     * @return Session login token
-     */
-    protected AuthResult authenticateUser(final String username, final String password,
-                                          final String relayState) {
-
-        try {
-            return authClient.authenticate(username, password, relayState);
-        } catch (IOException ioe) {
-            final String msg = String.format("failed to authenticate user (%s) for reason: %s", username,
-                    ioe.getMessage());
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTH_BAD_CREDENTIALS)
-                    .withExceptionMessage(msg)
-                    .build();        }
-    }
-
-    /**
-     * Get list of enrolled MFA factors for a user
-     * @param userId  Okta user ID
-     * @return List of factors
-     */
-    protected List<Factor> getFactorsByUserId(final String userId) {
-
-        Preconditions.checkArgument(userId != null, "user id cannot be null.");
-
-        try {
-            return factorsApiClient.getUserLifecycleFactors(userId);
-        } catch (IOException e) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
-                    .withExceptionCause(e)
-                    .withExceptionMessage("Error parsing the embedded auth data from Okta.")
-                    .build();
-        }
     }
 
 }

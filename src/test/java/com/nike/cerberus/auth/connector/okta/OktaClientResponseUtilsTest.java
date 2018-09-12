@@ -17,20 +17,14 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
-import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultFactor;
-import com.okta.authn.sdk.resource.AuthenticationResponse;
 import com.okta.sdk.resource.user.factor.FactorProvider;
 import com.okta.sdk.resource.user.factor.FactorType;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
-
-import java.util.concurrent.CompletableFuture;
 import static groovy.util.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

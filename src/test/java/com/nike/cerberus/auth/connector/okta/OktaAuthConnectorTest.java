@@ -63,6 +63,7 @@ public class OktaAuthConnectorTest {
 
     @Mock
     private AuthenticationClient client;
+    private AuthResponse result;
 
     @Before
     public void setup() {
