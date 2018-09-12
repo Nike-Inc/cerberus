@@ -31,13 +31,8 @@ import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.*;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
-import com.nike.cerberus.endpoints.authentication.AuthenticateStsIdentity;
-import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
-import com.nike.cerberus.endpoints.authentication.TotpMfaCheck;
-import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
-import com.nike.cerberus.endpoints.authentication.RevokeToken;
+import com.nike.cerberus.endpoints.authentication.*;
+import com.nike.cerberus.endpoints.authentication.CodeHandlingMfaCheck;
 import com.nike.cerberus.endpoints.category.CreateCategory;
 import com.nike.cerberus.endpoints.category.DeleteCategory;
 import com.nike.cerberus.endpoints.category.GetAllCategories;
@@ -176,7 +171,7 @@ public class CmsGuiceModule extends AbstractModule {
             CreateCategory createCategory,
             DeleteCategory deleteCategory,
             AuthenticateUser authenticateUser,
-            TotpMfaCheck mfaCheck,
+            CodeHandlingMfaCheck mfaCheck,
             RefreshUserToken refreshUserToken,
             AuthenticateIamRole authenticateIamRole,
             AuthenticateIamPrincipal authenticateIamPrincipal,
@@ -262,7 +257,7 @@ public class CmsGuiceModule extends AbstractModule {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
                 || i instanceof RobotsEndpoint
                 || i instanceof AuthenticateUser
-                || i instanceof TotpMfaCheck
+                || i instanceof CodeHandlingMfaCheck
                 || i instanceof AuthenticateIamRole
                 || i instanceof AuthenticateIamPrincipal
                 || i instanceof AuthenticateStsIdentity

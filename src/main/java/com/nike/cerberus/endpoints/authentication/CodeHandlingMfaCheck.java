@@ -34,12 +34,12 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for verifying the token from the user's MFA device.  Returns the full auth response if verified.
  */
-public class TotpMfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
+public class CodeHandlingMfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
 
     private final AuthenticationService authenticationService;
 
     @Inject
-    public TotpMfaCheck(final AuthenticationService authenticationService) {
+    public CodeHandlingMfaCheck(final AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
