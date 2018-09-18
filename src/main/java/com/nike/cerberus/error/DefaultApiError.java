@@ -286,16 +286,12 @@ public enum DefaultApiError implements ApiError {
     /**
      * Generic authentication error for when a user attempts to login and is not successful.
      */
-    AUTH_FAILED(99242, "MFA is required. Please confirm that you are enrolled in a supported MFA device.", SC_BAD_REQUEST),
+    AUTH_FAILED(99242, "MFA is required. Please confirm that you are enrolled in a supported MFA device.", SC_UNAUTHORIZED),
 
     /**
      * Factor failed to validate.
      */
-    FACTOR_VALIDATE_FAILED(99243, "Failed to validate factor. Please try again or try a different factor.", SC_BAD_REQUEST),
-
-
-
-
+    FACTOR_VALIDATE_FAILED(99243, "Failed to validate factor. Please try again or try a different factor.", SC_UNAUTHORIZED),
 
     /**
      * Generic not found error.
