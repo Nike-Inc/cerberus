@@ -18,22 +18,24 @@
 package com.nike.cerberus.auth.connector.okta;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
-import com.nike.cerberus.auth.connector.AuthMfaDevice;
 import com.nike.cerberus.auth.connector.AuthResponse;
-import com.nike.cerberus.auth.connector.AuthStatus;
-import com.okta.sdk.models.auth.AuthResult;
-import com.okta.sdk.models.factors.Factor;
+import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHandler;
+import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
+import com.nike.cerberus.error.DefaultApiError;
+import com.okta.authn.sdk.FactorValidationException;
+import com.okta.authn.sdk.client.AuthenticationClient;
+import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
 import com.okta.sdk.models.usergroups.UserGroup;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Okta version 1 API implementation of the AuthConnector interface.
@@ -42,77 +44,71 @@ public class OktaAuthConnector implements AuthConnector {
 
     private final OktaApiClientHelper oktaApiClientHelper;
 
-    private final OktaClientResponseUtils oktaClientResponseUtils;
-
-    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of("push", "call", "sms");
+    private final AuthenticationClient oktaAuthenticationClient;
 
     @Inject
     public OktaAuthConnector(final OktaApiClientHelper oktaApiClientHelper,
-                             final OktaClientResponseUtils oktaClientResponseUtils) {
+                             AuthenticationClient oktaAuthenticationClient) {
 
         this.oktaApiClientHelper = oktaApiClientHelper;
-        this.oktaClientResponseUtils = oktaClientResponseUtils;
+        this.oktaAuthenticationClient = oktaAuthenticationClient;
     }
 
+    /**
+     * Authenticates user using Okta Auth SDK.
+     */
     @Override
     public AuthResponse authenticate(String username, String password) {
 
-        final AuthResult authResult = oktaApiClientHelper.authenticateUser(username, password, null);
-        final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
-        final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
+        CompletableFuture<AuthResponse> authResponse = new CompletableFuture<>();
+        InitialLoginStateHandler stateHandler = new InitialLoginStateHandler(oktaAuthenticationClient, authResponse);
 
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse().setData(authData);
-
-        if (StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_REQUIRED_STATUS) ||
-                StringUtils.equals(authResult.getStatus(), OktaClientResponseUtils.AUTHENTICATION_MFA_ENROLL_STATUS)) {
-
-            authData.setStateToken(authResult.getStateToken());
-            authResponse.setStatus(AuthStatus.MFA_REQUIRED);
-
-            final List<Factor> factors = oktaClientResponseUtils.getUserFactorsFromAuthResult(authResult)
-                    .stream()
-                    // Filter out Okta push, call, and sms because we don't currently support them.
-                    .filter(factor -> {
-                        String type = factor.getFactorType().toLowerCase();
-                        String provider = factor.getProvider();
-                        return ! (provider.equalsIgnoreCase("okta") &&
-                                UNSUPPORTED_OKTA_MFA_TYPES.contains(type));
-                    }).collect(Collectors.toList());
-
-
-            oktaClientResponseUtils.validateUserFactors(factors);
-
-            factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
-                .setId(factor.getId())
-                .setName(oktaClientResponseUtils.getDeviceName(factor))));
+        try {
+            oktaAuthenticationClient.authenticate(username, password.toCharArray(), null, stateHandler);
+            return authResponse.get(45, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw ApiException.newBuilder()
+                    .withExceptionCause(e)
+                    .withApiErrors(DefaultApiError.LOGIN_FAILED)
+                    .withExceptionMessage("Failed to login or failed to wait for Okta Auth Completable Future to complete.")
+                    .build();
         }
-        else {
-            authResponse.setStatus(AuthStatus.SUCCESS);
-        }
-
-        return authResponse;
     }
 
+    /**
+     * Verifies user's MFA factor using Okta Auth SDK.
+     */
     @Override
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
 
-        final AuthResult authResult = oktaApiClientHelper.verifyFactor(deviceId, stateToken, otpToken);
-        final String userId = oktaClientResponseUtils.getUserIdFromAuthResult(authResult);
-        final String userLogin = oktaClientResponseUtils.getUserLoginFromAuthResult(authResult);
+        CompletableFuture<AuthResponse> authResponse = new CompletableFuture<>();
+        MfaStateHandler stateHandler = new MfaStateHandler(oktaAuthenticationClient, authResponse);
 
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse()
-                .setData(authData)
-                .setStatus(AuthStatus.SUCCESS);
+        DefaultVerifyPassCodeFactorRequest request = oktaAuthenticationClient.instantiate(DefaultVerifyPassCodeFactorRequest.class);
+        request.setPassCode(otpToken);
+        request.setStateToken(stateToken);
 
-        return authResponse;
+        try {
+            oktaAuthenticationClient.verifyFactor(deviceId, request, stateHandler);
+            return authResponse.get(45, TimeUnit.SECONDS);
+        } catch(FactorValidationException e) {
+            throw ApiException.newBuilder()
+                    .withExceptionCause(e)
+                    .withApiErrors(DefaultApiError.FACTOR_VALIDATE_FAILED)
+                    .withExceptionMessage("Failed to validate factor.")
+                    .build();
+        } catch (Exception e) {
+            throw ApiException.newBuilder()
+                    .withExceptionCause(e)
+                    .withApiErrors(DefaultApiError.AUTH_RESPONSE_WAIT_FAILED)
+                    .withExceptionMessage("Failed to wait for Okta Auth Completable Future to complete.")
+                    .build();
+        }
     }
 
+    /**
+     * Obtains groups user belongs to.
+     */
     @Override
     public Set<String> getGroups(AuthData authData) {
 
@@ -129,5 +125,4 @@ public class OktaAuthConnector implements AuthConnector {
 
         return groups;
     }
-
 }

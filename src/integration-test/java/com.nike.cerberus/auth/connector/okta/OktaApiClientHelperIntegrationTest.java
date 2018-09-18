@@ -17,18 +17,14 @@
 package com.nike.cerberus.auth.connector.okta;
 
 import com.fieldju.commons.EnvUtils;
-import com.okta.sdk.clients.AuthApiClient;
-import com.okta.sdk.clients.FactorsApiClient;
 import com.okta.sdk.clients.UserGroupApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.models.usergroups.UserGroup;
-import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -38,9 +34,7 @@ import static org.mockito.Mockito.verify;
 
 public class OktaApiClientHelperIntegrationTest {
 
-    AuthApiClient authClient;
     UserGroupApiClient userApiClient;
-    FactorsApiClient factorsApiClient;
 
     OktaApiClientHelper oktaApiClientHelper;
 
@@ -51,13 +45,10 @@ public class OktaApiClientHelperIntegrationTest {
 
         final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(oktaApiUrl, oktaApiKey);
 
-        authClient = spy(new AuthApiClient(clientConfiguration));
         userApiClient = spy(new UserGroupApiClient(clientConfiguration));
-        factorsApiClient = spy(new FactorsApiClient(clientConfiguration));
 
-        oktaApiClientHelper = new OktaApiClientHelper(authClient, userApiClient, factorsApiClient, oktaApiUrl);
+        oktaApiClientHelper = new OktaApiClientHelper(userApiClient, oktaApiUrl);
     }
-
 
     @Test
     public void test_that_getUserGroups_can_handle_pagination() throws IOException {

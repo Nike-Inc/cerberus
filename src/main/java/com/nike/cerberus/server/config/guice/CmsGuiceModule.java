@@ -31,13 +31,8 @@ import com.nike.cerberus.endpoints.GetDashboardRedirect;
 import com.nike.cerberus.endpoints.HealthCheckEndpoint;
 import com.nike.cerberus.endpoints.RobotsEndpoint;
 import com.nike.cerberus.endpoints.admin.*;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamPrincipal;
-import com.nike.cerberus.endpoints.authentication.AuthenticateIamRole;
-import com.nike.cerberus.endpoints.authentication.AuthenticateStsIdentity;
-import com.nike.cerberus.endpoints.authentication.AuthenticateUser;
-import com.nike.cerberus.endpoints.authentication.MfaCheck;
-import com.nike.cerberus.endpoints.authentication.RefreshUserToken;
-import com.nike.cerberus.endpoints.authentication.RevokeToken;
+import com.nike.cerberus.endpoints.authentication.*;
+import com.nike.cerberus.endpoints.authentication.CodeHandlingMfaCheck;
 import com.nike.cerberus.endpoints.category.CreateCategory;
 import com.nike.cerberus.endpoints.category.DeleteCategory;
 import com.nike.cerberus.endpoints.category.GetAllCategories;
@@ -73,6 +68,8 @@ import com.nike.riposte.server.config.AppInfo;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
+import com.okta.authn.sdk.client.AuthenticationClient;
+import com.okta.authn.sdk.client.AuthenticationClients;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -176,7 +173,7 @@ public class CmsGuiceModule extends AbstractModule {
             CreateCategory createCategory,
             DeleteCategory deleteCategory,
             AuthenticateUser authenticateUser,
-            MfaCheck mfaCheck,
+            CodeHandlingMfaCheck mfaCheck,
             RefreshUserToken refreshUserToken,
             AuthenticateIamRole authenticateIamRole,
             AuthenticateIamPrincipal authenticateIamPrincipal,
@@ -245,6 +242,17 @@ public class CmsGuiceModule extends AbstractModule {
 
     @Provides
     @Singleton
+    public AuthenticationClient authenticationClient(@Named("auth.connector.okta.base_url") String oktaUrl,
+                                                     @Named("auth.connector.okta.api_key") String oktaApiKey) {
+
+        System.setProperty("okta.client.token", oktaApiKey);
+        return AuthenticationClients.builder()
+                .setOrgUrl(oktaUrl)
+                .build();
+    }
+
+    @Provides
+    @Singleton
     public AsyncHttpClientHelper asyncHttpClientHelper() {
         return new AsyncHttpClientHelper();
     }
@@ -262,7 +270,7 @@ public class CmsGuiceModule extends AbstractModule {
         return endpoints.stream().filter(i -> !(i instanceof HealthCheckEndpoint
                 || i instanceof RobotsEndpoint
                 || i instanceof AuthenticateUser
-                || i instanceof MfaCheck
+                || i instanceof CodeHandlingMfaCheck
                 || i instanceof AuthenticateIamRole
                 || i instanceof AuthenticateIamPrincipal
                 || i instanceof AuthenticateStsIdentity

@@ -82,6 +82,7 @@ export default class LoginMfaForm extends Component {
                                 <input type='text'
                                        className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm r'
                                        placeholder='Please enter your OTP token'
+                                       autoComplete="off"
                                        autoFocus={true}
                                        {...otpToken}/>
                                 {otpToken.touched && otpToken.error && <div className='ncss-error-msg'>{otpToken.error}</div>}
