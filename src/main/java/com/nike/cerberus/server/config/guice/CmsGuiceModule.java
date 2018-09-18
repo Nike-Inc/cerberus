@@ -68,6 +68,8 @@ import com.nike.riposte.server.config.AppInfo;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
 import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
+import com.okta.authn.sdk.client.AuthenticationClient;
+import com.okta.authn.sdk.client.AuthenticationClients;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -236,6 +238,17 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     public ProjectApiErrors projectApiErrors() {
         return new DefaultApiErrorsImpl();
+    }
+
+    @Provides
+    @Singleton
+    public AuthenticationClient authenticationClient(@Named("auth.connector.okta.base_url") String oktaUrl,
+                                                     @Named("auth.connector.okta.api_key") String oktaApiKey) {
+
+        System.setProperty("okta.client.token", oktaApiKey);
+        return AuthenticationClients.builder()
+                .setOrgUrl(oktaUrl)
+                .build();
     }
 
     @Provides

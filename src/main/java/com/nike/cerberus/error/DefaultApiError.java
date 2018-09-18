@@ -185,8 +185,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * Authentication error for when a user attempts to login and MFA is required but not setup on their account.
      */
-    MFA_SETUP_REQUIRED(99222, "MFA is required but the user has not set up any factors.", SC_BAD_REQUEST),
-
+    MFA_SETUP_REQUIRED(99222, "MFA is required. Please set up a supported device, either Okta Verify or Google Authenticator.", SC_BAD_REQUEST),
 
     /**
      * The IAM Role + Region don't have a KMS key provisioned to encrypt the auth response.
@@ -275,7 +274,7 @@ public enum DefaultApiError implements ApiError {
     LOGIN_FAILED(99239, "Failed to login. Please confirm email and password and try again.", SC_UNAUTHORIZED),
 
     /**
-     * Failed to wait for Okta Auth Completeable Future to complete.
+     * Failed to wait for Okta Auth Completable Future to complete.
      */
     AUTH_RESPONSE_WAIT_FAILED(99240, "Failed to wait for Okta Auth Response to complete.", SC_UNAUTHORIZED),
 
@@ -283,6 +282,19 @@ public enum DefaultApiError implements ApiError {
      * Unable to read MFA factor type because it is not one of the standard types.
      */
     FAILED_TO_READ_FACTOR(99241, "Failed to read Okta MFA factor type.", SC_UNAUTHORIZED),
+
+    /**
+     * Generic authentication error for when a user attempts to login and is not successful.
+     */
+    AUTH_FAILED(99242, "MFA is required. Please confirm that you are enrolled in a supported MFA device.", SC_BAD_REQUEST),
+
+    /**
+     * Factor failed to validate.
+     */
+    FACTOR_VALIDATE_FAILED(99243, "Failed to validate factor. Please try again or try a different factor.", SC_BAD_REQUEST),
+
+
+
 
 
     /**
