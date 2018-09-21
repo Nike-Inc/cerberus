@@ -64,6 +64,12 @@ public class OneLoginAuthConnector implements AuthConnector {
     }
 
     @Override
+    public AuthResponse triggerChallenge(String stateToken, String deviceId) {
+
+        throw new UnsupportedOperationException("Method call is not allowed.");
+    }
+
+    @Override
     public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
         final SessionLoginTokenData sessionLoginToken = verifyFactor(deviceId, stateToken, otpToken);
         final AuthData authData = new AuthData();

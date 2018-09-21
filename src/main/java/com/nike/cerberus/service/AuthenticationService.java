@@ -176,6 +176,20 @@ public class AuthenticationService {
         return authResponse;
     }
 
+
+    /**
+     * Enables a user to trigger a factor challenge.
+     *
+     * @param challengeRequest Request containing the MFA token details with no passcode
+     * @return The auth response
+     */
+    public AuthResponse triggerChallenge(final MfaCheckRequest challengeRequest) {
+        final AuthResponse authResponse = authServiceConnector.triggerChallenge(challengeRequest.getStateToken(),
+                challengeRequest.getDeviceId());
+
+        return authResponse;
+    }
+
     /**
      * Enables a user to execute an MFA check to complete authentication and get an auth token.
      *
@@ -195,7 +209,7 @@ public class AuthenticationService {
         return authResponse;
     }
 
-    /**
+    /**F
      * Enables an IAM role to authenticate and get back an encrypted payload that the role is only able to decrypt with
      * KMS.
      * @param credentials IAM role credentials

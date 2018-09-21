@@ -4,18 +4,22 @@ import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 
+import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.auth.connector.okta.statehandlers.AbstractOktaStateHandler;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultFactor;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
+import com.okta.authn.sdk.resource.User;
 import com.okta.sdk.resource.user.factor.FactorProvider;
 import com.okta.sdk.resource.user.factor.FactorType;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static groovy.util.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -40,6 +44,9 @@ public class AbstractOktaStateHandlerTest {
     public void setup() {
 
         initMocks(this);
+
+
+        authenticationResponseFuture = new CompletableFuture<>();
 
         // create test object
         this.abstractOktaStateHandler = new AbstractOktaStateHandler(client, authenticationResponseFuture) {
@@ -145,7 +152,6 @@ public class AbstractOktaStateHandlerTest {
     public void getDeviceNameFailsNullFactor() {
 
         this.abstractOktaStateHandler.getDeviceName(null);
-
     }
 
     @Test
@@ -210,6 +216,31 @@ public class AbstractOktaStateHandlerTest {
         this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
     }
 
+    @Test
+    public void handleSuccess() throws Exception {
+
+        String email = "email";
+        String id = "id";
+        AuthStatus status = AuthStatus.SUCCESS;
+
+        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(id);
+        when(user.getLogin()).thenReturn(email);
+        when(expectedResponse.getUser()).thenReturn(user);
+
+        // do the call
+        abstractOktaStateHandler.handleSuccess(expectedResponse);
+
+        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+
+        //  verify results
+        Assert.assertEquals(id, actualResponse.getData().getUserId());
+        Assert.assertEquals(email, actualResponse.getData().getUsername());
+        Assert.assertEquals(status, actualResponse.getStatus());
+    }
+
     @Test(expected = ApiException.class)
     public void handleUnknownLockout() {
 
@@ -231,6 +262,5 @@ public class AbstractOktaStateHandlerTest {
 
         abstractOktaStateHandler.handleUnknown(unknownResponse);
     }
-
 }
 

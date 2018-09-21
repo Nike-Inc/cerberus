@@ -22,6 +22,8 @@ public interface AuthConnector {
 
     AuthResponse authenticate(final String username, final String password);
 
+    AuthResponse triggerChallenge(final String stateToken, final String deviceId);
+
     AuthResponse mfaCheck(final String stateToken, final String deviceId, final String otpToken);
 
     Set<String> getGroups(final AuthData data);

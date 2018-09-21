@@ -22,13 +22,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
+import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
+import com.nike.cerberus.auth.connector.AuthStatus;
+import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
@@ -66,10 +70,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -134,6 +135,26 @@ public class AuthenticationServiceTest {
                 awsIamRoleService
         );
     }
+
+    @Test
+    public void triggerChallengeSuccess() {
+
+        String stateToken = "state token";
+
+        MfaCheckRequest challengeRequest = mock(MfaCheckRequest.class);
+
+        AuthResponse expectedResponse = mock(AuthResponse.class);
+        AuthData expectedData = mock(AuthData.class);
+        when(expectedData.getStateToken()).thenReturn(stateToken);
+        when(expectedResponse.getData()).thenReturn(expectedData);
+
+        doAnswer(invocation -> expectedResponse).when(authConnector).triggerChallenge(any(), any());
+
+        AuthResponse actualResponse = authenticationService.triggerChallenge(challengeRequest);
+
+        assertEquals(expectedResponse, actualResponse);
+        assertEquals(expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
+    };
 
     @Test
     public void tests_that_generateCommonVaultPrincipalAuthMetadata_contains_expected_fields() {

@@ -23,25 +23,6 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
     }
 
     /**
-     * Handles authentication success.
-     * @param successResponse - Authentication response from the Completable Future
-     */
-    @Override
-    public void handleSuccess(AuthenticationResponse successResponse) {
-        final String userId = successResponse.getUser().getId();
-        final String userLogin = successResponse.getUser().getLogin();
-
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse()
-                .setData(authData)
-                .setStatus(AuthStatus.SUCCESS);
-
-        authenticationResponseFuture.complete(authResponse);
-    }
-
-    /**
      * Handles MFA required state
      * @param mfaRequiredResponse - Authentication response from the Completable Future
      */

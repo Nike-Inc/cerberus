@@ -24,7 +24,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class InitialLoginStateHandlerTest {
 
-
     // class under test
     private InitialLoginStateHandler initialLoginStateHandler;
 
@@ -41,40 +40,12 @@ public class InitialLoginStateHandlerTest {
         authenticationResponseFuture = new CompletableFuture<>();
 
         // create test object
-        this.initialLoginStateHandler = new InitialLoginStateHandler(client, authenticationResponseFuture) {
-
-        };
+        this.initialLoginStateHandler = new InitialLoginStateHandler(client, authenticationResponseFuture) {};
     }
-
 
     /////////////////////////
     // Test Methods
     /////////////////////////
-
-    @Test
-    public void handleSuccess() throws Exception {
-
-        String email = "email";
-        String id = "id";
-        AuthStatus status = AuthStatus.SUCCESS;
-
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
-
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
-
-        // do the call
-        initialLoginStateHandler.handleSuccess(expectedResponse);
-
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
-
-        //  verify results
-        assertEquals(id, actualResponse.getData().getUserId());
-        assertEquals(email, actualResponse.getData().getUsername());
-        assertEquals(status, actualResponse.getStatus());
-    }
 
     @Test
     public void handleMfaRequired() throws Exception {
@@ -114,7 +85,6 @@ public class InitialLoginStateHandlerTest {
         assertEquals(expectedStatus, actualResponse.getStatus());
     }
 
-    // We currently do not support Okta push, call, and sms.
     @Test(expected = ApiException.class)
     public void handleMfaRequiredFailNoSupportedDevicesEnrolled() throws Exception {
 
@@ -215,5 +185,4 @@ public class InitialLoginStateHandlerTest {
         assertEquals(email, actualResponse.getData().getUsername());
         assertEquals(expectedStatus, actualResponse.getStatus());
     }
-
 }

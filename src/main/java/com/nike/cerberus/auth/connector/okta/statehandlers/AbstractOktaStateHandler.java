@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
+import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.AuthenticationStateHandlerAdapter;
 import com.okta.authn.sdk.client.AuthenticationClient;
@@ -106,7 +108,6 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
      * Ensure the user has at least one active MFA device set up
      * @param factors - List of user factors
      */
-
     public void validateUserFactors(final List<Factor> factors) {
 
         if(factors == null || factors.isEmpty() || factors.stream()
@@ -120,12 +121,32 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
         }
     }
 
+
+    /**
+     * Handles authentication success.
+     * @param successResponse - Authentication response from the Completable Future
+     */
+    @Override
+    public void handleSuccess(AuthenticationResponse successResponse) {
+
+        final String userId = successResponse.getUser().getId();
+        final String userLogin = successResponse.getUser().getLogin();
+
+        final AuthData authData = new AuthData()
+                .setUserId(userId)
+                .setUsername(userLogin);
+        AuthResponse authResponse = new AuthResponse()
+                .setData(authData)
+                .setStatus(AuthStatus.SUCCESS);
+
+        authenticationResponseFuture.complete(authResponse);
+    }
+
     /**
      * Handles all unknown states that are not specifically dealt with by the other state handlers and
      * reports a relevant API Error for the state
      * @param typedUnknownResponse - Authentication response from the Completable Future
      */
-
     public void handleUnknown(AuthenticationResponse typedUnknownResponse) {
 
         String status = typedUnknownResponse.getStatusString();

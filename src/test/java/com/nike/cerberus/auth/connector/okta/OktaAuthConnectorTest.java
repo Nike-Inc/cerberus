@@ -114,6 +114,58 @@ public class OktaAuthConnectorTest {
     }
 
     @Test
+    public void triggerChallengeSuccess() throws Exception {
+
+        String stateToken = "state token";
+        String deviceId = "device id";
+
+        AuthResponse expectedResponse = mock(AuthResponse.class);
+
+        AuthData expectedData = mock(AuthData.class);
+        when(expectedData.getStateToken()).thenReturn(stateToken);
+        when(expectedResponse.getData()).thenReturn(expectedData);
+
+        doAnswer(invocation -> {
+            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+            stateHandler.authenticationResponseFuture.complete(expectedResponse);
+            return null;
+        }).when(client).challengeFactor(any(), any(), any());
+
+        // do the call
+        AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
+
+        //  verify results
+        assertEquals(expectedResponse, actualResponse);
+        assertEquals(expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
+    }
+
+    @Test (expected = ApiException.class)
+    public void triggerChallengeFails() throws Exception {
+
+        String stateToken = "state token";
+        String deviceId = "device id";
+
+        AuthResponse expectedResponse = mock(AuthResponse.class);
+
+        AuthData expectedData = mock(AuthData.class);
+        when(expectedData.getStateToken()).thenReturn(stateToken);
+        when(expectedResponse.getData()).thenReturn(expectedData);
+
+        doAnswer(invocation -> {
+            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+            stateHandler.authenticationResponseFuture.cancel(true);
+            return null;
+        }).when(client).challengeFactor(any(), any(), any());
+
+        // do the call
+        AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
+
+        //  verify results
+        assertEquals(expectedResponse, actualResponse);
+        assertEquals(expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
+    }
+
+    @Test
     public void mfaCheckSuccess() throws Exception {
 
         String stateToken = "state token";
