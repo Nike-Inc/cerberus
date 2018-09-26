@@ -1,14 +1,18 @@
 import React from 'react'
 import { Component } from 'react'
 import Select from 'react-select'
+import { setSelectedDeviceId } from '../../actions/authenticationActions'
 
 export default class MfaDeviceSelect extends Component {
 
     componentDidMount() {
         var mfaDevices = this.props.mfaDevices;
         if (!this.props.value && mfaDevices.length > 0) {
+
             // choose the first value by default
-            this.props.onChange(mfaDevices[0].id);
+            const selectedDeviceId = mfaDevices[0].id
+            this.props.onChange(selectedDeviceId)
+            this.props.dispatch(setSelectedDeviceId(selectedDeviceId))
         }
     }
 
@@ -23,7 +27,10 @@ export default class MfaDeviceSelect extends Component {
             <div className='mfa-device-select'>
                 <Select
                     className={((touched && error) ? 'category-select select-container-error' : 'category-select select-container')}
-                    onChange = {(v) => { handleBeingTouched(); onChange(v)} }
+                    onChange = {(selectedFactor) => {
+                        this.props.dispatch(setSelectedDeviceId(selectedFactor.value))
+                        handleBeingTouched(); onChange(selectedFactor)}
+                    }
                     onBlur={() => { handleBeingTouched() }}
                     value={value}
                     placeholder="Select a MFA device"

@@ -24,8 +24,6 @@ import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
-import com.nike.cerberus.auth.connector.AuthStatus;
-import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;

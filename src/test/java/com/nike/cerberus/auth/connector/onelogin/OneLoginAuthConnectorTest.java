@@ -160,7 +160,7 @@ public class OneLoginAuthConnectorTest {
         when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = ApiException.class)
     public void test_triggerChallenge() {
 
         String stateToken = "state token";

@@ -294,6 +294,11 @@ public enum DefaultApiError implements ApiError {
     FACTOR_VALIDATE_FAILED(99243, "Failed to validate factor. Please try again or try a different factor.", SC_UNAUTHORIZED),
 
     /**
+     * Call to trigger sms or call challenge for OneLogin is not implemented.
+     */
+    TRIGGER_CHALLENGE_NOT_IMPLEMENTED(99244, "Call to trigger sms or call challenge for OneLogin is not implemented.", SC_METHOD_NOT_ALLOWED),
+
+    /**
      * Generic not found error.
      */
     ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),

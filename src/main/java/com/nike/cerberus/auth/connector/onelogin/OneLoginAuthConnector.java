@@ -66,7 +66,10 @@ public class OneLoginAuthConnector implements AuthConnector {
     @Override
     public AuthResponse triggerChallenge(String stateToken, String deviceId) {
 
-        throw new UnsupportedOperationException("Method call is not allowed.");
+        throw ApiException.newBuilder()
+                .withApiErrors(DefaultApiError.TRIGGER_CHALLENGE_NOT_IMPLEMENTED)
+                .withExceptionMessage("Call to trigger sms or call challenge for OneLogin is not implemented.")
+                .build();
     }
 
     @Override

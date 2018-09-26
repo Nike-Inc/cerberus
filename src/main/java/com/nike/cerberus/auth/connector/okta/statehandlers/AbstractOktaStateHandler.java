@@ -38,6 +38,13 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
             "okta-call",                    "Okta Voice Call",
             "okta-sms",                     "Okta Text Message Code");
 
+    private static final Map<String, Boolean> MFA_FACTOR_TRIGGER_REQUIRED = ImmutableMap.of(
+            "google-token:software:totp",   false,
+            "okta-token:software:totp",     false,
+            "okta-push",                    true,
+            "okta-call",                    true,
+            "okta-sms",                     true);
+
     private static final Map<String, String> STATUS_ERRORS = new ImmutableMap.Builder<String, String> ()
             .put("UNAUTHENTICATED",     "User is not authenticated. Please confirm credentials.")
             .put("PASSWORD_WARN",       "Password is about to expire and should be changed.")
@@ -49,7 +56,8 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
             .put("MFA_ENROLL_ACTIVATE", "Please activate your factor to complete enrollment.")
             .build();
 
-    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of(FactorType.PUSH, FactorType.CALL, FactorType.SMS);
+//    We currently do not support push notifications for Okta MFA verification.
+    private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of(FactorType.PUSH);
 
     public final AuthenticationClient client;
     public final CompletableFuture<AuthResponse> authenticationResponseFuture;
@@ -79,15 +87,31 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
      */
     public String getDeviceName(final Factor factor) {
 
-        Preconditions.checkArgument(factor != null, "factor cannot be null.");
+        Preconditions.checkArgument(factor != null, "Factor cannot be null.");
 
         final String factorKey = getFactorKey(factor);
 
         if (MFA_FACTOR_NAMES.containsKey(factorKey)) {
             return MFA_FACTOR_NAMES.get(factorKey);
         }
-
         return WordUtils.capitalizeFully(factorKey);
+    }
+
+    /**
+     * Determines whether a trigger is required for a provided MFA factor
+     * @param factor  Okta MFA factor
+     * @return boolean trigger required
+     */
+    public boolean isTriggerRequired(Factor factor) {
+
+        Preconditions.checkArgument(factor != null, "Factor cannot be null.");
+
+        final String factorKey = getFactorKey(factor);
+
+        if (MFA_FACTOR_TRIGGER_REQUIRED.containsKey(factorKey)) {
+            return MFA_FACTOR_TRIGGER_REQUIRED.get(factorKey);
+        }
+        return false;
     }
 
     /**
@@ -120,7 +144,6 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
                     .build();
         }
     }
-
 
     /**
      * Handles authentication success.

@@ -176,7 +176,6 @@ public class AuthenticationService {
         return authResponse;
     }
 
-
     /**
      * Enables a user to trigger a factor challenge.
      *
@@ -209,7 +208,7 @@ public class AuthenticationService {
         return authResponse;
     }
 
-    /**F
+    /**
      * Enables an IAM role to authenticate and get back an encrypted payload that the role is only able to decrypt with
      * KMS.
      * @param credentials IAM role credentials

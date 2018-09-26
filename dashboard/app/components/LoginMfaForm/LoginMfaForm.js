@@ -3,7 +3,7 @@ import { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { reduxForm, touch } from 'redux-form'
-import { finalizeMfaLogin } from '../../actions/authenticationActions'
+import {finalizeMfaLogin, triggerCodeChallenge} from '../../actions/authenticationActions'
 import MfaDeviceSelect from '../MfaDeviceSelect/MfaDeviceSelect'
 import './LoginFormMfa.scss'
 
@@ -31,9 +31,12 @@ const validate = values => {
 
 @connect((state) => {
     return {
+        shouldDisplaySendCodeButton: state.auth.shouldDisplaySendCodeButton,
+        selectedDeviceId: state.auth.selectedDeviceId,
         mfaDevices: state.auth.mfaDevices,
         stateToken: state.auth.stateToken,
         isAuthenticating: state.auth.isAuthenticating,
+        isChallengeSent: state.auth.isChallengeSent,
         statusText: state.auth.statusText,
         initialValues: {
             redirectTo: state.routing.locationBeforeTransitions.query.next || '/',
@@ -55,11 +58,21 @@ export default class LoginMfaForm extends Component {
         fields: PropTypes.object.isRequired,
         stateToken: PropTypes.string.isRequired,
         isAuthenticating: PropTypes.bool.isRequired,
+        isChallengeSent: PropTypes.bool.isRequired,
         dispatch: PropTypes.func.isRequired,
     }
 
+    constructor(props) {
+        super(props)
+
+        this.handleMfaDeviceTouch = function(formName) {
+            this.props.dispatch(touch(formName, 'mfaDeviceId'))
+        }
+    }
+
     render() {
-        const {fields: {otpToken, mfaDeviceId}, stateToken, handleSubmit, isAuthenticating, mfaDevices, dispatch} = this.props
+        const {fields: {otpToken, mfaDeviceId}, stateToken, handleSubmit, isAuthenticating, isChallengeSent, mfaDevices,
+                dispatch, selectedDeviceId, shouldDisplaySendCodeButton} = this.props
 
         return (
             <div >
@@ -72,19 +85,34 @@ export default class LoginMfaForm extends Component {
                         <label className='ncss-label'>MFA Devices:</label>
                         <div id='top-section'>
                             <MfaDeviceSelect {...mfaDeviceId}
+                                             dispatch={dispatch}
                                              mfaDevices={mfaDevices}
-                                             handleBeingTouched={() => {dispatch(touch(formName, 'mfaDeviceId'))}} />
+                                             handleBeingTouched={() => {this.handleMfaDeviceTouch(formName)}} />
                         </div>
 
-                        <div id='security-code-div' className='ncss-form-group'>
+                        <div id='otp-div' className='ncss-form-group'>
                             <div className={((otpToken.touched && otpToken.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
-                                <label className='ncss-label'>Security Code</label>
-                                <input type='text'
-                                       className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm r'
-                                       placeholder='Please enter your OTP token'
-                                       autoComplete="off"
-                                       autoFocus={true}
-                                       {...otpToken}/>
+
+                                <label className='ncss-label'>One-Time Passcode:</label>
+
+                                <div id='otp-input-row'>
+                                    {shouldDisplaySendCodeButton &&
+                                        <button id='send-code-mfa-btn' type='button' className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                                            onClick={function () {
+                                                 dispatch(triggerCodeChallenge(selectedDeviceId, stateToken))
+                                                }
+                                            }
+                                            disabled={isChallengeSent}
+                                        >Send Code</button>
+                                    }
+
+                                    <input type='text'
+                                           className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm r'
+                                           placeholder='Please enter your OTP token'
+                                           autoComplete="off"
+                                           autoFocus={true}
+                                           {...otpToken}/>
+                                </div>
                                 {otpToken.touched && otpToken.error && <div className='ncss-error-msg'>{otpToken.error}</div>}
                             </div>
                         </div>

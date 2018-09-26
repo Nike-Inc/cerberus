@@ -90,7 +90,7 @@ public class OktaAuthConnector implements AuthConnector {
             throw ApiException.newBuilder()
                     .withExceptionCause(e)
                     .withApiErrors(DefaultApiError.AUTH_RESPONSE_WAIT_FAILED)
-                    .withExceptionMessage("Failed to wait for Okta Auth Completable Future to complete.")
+                    .withExceptionMessage("Failed to trigger challenge due to timeout. Please try again.")
                     .build();
         }
     }

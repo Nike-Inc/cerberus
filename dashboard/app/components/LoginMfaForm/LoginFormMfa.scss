@@ -8,3 +8,24 @@
 #login-mfa-btn {
   min-width: 125px;
 }
+
+#otp-div {
+
+  .ncss-input-container {
+    display: flex;
+    flex-flow: column;
+
+    #otp-input-row {
+      margin-top: 0px;
+      display: flex;
+
+      #send-code-mfa-btn {
+        margin-right: 12px;
+      }
+    }
+
+    .ncss-error-msg {
+      margin-left: auto;
+    }
+  }
+}

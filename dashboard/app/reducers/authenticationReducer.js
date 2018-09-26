@@ -9,12 +9,15 @@ const initialState = {
     isAuthenticating: false,
     isSessionExpired: false,
     isMfaRequired: false,
+    isChallengeSent: false,
     mfaDevices: [],
     isAdmin: false,
     groups: [],
     policies: null,
     sessionExpirationCheckIntervalId: null,
-    sessionWarningTimeoutId: null
+    sessionWarningTimeoutId: null,
+    selectedDeviceId: null,
+    shouldDisplaySendCodeButton: false
 }
 
 export default createReducer(initialState, {
@@ -59,6 +62,12 @@ export default createReducer(initialState, {
             mfaDevices: payload.mfaDevices
         })
     },
+    // lets the app know that the challenge has been sent
+    [constants.LOGIN_MFA_CHALLENGE]: (state) => {
+        return Object.assign({}, state, {
+            isChallengeSent: true,
+        })
+    },
     // sets the id of the session warning timeout
     [constants.SET_SESSION_WARNING_TIMEOUT_ID]: (state, payload) => {
         return Object.assign({}, state, {
@@ -74,9 +83,16 @@ export default createReducer(initialState, {
     },
     // removes the timeout id of the session warning
     [constants.REMOVE_SESSION_WARNING_TIMEOUT]: (state) => {
-
         return Object.assign({}, state, {
             sessionWarningTimeoutId: null
         })
     },
+    // sets the id of the currently selected MFA device
+    [constants.SET_SELECTED_MFA_DEVICE]: (state, payload) => {
+        return Object.assign({}, state, {
+            selectedDeviceId: payload.selectedDeviceId,
+            shouldDisplaySendCodeButton: state.mfaDevices
+                .filter(device => device.id === payload.selectedDeviceId)[0].requires_trigger
+        })
+    }
 })
