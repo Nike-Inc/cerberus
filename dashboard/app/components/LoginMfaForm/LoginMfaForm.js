@@ -97,13 +97,14 @@ export default class LoginMfaForm extends Component {
 
                                 <div id='otp-input-row'>
                                     {shouldDisplaySendCodeButton &&
-                                        <button id='send-code-mfa-btn' type='button' className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                                            onClick={function () {
-                                                 dispatch(triggerCodeChallenge(selectedDeviceId, stateToken))
+                                        <button id={isChallengeSent ? 'sent-mfa-btn' : 'send-code-mfa-btn'} type='button' className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+
+                                               onClick={function () {
+                                                dispatch(triggerCodeChallenge(selectedDeviceId, stateToken));
                                                 }
                                             }
                                             disabled={isChallengeSent}
-                                        >Send Code</button>
+                                        >{isChallengeSent ? "Sent" : "Send Code"}</button>
                                     }
 
                                     <input type='text'
