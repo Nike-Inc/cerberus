@@ -160,6 +160,16 @@ public class OneLoginAuthConnectorTest {
         when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD)).thenReturn(createSessionLoginTokenResponse);
     }
 
+    @Test(expected = ApiException.class)
+    public void test_triggerChallenge() {
+
+        String stateToken = "state token";
+        String deviceId = "device id";
+
+        oneLoginAuthConnector.triggerChallenge(stateToken, deviceId);
+    }
+
+
     @Test
     public void test_mfaCheck() {
         SessionUser user = new SessionUser();

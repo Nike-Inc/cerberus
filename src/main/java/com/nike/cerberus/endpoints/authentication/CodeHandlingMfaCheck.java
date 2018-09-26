@@ -26,6 +26,7 @@ import com.nike.riposte.util.AsyncNettyHelper;
 import com.nike.riposte.util.Matcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
@@ -47,9 +48,16 @@ public class CodeHandlingMfaCheck extends StandardEndpoint<MfaCheckRequest, Auth
     public CompletableFuture<ResponseInfo<AuthResponse>> execute(final RequestInfo<MfaCheckRequest> request,
                                                                  final Executor longRunningTaskExecutor,
                                                                  final ChannelHandlerContext ctx) {
+
         return CompletableFuture.supplyAsync(
                 AsyncNettyHelper.supplierWithTracingAndMdc(
-                        () -> ResponseInfo.newBuilder(authenticationService.mfaCheck(request.getContent())).build(),
+                        () -> {
+                            if (StringUtils.isBlank(request.getContent().getOtpToken())) {
+                                return ResponseInfo.newBuilder(authenticationService.triggerChallenge(request.getContent())).build();
+                            } else {
+                                return ResponseInfo.newBuilder(authenticationService.mfaCheck(request.getContent())).build();
+                            }
+                        },
                         ctx
                 ),
                 longRunningTaskExecutor

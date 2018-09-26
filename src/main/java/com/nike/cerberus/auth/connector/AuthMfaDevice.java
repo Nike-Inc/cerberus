@@ -25,6 +25,8 @@ public class AuthMfaDevice {
 
     private String name;
 
+    private boolean requiresTrigger;
+
     public String getId() {
         return id;
     }
@@ -42,4 +44,14 @@ public class AuthMfaDevice {
         this.name = name;
         return this;
     }
+
+    public boolean getRequiresTrigger() {
+        return requiresTrigger;
+    }
+
+    public AuthMfaDevice setRequiresTrigger(boolean requiresTrigger) {
+        this.requiresTrigger = requiresTrigger;
+        return this;
+    }
+
 }

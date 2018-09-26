@@ -177,6 +177,19 @@ public class AuthenticationService {
     }
 
     /**
+     * Enables a user to trigger a factor challenge.
+     *
+     * @param challengeRequest Request containing the MFA token details with no passcode
+     * @return The auth response
+     */
+    public AuthResponse triggerChallenge(final MfaCheckRequest challengeRequest) {
+        final AuthResponse authResponse = authServiceConnector.triggerChallenge(challengeRequest.getStateToken(),
+                challengeRequest.getDeviceId());
+
+        return authResponse;
+    }
+
+    /**
      * Enables a user to execute an MFA check to complete authentication and get an auth token.
      *
      * @param mfaCheckRequest Request containing the MFA token details

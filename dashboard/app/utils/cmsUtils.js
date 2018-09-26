@@ -1,5 +1,5 @@
 export function parseCMSError(response) {
-    let msg = 'Server did not respond with message, checkout the console for full response'
+    let msg = 'Connection timed out. Check console for full error response.'
 
     try {
         if (response.data.errors[0].message) {

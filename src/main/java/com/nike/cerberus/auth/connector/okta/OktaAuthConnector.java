@@ -76,6 +76,26 @@ public class OktaAuthConnector implements AuthConnector {
     }
 
     /**
+     * Triggers challenge for SMS or Call factors using Okta Auth SDK.
+     */
+    public AuthResponse triggerChallenge(String stateToken, String deviceId) {
+
+        CompletableFuture<AuthResponse> authResponse = new CompletableFuture<>();
+        MfaStateHandler stateHandler = new MfaStateHandler(oktaAuthenticationClient, authResponse);
+
+        try {
+            oktaAuthenticationClient.challengeFactor(deviceId, stateToken, stateHandler);
+            return authResponse.get(45, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw ApiException.newBuilder()
+                    .withExceptionCause(e)
+                    .withApiErrors(DefaultApiError.AUTH_RESPONSE_WAIT_FAILED)
+                    .withExceptionMessage("Failed to trigger challenge due to timeout. Please try again.")
+                    .build();
+        }
+    }
+
+    /**
      * Verifies user's MFA factor using Okta Auth SDK.
      */
     @Override

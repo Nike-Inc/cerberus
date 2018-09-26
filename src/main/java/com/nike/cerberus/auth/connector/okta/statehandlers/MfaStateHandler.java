@@ -9,11 +9,8 @@ import com.okta.authn.sdk.resource.AuthenticationResponse;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * MFA state handler to handle success when verifying an MFA factor.
+ * MFA state handler to handle MFA challenge when verifying an MFA factor.
  *
- * Though handleSuccess in this method is very similar to the method in
- * InitialLoginStateHandler, we are keeping MfaStateHandler because we are
- * planning to build on it to add SMS/Call functionality.
  */
 
 public class MfaStateHandler extends AbstractOktaStateHandler {
@@ -23,21 +20,21 @@ public class MfaStateHandler extends AbstractOktaStateHandler {
     }
 
     /**
-     * Handles authentication success.
-     * @param successResponse - Authentication response from the Completable Future
+     * Handles MFA Challenge, when a MFA challenge has been initiated for call or sms.
+     * @param mfaChallengeResponse  - Authentication response from the Completable Future
      */
     @Override
-    public void handleSuccess(AuthenticationResponse successResponse) {
+    public void handleMfaChallenge(AuthenticationResponse mfaChallengeResponse) {
 
-        final String userId = successResponse.getUser().getId();
-        final String userLogin = successResponse.getUser().getLogin();
+        final String userId = mfaChallengeResponse.getUser().getId();
+        final String userLogin = mfaChallengeResponse.getUser().getLogin();
 
         final AuthData authData = new AuthData()
                 .setUserId(userId)
                 .setUsername(userLogin);
         AuthResponse authResponse = new AuthResponse()
                 .setData(authData)
-                .setStatus(AuthStatus.SUCCESS);
+                .setStatus(AuthStatus.MFA_CHALLENGE);
 
         authenticationResponseFuture.complete(authResponse);
     }

@@ -51,11 +51,11 @@ public class MfaStateHandlerTest {
     /////////////////////////
 
     @Test
-    public void handleSuccess() throws Exception {
+    public void handleMfaChallenge() throws Exception {
 
         String email = "email";
         String id = "id";
-        AuthStatus status = AuthStatus.SUCCESS;
+        AuthStatus status = AuthStatus.MFA_CHALLENGE;
 
         AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
@@ -65,7 +65,7 @@ public class MfaStateHandlerTest {
         when(expectedResponse.getUser()).thenReturn(user);
 
         // do the call
-        mfaStateHandler.handleSuccess(expectedResponse);
+        mfaStateHandler.handleMfaChallenge(expectedResponse);
 
         AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
@@ -74,5 +74,6 @@ public class MfaStateHandlerTest {
         assertEquals(email, actualResponse.getData().getUsername());
         assertEquals(status, actualResponse.getStatus());
     }
+
 
 }

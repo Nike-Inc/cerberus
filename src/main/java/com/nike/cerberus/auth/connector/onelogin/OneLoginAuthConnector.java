@@ -18,6 +18,8 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.nike.backstopper.apierror.ApiError;
+import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.*;
 import com.nike.cerberus.error.DefaultApiError;
@@ -26,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -61,6 +64,41 @@ public class OneLoginAuthConnector implements AuthConnector {
         authData.setUsername(sessionLoginToken.getUser().getUsername());
 
         return authResponse;
+    }
+
+    @Override
+    public AuthResponse triggerChallenge(String stateToken, String deviceId) {
+
+        // TODO Convert to Default API Error once bug in Backstopper that doesn't allow 501 status codes is fixed.
+        throw ApiException.newBuilder()
+                .withApiErrors(new ApiError() {
+                    @Override
+                    public String getName() {
+                        return "TRIGGER_CHALLENGE_NOT_IMPLEMENTED";
+                    }
+
+                    @Override
+                    public String getErrorCode() {
+                        return "99244";
+                    }
+
+                    @Override
+                    public String getMessage() {
+                        return "Call to trigger sms or call challenge for OneLogin is not implemented.";
+                    }
+
+                    @Override
+                    public Map<String, Object> getMetadata() {
+                        return null;
+                    }
+
+                    @Override
+                    public int getHttpStatusCode() {
+                        return 501;
+                    }
+                })
+                .withExceptionMessage("Call to trigger sms or call challenge for OneLogin is not implemented.")
+                .build();
     }
 
     @Override

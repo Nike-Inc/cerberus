@@ -49,6 +49,16 @@ export function loginUserRequest() {
 }
 
 /**
+ * Updates the state to indicate that MFA code challenge was triggered.
+ * @returns {{type: string}} The object to dispatch to trigger the reducer to update the challenge sent state
+ */
+export function loginMfaChallenge() {
+    return {
+        type: constants.LOGIN_MFA_CHALLENGE,
+    }
+}
+
+/**
  * Updates the state to indicate that MFA is required for the given user to authenticate.
  * @returns {{type: string}} The object to dispatch to trigger the reducer to update the auth state
  */
@@ -187,6 +197,41 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
 
             dispatch(resetAuthState())
         })
+    }
+}
+
+/**
+ * This action triggers a challenge for a user with MFA, if MFA is required
+ * @param mfaDeviceId ID of the MFA security device
+ * @param stateToken Identifying token for the authentication request
+ */
+export function triggerCodeChallenge(mfaDeviceId, stateToken) {
+    return function(dispatch) {
+        dispatch(loginMfaChallenge())
+        return axios({
+            method: 'post',
+            url: environmentService.getDomain() + cms.USER_AUTH_MFA_PATH,
+            data: {
+                state_token: stateToken,
+                device_id: mfaDeviceId
+            },
+            timeout: AUTH_ACTION_TIMEOUT
+        })
+            .catch(function (response) {
+                log.error('Failed to trigger challenge', response)
+
+                dispatch(messengerActions.addNewMessage(
+                    <div className="login-error-msg-container">
+                        <div className="login-error-msg-header">Failed to Trigger Challenge</div>
+                        <div className="login-error-msg-content-wrapper">
+                            <div className="login-error-msg-label">Server Message:</div>
+                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                        </div>
+                    </div>
+                ))
+
+                dispatch(resetAuthState())
+            })
     }
 }
 
@@ -350,6 +395,19 @@ export function setSessionWarningTimeout(timeToWarnInMillis, tokenStr) {
             }, timeToWarnInMillis)
 
             dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId))
+        }
+    }
+}
+
+/**
+ * Sets id to currently selected device id
+ * @param selectedDeviceId - current selected device id string
+ */
+export function setSelectedDeviceId(selectedDeviceId) {
+    return {
+        type: constants.SET_SELECTED_MFA_DEVICE,
+        payload: {
+            selectedDeviceId: selectedDeviceId
         }
     }
 }

@@ -25,7 +25,9 @@ public enum AuthStatus {
 
     SUCCESS("success"),
 
-    MFA_REQUIRED("mfa_req");
+    MFA_REQUIRED("mfa_req"),
+
+    MFA_CHALLENGE("mfa_challenge");
 
     private final String status;
 

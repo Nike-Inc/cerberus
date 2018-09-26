@@ -23,25 +23,6 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
     }
 
     /**
-     * Handles authentication success.
-     * @param successResponse - Authentication response from the Completable Future
-     */
-    @Override
-    public void handleSuccess(AuthenticationResponse successResponse) {
-        final String userId = successResponse.getUser().getId();
-        final String userLogin = successResponse.getUser().getLogin();
-
-        final AuthData authData = new AuthData()
-                .setUserId(userId)
-                .setUsername(userLogin);
-        final AuthResponse authResponse = new AuthResponse()
-                .setData(authData)
-                .setStatus(AuthStatus.SUCCESS);
-
-        authenticationResponseFuture.complete(authResponse);
-    }
-
-    /**
      * Handles MFA required state
      * @param mfaRequiredResponse - Authentication response from the Completable Future
      */
@@ -75,7 +56,6 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
         authData.setStateToken(mfaResponse.getStateToken());
         authResponse.setStatus(AuthStatus.MFA_REQUIRED);
 
-        // Filter out Okta push, call, and sms because we don't currently support them.
         final List<Factor> factors = mfaResponse.getFactors()
                 .stream()
                 .filter(this::isSupportedFactor)
@@ -85,7 +65,8 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
 
         factors.forEach(factor -> authData.getDevices().add(new AuthMfaDevice()
                 .setId(factor.getId())
-                .setName(getDeviceName(factor))));
+                .setName(getDeviceName(factor))
+                .setRequiresTrigger(isTriggerRequired(factor))));
 
         authenticationResponseFuture.complete(authResponse);
     }

@@ -56,7 +56,6 @@ public class OktaApiClientHelperTest {
         this.oktaApiClientHelper = new OktaApiClientHelper(userGroupApiClient, "");
     }
 
-
     /////////////////////////
     // Test Methods
     /////////////////////////
@@ -86,5 +85,4 @@ public class OktaApiClientHelperTest {
         // do the call
         this.oktaApiClientHelper.getUserGroups("id");
     }
-
 }

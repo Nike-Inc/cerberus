@@ -114,5 +114,4 @@ public class OktaApiClientHelper {
         }
         return userGroups;
     }
-
 }
