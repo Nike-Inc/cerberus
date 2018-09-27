@@ -52,11 +52,11 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
             .put("RECOVERY",            "Please check for a recovery token to reset your password or unlock your account.")
             .put("RECOVERY_CHALLENGE",  "Please verify the factor-specific recovery challenge.")
             .put("PASSWORD_RESET",      "Please set a new password.")
-            .put("LOCKED_OUT",          "Your user account is locked. Self-service or admin unlock is required.")
+            .put("LOCKED_OUT",          "Your OKTA user account is locked.")
             .put("MFA_ENROLL_ACTIVATE", "Please activate your factor to complete enrollment.")
             .build();
 
-//    We currently do not support push notifications for Okta MFA verification.
+    // We currently do not support push notifications for Okta MFA verification.
     private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of(FactorType.PUSH);
 
     public final AuthenticationClient client;

@@ -25,6 +25,7 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHandler;
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.nike.cerberus.error.DefaultApiError;
+import com.okta.authn.sdk.AuthenticationException;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
@@ -35,7 +36,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Okta version 1 API implementation of the AuthConnector interface.
@@ -66,6 +69,8 @@ public class OktaAuthConnector implements AuthConnector {
         try {
             oktaAuthenticationClient.authenticate(username, password.toCharArray(), null, stateHandler);
             return authResponse.get(45, TimeUnit.SECONDS);
+        } catch (ApiException e) {
+            throw e;
         } catch (Exception e) {
             throw ApiException.newBuilder()
                     .withExceptionCause(e)
@@ -86,6 +91,8 @@ public class OktaAuthConnector implements AuthConnector {
         try {
             oktaAuthenticationClient.challengeFactor(deviceId, stateToken, stateHandler);
             return authResponse.get(45, TimeUnit.SECONDS);
+        } catch (ApiException e) {
+            throw e;
         } catch (Exception e) {
             throw ApiException.newBuilder()
                     .withExceptionCause(e)
@@ -111,6 +118,8 @@ public class OktaAuthConnector implements AuthConnector {
         try {
             oktaAuthenticationClient.verifyFactor(deviceId, request, stateHandler);
             return authResponse.get(45, TimeUnit.SECONDS);
+        } catch (ApiException e) {
+            throw e;
         } catch(FactorValidationException e) {
             throw ApiException.newBuilder()
                     .withExceptionCause(e)
