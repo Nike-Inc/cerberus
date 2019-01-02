@@ -242,10 +242,11 @@ public class AuthenticationService {
 
     /**
      * Enables an IAM role to authenticate and get back an UNENCRYPTED payload
-     * @param iamPrincipalArn IAM role ARN
+     * @param stsPrincipalArn STS assumed-role ARN
      * @return Unencrypted auth response
      */
-    public AuthTokenResponse stsAuthenticate(final String iamPrincipalArn) {
+    public AuthTokenResponse stsAuthenticate(final String stsPrincipalArn) {
+        String iamPrincipalArn = awsIamRoleArnParser.convertPrincipalArnToRoleArn(stsPrincipalArn);
         final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
