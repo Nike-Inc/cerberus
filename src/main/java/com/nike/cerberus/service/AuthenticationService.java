@@ -648,8 +648,8 @@ public class AuthenticationService {
         Set<String> adminRoleArnSet = getAdminRoleArnSet();
 
         if (adminRoleArnSet.contains(iamPrincipalArn)
-                || (awsIamRoleArnParser.isAssumedRoleArn(iamPrincipalArn)
-                && adminRoleArnSet.contains(awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn)))) {
+                || awsIamRoleArnParser.isAssumedRoleArn(iamPrincipalArn)
+                && adminRoleArnSet.contains(awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn))) {
             metadata.put(METADATA_KEY_IS_ADMIN, Boolean.toString(true));
             groups.add("admin-iam-principals");
         } else {
