@@ -42,6 +42,30 @@
         ) as HAS_PERM;
     </select>
 
+    <select id="doesAssumedRoleHaveGivenRoleForSdb" resultType="Boolean">
+        SELECT NOT 0 >= (
+        SELECT
+        COUNT(*)
+        FROM SAFE_DEPOSIT_BOX
+        LEFT JOIN AWS_IAM_ROLE_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+        LEFT JOIN ROLE ON AWS_IAM_ROLE_PERMISSIONS.ROLE_ID = ROLE.ID
+        LEFT JOIN AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+        WHERE
+        SAFE_DEPOSIT_BOX.ID = #{sdbId}
+        AND
+        (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{assumedRoleArn}
+        OR
+        AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRoleArn}
+        OR
+        AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+        AND
+        ROLE.NAME IN
+        <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+            #{role}
+        </foreach>
+        ) as HAS_PERM;
+    </select>
+
     <select id="doesUserPrincipalHaveGivenRoleForSdb" resultType="Boolean">
        SELECT NOT 0 >= (
           SELECT

@@ -80,9 +80,7 @@ public class PermissionsService {
         boolean principalHasOwnerPermissions = false;
         switch (principal.getPrincipalType()) {
             case IAM:
-                String iamPrincipalArn = principal.getName();
-                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
-                principalHasOwnerPermissions = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdb.getId(), iamPrincipalArn, iamRootArn, Sets.newHashSet(ROLE_OWNER));
+                principalHasOwnerPermissions = doesIamPrincipalHavePermission(principal, sdb.getId(), Sets.newHashSet(ROLE_OWNER));
                 break;
             case USER:
                 principalHasOwnerPermissions = userGroupsCaseSensitive ?
@@ -123,9 +121,7 @@ public class PermissionsService {
         switch (principal.getPrincipalType()) {
             case IAM:
                 // if the authenticated principal is an IAM Principal check to see that the iam principal is associated with the requested sdb
-                String iamPrincipalArn = principal.getName();
-                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
-                principalHasPermissionAssociationWithSdb = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, Sets.newHashSet(ROLE_READ, ROLE_OWNER, ROLE_WRITE));
+                principalHasPermissionAssociationWithSdb = doesIamPrincipalHavePermission(principal, sdbId, Sets.newHashSet(ROLE_READ, ROLE_OWNER, ROLE_WRITE));
                 break;
             case USER:
                 // if the the principal is a user principal ensure that one of the users groups is associated with the sdb
@@ -145,8 +141,7 @@ public class PermissionsService {
         boolean hasPermission = false;
         switch (principal.getPrincipalType()) {
             case IAM:
-                String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(principal.getName());
-                hasPermission = permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, principal.getName(), iamRootArn, action.getAllowedRoles());
+                hasPermission = doesIamPrincipalHavePermission(principal, sdbId, action.getAllowedRoles());
                 break;
             case USER:
                 hasPermission = userGroupsCaseSensitive ?
@@ -166,6 +161,17 @@ public class PermissionsService {
                 hasPermission);
 
         return hasPermission;
+    }
+
+    protected boolean doesIamPrincipalHavePermission(CerberusPrincipal principal, String sdbId, Set<String> roles) {
+        String iamPrincipalArn = principal.getName();
+        String iamRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamPrincipalArn);
+        if (awsIamRoleArnParser.isAssumedRoleArn(iamPrincipalArn)) {
+            String iamRoleArn = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
+            return permissionsDao.doesAssumedRoleHaveRoleForSdb(sdbId, iamPrincipalArn, iamRoleArn, iamRootArn, roles);
+        } else {
+            return permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, roles);
+        }
     }
 
     /**

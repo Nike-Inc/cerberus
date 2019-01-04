@@ -174,6 +174,48 @@ public class AuthenticationServiceTest {
     }
 
     @Test
+    public void tests_that_generateCommonIamPrincipalAuthMetadata_checks_base_iam_role_arn_of_assumed_role_arn() {
+        authenticationService.adminRoleArns = "arn:aws:iam::0000000000:role/admin";
+
+        String principalArn = "arn:aws:sts::0000000000:assumed-role/admin/role-session";
+        String iamRoleArn = "arn:aws:iam::0000000000:role/admin";
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(iamRoleArn);
+        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
+
+        Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(principalArn);
+
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+        assertEquals("true", result.get(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+    }
+
+    @Test
+    public void tests_that_generateCommonIamPrincipalAuthMetadata_checks_assumed_role_arn() {
+        authenticationService.adminRoleArns = "arn:aws:sts::0000000000:assumed-role/admin/role-session";
+
+        String principalArn = "arn:aws:sts::0000000000:assumed-role/admin/role-session";
+        String iamRoleArn = "arn:aws:iam::0000000000:role/admin";
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(iamRoleArn);
+        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
+
+        Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(principalArn);
+
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+        assertEquals("true", result.get(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+    }
+
+    @Test
+    public void tests_that_generateCommonIamPrincipalAuthMetadata_checks_role_arn() {
+        authenticationService.adminRoleArns = "arn:aws:iam::0000000000:role/admin";
+
+        String iamRoleArn = "arn:aws:iam::0000000000:role/admin";
+
+        Map<String, String> result = authenticationService.generateCommonIamPrincipalAuthMetadata(iamRoleArn);
+
+        assertTrue(result.containsKey(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+        assertEquals("true", result.get(CerberusPrincipal.METADATA_KEY_IS_ADMIN));
+    }
+
+    @Test
     public void test_that_getKeyId_only_validates_kms_policy_one_time_within_interval() {
 
         String principalArn = "principal arn";
@@ -219,11 +261,11 @@ public class AuthenticationServiceTest {
         String read = "read";
         String write = "write";
         String owner = "owner";
-        String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
+        String principalArn = String.format("arn:aws:iam::%s:assumed-role/%s/token-session", accountId, roleName);
 
         String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
         String rootArn = String.format("arn:aws:iam::%s:root", accountId);
-        when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
         when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
         when(awsIamRoleArnParser.convertPrincipalArnToRootArn(roleArn)).thenReturn(rootArn);
         when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
@@ -232,13 +274,12 @@ public class AuthenticationServiceTest {
         String sdbName2 = "principal arn sdb 2";
         SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(read).setSafeDepositBoxName(sdbName1);
         SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(write).setSafeDepositBoxName(sdbName2);
-        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2);
-        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(principalArn, rootArn)).thenReturn(principalArnRecords);
 
         String roleArnSdb = "role arn sdb";
         SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(owner).setSafeDepositBoxName(roleArnSdb);
-        List<SafeDepositBoxRoleRecord> roleArnRecords = Lists.newArrayList(roleArnRecord);
-        when(safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(roleArn, rootArn)).thenReturn(roleArnRecords);
+
+        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2, roleArnRecord);
+        when(safeDepositBoxDao.getIamAssumedRoleAssociatedSafeDepositBoxRoles(principalArn, roleArn, rootArn)).thenReturn(principalArnRecords);
 
         List<String> expectedPolicies = Lists.newArrayList(
                 "principal-arn-sdb-1-read",

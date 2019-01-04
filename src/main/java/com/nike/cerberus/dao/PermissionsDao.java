@@ -35,6 +35,10 @@ public class PermissionsDao {
         return permissionsMapper.doesIamPrincipalHaveGivenRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, rolesThatAllowPermission);
     }
 
+    public Boolean doesAssumedRoleHaveRoleForSdb(String sdbId, String assumedRoleArn, String iamRoleArn, String iamRootArn, Set<String> rolesThatAllowPermission) {
+        return permissionsMapper.doesAssumedRoleHaveGivenRoleForSdb(sdbId, assumedRoleArn, iamRoleArn, iamRootArn, rolesThatAllowPermission);
+    }
+
     public Boolean doesUserPrincipalHaveRoleForSdb(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {
         return permissionsMapper.doesUserPrincipalHaveGivenRoleForSdb(sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
     }

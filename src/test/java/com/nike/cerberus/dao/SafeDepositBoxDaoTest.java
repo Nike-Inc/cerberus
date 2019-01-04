@@ -118,6 +118,18 @@ public class SafeDepositBoxDaoTest {
     }
 
     @Test
+    public void getIamAssumedRoleAssociatedSafeDepositBoxRoles_returns_list_of_role_records() {
+        when(safeDepositBoxMapper.getIamAssumedRoleAssociatedSafeDepositBoxRoles("ASSUMED_ROLE_ARN", awsIamRoleArn, iamRootArn))
+                .thenReturn(safeDepositBoxRoleRecordList);
+
+        List<SafeDepositBoxRoleRecord> actual =
+                subject.getIamAssumedRoleAssociatedSafeDepositBoxRoles("ASSUMED_ROLE_ARN", awsIamRoleArn, iamRootArn);
+
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).hasSameElementsAs(safeDepositBoxRoleRecordList);
+    }
+
+    @Test
     public void getUserAssociatedSafeDepositBoxes_returns_list_of_role_records() {
         when(safeDepositBoxMapper.getUserAssociatedSafeDepositBoxes(userGroupSet))
                 .thenReturn(safeDepositBoxRecordList);

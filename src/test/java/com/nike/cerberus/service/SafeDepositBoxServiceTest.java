@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.dao.UserGroupDao;
@@ -23,6 +24,7 @@ import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.IamPrincipalPermission;
 import com.nike.cerberus.domain.IamRolePermission;
 import com.nike.cerberus.domain.Role;
+import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
@@ -33,6 +35,7 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
+import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,11 +44,13 @@ import org.mockito.Mock;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -53,6 +58,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class SafeDepositBoxServiceTest {
@@ -374,5 +380,51 @@ public class SafeDepositBoxServiceTest {
         doNothing().when(safeDepositBoxServiceSpy).updateOwner(any(), any(), any(), any());
         safeDepositBoxServiceSpy.overrideOwner(sdbName, "new-owner", "admin-user");
         verify(safeDepositBoxServiceSpy, times(1)).updateOwner(id, "new-owner", "admin-user", offsetDateTime);
+    }
+
+    @Test
+    public void test_that_getAssociatedSafeDepositBoxes_checks_assumed_role_and_its_base_iam_role() {
+        String assumedRoleArn = "arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary";
+        String iamRoleArn = "arn:aws:iam::123456789012:role/Accounting-Role";
+        String rootArn = "arn:aws:iam::123456789012:root";
+
+        CerberusPrincipal AssumedRoleArnPrincipal = mock(CerberusPrincipal.class);
+        doReturn(PrincipalType.IAM).when(AssumedRoleArnPrincipal).getPrincipalType();
+        doReturn(assumedRoleArn).when(AssumedRoleArnPrincipal).getName();
+
+        when(awsIamRoleArnParser.isAssumedRoleArn(assumedRoleArn)).thenReturn(true);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(assumedRoleArn)).thenReturn(iamRoleArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(assumedRoleArn)).thenReturn(rootArn);
+
+        SafeDepositBoxRecord safeDepositBoxRecord1 = new SafeDepositBoxRecord();
+        SafeDepositBoxRecord safeDepositBoxRecord2 = new SafeDepositBoxRecord();
+        List<SafeDepositBoxRecord> assumedRoleArnRecords = Lists.newArrayList(safeDepositBoxRecord1, safeDepositBoxRecord2);
+        when(safeDepositBoxDao.getAssumedRoleAssociatedSafeDepositBoxes(assumedRoleArn, iamRoleArn, rootArn))
+                .thenReturn(assumedRoleArnRecords);
+
+
+        List<SafeDepositBoxSummary> sdbSummaries = safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(AssumedRoleArnPrincipal);
+        assertEquals(assumedRoleArnRecords.size(), sdbSummaries.size());
+    }
+
+    @Test
+    public void test_that_getAssociatedSafeDepositBoxes_checks_iam_role() {
+        String iamRoleArn = "arn:aws:iam::123456789012:role/Accounting-Role";
+        String rootArn = "arn:aws:iam::123456789012:root";
+
+        SafeDepositBoxRecord safeDepositBoxRecord1 = new SafeDepositBoxRecord();
+
+        List<SafeDepositBoxRecord> roleArnRecords = Lists.newArrayList(safeDepositBoxRecord1);
+        when(safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(iamRoleArn, rootArn))
+                .thenReturn(roleArnRecords);
+        when(awsIamRoleArnParser.isAssumedRoleArn(iamRoleArn)).thenReturn(false);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn)).thenReturn(rootArn);
+
+        CerberusPrincipal roleArnPrincipal = mock(CerberusPrincipal.class);
+        doReturn(PrincipalType.IAM).when(roleArnPrincipal).getPrincipalType();
+        doReturn(iamRoleArn).when(roleArnPrincipal).getName();
+
+        List<SafeDepositBoxSummary> roleArnSdbSummaries = safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(roleArnPrincipal);
+        assertEquals(roleArnRecords.size(), roleArnSdbSummaries.size());
     }
 }

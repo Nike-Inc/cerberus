@@ -97,22 +97,21 @@ public class PermissionsServiceTest {
     @Test
     public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_a_iam_principal_does_not_have_permissions() {
         String principalArn = "principal arn";
+        String rootArn = "root arn";
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(IAM)
                 .withPrincipal(principalArn)
                 .build());
 
         SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
-                .withIamPrincipalPermissions(
-                        ImmutableSet.of(
-                                IamPrincipalPermission.Builder.create()
-                                        .withIamPrincipalArn(principalArn)
-                                        .withRoleId(READ_ID)
-                                        .build()
-                        )
-                )
+                .withId("sdb-id")
                 .build();
 
+        when(permissionsDao.doesIamPrincipalHaveRoleForSdb("sdb-id", principalArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(false);
+        when(permissionsDao.doesIamPrincipalHaveRoleForSdb("sdb-id", principalArn, rootArn, Sets.newHashSet(ROLE_READ)))
+                .thenReturn(true);
         Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
         assertFalse("The principal should not have owner permissions", actual);
     }
@@ -120,22 +119,18 @@ public class PermissionsServiceTest {
     @Test
     public void test_that_doesPrincipalHaveOwnerPermissions_returns_false_when_a_iam_principal_does_not_have_owner_permissions() {
         String principalArn = "principal arn";
+        String rootArn = "root arn";
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
         CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
                 .withPrincipalType(IAM)
                 .withPrincipal(principalArn)
                 .build());
 
         SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
-                .withIamPrincipalPermissions(
-                        ImmutableSet.of(
-                                IamPrincipalPermission.Builder.create()
-                                        .withIamPrincipalArn("arn:aws:iam::0000000000:role/not-the-right-principal")
-                                        .withRoleId(OWNER_ID)
-                                        .build()
-                        )
-                )
+                .withId("sdb-id")
                 .build();
-
+        when(permissionsDao.doesIamPrincipalHaveRoleForSdb("sdb-id", principalArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(false);
         Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
         assertFalse("The principal should not have owner permissions", actual);
     }
@@ -166,6 +161,54 @@ public class PermissionsServiceTest {
         when(permissionsDao.doesIamPrincipalHaveRoleForSdb(sdbId, principalArn, rootArn, Sets.newHashSet(ROLE_OWNER))).thenReturn(true);
         Boolean actual = permissionsService.doesPrincipalHaveOwnerPermissions(principal, sdb);
         assertTrue("The principal should have owner permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesIamPrincipalHavePermission_returns_true_when_assumed_role_has_permissions() {
+        String principalArn = "assumed role arn";
+        String iamRoleArn = "role arn";
+        String rootArn = "root arn";
+        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(iamRoleArn);
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withId("sdb-id")
+                .build();
+        when(permissionsDao.doesAssumedRoleHaveRoleForSdb("sdb-id", principalArn, iamRoleArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(true);
+        when(permissionsDao.doesIamPrincipalHaveRoleForSdb("sdb-id", iamRoleArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(false);
+        when(permissionsDao.doesIamPrincipalHaveRoleForSdb("sdb-id", principalArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(false);
+        Boolean actual = permissionsService.doesIamPrincipalHavePermission(principal, sdb.getId(), Sets.newHashSet(ROLE_OWNER));
+        assertTrue("The principal should have permissions", actual);
+    }
+
+    @Test
+    public void test_that_doesIamPrincipalHavePermission_returns_false_when_assumed_role_doesnt_have_permissions() {
+        String principalArn = "assumed role arn";
+        String iamRoleArn = "role arn";
+        String rootArn = "root arn";
+        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
+        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
+        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(iamRoleArn);
+        CerberusPrincipal principal = new CerberusPrincipal(CerberusAuthToken.Builder.create()
+                .withPrincipalType(IAM)
+                .withPrincipal(principalArn)
+                .build());
+
+        SafeDepositBoxV2 sdb = SafeDepositBoxV2.Builder.create()
+                .withId("sdb-id")
+                .build();
+        when(permissionsDao.doesAssumedRoleHaveRoleForSdb("sdb-id", principalArn, iamRoleArn, rootArn, Sets.newHashSet(ROLE_OWNER)))
+                .thenReturn(false);
+        Boolean actual = permissionsService.doesIamPrincipalHavePermission(principal, sdb.getId(), Sets.newHashSet(ROLE_OWNER));
+        assertFalse("The principal should not have permissions", actual);
     }
 
     @Test
