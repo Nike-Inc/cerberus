@@ -114,7 +114,7 @@ public class AwsIamRoleArnParser {
     }
 
     /**
-     * Returns true if the ARN is in format 'arn:aws:iam::000000000:role/example' and false if not
+     * Returns true if the ARN is in format 'arn:aws:sts::000000000:assumed-role/example/role-session' and false if not
      * @param arn - ARN to test
      * @return - True if is 'role' ARN, False if not
      */

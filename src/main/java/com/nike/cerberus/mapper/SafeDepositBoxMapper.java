@@ -46,7 +46,7 @@ public interface SafeDepositBoxMapper {
 
     List<SafeDepositBoxRecord> getIamAssumedRoleAssociatedSafeDepositBoxes(@Param("iamAssumedRoleArn") final String iamAssumedRoleArn,
                                                                            @Param("iamRoleArn") final String iamRoleArn,
-                                                                         @Param("iamRootArn") final String iamRootArn);
+                                                                           @Param("iamRootArn") final String iamRootArn);
 
     SafeDepositBoxRecord getSafeDepositBox(@Param("id") String id);
 

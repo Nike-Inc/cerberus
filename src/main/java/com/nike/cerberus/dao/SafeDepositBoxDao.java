@@ -67,7 +67,7 @@ public class SafeDepositBoxDao {
 
     public List<SafeDepositBoxRecord> getAssumedRoleAssociatedSafeDepositBoxes(final String iamAssumedRoleArn,
                                                                                final String iamRoleArn,
-                                                                                final String iamRootArn) {
+                                                                               final String iamRootArn) {
         return safeDepositBoxMapper.getIamAssumedRoleAssociatedSafeDepositBoxes(iamAssumedRoleArn, iamRoleArn, iamRootArn);
     }
 
