@@ -261,7 +261,7 @@ public enum DefaultApiError implements ApiError {
     /**
      * Signature does not match. Either the request is invalid or the request is signed with invalid region and/or wrong host.
      */
-    SIGNATURE_DOES_NOT_MATCH(99237, "Signature does not match. Make sure the request is signed with us-east-1 as region and sts.amazonaws.com as host.", SC_BAD_REQUEST),
+    SIGNATURE_DOES_NOT_MATCH(99237, "Signature does not match. Make sure the request is signed with sts.{region}.amazonaws.com as host.", SC_BAD_REQUEST),
 
     /**
      * AWS token expired.
