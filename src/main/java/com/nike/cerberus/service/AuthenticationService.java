@@ -484,14 +484,6 @@ public class AuthenticationService {
 
         final Set<String> allPolicies = buildPolicySet(iamPrincipalArn);
 
-        if (! awsIamRoleArnParser.isRoleArn(iamPrincipalArn)) {
-            logger.debug("Detected non-role ARN, attempting to collect policies for the principal's base role...");
-            final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
-
-            final Set<String> additionalPolicies = buildPolicySet(iamPrincipalInRoleFormat);
-            allPolicies.addAll(additionalPolicies);
-        }
-
         return allPolicies;
     }
 
@@ -505,8 +497,18 @@ public class AuthenticationService {
     private Set<String> buildPolicySet(final String iamRoleArn) {
         final String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn);
         final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
-        final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal =
-                safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn, accountRootArn);
+        final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal;
+        // This may cause issues for user/instance-profile if someone's relying on the old code that converts everything
+        // that's not a role ARN.
+        if (awsIamRoleArnParser.isAssumedRoleArn(iamRoleArn)) {
+            logger.debug("Detected assumed-role ARN, attempting to collect policies for the principal's base role...");
+            String baseIamRoleArn = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamRoleArn);
+            sdbRolesForIamPrincipal =
+                    safeDepositBoxDao.getIamAssumedRoleAssociatedSafeDepositBoxRoles(iamRoleArn, baseIamRoleArn, accountRootArn);
+        } else {
+            sdbRolesForIamPrincipal =
+                    safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn, accountRootArn);
+        }
 
         sdbRolesForIamPrincipal.forEach(i -> {
             policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
@@ -643,7 +645,11 @@ public class AuthenticationService {
         groups.add("registered-iam-principals");
 
         // We will allow specific ARNs access to the user portions of the API
-        if (getAdminRoleArnSet().contains(iamPrincipalArn)) {
+        Set<String> adminRoleArnSet = getAdminRoleArnSet();
+
+        if (adminRoleArnSet.contains(iamPrincipalArn)
+                || awsIamRoleArnParser.isAssumedRoleArn(iamPrincipalArn)
+                && adminRoleArnSet.contains(awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn))) {
             metadata.put(METADATA_KEY_IS_ADMIN, Boolean.toString(true));
             groups.add("admin-iam-principals");
         } else {

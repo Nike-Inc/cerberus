@@ -27,6 +27,12 @@ public interface PermissionsMapper {
                                                 @Param("iamRootArn") String iamRootArn,
                                                 @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
 
+    Boolean doesAssumedRoleHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
+                                                @Param("assumedRoleArn") String assumedRoleArn,
+                                                @Param("iamRoleArn") String iamRoleArn,
+                                                @Param("iamRootArn") String iamRootArn,
+                                                @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
+
     Boolean doesUserPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
                                                  @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
                                                  @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);

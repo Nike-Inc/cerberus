@@ -58,6 +58,26 @@
         AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>
 
+  <select id="getIamAssumedRoleAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
+    SELECT
+      SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
+      R.NAME AS ROLE_NAME
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        AWS_IAM_ROLE_PERMISSIONS AIRP ON SDB.ID = AIRP.SDBOX_ID
+      INNER JOIN
+        AWS_IAM_ROLE AIR ON AIRP.AWS_IAM_ROLE_ID = AIR.ID
+      INNER JOIN
+        ROLE R ON AIRP.ROLE_ID = R.ID
+    WHERE
+        (AIR.AWS_IAM_ROLE_ARN = #{iamAssumedRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
   <select id="getSafeDepositBoxes" resultType="SafeDepositBoxRecord">
     SELECT
       ID,
@@ -151,6 +171,31 @@
       AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
     WHERE
       (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
+  <select id="getIamAssumedRoleAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX SDB
+    INNER JOIN
+      AWS_IAM_ROLE_PERMISSIONS ON SDB.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+    INNER JOIN
+      AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+    WHERE
+      (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamAssumedRoleArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRoleArn}
         OR
       AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
   </select>

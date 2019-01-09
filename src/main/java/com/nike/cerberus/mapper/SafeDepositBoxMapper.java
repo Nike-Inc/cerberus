@@ -33,12 +33,20 @@ public interface SafeDepositBoxMapper {
     List<SafeDepositBoxRoleRecord> getIamRoleAssociatedSafeDepositBoxRoles(@Param("awsIamRoleArn") final String awsIamRoleArn,
                                                                            @Param("iamRootArn") final String iamRootArn);
 
+    List<SafeDepositBoxRoleRecord> getIamAssumedRoleAssociatedSafeDepositBoxRoles(@Param("iamAssumedRoleArn") final String iamAssumedRoleArn,
+                                                                                  @Param("awsIamRoleArn") final String awsIamRoleArn,
+                                                                                  @Param("iamRootArn") final String iamRootArn);
+
     List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxes(@Param("userGroups") Set<String> userGroups);
 
     List<SafeDepositBoxRecord> getUserAssociatedSafeDepositBoxesIgnoreCase(@Param("userGroups") Set<String> userGroups);
 
     List<SafeDepositBoxRecord> getIamPrincipalAssociatedSafeDepositBoxes(@Param("iamPrincipalArn") final String iamPrincipalArn,
                                                                          @Param("iamRootArn") final String iamRootArn);
+
+    List<SafeDepositBoxRecord> getIamAssumedRoleAssociatedSafeDepositBoxes(@Param("iamAssumedRoleArn") final String iamAssumedRoleArn,
+                                                                           @Param("iamRoleArn") final String iamRoleArn,
+                                                                           @Param("iamRootArn") final String iamRootArn);
 
     SafeDepositBoxRecord getSafeDepositBox(@Param("id") String id);
 

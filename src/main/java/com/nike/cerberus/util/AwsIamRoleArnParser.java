@@ -114,6 +114,18 @@ public class AwsIamRoleArnParser {
     }
 
     /**
+     * Returns true if the ARN is in format 'arn:aws:sts::000000000:assumed-role/example/role-session' and false if not
+     * @param arn - ARN to test
+     * @return - True if is 'role' ARN, False if not
+     */
+    public boolean isAssumedRoleArn(final String arn) {
+
+        final Matcher iamAssumedRoleArnMatcher = IAM_ASSUMED_ROLE_ARN_PATTERN.matcher(arn);
+
+        return iamAssumedRoleArnMatcher.find();
+    }
+
+    /**
      * Returns true if the ARN is in format 'arn:aws:iam::000000000:root' and false if not
      * @param arn - ARN to test
      * @return - True if is 'role' ARN, False if not
