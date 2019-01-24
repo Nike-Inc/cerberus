@@ -108,7 +108,7 @@ public class MetadataService {
         sdbMetadata.getIamRolePermissions().forEach((iamPrincipalArn, roleName) -> {
 
             iamPrincipalPermissionSet.add(new IamPrincipalPermission()
-                    .withIamPrincipalArn(iamPrincipalArn)
+                    .withIamPrincipalArn(iamPrincipalArn.trim())
                     .withRoleId(getRoleIdFromName(roleName))
             );
         });
