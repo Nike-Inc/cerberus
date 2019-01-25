@@ -205,7 +205,7 @@ logger("ACCESS_LOG", accessLogLevel, allAsyncAccessLogAppendersArray, false)
 
 // Auditable Events
 if (ConfigService.getInstance().isAuditLoggingEnabled()) {
-    def hostname = System.getenv('HOSTNAME')
+    def hostname = System.getenv('HOSTNAME') ? System.getenv('HOSTNAME') : InetAddress.getLocalHost().getHostName()
     appender("audit-log-appender", FiveMinuteRollingFileAppender) {
         file = "${LOG_FILE_DIRECTORY_PATH}/${hostname}-audit.log"
 
