@@ -87,6 +87,10 @@ public class SafeDepositBoxDao {
         return safeDepositBoxMapper.countByPath(path) > 0;
     }
 
+    public boolean isSlugUnique(final String slug) {
+        return safeDepositBoxMapper.countBySdbNameSlug(slug) > 0;
+    }
+
     public int createSafeDepositBox(final SafeDepositBoxRecord safeDepositBox) {
         return safeDepositBoxMapper.createSafeDepositBox(safeDepositBox);
     }

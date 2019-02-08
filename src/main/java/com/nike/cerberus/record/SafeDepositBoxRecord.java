@@ -33,6 +33,8 @@ public class SafeDepositBoxRecord {
 
     private String path;
 
+    private String sdbNameSlug;
+
     private String createdBy;
 
     private String lastUpdatedBy;
@@ -86,6 +88,15 @@ public class SafeDepositBoxRecord {
         return this;
     }
 
+    public String getSdbNameSlug() {
+        return sdbNameSlug;
+    }
+
+    public SafeDepositBoxRecord setSdbNameSlug(String sdbNameSlug) {
+        this.sdbNameSlug = sdbNameSlug;
+        return this;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -132,6 +143,7 @@ public class SafeDepositBoxRecord {
         if (id != null ? !id.equals(record.id) : record.id != null) return false;
         if (categoryId != null ? !categoryId.equals(record.categoryId) : record.categoryId != null) return false;
         if (name != null ? !name.equals(record.name) : record.name != null) return false;
+        if (sdbNameSlug != null ? !sdbNameSlug.equals(record.sdbNameSlug) : record.sdbNameSlug != null) return false;
         if (description != null ? !description.equals(record.description) : record.description != null) return false;
         if (path != null ? !path.equals(record.path) : record.path != null) return false;
         if (createdBy != null ? !createdBy.equals(record.createdBy) : record.createdBy != null) return false;
@@ -149,6 +161,7 @@ public class SafeDepositBoxRecord {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (path != null ? path.hashCode() : 0);
+        result = 31 * result + (sdbNameSlug != null ? sdbNameSlug.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
         result = 31 * result + (createdTs != null ? createdTs.hashCode() : 0);

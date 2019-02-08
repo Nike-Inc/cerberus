@@ -52,6 +52,8 @@ public interface SafeDepositBoxMapper {
 
     int countByPath(@Param("path") String path);
 
+    int countBySdbNameSlug(@Param("sdbNameSlug") String sdbNameSlug);
+
     int createSafeDepositBox(@Param("record") SafeDepositBoxRecord record);
 
     int updateSafeDepositBox(@Param("record") SafeDepositBoxRecord record);

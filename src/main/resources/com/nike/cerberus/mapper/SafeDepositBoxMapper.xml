@@ -230,6 +230,15 @@
       PATH = #{path}
   </select>
 
+  <select id="countBySdbNameSlug" resultType="java.lang.Integer">
+    SELECT
+      COUNT(SDB_NAME_SLUG)
+    FROM
+      SAFE_DEPOSIT_BOX
+    WHERE
+      SDB_NAME_SLUG = #{sdbNameSlug}
+  </select>
+
   <insert id="createSafeDepositBox" parameterType="SafeDepositBoxRecord">
     INSERT INTO SAFE_DEPOSIT_BOX (
       ID,
@@ -237,6 +246,7 @@
       NAME,
       DESCRIPTION,
       PATH,
+      SDB_NAME_SLUG,
       CREATED_BY,
       LAST_UPDATED_BY,
       CREATED_TS,
@@ -248,6 +258,7 @@
         #{record.name},
         #{record.description},
         #{record.path},
+        #{record.sdbNameSlug},
         #{record.createdBy},
         #{record.lastUpdatedBy},
         #{record.createdTs},
