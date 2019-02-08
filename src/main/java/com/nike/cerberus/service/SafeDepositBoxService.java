@@ -286,9 +286,9 @@ public class SafeDepositBoxService {
 
         final Set<IamPrincipalPermission> iamRolePermissionSet = safeDepositBox.getIamPrincipalPermissions();
 
-        final boolean isPathInUse = safeDepositBoxDao.isPathInUse(boxRecordToStore.getPath());
+        final boolean isSlugUnique = safeDepositBoxDao.isSlugUnique(boxRecordToStore.getSdbNameSlug());
 
-        if (isPathInUse) {
+        if (isSlugUnique) {
             throw ApiException.newBuilder()
                     .withApiErrors(DefaultApiError.SDB_UNIQUE_NAME)
                     .build();
@@ -455,6 +455,7 @@ public class SafeDepositBoxService {
         boxToStore.setId(uuidSupplier.get());
         boxToStore.setCategoryId(requestedBox.getCategoryId());
         boxToStore.setName(requestedBox.getName());
+        boxToStore.setSdbNameSlug(Slugger.toSlug(requestedBox.getName()));
         boxToStore.setDescription(requestedBox.getDescription());
         boxToStore.setCreatedTs(dateTime);
         boxToStore.setLastUpdatedTs(dateTime);
