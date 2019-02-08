@@ -378,7 +378,7 @@ public class SafeDepositBoxService {
 
         // 2. Delete all secrets and versions from the safe deposit box.
         String sdbPathWithoutCategory = StringUtils.substringAfter(box.getPath(), "/");
-        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbPathWithoutCategory);
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(id, sdbPathWithoutCategory);
         secureDataVersionDao.deleteAllVersionsThatStartWithPartialPath(sdbPathWithoutCategory);
 
         // 3. Remove metadata

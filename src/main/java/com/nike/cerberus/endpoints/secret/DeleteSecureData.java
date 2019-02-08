@@ -73,7 +73,7 @@ public class DeleteSecureData extends SecureDataEndpointV1<Void, Object> {
     private ResponseInfo<Object> deleteSecureData(SecureDataRequestInfo requestInfo) {
         CerberusPrincipal principal = requestInfo.getPrincipal();
 
-        secureDataService.deleteSecret(requestInfo.getPath(), SecureDataType.OBJECT, principal.getName());
+        secureDataService.deleteSecret(requestInfo.getSdbId(), requestInfo.getPath(), SecureDataType.OBJECT, principal.getName());
         return ResponseInfo.newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
     }
 

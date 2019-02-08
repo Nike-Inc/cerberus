@@ -75,9 +75,9 @@ public class SecureDataVersionServiceTest {
 
         List<SecureDataVersionRecord> versions = Lists.newArrayList(record);
 
-        when(secureDataService.getSecureDataRecordForPath(pathToSecureData)).thenReturn(Optional.empty());
+        when(secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData)).thenReturn(Optional.empty());
         when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, 1, 0)).thenReturn(versions);
-        SecureDataVersionsResult summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(pathToSecureData, sdbCategory, 1, 0);
+        SecureDataVersionsResult summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(sdbId, pathToSecureData, sdbCategory, 1, 0);
         SecureDataVersionSummary result = summaries.getSecureDataVersionSummaries().get(0);
 
         assertEquals(record.getAction(), result.getAction());

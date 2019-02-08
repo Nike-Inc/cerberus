@@ -29,21 +29,22 @@ public interface SecureDataMapper {
 
     int updateSecureData(@Param("record") SecureDataRecord record);
 
-    SecureDataRecord readSecureDataByPath(@Param("path") String path);
+    SecureDataRecord readSecureDataByPath(@Param("sdbId") String sdbId, @Param("path") String path);
 
-    SecureDataRecord readSecureDataByPathAndType(@Param("path") String path, @Param("type") SecureDataType type);
+    SecureDataRecord readSecureDataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
-    SecureDataRecord readMetadataByPathAndType(@Param("path") String path, @Param("type") SecureDataType type);
+    SecureDataRecord readMetadataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
-    String[] getPathsByPartialPath(@Param("partialPath") String partialPath);
+    String[] getPathsByPartialPath(@Param("sdbId") String sdbId, @Param("partialPath") String partialPath);
 
-    String[] getPathsByPartialPathAndType(@Param("partialPath") String partialPath, @Param("type") SecureDataType type);
+    String[] getPathsByPartialPathAndType(@Param("sdbId") String sdbId, @Param("partialPath") String partialPath, @Param("type") SecureDataType type);
 
     List<SecureDataRecord> listSecureDataByPartialPathAndType(
-            @Param("partialPath") String partialPath,
-            @Param("type") SecureDataType type,
-            @Param("limit") int limit,
-            @Param("offset") int offset);
+        @Param("sdbId") String sdbId,
+        @Param("partialPath") String partialPath,
+        @Param("type") SecureDataType type,
+        @Param("limit") int limit,
+        @Param("offset") int offset);
 
     int countByPartialPathAndType(@Param("partialPath") String partialPath, @Param("type") SecureDataType type);
 
@@ -53,9 +54,10 @@ public interface SecureDataMapper {
 
     int getTotalNumberOfDataNodes();
 
-    int deleteAllSecretsThatStartWithGivenPartialPath(@Param("partialPath") String partialPath);
+    int deleteAllSecretsThatStartWithGivenPartialPath(@Param("sdbId") String sdbId,
+                                                      @Param("partialPath") String partialPath);
 
-    int deleteSecret(@Param("path") String path);
+    int deleteSecret(@Param("sdbId") String sdbId, @Param("path") String path);
 
     Integer getSumTopLevelKeyValuePairs();
 }

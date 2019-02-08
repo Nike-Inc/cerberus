@@ -367,7 +367,7 @@ public class SafeDepositBoxServiceTest {
         verify(iamPrincipalPermissionService).deleteIamPrincipalPermissions(sdbId);
         verify(userGroupPermissionService).deleteUserGroupPermissions(sdbId);
         verify(secureDataVersionDao).deleteAllVersionsThatStartWithPartialPath(sdbPathNoCategory);
-        verify(secureDataService).deleteAllSecretsThatStartWithGivenPartialPath(sdbPathNoCategory);
+        verify(secureDataService).deleteAllSecretsThatStartWithGivenPartialPath(sdbId, sdbPathNoCategory);
     }
 
     @Test

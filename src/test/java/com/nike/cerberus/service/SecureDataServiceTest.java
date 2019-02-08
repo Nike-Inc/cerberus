@@ -97,7 +97,7 @@ public class SecureDataServiceTest {
         when(secureDataRecord.getType()).thenReturn(SecureDataType.OBJECT);
         when(secureDataRecord.getCreatedBy()).thenReturn(SYSTEM_USER);
         when(secureDataRecord.getCreatedTs()).thenReturn(now);
-        when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.of(secureDataRecord));
+        when(secureDataDao.readSecureDataByPath(sdbId, path)).thenReturn(Optional.of(secureDataRecord));
 
         secureDataService.writeSecret(sdbId, path, secret, principal);
         verify(secureDataDao).updateSecureData(
@@ -115,21 +115,21 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_readSecret_returns_empty_optional_if_dao_returns_nothing() {
-        when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT)).thenReturn(Optional.empty());
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.OBJECT)).thenReturn(Optional.empty());
 
-        Optional<SecureData> result = secureDataService.readSecret(path);
+        Optional<SecureData> result = secureDataService.readSecret(sdbId, path);
 
         assertFalse(result.isPresent());
     }
 
     @Test
     public void test_that_readSecret_decrypts_the_payload_when_present() {
-        when(secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT))
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.OBJECT))
                 .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(ciphertext.getBytes())));
 
         when(encryptionService.decrypt(ciphertext, path)).thenReturn(secret);
 
-        Optional<SecureData> result = secureDataService.readSecret(path);
+        Optional<SecureData> result = secureDataService.readSecret(sdbId, path);
 
         assertTrue(result.isPresent());
         assertTrue(result.get().getData().equals(secret));
@@ -138,28 +138,31 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_listKeys_appends_a_slash_to_the_partial_path_if_not_present() {
         when(secureDataDao.getPathsByPartialPathAndType(
-                partialPathWithoutTrailingSlash + "/",
+                sdbId,
+            partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(keysRes);
-        secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash);
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
     }
 
     @Test
     public void test_that_listKeys_does_not_append_a_slash_to_the_partial_path_if_already_present() {
         when(secureDataDao.getPathsByPartialPathAndType(
+                sdbId,
                 partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(keysRes);
-        secureDataService.listKeys(partialPathWithoutTrailingSlash  + "/");
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash  + "/");
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
     }
 
     @Test
     public void test_that_listKeys_returns_empty_set_if_dao_returns_null() {
         when(secureDataDao.getPathsByPartialPathAndType(
-                partialPathWithoutTrailingSlash + "/",
+                sdbId,
+            partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(null);
-        Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash );
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        Set<String> res = secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash );
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertTrue(res != null && res.isEmpty());
     }
@@ -167,10 +170,11 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_listKeys_returns_empty_set_if_dao_returns_empty() {
         when(secureDataDao.getPathsByPartialPathAndType(
+                sdbId,
                 partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(new String[] {});
-        Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash );
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        Set<String> res = secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash );
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertTrue(res != null && res.isEmpty());
     }
@@ -178,10 +182,11 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys() {
         when(secureDataDao.getPathsByPartialPathAndType(
-                partialPathWithoutTrailingSlash + "/",
+                sdbId,
+            partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(keysRes);
-        Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        Set<String> res = secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash);
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 2 keys", 2, res.size());
         assertTrue("the list of keys should contain the 2 api keys", res.containsAll(ImmutableSet.of("signal-fx-api-key", "splunk-api-key")));
@@ -190,12 +195,13 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys_with_sub_folder_paths_stripped_to_nearest_folder() {
         when(secureDataDao.getPathsByPartialPathAndType(
+                sdbId,
                 partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(new String[]{
                 "apps/checkout-service/api-keys/sub-folder/some-different-key"
         });
-        Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        Set<String> res = secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash);
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 1 key", 1, res.size());
         assertTrue(res.contains("sub-folder/"));
@@ -204,13 +210,14 @@ public class SecureDataServiceTest {
     @Test
     public void test_that_listKeys_returns_expected_set_of_keys_with_sub_folder_paths_stripped_to_nearest_folder_and_contains_key_without_slash_if_present() {
         when(secureDataDao.getPathsByPartialPathAndType(
-                partialPathWithoutTrailingSlash + "/",
+            sdbId,
+            partialPathWithoutTrailingSlash + "/",
                 SecureDataType.OBJECT)).thenReturn(new String[]{
                 "apps/checkout-service/api-keys/sub-folder/some-different-key",
                 "apps/checkout-service/api-keys/sub-folder"
         });
-        Set<String> res = secureDataService.listKeys(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).getPathsByPartialPathAndType(partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
+        Set<String> res = secureDataService.listKeys(sdbId, partialPathWithoutTrailingSlash);
+        verify(secureDataDao).getPathsByPartialPathAndType(sdbId, partialPathWithoutTrailingSlash + "/", SecureDataType.OBJECT);
 
         assertEquals("There should be 2 key", 2, res.size());
         assertTrue(res.contains("sub-folder/"));
@@ -219,19 +226,19 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_deleteAllSecretsThatStartWithGivenPartialPath_proxies_to_dao() {
-        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(partialPathWithoutTrailingSlash);
-        verify(secureDataDao).deleteAllSecretsThatStartWithGivenPartialPath(partialPathWithoutTrailingSlash);
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbId, partialPathWithoutTrailingSlash);
+        verify(secureDataDao).deleteAllSecretsThatStartWithGivenPartialPath(sdbId, partialPathWithoutTrailingSlash);
     }
 
     @Test
     public void test_that_deleteSecret_proxies_to_dao() {
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
-        when(secureDataDao.readSecureDataByPathAndType(partialPathWithoutTrailingSlash, SecureDataType.OBJECT))
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, partialPathWithoutTrailingSlash, SecureDataType.OBJECT))
                 .thenReturn(Optional.of(secureDataRecord));
 
-        secureDataService.deleteSecret(partialPathWithoutTrailingSlash, SecureDataType.OBJECT, principal);
-        verify(secureDataDao).deleteSecret(partialPathWithoutTrailingSlash);
+        secureDataService.deleteSecret(sdbId, partialPathWithoutTrailingSlash, SecureDataType.OBJECT, principal);
+        verify(secureDataDao).deleteSecret(sdbId, partialPathWithoutTrailingSlash);
     }
 
     @Test
@@ -255,7 +262,7 @@ public class SecureDataServiceTest {
         OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
         when(dateTimeSupplier.get()).thenReturn(now);
 
-        when(secureDataDao.readSecureDataByPath(path)).thenReturn(Optional.empty());
+        when(secureDataDao.readSecureDataByPath(sdbId, path)).thenReturn(Optional.empty());
 
         secureDataService.restoreSdbSecrets(sdbId, data, principal);
         verify(secureDataDao).writeSecureData(
@@ -327,18 +334,18 @@ public class SecureDataServiceTest {
         String pathToFile = "app/sdb/file.pem";
         SecureDataRecord fileRecord = new SecureDataRecord().setType(SecureDataType.FILE);
         when(encryptionService.encrypt(secret, pathToFile)).thenReturn(ciphertext);
-        when(secureDataDao.readSecureDataByPath(pathToFile)).thenReturn(Optional.of(fileRecord));
+        when(secureDataDao.readSecureDataByPath(sdbId, pathToFile)).thenReturn(Optional.of(fileRecord));
 
-        secureDataService.writeSecret("sdb id", pathToFile, secret, "principal");
+        secureDataService.writeSecret(sdbId, pathToFile, secret, "principal");
     }
 
     @Test(expected = ApiException.class)
     public void test_that_writeFile_does_now_allow_other_types_to_be_overwritten() {
         String pathToObject = "app/sdb/object";
         SecureDataRecord objectRecord = new SecureDataRecord().setType(SecureDataType.OBJECT);
-        when(secureDataDao.readSecureDataByPath(pathToObject)).thenReturn(Optional.of(objectRecord));
+        when(secureDataDao.readSecureDataByPath(sdbId, pathToObject)).thenReturn(Optional.of(objectRecord));
 
-        secureDataService.writeSecureFile("sdbId", pathToObject, new byte[] {}, 0, pathToObject);
+        secureDataService.writeSecureFile(sdbId, pathToObject, new byte[] {}, 0, pathToObject);
     }
 
     @Test
@@ -348,11 +355,11 @@ public class SecureDataServiceTest {
                 .setEncryptedBlob(ciphertextBytes)
                 .setSizeInBytes(ciphertextBytes.length);
         when(encryptionService.decrypt(ciphertextBytes, pathToObject)).thenReturn(plaintextBytes);
-        when(secureDataDao.readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT)).thenReturn(Optional.of(record));
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToObject, SecureDataType.OBJECT)).thenReturn(Optional.of(record));
 
-        secureDataService.readSecret(pathToObject);
+        secureDataService.readSecret(sdbId, pathToObject);
 
-        verify(secureDataDao).readSecureDataByPathAndType(pathToObject, SecureDataType.OBJECT);
+        verify(secureDataDao).readSecureDataByPathAndType(sdbId, pathToObject, SecureDataType.OBJECT);
     }
 
     @Test
@@ -364,11 +371,11 @@ public class SecureDataServiceTest {
                 .setEncryptedBlob(ciphertextBytes)
                 .setSizeInBytes(ciphertextBytes.length);
         when(encryptionService.decrypt(ciphertextBytes, pathToFile)).thenReturn(plaintextBytes);
-        when(secureDataDao.readSecureDataByPathAndType(pathToFile, SecureDataType.FILE)).thenReturn(Optional.of(record));
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToFile, SecureDataType.FILE)).thenReturn(Optional.of(record));
 
-        secureDataService.readFile(pathToFile);
+        secureDataService.readFile(sdbId, pathToFile);
 
-        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+        verify(secureDataDao).readSecureDataByPathAndType(sdbId, pathToFile, SecureDataType.FILE);
     }
 
     @Test
@@ -381,11 +388,11 @@ public class SecureDataServiceTest {
                 .setPath(pathToFile)
                 .setEncryptedBlob(ciphertextBytes)
                 .setSizeInBytes(ciphertextBytes.length);
-        when(secureDataDao.readSecureDataByPathAndType(pathToFile, type)).thenReturn(Optional.of(record));
+        when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToFile, type)).thenReturn(Optional.of(record));
 
-        secureDataService.deleteSecret(pathToFile, SecureDataType.FILE, principal);
+        secureDataService.deleteSecret(sdbId, pathToFile, SecureDataType.FILE, principal);
 
-        verify(secureDataDao).readSecureDataByPathAndType(pathToFile, SecureDataType.FILE);
+        verify(secureDataDao).readSecureDataByPathAndType(sdbId, pathToFile, SecureDataType.FILE);
         verify(secureDataVersionDao).writeSecureDataVersion(null, pathToFile, ciphertextBytes,
                 SecureDataVersionRecord.SecretsAction.DELETE,
                 type,

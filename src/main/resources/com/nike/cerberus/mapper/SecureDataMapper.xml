@@ -78,6 +78,8 @@
           SECURE_DATA
         WHERE
           PATH = #{path}
+            AND
+          SDBOX_ID = #{sdbId}
     </select>
 
     <select id="readSecureDataByPathAndType" resultType="SecureDataRecord">
@@ -98,6 +100,8 @@
           PATH = #{path}
             AND
           `TYPE` = #{type}
+            AND
+          SDBOX_ID = #{sdbId}
     </select>
 
     <select id="readMetadataByPathAndType" resultType="SecureDataRecord">
@@ -117,10 +121,12 @@
           PATH = #{path}
             AND
           `TYPE` = #{type}
+            AND
+          SDBOX_ID = #{sdbId}
     </select>
 
     <select id="getPathsByPartialPath" resultType="String">
-        SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%';
+        SELECT PATH From SECURE_DATA WHERE PATH LIKE '${partialPath}%' AND SDBOX_ID = #{sdbId};
     </select>
 
     <select id="getPathsByPartialPathAndType" resultType="String">
@@ -132,6 +138,8 @@
           PATH LIKE '${partialPath}%'
             AND
           `TYPE` = #{type}
+            AND
+          SDBOX_ID = #{sdbId}
     </select>
 
     <select id="listSecureDataByPartialPathAndType" resultType="SecureDataRecord">
@@ -152,6 +160,8 @@
           PATH LIKE '${partialPath}%'
             AND
           `TYPE` = #{type}
+            AND
+          SDBOX_ID = #{sdbId}
         ORDER BY CREATED_TS DESC
         LIMIT #{limit}
         OFFSET #{offset}
@@ -190,11 +200,11 @@
     </select>
 
     <delete id="deleteAllSecretsThatStartWithGivenPartialPath">
-        DELETE FROM SECURE_DATA WHERE PATH LIKE '${partialPath}%';
+        DELETE FROM SECURE_DATA WHERE PATH LIKE '${partialPath}%' AND SDBOX_ID = #{sdbId};
     </delete>
 
     <delete id="deleteSecret">
-        DELETE FROM SECURE_DATA WHERE PATH = #{path}
+        DELETE FROM SECURE_DATA WHERE PATH = #{path} AND SDBOX_ID = #{sdbId}
     </delete>
 
 </mapper>

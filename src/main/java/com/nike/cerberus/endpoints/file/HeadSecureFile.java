@@ -61,13 +61,13 @@ public class HeadSecureFile extends AuditableEventEndpoint<Void, Void> {
 
     @Override
     public CompletableFuture<ResponseInfo<Void>> doExecute(RequestInfo<Void> request,
-                                                             Executor longRunningTaskExecutor,
-                                                             ChannelHandlerContext ctx) {
+                                                           Executor longRunningTaskExecutor,
+                                                           ChannelHandlerContext ctx) {
 
         SecureDataRequestInfo requestInfo = secureDataRequestService.parseAndValidateRequest(request);
         ResponseInfo<Void> response;
 
-        Optional<SecureFileSummary> secureFileOpt = secureDataService.readFileMetadataOnly(requestInfo.getPath());
+        Optional<SecureFileSummary> secureFileOpt = secureDataService.readFileMetadataOnly(requestInfo.getSdbId(), requestInfo.getPath());
 
         if (! secureFileOpt.isPresent()) {
             throw new ApiException.Builder()

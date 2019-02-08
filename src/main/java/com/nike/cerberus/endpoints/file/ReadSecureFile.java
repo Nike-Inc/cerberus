@@ -77,7 +77,7 @@ public class ReadSecureFile extends AuditableEventEndpoint<Void, byte[]> {
             String versionId = request.getQueryParamSingle("versionId");
             response = readSecureDataVersion(requestInfo, versionId);
         } else {
-            Optional<SecureFile> secureFileOpt = secureDataService.readFile(requestInfo.getPath());
+            Optional<SecureFile> secureFileOpt = secureDataService.readFile(requestInfo.getSdbId(), requestInfo.getPath());
 
             if (! secureFileOpt.isPresent()) {
                 throw ApiException.newBuilder()
@@ -107,6 +107,7 @@ public class ReadSecureFile extends AuditableEventEndpoint<Void, byte[]> {
     private ResponseInfo<byte[]> readSecureDataVersion(SecureDataRequestInfo requestInfo,
                                                        String versionId) {
         Optional<SecureFileVersion> secureFileVersionOpt = secureDataVersionService.getSecureFileVersionById(
+                requestInfo.getSdbId(),
                 versionId,
                 requestInfo.getCategory(),
                 requestInfo.getPath());

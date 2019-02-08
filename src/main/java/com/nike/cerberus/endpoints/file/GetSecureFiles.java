@@ -65,9 +65,10 @@ public class GetSecureFiles extends AuditableEventEndpoint<Void, SecureFileSumma
 
         SecureDataRequestInfo info = secureDataRequestService.parseAndValidateRequest(request);
         SecureFileSummaryResult fileSummaryResult = secureDataService.listSecureFilesSummaries(
-                info.getPath(),
-                paginationService.getLimit(request),
-                paginationService.getOffset(request));
+            info.getSdbId(),
+            info.getPath(),
+            paginationService.getLimit(request),
+            paginationService.getOffset(request));
 
         final ResponseInfo response = ResponseInfo.newBuilder()
                 .withContentForFullResponse(fileSummaryResult)
