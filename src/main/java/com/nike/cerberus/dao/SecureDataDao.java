@@ -84,32 +84,32 @@ public class SecureDataDao {
         );
     }
 
-    public Optional<SecureDataRecord> readSecureDataByPath(String path) {
-        return Optional.ofNullable(secureDataMapper.readSecureDataByPath(path));
+    public Optional<SecureDataRecord> readSecureDataByPath(String sdbId, String path) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByPath(sdbId, path));
     }
 
-    public Optional<SecureDataRecord> readSecureDataByPathAndType(String path, SecureDataType type) {
-        return Optional.ofNullable(secureDataMapper.readSecureDataByPathAndType(path, type));
+    public Optional<SecureDataRecord> readSecureDataByPathAndType(String sdbId, String path, SecureDataType type) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByPathAndType(sdbId, path, type));
     }
 
-    public Optional<SecureDataRecord> readMetadataByPathAndType(String path, SecureDataType type) {
-        return Optional.ofNullable(secureDataMapper.readMetadataByPathAndType(path, type));
+    public Optional<SecureDataRecord> readMetadataByPathAndType(String sdbId, String path, SecureDataType type) {
+        return Optional.ofNullable(secureDataMapper.readMetadataByPathAndType(sdbId, path, type));
     }
 
-    public String[] getPathsByPartialPath(String partialPath) {
-        return secureDataMapper.getPathsByPartialPath(partialPath);
+    public String[] getPathsByPartialPath(String sdbId, String partialPath) {
+        return secureDataMapper.getPathsByPartialPath(sdbId, partialPath);
     }
 
-    public String[] getPathsByPartialPathAndType(String partialPath, SecureDataType type) {
-        return secureDataMapper.getPathsByPartialPathAndType(partialPath, type);
+    public String[] getPathsByPartialPathAndType(String sdbId, String partialPath, SecureDataType type) {
+        return secureDataMapper.getPathsByPartialPathAndType(sdbId, partialPath, type);
     }
 
     public Set<String> getPathsBySdbId(String sdbId) {
         return secureDataMapper.getPathsBySdbId(sdbId);
     }
 
-    public List<SecureDataRecord> listSecureDataByPartialPathAndType(String partialPath, SecureDataType type, int limit, int offset) {
-        return secureDataMapper.listSecureDataByPartialPathAndType(partialPath, type, limit, offset);
+    public List<SecureDataRecord> listSecureDataByPartialPathAndType(String sdbId, String partialPath, SecureDataType type, int limit, int offset) {
+        return secureDataMapper.listSecureDataByPartialPathAndType(sdbId, partialPath, type, limit, offset);
     }
 
     public int countByPartialPathAndType(String partialPath, SecureDataType type) {
@@ -124,12 +124,12 @@ public class SecureDataDao {
         return secureDataMapper.getTotalNumberOfDataNodes();
     }
 
-    public void deleteAllSecretsThatStartWithGivenPartialPath(String partialPath) {
-        secureDataMapper.deleteAllSecretsThatStartWithGivenPartialPath(partialPath);
+    public void deleteAllSecretsThatStartWithGivenPartialPath(String sdbId, String partialPath) {
+        secureDataMapper.deleteAllSecretsThatStartWithGivenPartialPath(sdbId, partialPath);
     }
 
-    public void deleteSecret(String path) {
-        secureDataMapper.deleteSecret(path);
+    public void deleteSecret(String sdbId, String path) {
+        secureDataMapper.deleteSecret(sdbId, path);
     }
 
     public int getSumTopLevelKeyValuePairs() {

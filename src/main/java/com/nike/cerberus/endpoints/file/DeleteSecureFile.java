@@ -80,7 +80,8 @@ public class DeleteSecureFile extends AuditableEventEndpoint<Void, Void> {
         if (securityContext.isPresent()) {
             SecureDataRequestInfo requestInfo = secureDataRequestService.parseAndValidateRequest(request);
 
-            secureDataService.deleteSecret(requestInfo.getPath(), SecureDataType.FILE, requestInfo.getPrincipal().getName());
+            secureDataService.deleteSecret(requestInfo.getSdbId(),
+                requestInfo.getPath(), SecureDataType.FILE, requestInfo.getPrincipal().getName());
 
             return ResponseInfo.<Void>newBuilder().
                     withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).

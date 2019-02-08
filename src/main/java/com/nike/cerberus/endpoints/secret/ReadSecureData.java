@@ -83,7 +83,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
             String versionId = request.getQueryParamSingle("versionId");
             response = readSecureDataVersion(requestInfo, versionId);
         } else {
-            Optional<SecureData> secureDataOpt = secureDataService.readSecret(requestInfo.getPath());
+            Optional<SecureData> secureDataOpt = secureDataService.readSecret(requestInfo.getSdbId(), requestInfo.getPath());
 
             if (! secureDataOpt.isPresent()) {
                 response = generateVaultStyleResponse(
@@ -102,7 +102,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
     }
 
     private ResponseInfo<Object> listKeys(SecureDataRequestInfo info) {
-        Set<String> keys = secureDataService.listKeys(info.getPath());
+        Set<String> keys = secureDataService.listKeys(info.getSdbId(), info.getPath());
 
         if (keys.isEmpty()) {
             return generateVaultStyleResponse(VaultStyleErrorResponse.Builder.create().build(),
@@ -134,6 +134,7 @@ public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
     private ResponseInfo<Object> readSecureDataVersion(SecureDataRequestInfo requestInfo,
                                                        String versionId) {
         Optional<SecureDataVersion> secureDataVersionOpt = secureDataVersionService.getSecureDataVersionById(
+                requestInfo.getSdbId(),
                 versionId,
                 requestInfo.getCategory(),
                 requestInfo.getPath());

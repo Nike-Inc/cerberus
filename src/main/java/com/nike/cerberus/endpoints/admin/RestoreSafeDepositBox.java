@@ -77,7 +77,7 @@ public class RestoreSafeDepositBox extends AdminStandardEndpoint<SDBMetadata, Vo
         metadataService.restoreMetadata(sdbMetadata, principal);
         String sdbId  = metadataService.getSdbId(sdbMetadata);
         String sdbPathWithoutCategory = StringUtils.substringAfter(sdbMetadata.getPath(), "/");
-        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbPathWithoutCategory);
+        secureDataService.deleteAllSecretsThatStartWithGivenPartialPath(sdbId, sdbPathWithoutCategory);
         secureDataService.restoreSdbSecrets(sdbId, sdbMetadata.getData(), principal);
 
         return ResponseInfo.<Void>newBuilder()

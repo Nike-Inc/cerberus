@@ -78,6 +78,7 @@ public class GetSecureDataVersions extends AuditableEventEndpoint<Void, SecureDa
         String pathToSecret = requestInfo.getPath();
 
         SecureDataVersionsResult result = secureDataVersionService.getSecureDataVersionSummariesByPath(
+                requestInfo.getSdbId(),
                 pathToSecret,
                 requestInfo.getCategory(),
                 paginationService.getLimit(request),

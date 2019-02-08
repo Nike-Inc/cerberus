@@ -58,10 +58,10 @@ public class SecureDataVersionService {
         this.encryptionService = encryptionService;
     }
 
-    public Optional<SecureDataVersion> getSecureDataVersionById(String versionId, String sdbCategory, String pathToSecureData) {
+    public Optional<SecureDataVersion> getSecureDataVersionById(String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
         log.debug("Reading secure data version: ID: {}", versionId);
         Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
-                        getCurrentSecureDataVersion(pathToSecureData) :
+                        getCurrentSecureDataVersion(sdbId, pathToSecureData) :
                         secureDataVersionDao.readSecureDataVersionById(versionId);
 
         if (! secureDataVersionRecord.isPresent() ||
@@ -90,10 +90,10 @@ public class SecureDataVersionService {
                 .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
     }
 
-    public Optional<SecureFileVersion> getSecureFileVersionById(String versionId, String sdbCategory, String pathToSecureData) {
+    public Optional<SecureFileVersion> getSecureFileVersionById(String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
         log.debug("Reading secure data version: ID: {}", versionId);
         Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
-                getCurrentSecureDataVersion(pathToSecureData) :
+                getCurrentSecureDataVersion(sdbId, pathToSecureData) :
                 secureDataVersionDao.readSecureDataVersionById(versionId);
 
         if (! secureDataVersionRecord.isPresent() ||
@@ -121,7 +121,8 @@ public class SecureDataVersionService {
 
     }
 
-    public SecureDataVersionsResult getSecureDataVersionSummariesByPath(String pathToSecureData,
+    public SecureDataVersionsResult getSecureDataVersionSummariesByPath(String sdbId,
+                                                                        String pathToSecureData,
                                                                         String sdbCategory,
                                                                         int limit,
                                                                         int offset) {
@@ -133,7 +134,7 @@ public class SecureDataVersionService {
         int totalNumVersionsForPath = secureDataVersionDao.getTotalNumVersionsForPath(pathToSecureData);
 
         // retrieve current secrets versions from secure data table
-        Optional<SecureDataVersionRecord> currentSecureDataVersionOpt = getCurrentSecureDataVersion(pathToSecureData);
+        Optional<SecureDataVersionRecord> currentSecureDataVersionOpt = getCurrentSecureDataVersion(sdbId, pathToSecureData);
         if (currentSecureDataVersionOpt.isPresent()) {
             if (offset == 0) {
                 SecureDataVersionRecord currentSecureDataVersion = currentSecureDataVersionOpt.get();
@@ -189,8 +190,8 @@ public class SecureDataVersionService {
         return result;
     }
 
-    private Optional<SecureDataVersionRecord> getCurrentSecureDataVersion(String pathToSecureData) {
-        Optional<SecureDataRecord> currentSecureDataRecordOpt = secureDataService.getSecureDataRecordForPath(pathToSecureData);
+    private Optional<SecureDataVersionRecord> getCurrentSecureDataVersion(String sdbId, String pathToSecureData) {
+        Optional<SecureDataRecord> currentSecureDataRecordOpt = secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData);
         SecureDataVersionRecord newSecureDataVersionRecord = null;
 
         if (currentSecureDataRecordOpt.isPresent()) {

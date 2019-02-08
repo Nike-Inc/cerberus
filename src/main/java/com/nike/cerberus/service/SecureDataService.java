@@ -86,7 +86,7 @@ public class SecureDataService {
         OffsetDateTime now = dateTimeSupplier.get();
 
         // Fetch the current version if there is one, so that on update it can be moved to the versions table
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(sdbId, path);
         if (secureDataRecordOpt.isPresent()) {
             SecureDataRecord secureData = secureDataRecordOpt.get();
             if (secureData.getType() != SecureDataType.OBJECT) {
@@ -132,7 +132,7 @@ public class SecureDataService {
         OffsetDateTime now = dateTimeSupplier.get();
 
         // Fetch the current version if there is one, so that on update it can be moved to the versions table
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(sdbId, path);
         if (secureDataRecordOpt.isPresent()) {
             SecureDataRecord secureData = secureDataRecordOpt.get();
             if (secureData.getType() != SecureDataType.FILE) {
@@ -187,9 +187,9 @@ public class SecureDataService {
         return kvCount;
     }
 
-    public Optional<SecureData> readSecret(String path) {
+    public Optional<SecureData> readSecret(String sdbId, String path) {
         log.debug("Reading secure data: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(path, SecureDataType.OBJECT);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.OBJECT);
         if (! secureDataRecordOpt.isPresent()) {
             return Optional.empty();
         }
@@ -213,9 +213,9 @@ public class SecureDataService {
         return Optional.of(secureData);
     }
 
-    public Optional<SecureFile> readFile(String path) {
+    public Optional<SecureFile> readFile(String sdbId, String path) {
         log.debug("Reading secure file: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(path, SecureDataType.FILE);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.FILE);
         if (! secureDataRecordOpt.isPresent()) {
             return Optional.empty();
         }
@@ -237,9 +237,9 @@ public class SecureDataService {
         return Optional.of(secureFile);
     }
 
-    public Optional<SecureFileSummary> readFileMetadataOnly(String path) {
+    public Optional<SecureFileSummary> readFileMetadataOnly(String sdbId, String path) {
         log.debug("Reading secure file metadata: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readMetadataByPathAndType(path, SecureDataType.FILE);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readMetadataByPathAndType(sdbId, path, SecureDataType.FILE);
         if (! secureDataRecordOpt.isPresent()) {
             return Optional.empty();
         }
@@ -285,13 +285,13 @@ public class SecureDataService {
      * @param partialPath path to a node in the data structure that potentially has children
      * @return Array of keys if the key is a data node it will not end with "/"
      */
-    public Set<String> listKeys(String partialPath) {
+    public Set<String> listKeys(String sdbId, String partialPath) {
         if (! partialPath.endsWith("/")) {
             partialPath = partialPath + "/";
         }
 
         Set<String> keys = new HashSet<>();
-        String[] pArray = secureDataDao.getPathsByPartialPathAndType(partialPath, SecureDataType.OBJECT);
+        String[] pArray = secureDataDao.getPathsByPartialPathAndType(sdbId, partialPath, SecureDataType.OBJECT);
         if (pArray == null || pArray.length < 1) {
             return keys;
         }
@@ -321,14 +321,14 @@ public class SecureDataService {
      * @param partialPath path to a node in the data structure that potentially has children
      * @return Array of keys if the key is a data node it will not end with "/"
      */
-    public SecureFileSummaryResult listSecureFilesSummaries(String partialPath, int limit, int offset) {
+    public SecureFileSummaryResult listSecureFilesSummaries(String sdbId, String partialPath, int limit, int offset) {
         if (!partialPath.endsWith("/")) {
             partialPath = partialPath + "/";
         }
 
         int totalNumFiles = secureDataDao.countByPartialPathAndType(partialPath, SecureDataType.FILE);
         List<SecureFileSummary> fileSummaries = Lists.newArrayList();
-        List<SecureDataRecord> secureDataRecords = secureDataDao.listSecureDataByPartialPathAndType(partialPath, SecureDataType.FILE, limit, offset);
+        List<SecureDataRecord> secureDataRecords = secureDataDao.listSecureDataByPartialPathAndType(sdbId, partialPath, SecureDataType.FILE, limit, offset);
         secureDataRecords.forEach(secureDataRecord -> {
             fileSummaries.add(new SecureFileSummary()
                     .setCreatedBy(secureDataRecord.getCreatedBy())
@@ -379,9 +379,9 @@ public class SecureDataService {
      * @param subPath The sub path to delete all secrets that have paths that start with
      */
     @Transactional
-    public void deleteAllSecretsThatStartWithGivenPartialPath(String subPath) {
-        log.warn("Deleting all secrets under path: {}", subPath);
-        secureDataDao.deleteAllSecretsThatStartWithGivenPartialPath(subPath);
+    public void deleteAllSecretsThatStartWithGivenPartialPath(String sdbId, String subPath) {
+        log.warn("Deleting all secrets under path: {} for sdbId: {}", subPath, sdbId);
+        secureDataDao.deleteAllSecretsThatStartWithGivenPartialPath(sdbId, subPath);
     }
 
     /**
@@ -389,9 +389,9 @@ public class SecureDataService {
      *
      * @param path The sub path to delete all secrets that have paths that start with
      */
-    public void deleteSecret(String path, SecureDataType type, String principal) {
+    public void deleteSecret(String sdbId, String path, SecureDataType type, String principal) {
         OffsetDateTime now = dateTimeSupplier.get();
-        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPathAndType(path, type)
+        SecureDataRecord secureDataRecord = secureDataDao.readSecureDataByPathAndType(sdbId, path, type)
                 .orElseThrow(() ->
                         new ApiException(DefaultApiError.ENTITY_NOT_FOUND)
                 );
@@ -409,7 +409,7 @@ public class SecureDataService {
                 now
         );
 
-        secureDataDao.deleteSecret(path);
+        secureDataDao.deleteSecret(sdbId, path);
     }
 
     public int getTotalNumberOfKeyValuePairs() {
@@ -426,8 +426,8 @@ public class SecureDataService {
         return ! (createdBySameAsUpdatedBy && createdTsSameAsUpdatedTs);
     }
 
-    public Optional<SecureDataRecord> getSecureDataRecordForPath(String path) {
-        return secureDataDao.readSecureDataByPath(path);
+    public Optional<SecureDataRecord> getSecureDataRecordForPath(String sdbId, String path) {
+        return secureDataDao.readSecureDataByPath(sdbId, path);
     }
 
     public Map<String, String> parseSecretMetadata(SecureData secureData) {
