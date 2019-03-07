@@ -78,7 +78,7 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
         final String headerXAmzDate = getHeaderXAmzDate(request);
         final String headerXAmzSecurityToken = getHeaderXAmzSecurityToken(request);
         final String headerAuthorization = getHeaderAuthorization(request);
-        String iamPrincipalArn = "unknown";
+        String iamPrincipalArn = null;
         AuthTokenResponse authResponse = null;
         try {
             if (headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
