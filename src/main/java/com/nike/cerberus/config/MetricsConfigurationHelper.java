@@ -84,6 +84,9 @@ public class MetricsConfigurationHelper {
             String host = EC2MetadataUtils.getLocalHostName();
             String ec2Hostname = EC2_HOSTNAME_PREFIX + EC2MetadataUtils.getPrivateIpAddress();
 
+            String serverGroup = System.getProperty("serverGroup", "unknown");
+            String serverRegion = System.getProperty("serverRegion", "unknown");
+
             Function<SignalFxReporter.Builder, SignalFxReporter.Builder> defaultReporterConfigurator =
                     (builder) -> builder
                             .addUniqueDimension("host", host)
@@ -92,6 +95,8 @@ public class MetricsConfigurationHelper {
                             .addUniqueDimension("env", signalFxAppEnvDim)
                             .addUniqueDimension("framework", "riposte")
                             .addUniqueDimension("app_version", serviceVersionDim)
+                            .addUniqueDimension("server_group", serverGroup)
+                            .addUniqueDimension("server_region", serverRegion)
                             .setDetailsToAdd(finalMetricDetailsToReport);
 
             if (customReporterConfigurator == null)
