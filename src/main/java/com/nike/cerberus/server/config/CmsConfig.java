@@ -20,18 +20,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.*;
+import com.google.inject.util.Modules;
 import com.nike.backstopper.handler.riposte.config.guice.BackstopperRiposteConfigGuiceModule;
-import com.nike.cerberus.server.config.guice.AwsStsGuiceModule;
-import com.nike.cerberus.server.config.guice.CerberusBackstopperRiposteGuiceModule;
-import com.nike.cerberus.server.config.guice.CmsFlywayModule;
-import com.nike.cerberus.server.config.guice.CmsGuiceModule;
-import com.nike.cerberus.server.config.guice.CmsMyBatisModule;
-import com.nike.cerberus.server.config.guice.GuiceProvidedServerConfigValues;
-import com.nike.cerberus.server.config.guice.MetricsGuiceModule;
-import com.nike.cerberus.server.config.guice.OneLoginGuiceModule;
+import com.nike.cerberus.server.config.guice.*;
+import com.nike.cerberus.service.ConfigService;
 import com.nike.cerberus.util.ArchaiusUtils;
 import com.nike.cerberus.util.JobsInitializerUtils;
 import com.nike.guice.PropertiesRegistrationGuiceModule;
@@ -48,12 +41,12 @@ import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.server.http.filter.RequestAndResponseFilter;
 import com.nike.riposte.server.logging.AccessLogger;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import io.netty.handler.ssl.SslContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -96,7 +89,10 @@ public class CmsConfig implements ServerConfig {
 
         // Create a Guice Injector for this app.
         List<Module> appGuiceModules = new ArrayList<>();
-        appGuiceModules.add(propertiesRegistrationGuiceModule);
+        appGuiceModules.add(
+            Modules.override(propertiesRegistrationGuiceModule)
+                .with(new JdbcPropertiesModule()) // Allow us to dynamically set JDBC.url
+        );
         appGuiceModules.addAll(Arrays.asList(
                 new CmsMyBatisModule(),
                 new BackstopperRiposteConfigGuiceModule(),
