@@ -78,16 +78,17 @@ public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenRes
         final String headerXAmzDate = getHeaderXAmzDate(request);
         final String headerXAmzSecurityToken = getHeaderXAmzSecurityToken(request);
         final String headerAuthorization = getHeaderAuthorization(request);
-
-        if (headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
-            throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
-        }
-
-        AwsStsHttpHeader header = new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
-        GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
-        String iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
+        String iamPrincipalArn = null;
         AuthTokenResponse authResponse = null;
         try {
+            if (headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
+                throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
+            }
+
+            AwsStsHttpHeader header = new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+            GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
+            iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
+
             authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
         } catch (ApiException e) {
             eventProcessorService.ingestEvent(auditableEvent(

@@ -135,4 +135,8 @@ public class ConfigService {
         }
         return new HashSet<>();
     }
+
+    public String getSetRegion() {
+        return System.getenv(REGION_KEY);
+    }
 }

@@ -679,16 +679,17 @@ public class AuthenticationService {
      * @param iamPrincipalArn - The authenticating IAM principal ARN
      * @return - The associated IAM role record
      */
-    protected Optional<AwsIamRoleRecord> findIamRoleAssociatedWithSdb(final String iamPrincipalArn) {
+    protected Optional<AwsIamRoleRecord> findIamRoleAssociatedWithSdb(String iamPrincipalArn) {
         Optional<AwsIamRoleRecord> iamRole = awsIamRoleDao.getIamRole(iamPrincipalArn);
 
         // if the arn is not already in 'role' format, and cannot be found,
         // then try checking for the generic "arn:aws:iam::0000000000:role/foo" format
         if (!iamRole.isPresent() && !awsIamRoleArnParser.isRoleArn(iamPrincipalArn) ) {
             logger.debug("Detected non-role ARN, attempting to find SDBs associated with the principal's base role...");
-            final String iamPrincipalInRoleFormat = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
+            // Minimal code change to stop authentication with assumed-role ARN from inserting too many rows into AWS_IAM_ROLE table
+            iamPrincipalArn = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamPrincipalArn);
 
-            iamRole = awsIamRoleDao.getIamRole(iamPrincipalInRoleFormat);
+            iamRole = awsIamRoleDao.getIamRole(iamPrincipalArn);
         }
 
         if ( !iamRole.isPresent() ) {
