@@ -39,7 +39,7 @@ public class AuditLogProcessor implements EventProcessor {
 
     protected final Logger auditLogger = LoggerFactory.getLogger(this.getClass());
 
-    private static final DateTimeFormatter ATHENA_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+    private static final DateTimeFormatter ATHENA_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String PARTY_LIKE_ITS_99 = "1999-01-01T01:00:00+00:00";
 
     private final ObjectMapper om = new ObjectMapper();
