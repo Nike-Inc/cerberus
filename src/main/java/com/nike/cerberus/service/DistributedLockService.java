@@ -136,10 +136,13 @@ public class DistributedLockService implements ServerShutdownHook {
         locks.forEach((name, lock) -> {
             try {
                 lock.release();
-                lock.semaphore.tryAcquire(3, TimeUnit.SECONDS);
+                boolean didAcquireLock = lock.semaphore.tryAcquire(3, TimeUnit.SECONDS);
+                if (!didAcquireLock) {
+                    throw new RuntimeException("Failed to acquire semaphore");
+                }
                 locks.remove(name);
-            } catch (InterruptedException e) {
-                log.error("Failed to gracefully release lock: {}, interrupting thread", e);
+            } catch (Exception e) {
+                log.error("Failed to gracefully release lock: {}, interrupting thread", name, e);
                 lock.interrupt();
             }
         });
