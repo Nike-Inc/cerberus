@@ -34,6 +34,10 @@ apply plugin: 'com.wiredforcode.spawn'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+ext {
+    SpotBugsTask = com.github.spotbugs.SpotBugsTask
+}
+
 apply from: file('gradle/dependencies.gradle')
 apply from: file('gradle/check.gradle')
 apply from: file('gradle/integration.gradle')

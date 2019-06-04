@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2019 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-apply plugin: 'findbugs'
+apply plugin: "com.github.spotbugs"
 apply plugin: 'pmd'
 apply plugin: "jacoco"
 apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'org.owasp.dependencycheck'
 
-findbugs {
-    ignoreFailures = false
-    sourceSets = [ project.sourceSets.main ]
+spotbugs {
+    toolVersion = '3.1.12'
+    sourceSets = [sourceSets.main]
 }
 
 pmd {
     sourceSets = [ project.sourceSets.main ]
-}
-
-tasks.withType(FindBugs) {
-    reports {
-        xml.withMessages = true
-    }
+    toolVersion = "5.6.1"
 }
 
 jacoco {
@@ -46,17 +42,15 @@ jacocoTestReport {
     }
 }
 
+// To generate an HTML report instead of XML
+tasks.withType(SpotBugsTask) {
+    reports.xml.enabled = false
+    reports.html.enabled = true
+}
+
 test.finalizedBy(project.tasks.jacocoTestReport)
 
-task findbugsHtml {
-    group = "Verification"
-    description = "Creates a human readable Findbugs report"
-    doLast {
-        ant.xslt(in: file("$buildDir/reports/findbugs/main.xml"),
-                style: file('codequality/findbugs_default.xsl'),
-                out: new File("$buildDir/reports/findbugs/main.html"))
-    }
-}
-findbugsMain.finalizedBy findbugsHtml
+tasks.check.dependsOn 'dependencyCheckAnalyze'
+tasks.check.dependsOn 'spotbugsMain'
 
 tasks.coveralls.dependsOn check
