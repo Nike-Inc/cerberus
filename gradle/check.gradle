@@ -22,6 +22,7 @@ apply plugin: 'org.owasp.dependencycheck'
 
 spotbugs {
     toolVersion = '3.1.12'
+    sourceSets = [sourceSets.main]
 }
 
 pmd {
