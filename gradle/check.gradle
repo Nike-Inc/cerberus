@@ -15,7 +15,6 @@
  */
 
 apply plugin: "com.github.spotbugs"
-apply plugin: 'findbugs'
 apply plugin: 'pmd'
 apply plugin: "jacoco"
 apply plugin: 'com.github.kt3k.coveralls'
@@ -27,12 +26,7 @@ spotbugs {
 
 pmd {
     sourceSets = [ project.sourceSets.main ]
-}
-
-tasks.withType(FindBugs) {
-    reports {
-        xml.withMessages = true
-    }
+    toolVersion = "5.6.1"
 }
 
 jacoco {
