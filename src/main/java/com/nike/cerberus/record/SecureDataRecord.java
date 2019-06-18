@@ -34,6 +34,7 @@ public class SecureDataRecord {
     private String createdBy;
     private OffsetDateTime lastUpdatedTs;
     private String lastUpdatedBy;
+    private OffsetDateTime lastRotatedTs;
 
     public Integer getId() {
         return id;
@@ -135,6 +136,15 @@ public class SecureDataRecord {
 
     public SecureDataRecord setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
+        return this;
+    }
+
+    public OffsetDateTime getLastRotatedTs() {
+        return lastRotatedTs;
+    }
+
+    public SecureDataRecord setLastRotatedTs(OffsetDateTime lastRotatedTs) {
+        this.lastRotatedTs = lastRotatedTs;
         return this;
     }
 }

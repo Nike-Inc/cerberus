@@ -32,7 +32,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         )
         VALUES (
           #{record.id},
@@ -45,7 +46,8 @@
           #{record.createdBy},
           #{record.createdTs},
           #{record.lastUpdatedBy},
-          #{record.lastUpdatedTs}
+          #{record.lastUpdatedTs},
+          #{record.lastRotatedTs}
         )
     </insert>
 
@@ -57,7 +59,8 @@
           TOP_LEVEL_KV_COUNT = #{record.topLevelKVCount},
           SIZE_IN_BYTES = #{record.sizeInBytes},
           LAST_UPDATED_BY = #{record.lastUpdatedBy},
-          LAST_UPDATED_TS = #{record.lastUpdatedTs}
+          LAST_UPDATED_TS = #{record.lastUpdatedTs},
+          LAST_ROTATED_TS = #{record.lastRotatedTs}
         WHERE
           ID = #{record.id}
     </update>
@@ -73,7 +76,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
@@ -93,7 +97,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
@@ -102,6 +107,37 @@
           `TYPE` = #{type}
             AND
           SDBOX_ID = #{sdbId}
+    </select>
+
+    <select id="getOldestSecureData" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
+        From
+        SECURE_DATA
+        WHERE
+        (
+          LAST_ROTATED_TS IS NULL
+            AND
+          LAST_UPDATED_TS &lt; #{datetime}
+        )
+        OR
+        (
+          LAST_ROTATED_TS IS NOT NULL
+            AND
+          LAST_ROTATED_TS &lt; #{datetime}
+        )
+        ORDER By LAST_ROTATED_TS, LAST_UPDATED_BY ASC
+        LIMIT #{limit}
     </select>
 
     <select id="readMetadataByPathAndType" resultType="SecureDataRecord">
@@ -114,7 +150,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
@@ -153,7 +190,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         FROM
           SECURE_DATA
         WHERE

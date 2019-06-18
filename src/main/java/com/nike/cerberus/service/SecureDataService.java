@@ -444,4 +444,87 @@ public class SecureDataService {
     public int getTotalNumberOfFiles() {
         return secureDataDao.countByType(SecureDataType.FILE);
     }
+
+    public void rotateDataKeys(int numberOfKeys, int pauseTimeInMillis, int rotationIntervalInDays) {
+        OffsetDateTime now = dateTimeSupplier.get();
+        OffsetDateTime expiredTs = now.minusDays(rotationIntervalInDays);
+        List<SecureDataRecord> oldestSecureData = secureDataDao.getOldestSecureData(expiredTs, numberOfKeys);
+        for (SecureDataRecord secureData: oldestSecureData) {
+            String sdbId = secureData.getSdboxId();
+            String path = secureData.getPath();
+            reencryptData(sdbId, path);
+            try {
+                Thread.sleep(pauseTimeInMillis);
+            } catch (InterruptedException e) {
+                log.error("Failed to sleep between re-encryption", e);
+            }
+        }
+        log.info("Re-encrypted {} secure data entries", oldestSecureData.size());
+        if (oldestSecureData.size() < numberOfKeys) { // There's capacity to re-encrypt versioned secret
+            int numberOfSecureDataVersionToRotate = numberOfKeys - oldestSecureData.size();
+            List<SecureDataVersionRecord> oldestSecureDataVersion = secureDataVersionDao.getOldestSecureDataVersion(expiredTs, numberOfSecureDataVersionToRotate);
+            for (SecureDataVersionRecord secureDataVersion: oldestSecureDataVersion) {
+                String versionId = secureDataVersion.getId();
+                reencryptDataVersion(versionId);
+                try {
+                    Thread.sleep(pauseTimeInMillis);
+                } catch (InterruptedException e) {
+                    log.error("Failed to sleep between re-encryption", e);
+                }
+            }
+            log.info("Re-encrypted {} secure data version entries", oldestSecureDataVersion.size());
+        }
+    }
+
+    public void reencryptData(String sdbId, String path) {
+        log.debug("Re-encrypting secure data/file: Path: {}", path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(sdbId, path);
+        if (! secureDataRecordOpt.isPresent()) {
+            throw new IllegalArgumentException("No secure data found for path: " + path);
+        }
+
+        SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
+        byte[] ciphertextBytes = secureDataRecord.getEncryptedBlob();
+        byte[] reencryptedBytes = reencrypt(secureDataRecord.getType(), ciphertextBytes, path);
+        OffsetDateTime now = dateTimeSupplier.get();
+
+        secureDataRecord.setLastRotatedTs(now);
+        secureDataRecord.setEncryptedBlob(reencryptedBytes);
+        secureDataDao.updateSecureData(secureDataRecord);
+    }
+
+    public void reencryptDataVersion(String versionId) {
+        log.debug("Reading secure data/file version: ID: {}", versionId);
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = secureDataVersionDao.readSecureDataVersionById(versionId);
+        if (! secureDataVersionRecord.isPresent()) {
+            throw new IllegalArgumentException("No secure data version found for version ID: " + versionId);
+        }
+
+        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+        String path = secureDataVersion.getPath();
+        byte[] ciphertextBytes = secureDataVersion.getEncryptedBlob();
+        byte[] reencryptedBytes = reencrypt(secureDataVersion.getType(), ciphertextBytes, path);
+        OffsetDateTime now = dateTimeSupplier.get();
+
+        secureDataVersion.setLastRotatedTs(now);
+        secureDataVersion.setEncryptedBlob(reencryptedBytes);
+        secureDataVersionDao.updateSecureDataVersion(secureDataVersion);
+    }
+
+    public byte[] reencrypt(SecureDataType secureDataType, byte[] ciphertextBytes, String path) {
+        byte[] reencryptedBytes;
+        if (SecureDataType.OBJECT == secureDataType) {
+            // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
+            // error if the ciphertext was encrypted as a String, but is not decrypted as a String.
+            String ciphertext = new String(ciphertextBytes, StandardCharsets.UTF_8);
+            String reencryptedCiphertext = encryptionService.reencrypt(ciphertext, path);
+            reencryptedBytes = reencryptedCiphertext.getBytes(StandardCharsets.UTF_8);
+        } else if (SecureDataType.FILE == secureDataType) {
+            reencryptedBytes = encryptionService.reencrypt(ciphertextBytes, path);
+        } else {
+            throw new IllegalStateException("Unrecognized data type found at path" + path);
+        }
+        return reencryptedBytes;
+    }
+
 }

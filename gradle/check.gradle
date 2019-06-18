@@ -42,6 +42,10 @@ jacocoTestReport {
     }
 }
 
+dependencyCheck {
+    failOnError = false
+}
+
 // To generate an HTML report instead of XML
 tasks.withType(SpotBugsTask) {
     reports.xml.enabled = false

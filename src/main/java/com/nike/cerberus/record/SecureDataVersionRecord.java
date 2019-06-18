@@ -35,6 +35,7 @@ public class SecureDataVersionRecord {
     private OffsetDateTime versionCreatedTs;
     private String actionPrincipal;
     private OffsetDateTime actionTs;
+    private OffsetDateTime lastRotatedTs;
 
     public String getId() {
         return id;
@@ -143,5 +144,14 @@ public class SecureDataVersionRecord {
         CREATE,
         UPDATE,
         DELETE
+    }
+
+    public OffsetDateTime getLastRotatedTs() {
+        return lastRotatedTs;
+    }
+
+    public SecureDataVersionRecord setLastRotatedTs(OffsetDateTime lastRotatedTs) {
+        this.lastRotatedTs = lastRotatedTs;
+        return this;
     }
 }

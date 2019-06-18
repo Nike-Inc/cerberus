@@ -66,6 +66,10 @@ public class SecureDataVersionDao {
         );
     }
 
+    public void updateSecureDataVersion(SecureDataVersionRecord secureDataVersionRecord) {
+        secureDataVersionMapper.updateSecureDataVersion(secureDataVersionRecord);
+    }
+
     public Integer getTotalNumVersionsForPath(String path) {
         return secureDataVersionMapper.getTotalNumVersionsForPath(path);
     }
@@ -88,5 +92,9 @@ public class SecureDataVersionDao {
 
     public void deleteAllVersionsThatStartWithPartialPath(String partialPath) {
         secureDataVersionMapper.deleteAllVersionsThatStartWithPartialPath(partialPath);
+    }
+
+    public List<SecureDataVersionRecord> getOldestSecureDataVersion(OffsetDateTime dateTime, int limit) {
+        return secureDataVersionMapper.getOldestSecureDataVersion(dateTime, limit);
     }
 }

@@ -20,12 +20,15 @@ package com.nike.cerberus.mapper;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
 public interface SecureDataVersionMapper {
 
     int writeSecureDataVersion(@Param("record") SecureDataVersionRecord record);
+
+    int updateSecureDataVersion(@Param("record") SecureDataVersionRecord record);
 
     Integer getTotalNumVersionsForPath(String path);
 
@@ -40,4 +43,7 @@ public interface SecureDataVersionMapper {
     Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);
 
     int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
+
+    List<SecureDataVersionRecord> getOldestSecureDataVersion(@Param("datetime") OffsetDateTime dateTime,
+                                               @Param("limit") int limit);
 }

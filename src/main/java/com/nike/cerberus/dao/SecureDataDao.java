@@ -84,6 +84,10 @@ public class SecureDataDao {
         );
     }
 
+    public void updateSecureData(SecureDataRecord secureDataRecord) {
+        secureDataMapper.updateSecureData(secureDataRecord);
+    }
+
     public Optional<SecureDataRecord> readSecureDataByPath(String sdbId, String path) {
         return Optional.ofNullable(secureDataMapper.readSecureDataByPath(sdbId, path));
     }
@@ -135,5 +139,9 @@ public class SecureDataDao {
     public int getSumTopLevelKeyValuePairs() {
         Integer val = secureDataMapper.getSumTopLevelKeyValuePairs();
         return val == null ? 0 : val;
+    }
+
+    public List<SecureDataRecord> getOldestSecureData(OffsetDateTime dateTime, int limit) {
+        return secureDataMapper.getOldestSecureData(dateTime, limit);
     }
 }

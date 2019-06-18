@@ -122,6 +122,16 @@ public class EncryptionService {
         return new String(awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
     }
 
+    public String reencrypt(String encryptedPayload, String sdbPath) {
+        String plaintext = decrypt(encryptedPayload, sdbPath);
+        return encrypt(plaintext, sdbPath);
+    }
+
+    public byte[] reencrypt(byte[] encryptedPayload, String sdbPath) {
+        byte[] plaintextBytes = decrypt(encryptedPayload, sdbPath);
+        return encrypt(plaintextBytes, sdbPath);
+    }
+
     /**
      * Decrypt the encryptedPayload.
      *
