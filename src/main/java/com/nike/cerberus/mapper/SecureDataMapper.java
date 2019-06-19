@@ -32,6 +32,8 @@ public interface SecureDataMapper {
 
     SecureDataRecord readSecureDataByPath(@Param("sdbId") String sdbId, @Param("path") String path);
 
+    SecureDataRecord readSecureDataByPathLocking(@Param("sdbId") String sdbId, @Param("path") String path);
+
     SecureDataRecord readSecureDataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
     SecureDataRecord readMetadataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);

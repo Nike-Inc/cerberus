@@ -38,6 +38,8 @@ public interface SecureDataVersionMapper {
 
     SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
 
+    SecureDataVersionRecord readSecureDataVersionByIdLocking(@Param("id") String id);
+
     String[] getVersionPathsByPartialPath(@Param("partialPath") String partialPath);
 
     Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);

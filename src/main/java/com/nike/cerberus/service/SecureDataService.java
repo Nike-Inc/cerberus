@@ -111,7 +111,8 @@ public class SecureDataService {
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
                     principal,
-                    now);
+                    now,
+                    secureData.getLastRotatedTs());
 
         } else {
             secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.OBJECT,
@@ -157,7 +158,8 @@ public class SecureDataService {
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
                     principal,
-                    now);
+                    now,
+                    secureData.getLastRotatedTs());
 
         } else {
             secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.FILE,
@@ -449,6 +451,8 @@ public class SecureDataService {
         OffsetDateTime now = dateTimeSupplier.get();
         OffsetDateTime expiredTs = now.minusDays(rotationIntervalInDays);
         List<SecureDataRecord> oldestSecureData = secureDataDao.getOldestSecureData(expiredTs, numberOfKeys);
+
+        // Prioritize latest version
         for (SecureDataRecord secureData: oldestSecureData) {
             String sdbId = secureData.getSdboxId();
             String path = secureData.getPath();
@@ -460,7 +464,7 @@ public class SecureDataService {
             }
         }
         log.info("Re-encrypted {} secure data entries", oldestSecureData.size());
-        if (oldestSecureData.size() < numberOfKeys) { // There's capacity to re-encrypt versioned secret
+        if (oldestSecureData.size() < numberOfKeys) {
             int numberOfSecureDataVersionToRotate = numberOfKeys - oldestSecureData.size();
             List<SecureDataVersionRecord> oldestSecureDataVersion = secureDataVersionDao.getOldestSecureDataVersion(expiredTs, numberOfSecureDataVersionToRotate);
             for (SecureDataVersionRecord secureDataVersion: oldestSecureDataVersion) {
@@ -476,9 +480,10 @@ public class SecureDataService {
         }
     }
 
+    @Transactional
     public void reencryptData(String sdbId, String path) {
         log.debug("Re-encrypting secure data/file: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPath(sdbId, path);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathLocking(sdbId, path);
         if (! secureDataRecordOpt.isPresent()) {
             throw new IllegalArgumentException("No secure data found for path: " + path);
         }
@@ -493,9 +498,12 @@ public class SecureDataService {
         secureDataDao.updateSecureData(secureDataRecord);
     }
 
+    @Transactional
     public void reencryptDataVersion(String versionId) {
-        log.debug("Reading secure data/file version: ID: {}", versionId);
-        Optional<SecureDataVersionRecord> secureDataVersionRecord = secureDataVersionDao.readSecureDataVersionById(versionId);
+        log.debug("Re-encrypting secure data/file version: ID: {}", versionId);
+
+        // Lock isn't required when it's the only operation that does update, but just in case.
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = secureDataVersionDao.readSecureDataVersionByIdLocking(versionId);
         if (! secureDataVersionRecord.isPresent()) {
             throw new IllegalArgumentException("No secure data version found for version ID: " + versionId);
         }

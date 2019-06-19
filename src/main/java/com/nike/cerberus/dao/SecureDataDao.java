@@ -66,7 +66,8 @@ public class SecureDataDao {
                                  String createdBy,
                                  OffsetDateTime createdTs,
                                  String lastUpdatedBy,
-                                 OffsetDateTime lastUpdatedTs) {
+                                 OffsetDateTime lastUpdatedTs,
+                                 OffsetDateTime lastRotatedTs) {
 
         secureDataMapper.updateSecureData(new SecureDataRecord()
                 .setId(path.hashCode())
@@ -80,16 +81,21 @@ public class SecureDataDao {
                 .setCreatedTs(createdTs)
                 .setLastUpdatedTs(lastUpdatedTs)
                 .setLastUpdatedBy(lastUpdatedBy)
+                .setLastRotatedTs(lastRotatedTs)
 
         );
     }
 
-    public void updateSecureData(SecureDataRecord secureDataRecord) {
-        secureDataMapper.updateSecureData(secureDataRecord);
+    public int updateSecureData(SecureDataRecord secureDataRecord) {
+        return secureDataMapper.updateSecureData(secureDataRecord);
     }
 
     public Optional<SecureDataRecord> readSecureDataByPath(String sdbId, String path) {
         return Optional.ofNullable(secureDataMapper.readSecureDataByPath(sdbId, path));
+    }
+
+    public Optional<SecureDataRecord> readSecureDataByPathLocking(String sdbId, String path) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByPathLocking(sdbId, path));
     }
 
     public Optional<SecureDataRecord> readSecureDataByPathAndType(String sdbId, String path, SecureDataType type) {

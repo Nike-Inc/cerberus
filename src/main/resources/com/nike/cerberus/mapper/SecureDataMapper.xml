@@ -83,7 +83,29 @@
         WHERE
           PATH = #{path}
             AND
+          SDBOX_ID = #{sdbId} for UPDATE
+    </select>
+
+    <select id="readSecureDataByPathLocking" resultType="SecureDataRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          CREATED_BY,
+          CREATED_TS,
+          LAST_UPDATED_BY,
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
+        From
+          SECURE_DATA
+        WHERE
+          PATH = #{path}
+        AND
           SDBOX_ID = #{sdbId}
+        FOR UPDATE
     </select>
 
     <select id="readSecureDataByPathAndType" resultType="SecureDataRecord">
@@ -123,7 +145,7 @@
           LAST_UPDATED_TS,
           LAST_ROTATED_TS
         From
-        SECURE_DATA
+          SECURE_DATA
         WHERE
         (
           LAST_ROTATED_TS IS NULL

@@ -66,8 +66,8 @@ public class SecureDataVersionDao {
         );
     }
 
-    public void updateSecureDataVersion(SecureDataVersionRecord secureDataVersionRecord) {
-        secureDataVersionMapper.updateSecureDataVersion(secureDataVersionRecord);
+    public int updateSecureDataVersion(SecureDataVersionRecord secureDataVersionRecord) {
+        return secureDataVersionMapper.updateSecureDataVersion(secureDataVersionRecord);
     }
 
     public Integer getTotalNumVersionsForPath(String path) {
@@ -80,6 +80,10 @@ public class SecureDataVersionDao {
 
     public Optional<SecureDataVersionRecord> readSecureDataVersionById(String id) {
         return Optional.ofNullable(secureDataVersionMapper.readSecureDataVersionById(id));
+    }
+
+    public Optional<SecureDataVersionRecord> readSecureDataVersionByIdLocking(String id) {
+        return Optional.ofNullable(secureDataVersionMapper.readSecureDataVersionByIdLocking(id));
     }
 
     public String[] getVersionPathsByPartialPath(String partialPath) {
