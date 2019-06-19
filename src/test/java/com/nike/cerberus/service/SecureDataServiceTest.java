@@ -112,7 +112,8 @@ public class SecureDataServiceTest {
                 SYSTEM_USER,
                 now,
                 SYSTEM_USER,
-                now);
+                now,
+                null);
     }
 
     @Test
