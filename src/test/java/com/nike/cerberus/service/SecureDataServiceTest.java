@@ -383,6 +383,7 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_reencrypt_file_calls_reencrypt_bytes() {
+        String id = "secure data id";
         String newCiphertext = "fasdfkxcvasdff as";
         byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
         String pathToFile = "app/sdb/object";
@@ -394,11 +395,11 @@ public class SecureDataServiceTest {
                 .setEncryptedBlob(ciphertextBytes)
                 .setSizeInBytes(ciphertextBytes.length);
         when(encryptionService.reencrypt(ciphertextBytes, pathToFile)).thenReturn(newCiphertextBytes);
-        when(secureDataDao.readSecureDataByPathLocking(sdbId, pathToFile)).thenReturn(Optional.of(record));
+        when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
 
-        secureDataService.reencryptData(sdbId, pathToFile);
+        secureDataService.reencryptData(id);
 
-        verify(secureDataDao).readSecureDataByPathLocking(sdbId, pathToFile);
+        verify(secureDataDao).readSecureDataByIdLocking(id);
         ArgumentCaptor<SecureDataRecord> argument = ArgumentCaptor.forClass(SecureDataRecord.class);
         verify(secureDataDao).updateSecureData(argument.capture());
         assertEquals(now, argument.getValue().getLastRotatedTs());
@@ -407,6 +408,7 @@ public class SecureDataServiceTest {
 
     @Test
     public void test_that_reencrypt_object_calls_reencrypt_string() {
+        String id = "secure data id";
         String newCiphertext = "fasdfkxcvasdff as";
         byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
         String pathToObject = "app/sdb/secret";
@@ -418,11 +420,11 @@ public class SecureDataServiceTest {
                 .setEncryptedBlob(ciphertextBytes)
                 .setSizeInBytes(ciphertextBytes.length);
         when(encryptionService.reencrypt(ciphertext, pathToObject)).thenReturn(newCiphertext);
-        when(secureDataDao.readSecureDataByPathLocking(sdbId, pathToObject)).thenReturn(Optional.of(record));
+        when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
 
-        secureDataService.reencryptData(sdbId, pathToObject);
+        secureDataService.reencryptData(id);
 
-        verify(secureDataDao).readSecureDataByPathLocking(sdbId, pathToObject);
+        verify(secureDataDao).readSecureDataByIdLocking(id);
         ArgumentCaptor<SecureDataRecord> argument = ArgumentCaptor.forClass(SecureDataRecord.class);
         verify(secureDataDao).updateSecureData(argument.capture());
         assertEquals(now, argument.getValue().getLastRotatedTs());

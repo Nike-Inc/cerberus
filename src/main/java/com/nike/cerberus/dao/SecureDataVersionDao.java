@@ -97,8 +97,4 @@ public class SecureDataVersionDao {
     public void deleteAllVersionsThatStartWithPartialPath(String partialPath) {
         secureDataVersionMapper.deleteAllVersionsThatStartWithPartialPath(partialPath);
     }
-
-    public List<SecureDataVersionRecord> getOldestSecureDataVersion(OffsetDateTime dateTime, int limit) {
-        return secureDataVersionMapper.getOldestSecureDataVersion(dateTime, limit);
-    }
 }

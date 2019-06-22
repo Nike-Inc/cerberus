@@ -151,38 +151,6 @@
         FOR UPDATE
     </select>
 
-    <select id="getOldestSecureDataVersion" resultType="SecureDataVersionRecord">
-        SELECT
-          ID,
-          SDBOX_ID,
-          PATH,
-          ACTION,
-          ENCRYPTED_BLOB,
-          `TYPE`,
-          SIZE_IN_BYTES,
-          VERSION_CREATED_BY,
-          VERSION_CREATED_TS,
-          ACTION_PRINCIPAL,
-          ACTION_TS,
-          LAST_ROTATED_TS
-        From
-          SECURE_DATA_VERSION
-        WHERE
-        (
-          LAST_ROTATED_TS IS NULL
-            AND
-          VERSION_CREATED_TS &lt; #{datetime}
-        )
-        OR
-        (
-          LAST_ROTATED_TS IS NOT NULL
-            AND
-          LAST_ROTATED_TS &lt; #{datetime}
-        )
-        ORDER By LAST_ROTATED_TS, VERSION_CREATED_TS ASC
-        LIMIT #{limit}
-    </select>
-
     <select id="getVersionPathsByPartialPath" resultType="String">
         SELECT DISTINCT PATH From SECURE_DATA_VERSION WHERE PATH LIKE '${partialPath}%';
     </select>

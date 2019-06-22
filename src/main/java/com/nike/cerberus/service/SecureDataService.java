@@ -30,7 +30,9 @@ import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.domain.SecureFile;
 import com.nike.cerberus.domain.SecureFileSummary;
 import com.nike.cerberus.domain.SecureFileSummaryResult;
+import com.nike.cerberus.domain.Source;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -448,49 +450,45 @@ public class SecureDataService {
     }
 
     public void rotateDataKeys(int numberOfKeys, int pauseTimeInMillis, int rotationIntervalInDays) {
+        int[] counter = new int[2];
         OffsetDateTime now = dateTimeSupplier.get();
         OffsetDateTime expiredTs = now.minusDays(rotationIntervalInDays);
-        List<SecureDataRecord> oldestSecureData = secureDataDao.getOldestSecureData(expiredTs, numberOfKeys);
+        List<DataKeyInfo> oldestDataKeyInfos = secureDataDao.getOldestDataKeyInfo(expiredTs, numberOfKeys);
 
         // Prioritize latest version
-        for (SecureDataRecord secureData: oldestSecureData) {
-            String sdbId = secureData.getSdboxId();
-            String path = secureData.getPath();
-            reencryptData(sdbId, path);
+        for (DataKeyInfo dataKeyInfo: oldestDataKeyInfos) {
+            Source source = dataKeyInfo.getSource();
+            if (source == Source.SECURE_DATA) {
+                String id = dataKeyInfo.getId();
+                reencryptData(id);
+                counter[0]++;
+            } else if (source == Source.SECURE_DATA_VERSION) {
+                String versionId = dataKeyInfo.getId();
+                reencryptDataVersion(versionId);
+                counter[1]++;
+            }
+
             try {
                 Thread.sleep(pauseTimeInMillis);
             } catch (InterruptedException e) {
                 log.error("Failed to sleep between re-encryption", e);
             }
         }
-        log.info("Re-encrypted {} secure data entries", oldestSecureData.size());
-        if (oldestSecureData.size() < numberOfKeys) {
-            int numberOfSecureDataVersionToRotate = numberOfKeys - oldestSecureData.size();
-            List<SecureDataVersionRecord> oldestSecureDataVersion = secureDataVersionDao.getOldestSecureDataVersion(expiredTs, numberOfSecureDataVersionToRotate);
-            for (SecureDataVersionRecord secureDataVersion: oldestSecureDataVersion) {
-                String versionId = secureDataVersion.getId();
-                reencryptDataVersion(versionId);
-                try {
-                    Thread.sleep(pauseTimeInMillis);
-                } catch (InterruptedException e) {
-                    log.error("Failed to sleep between re-encryption", e);
-                }
-            }
-            log.info("Re-encrypted {} secure data version entries", oldestSecureDataVersion.size());
-        }
+        log.info("Re-encrypted {} secure data and {} secure data version entries.", counter[0], counter[1]);
+
     }
 
     @Transactional
-    public void reencryptData(String sdbId, String path) {
-        log.debug("Re-encrypting secure data/file: Path: {}", path);
-        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByPathLocking(sdbId, path);
+    protected void reencryptData(String id) {
+        log.debug("Re-encrypting secure data/file: Path: {}", id);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByIdLocking(id);
         if (! secureDataRecordOpt.isPresent()) {
-            throw new IllegalArgumentException("No secure data found for path: " + path);
+            throw new IllegalArgumentException("No secure data found for id: " + id);
         }
 
         SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
         byte[] ciphertextBytes = secureDataRecord.getEncryptedBlob();
-        byte[] reencryptedBytes = reencrypt(secureDataRecord.getType(), ciphertextBytes, path);
+        byte[] reencryptedBytes = reencrypt(secureDataRecord.getType(), ciphertextBytes, secureDataRecord.getPath());
         OffsetDateTime now = dateTimeSupplier.get();
 
         secureDataRecord.setLastRotatedTs(now);
@@ -499,7 +497,7 @@ public class SecureDataService {
     }
 
     @Transactional
-    public void reencryptDataVersion(String versionId) {
+    protected void reencryptDataVersion(String versionId) {
         log.debug("Re-encrypting secure data/file version: ID: {}", versionId);
 
         // Lock isn't required when it's the only operation that does update, but just in case.
@@ -519,7 +517,7 @@ public class SecureDataService {
         secureDataVersionDao.updateSecureDataVersion(secureDataVersion);
     }
 
-    public byte[] reencrypt(SecureDataType secureDataType, byte[] ciphertextBytes, String path) {
+    private byte[] reencrypt(SecureDataType secureDataType, byte[] ciphertextBytes, String path) {
         byte[] reencryptedBytes;
         if (SecureDataType.OBJECT == secureDataType) {
             // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
@@ -534,5 +532,4 @@ public class SecureDataService {
         }
         return reencryptedBytes;
     }
-
 }

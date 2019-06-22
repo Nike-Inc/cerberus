@@ -86,25 +86,23 @@
           SDBOX_ID = #{sdbId} for UPDATE
     </select>
 
-    <select id="readSecureDataByPathLocking" resultType="SecureDataRecord">
+    <select id="readSecureDataByIdLocking" resultType="SecureDataRecord">
         SELECT
-          ID,
-          SDBOX_ID,
-          PATH,
-          ENCRYPTED_BLOB,
-          `TYPE`,
-          SIZE_IN_BYTES,
-          CREATED_BY,
-          CREATED_TS,
-          LAST_UPDATED_BY,
-          LAST_UPDATED_TS,
-          LAST_ROTATED_TS
+        ID,
+        SDBOX_ID,
+        PATH,
+        ENCRYPTED_BLOB,
+        `TYPE`,
+        SIZE_IN_BYTES,
+        CREATED_BY,
+        CREATED_TS,
+        LAST_UPDATED_BY,
+        LAST_UPDATED_TS,
+        LAST_ROTATED_TS
         From
-          SECURE_DATA
+        SECURE_DATA
         WHERE
-          PATH = #{path}
-        AND
-          SDBOX_ID = #{sdbId}
+        ID = #{id}
         FOR UPDATE
     </select>
 
@@ -131,34 +129,25 @@
           SDBOX_ID = #{sdbId}
     </select>
 
-    <select id="getOldestSecureData" resultType="SecureDataRecord">
+    <select id="getOldestDataKeyInfo" resultType="DataKeyInfo">
         SELECT
+          *
+        FROM
+        (SELECT
           ID,
-          SDBOX_ID,
-          PATH,
-          ENCRYPTED_BLOB,
-          `TYPE`,
-          SIZE_IN_BYTES,
-          CREATED_BY,
-          CREATED_TS,
-          LAST_UPDATED_BY,
-          LAST_UPDATED_TS,
-          LAST_ROTATED_TS
+          GREATEST(LAST_UPDATED_TS, LAST_ROTATED_TS) AS LAST_ROTATED_TS,
+          'SECURE_DATA' AS SOURCE
         From
           SECURE_DATA
-        WHERE
-        (
-          LAST_ROTATED_TS IS NULL
-            AND
-          LAST_UPDATED_TS &lt; #{datetime}
-        )
-        OR
-        (
-          LAST_ROTATED_TS IS NOT NULL
-            AND
-          LAST_ROTATED_TS &lt; #{datetime}
-        )
-        ORDER By LAST_ROTATED_TS, LAST_UPDATED_BY ASC
+        UNION ALL
+        SELECT
+          ID,
+          GREATEST(VERSION_CREATED_TS, LAST_ROTATED_TS) AS LAST_ROTATED_TS,
+          'SECURE_DATA_VERSION' AS SOURCE
+        From
+          SECURE_DATA_VERSION
+        ) AS DATA_KEY_INFO
+        ORDER by LAST_ROTATED_TS ASC
         LIMIT #{limit}
     </select>
 

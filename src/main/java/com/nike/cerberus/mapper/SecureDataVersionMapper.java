@@ -45,7 +45,4 @@ public interface SecureDataVersionMapper {
     Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);
 
     int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
-
-    List<SecureDataVersionRecord> getOldestSecureDataVersion(@Param("datetime") OffsetDateTime dateTime,
-                                               @Param("limit") int limit);
 }
