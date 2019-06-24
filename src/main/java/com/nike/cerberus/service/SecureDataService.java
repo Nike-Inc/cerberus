@@ -449,23 +449,37 @@ public class SecureDataService {
         return secureDataDao.countByType(SecureDataType.FILE);
     }
 
+    /**
+     * Rotate data keys by re-encrypting data. The oldest data keys in both secure data and secure data version that are
+     * expired (based on rotation interval) will be considered for key rotation.
+     * @param numberOfKeys Max number of data keys to be rotated
+     * @param pauseTimeInMillis Number of millisecond to pause between re-encryption operations
+     * @param rotationIntervalInDays Data keys generated older than X days will be considered for key rotation
+     */
     public void rotateDataKeys(int numberOfKeys, int pauseTimeInMillis, int rotationIntervalInDays) {
         int[] counter = new int[2];
         OffsetDateTime now = dateTimeSupplier.get();
         OffsetDateTime expiredTs = now.minusDays(rotationIntervalInDays);
         List<DataKeyInfo> oldestDataKeyInfos = secureDataDao.getOldestDataKeyInfo(expiredTs, numberOfKeys);
 
-        // Prioritize latest version
         for (DataKeyInfo dataKeyInfo: oldestDataKeyInfos) {
             Source source = dataKeyInfo.getSource();
             if (source == Source.SECURE_DATA) {
                 String id = dataKeyInfo.getId();
-                reencryptData(id);
-                counter[0]++;
+                try {
+                    reencryptData(id);
+                    counter[0]++;
+                } catch (Exception e) {
+                    log.error("Failed to re-encrypt secure data id: {}", id);
+                }
             } else if (source == Source.SECURE_DATA_VERSION) {
                 String versionId = dataKeyInfo.getId();
-                reencryptDataVersion(versionId);
-                counter[1]++;
+                try {
+                    reencryptDataVersion(versionId);
+                    counter[1]++;
+                } catch (Exception e) {
+                    log.error("Failed to re-encrypt secure data version id: {}", versionId);
+                }
             }
 
             try {
@@ -480,7 +494,7 @@ public class SecureDataService {
 
     @Transactional
     protected void reencryptData(String id) {
-        log.debug("Re-encrypting secure data/file: Path: {}", id);
+        log.debug("Re-encrypting secure data/file id: {}", id);
         Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByIdLocking(id);
         if (! secureDataRecordOpt.isPresent()) {
             throw new IllegalArgumentException("No secure data found for id: " + id);
@@ -498,12 +512,12 @@ public class SecureDataService {
 
     @Transactional
     protected void reencryptDataVersion(String versionId) {
-        log.debug("Re-encrypting secure data/file version: ID: {}", versionId);
+        log.debug("Re-encrypting secure data/file version id: {}", versionId);
 
         // Lock isn't required when it's the only operation that does update, but just in case.
         Optional<SecureDataVersionRecord> secureDataVersionRecord = secureDataVersionDao.readSecureDataVersionByIdLocking(versionId);
         if (! secureDataVersionRecord.isPresent()) {
-            throw new IllegalArgumentException("No secure data version found for version ID: " + versionId);
+            throw new IllegalArgumentException("No secure data version found for id: " + versionId);
         }
 
         SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
