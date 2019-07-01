@@ -48,13 +48,13 @@ export default class SideBar extends Component {
                        className='sidebar-search-container pt2-sm pr4-sm pb2-sm pl4-sm'
                        placeholder='Search SDB'
                        onChange={this.handleSearchBoxChange}/>
-                { sideBarContent(this.handleMouseClickAddNewBucket, this.handleSDBClicked, this.props, this.state) }
+                { sideBarContent(this.handleMouseClickAddNewBucket, this.handleSDBClicked, this.props, this.state.keyword) }
             </div>
         )
     }
 }
 
-const sideBarContent = (handleMouseClickAddNewBucket, handleSDBClicked, props, states) => {
+const sideBarContent = (handleMouseClickAddNewBucket, handleSDBClicked, props, keyword) => {
     if (props.isFetching) {
         return (
             <div className='loader'>
@@ -65,12 +65,12 @@ const sideBarContent = (handleMouseClickAddNewBucket, handleSDBClicked, props, s
 
     return (
         <div className='sidebar-categories'>
-            {categories(handleMouseClickAddNewBucket, handleSDBClicked, props.data, states)}
+            {categories(handleMouseClickAddNewBucket, handleSDBClicked, props.data, keyword)}
         </div>
     )
 }
 
-const categories = (handleMouseClickAddNewBucket, handleSDBClicked, data, states) => {
+const categories = (handleMouseClickAddNewBucket, handleSDBClicked, data, keyword) => {
     var categories = []
     for (let key in data) {
         if (data.hasOwnProperty(key)) {
@@ -87,7 +87,7 @@ const categories = (handleMouseClickAddNewBucket, handleSDBClicked, data, states
                         <div className="ncss-glyph-plus-lg icon"></div>
                         <div className="txt">Create a New SDB</div>
                     </div>
-                    {bucketComponents(category.boxes, handleSDBClicked, states)}
+                    {bucketComponents(category.boxes, handleSDBClicked, keyword)}
                 </div>
             )
         }
@@ -95,10 +95,10 @@ const categories = (handleMouseClickAddNewBucket, handleSDBClicked, data, states
     return categories
 }
 
-const bucketComponents = (boxes, handleSDBClicked, states) => {
+const bucketComponents = (boxes, handleSDBClicked, keyword) => {
     let bucketComponents = []
     for (let box of boxes) {
-        if (box.name.toLowerCase().indexOf(states.keyword) !== -1) {
+        if (box.name.toLowerCase().indexOf(keyword) !== -1) {
             bucketComponents.push(
                 <div className='border-bottom-light-grey sidebar-button un-selectable'
                      key={box.id}
