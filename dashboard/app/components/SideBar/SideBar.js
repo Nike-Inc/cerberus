@@ -46,7 +46,7 @@ export default class SideBar extends Component {
                 <div className="sidebar-header ncss-brand u-uppercase un-selectable">Safe Deposit Boxes</div>
                 <input type='search'
                        className='sidebar-search-container pt2-sm pr4-sm pb2-sm pl4-sm'
-                       placeholder='Search SDB'
+                       placeholder='Filter SDB'
                        onChange={this.handleSearchBoxChange}/>
                 { sideBarContent(this.handleMouseClickAddNewBucket, this.handleSDBClicked, this.props, this.state.keyword) }
             </div>
