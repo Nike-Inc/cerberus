@@ -144,9 +144,10 @@
           ID,
           GREATEST(VERSION_CREATED_TS, LAST_ROTATED_TS) AS LAST_ROTATED_TS,
           'SECURE_DATA_VERSION' AS SOURCE
-        From
+        FROM
           SECURE_DATA_VERSION
         ) AS DATA_KEY_INFO
+        WHERE LAST_ROTATED_TS &lt; #{datetime}
         ORDER by LAST_ROTATED_TS ASC
         LIMIT #{limit}
     </select>
