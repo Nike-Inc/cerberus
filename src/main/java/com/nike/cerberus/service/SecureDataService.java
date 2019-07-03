@@ -30,7 +30,9 @@ import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.domain.SecureFile;
 import com.nike.cerberus.domain.SecureFileSummary;
 import com.nike.cerberus.domain.SecureFileSummaryResult;
+import com.nike.cerberus.domain.Source;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -111,7 +113,8 @@ public class SecureDataService {
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
                     principal,
-                    now);
+                    now,
+                    secureData.getLastRotatedTs());
 
         } else {
             secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.OBJECT,
@@ -157,7 +160,8 @@ public class SecureDataService {
                     secureData.getCreatedBy(),
                     secureData.getCreatedTs(),
                     principal,
-                    now);
+                    now,
+                    secureData.getLastRotatedTs());
 
         } else {
             secureDataDao.writeSecureData(sdbId, path, ciphertextBytes, topLevelKVPairCount, SecureDataType.FILE,
@@ -443,5 +447,103 @@ public class SecureDataService {
 
     public int getTotalNumberOfFiles() {
         return secureDataDao.countByType(SecureDataType.FILE);
+    }
+
+    /**
+     * Rotate data keys by re-encrypting data. The oldest data keys in both secure data and secure data version that are
+     * expired (based on rotation interval) will be considered for key rotation.
+     * @param numberOfKeys Max number of data keys to be rotated
+     * @param pauseTimeInMillis Number of millisecond to pause between re-encryption operations
+     * @param rotationIntervalInDays Data keys generated older than X days will be considered for key rotation
+     */
+    public void rotateDataKeys(int numberOfKeys, int pauseTimeInMillis, int rotationIntervalInDays) {
+        int[] counter = new int[2];
+        OffsetDateTime now = dateTimeSupplier.get();
+        OffsetDateTime expiredTs = now.minusDays(rotationIntervalInDays);
+        List<DataKeyInfo> oldestDataKeyInfos = secureDataDao.getOldestDataKeyInfo(expiredTs, numberOfKeys);
+
+        for (DataKeyInfo dataKeyInfo: oldestDataKeyInfos) {
+            Source source = dataKeyInfo.getSource();
+            if (source == Source.SECURE_DATA) {
+                String id = dataKeyInfo.getId();
+                try {
+                    reencryptData(id);
+                    counter[0]++;
+                } catch (Exception e) {
+                    log.error("Failed to re-encrypt secure data id: {}", id);
+                }
+            } else if (source == Source.SECURE_DATA_VERSION) {
+                String versionId = dataKeyInfo.getId();
+                try {
+                    reencryptDataVersion(versionId);
+                    counter[1]++;
+                } catch (Exception e) {
+                    log.error("Failed to re-encrypt secure data version id: {}", versionId);
+                }
+            }
+
+            try {
+                Thread.sleep(pauseTimeInMillis);
+            } catch (InterruptedException e) {
+                log.error("Failed to sleep between re-encryption", e);
+            }
+        }
+        log.info("Re-encrypted {} secure data and {} secure data version entries.", counter[0], counter[1]);
+
+    }
+
+    @Transactional
+    protected void reencryptData(String id) {
+        log.debug("Re-encrypting secure data/file id: {}", id);
+        Optional<SecureDataRecord> secureDataRecordOpt = secureDataDao.readSecureDataByIdLocking(id);
+        if (! secureDataRecordOpt.isPresent()) {
+            throw new IllegalArgumentException("No secure data found for id: " + id);
+        }
+
+        SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
+        byte[] ciphertextBytes = secureDataRecord.getEncryptedBlob();
+        byte[] reencryptedBytes = reencrypt(secureDataRecord.getType(), ciphertextBytes, secureDataRecord.getPath());
+        OffsetDateTime now = dateTimeSupplier.get();
+
+        secureDataRecord.setLastRotatedTs(now);
+        secureDataRecord.setEncryptedBlob(reencryptedBytes);
+        secureDataDao.updateSecureData(secureDataRecord);
+    }
+
+    @Transactional
+    protected void reencryptDataVersion(String versionId) {
+        log.debug("Re-encrypting secure data/file version id: {}", versionId);
+
+        // Lock isn't required when it's the only operation that does update, but just in case.
+        Optional<SecureDataVersionRecord> secureDataVersionRecord = secureDataVersionDao.readSecureDataVersionByIdLocking(versionId);
+        if (! secureDataVersionRecord.isPresent()) {
+            throw new IllegalArgumentException("No secure data version found for id: " + versionId);
+        }
+
+        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+        String path = secureDataVersion.getPath();
+        byte[] ciphertextBytes = secureDataVersion.getEncryptedBlob();
+        byte[] reencryptedBytes = reencrypt(secureDataVersion.getType(), ciphertextBytes, path);
+        OffsetDateTime now = dateTimeSupplier.get();
+
+        secureDataVersion.setLastRotatedTs(now);
+        secureDataVersion.setEncryptedBlob(reencryptedBytes);
+        secureDataVersionDao.updateSecureDataVersion(secureDataVersion);
+    }
+
+    private byte[] reencrypt(SecureDataType secureDataType, byte[] ciphertextBytes, String path) {
+        byte[] reencryptedBytes;
+        if (SecureDataType.OBJECT == secureDataType) {
+            // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
+            // error if the ciphertext was encrypted as a String, but is not decrypted as a String.
+            String ciphertext = new String(ciphertextBytes, StandardCharsets.UTF_8);
+            String reencryptedCiphertext = encryptionService.reencrypt(ciphertext, path);
+            reencryptedBytes = reencryptedCiphertext.getBytes(StandardCharsets.UTF_8);
+        } else if (SecureDataType.FILE == secureDataType) {
+            reencryptedBytes = encryptionService.reencrypt(ciphertextBytes, path);
+        } else {
+            throw new IllegalStateException("Unrecognized data type found at path" + path);
+        }
+        return reencryptedBytes;
     }
 }

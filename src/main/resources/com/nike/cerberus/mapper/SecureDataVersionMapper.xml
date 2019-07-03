@@ -50,6 +50,34 @@
         )
     </insert>
 
+    <update id="updateSecureDataVersion" parameterType="SecureDataVersionRecord">
+        UPDATE
+          SECURE_DATA_VERSION
+        SET
+          ENCRYPTED_BLOB = #{record.encryptedBlob},
+          LAST_ROTATED_TS = #{record.lastRotatedTs}
+        WHERE
+          ID = #{record.id}
+    </update>
+
+    <select id="readSecureDataByPath" resultType="SecureDataRecord">
+        SELECT
+        ID,
+        SDBOX_ID,
+        PATH,
+        ENCRYPTED_BLOB,
+        `TYPE`,
+        SIZE_IN_BYTES,
+        CREATED_BY,
+        CREATED_TS,
+        LAST_UPDATED_BY,
+        LAST_UPDATED_TS
+        From
+        SECURE_DATA
+        WHERE
+        PATH = #{path}
+    </select>
+
     <select id="getTotalNumVersionsForPath" resultType="java.lang.Integer">
         SELECT
           COUNT(ID)
@@ -71,7 +99,8 @@
           VERSION_CREATED_BY,
           VERSION_CREATED_TS,
           ACTION_PRINCIPAL,
-          ACTION_TS
+          ACTION_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA_VERSION
         WHERE
@@ -93,11 +122,33 @@
           VERSION_CREATED_BY,
           VERSION_CREATED_TS,
           ACTION_PRINCIPAL,
-          ACTION_TS
+          ACTION_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA_VERSION
         WHERE
           ID = #{id}
+    </select>
+
+    <select id="readSecureDataVersionByIdLocking" resultType="SecureDataVersionRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+        ACTION,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS,
+          LAST_ROTATED_TS
+        From
+          SECURE_DATA_VERSION
+        WHERE
+          ID = #{id}
+        FOR UPDATE
     </select>
 
     <select id="getVersionPathsByPartialPath" resultType="String">

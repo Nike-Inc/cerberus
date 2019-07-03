@@ -18,6 +18,7 @@ package com.nike.cerberus.dao;
 
 import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.mapper.SecureDataMapper;
+import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 
 import javax.inject.Inject;
@@ -54,6 +55,7 @@ public class SecureDataDao {
                 .setCreatedTs(createdTs)
                 .setLastUpdatedBy(lastUpdatedBy)
                 .setLastUpdatedTs(lastUpdatedTs)
+                .setLastRotatedTs(lastUpdatedTs) // This is intentional
         );
     }
 
@@ -66,7 +68,8 @@ public class SecureDataDao {
                                  String createdBy,
                                  OffsetDateTime createdTs,
                                  String lastUpdatedBy,
-                                 OffsetDateTime lastUpdatedTs) {
+                                 OffsetDateTime lastUpdatedTs,
+                                 OffsetDateTime lastRotatedTs) {
 
         secureDataMapper.updateSecureData(new SecureDataRecord()
                 .setId(path.hashCode())
@@ -80,12 +83,21 @@ public class SecureDataDao {
                 .setCreatedTs(createdTs)
                 .setLastUpdatedTs(lastUpdatedTs)
                 .setLastUpdatedBy(lastUpdatedBy)
+                .setLastRotatedTs(lastRotatedTs)
 
         );
     }
 
+    public int updateSecureData(SecureDataRecord secureDataRecord) {
+        return secureDataMapper.updateSecureData(secureDataRecord);
+    }
+
     public Optional<SecureDataRecord> readSecureDataByPath(String sdbId, String path) {
         return Optional.ofNullable(secureDataMapper.readSecureDataByPath(sdbId, path));
+    }
+
+    public Optional<SecureDataRecord> readSecureDataByIdLocking(String id) {
+        return Optional.ofNullable(secureDataMapper.readSecureDataByIdLocking(id));
     }
 
     public Optional<SecureDataRecord> readSecureDataByPathAndType(String sdbId, String path, SecureDataType type) {
@@ -135,5 +147,9 @@ public class SecureDataDao {
     public int getSumTopLevelKeyValuePairs() {
         Integer val = secureDataMapper.getSumTopLevelKeyValuePairs();
         return val == null ? 0 : val;
+    }
+
+    public List<DataKeyInfo> getOldestDataKeyInfo(OffsetDateTime dateTime, int limit) {
+        return secureDataMapper.getOldestDataKeyInfo(dateTime, limit);
     }
 }

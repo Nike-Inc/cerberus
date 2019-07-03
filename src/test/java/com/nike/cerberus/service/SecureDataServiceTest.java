@@ -32,6 +32,7 @@ import org.assertj.core.util.Maps;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,7 @@ import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -110,7 +112,8 @@ public class SecureDataServiceTest {
                 SYSTEM_USER,
                 now,
                 SYSTEM_USER,
-                now);
+                now,
+                null);
     }
 
     @Test
@@ -376,6 +379,106 @@ public class SecureDataServiceTest {
         secureDataService.readFile(sdbId, pathToFile);
 
         verify(secureDataDao).readSecureDataByPathAndType(sdbId, pathToFile, SecureDataType.FILE);
+    }
+
+    @Test
+    public void test_that_reencrypt_file_calls_reencrypt_bytes() {
+        String id = "secure data id";
+        String newCiphertext = "fasdfkxcvasdff as";
+        byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
+        String pathToFile = "app/sdb/object";
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(SecureDataType.FILE)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.reencrypt(ciphertextBytes, pathToFile)).thenReturn(newCiphertextBytes);
+        when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
+
+        secureDataService.reencryptData(id);
+
+        verify(secureDataDao).readSecureDataByIdLocking(id);
+        ArgumentCaptor<SecureDataRecord> argument = ArgumentCaptor.forClass(SecureDataRecord.class);
+        verify(secureDataDao).updateSecureData(argument.capture());
+        assertEquals(now, argument.getValue().getLastRotatedTs());
+        assertArrayEquals(newCiphertextBytes, argument.getValue().getEncryptedBlob());
+    }
+
+    @Test
+    public void test_that_reencrypt_object_calls_reencrypt_string() {
+        String id = "secure data id";
+        String newCiphertext = "fasdfkxcvasdff as";
+        byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
+        String pathToObject = "app/sdb/secret";
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+        SecureDataRecord record = new SecureDataRecord()
+                .setType(SecureDataType.OBJECT)
+                .setPath(pathToObject)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.reencrypt(ciphertext, pathToObject)).thenReturn(newCiphertext);
+        when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
+
+        secureDataService.reencryptData(id);
+
+        verify(secureDataDao).readSecureDataByIdLocking(id);
+        ArgumentCaptor<SecureDataRecord> argument = ArgumentCaptor.forClass(SecureDataRecord.class);
+        verify(secureDataDao).updateSecureData(argument.capture());
+        assertEquals(now, argument.getValue().getLastRotatedTs());
+        assertArrayEquals(newCiphertextBytes, argument.getValue().getEncryptedBlob());
+    }
+
+    @Test
+    public void test_that_reencrypt_version_file_calls_reencrypt_bytes() {
+        String newCiphertext = "fasdfkxcvasdff as";
+        byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
+        String pathToFile = "app/sdb/object";
+        String versionId = "version";
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+        SecureDataVersionRecord record = new SecureDataVersionRecord()
+                .setType(SecureDataType.FILE)
+                .setPath(pathToFile)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.reencrypt(ciphertextBytes, pathToFile)).thenReturn(newCiphertextBytes);
+        when(secureDataVersionDao.readSecureDataVersionByIdLocking(versionId)).thenReturn(Optional.of(record));
+
+        secureDataService.reencryptDataVersion(versionId);
+
+        verify(secureDataVersionDao).readSecureDataVersionByIdLocking(versionId);
+        ArgumentCaptor<SecureDataVersionRecord> argument = ArgumentCaptor.forClass(SecureDataVersionRecord.class);
+        verify(secureDataVersionDao).updateSecureDataVersion(argument.capture());
+        assertEquals(now, argument.getValue().getLastRotatedTs());
+        assertArrayEquals(newCiphertextBytes, argument.getValue().getEncryptedBlob());
+    }
+
+    @Test
+    public void test_that_reencrypt_version_object_calls_reencrypt_string() {
+        String newCiphertext = "fasdfkxcvasdff as";
+        byte[] newCiphertextBytes = newCiphertext.getBytes(StandardCharsets.UTF_8);
+        String pathToObject = "app/sdb/secret";
+        String versionId = "version";
+        OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+        when(dateTimeSupplier.get()).thenReturn(now);
+        SecureDataVersionRecord record = new SecureDataVersionRecord()
+                .setType(SecureDataType.OBJECT)
+                .setPath(pathToObject)
+                .setEncryptedBlob(ciphertextBytes)
+                .setSizeInBytes(ciphertextBytes.length);
+        when(encryptionService.reencrypt(ciphertext, pathToObject)).thenReturn(newCiphertext);
+        when(secureDataVersionDao.readSecureDataVersionByIdLocking(versionId)).thenReturn(Optional.of(record));
+
+        secureDataService.reencryptDataVersion(versionId);
+
+        verify(secureDataVersionDao).readSecureDataVersionByIdLocking(versionId);
+        ArgumentCaptor<SecureDataVersionRecord> argument = ArgumentCaptor.forClass(SecureDataVersionRecord.class);
+        verify(secureDataVersionDao).updateSecureDataVersion(argument.capture());
+        assertEquals(now, argument.getValue().getLastRotatedTs());
+        assertArrayEquals(newCiphertextBytes, argument.getValue().getEncryptedBlob());
     }
 
     @Test

@@ -17,9 +17,11 @@
 package com.nike.cerberus.mapper;
 
 import com.nike.cerberus.domain.SecureDataType;
+import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +32,8 @@ public interface SecureDataMapper {
     int updateSecureData(@Param("record") SecureDataRecord record);
 
     SecureDataRecord readSecureDataByPath(@Param("sdbId") String sdbId, @Param("path") String path);
+
+    SecureDataRecord readSecureDataByIdLocking(@Param("id") String id);
 
     SecureDataRecord readSecureDataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
@@ -60,4 +64,7 @@ public interface SecureDataMapper {
     int deleteSecret(@Param("sdbId") String sdbId, @Param("path") String path);
 
     Integer getSumTopLevelKeyValuePairs();
+
+    List<DataKeyInfo> getOldestDataKeyInfo(@Param("datetime") OffsetDateTime dateTime,
+                                           @Param("limit") int limit);
 }

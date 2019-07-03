@@ -32,7 +32,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         )
         VALUES (
           #{record.id},
@@ -45,7 +46,8 @@
           #{record.createdBy},
           #{record.createdTs},
           #{record.lastUpdatedBy},
-          #{record.lastUpdatedTs}
+          #{record.lastUpdatedTs},
+          #{record.lastRotatedTs}
         )
     </insert>
 
@@ -57,7 +59,8 @@
           TOP_LEVEL_KV_COUNT = #{record.topLevelKVCount},
           SIZE_IN_BYTES = #{record.sizeInBytes},
           LAST_UPDATED_BY = #{record.lastUpdatedBy},
-          LAST_UPDATED_TS = #{record.lastUpdatedTs}
+          LAST_UPDATED_TS = #{record.lastUpdatedTs},
+          LAST_ROTATED_TS = #{record.lastRotatedTs}
         WHERE
           ID = #{record.id}
     </update>
@@ -73,13 +76,34 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
           PATH = #{path}
             AND
-          SDBOX_ID = #{sdbId}
+          SDBOX_ID = #{sdbId} for UPDATE
+    </select>
+
+    <select id="readSecureDataByIdLocking" resultType="SecureDataRecord">
+        SELECT
+        ID,
+        SDBOX_ID,
+        PATH,
+        ENCRYPTED_BLOB,
+        `TYPE`,
+        SIZE_IN_BYTES,
+        CREATED_BY,
+        CREATED_TS,
+        LAST_UPDATED_BY,
+        LAST_UPDATED_TS,
+        LAST_ROTATED_TS
+        From
+        SECURE_DATA
+        WHERE
+        ID = #{id}
+        FOR UPDATE
     </select>
 
     <select id="readSecureDataByPathAndType" resultType="SecureDataRecord">
@@ -93,7 +117,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
@@ -102,6 +127,29 @@
           `TYPE` = #{type}
             AND
           SDBOX_ID = #{sdbId}
+    </select>
+
+    <select id="getOldestDataKeyInfo" resultType="DataKeyInfo">
+        SELECT
+          *
+        FROM
+        (SELECT
+          ID,
+          GREATEST(LAST_UPDATED_TS, LAST_ROTATED_TS) AS LAST_ROTATED_TS,
+          'SECURE_DATA' AS SOURCE
+        From
+          SECURE_DATA
+        UNION ALL
+        SELECT
+          ID,
+          GREATEST(VERSION_CREATED_TS, LAST_ROTATED_TS) AS LAST_ROTATED_TS,
+          'SECURE_DATA_VERSION' AS SOURCE
+        FROM
+          SECURE_DATA_VERSION
+        ) AS DATA_KEY_INFO
+        WHERE LAST_ROTATED_TS &lt; #{datetime}
+        ORDER by LAST_ROTATED_TS ASC
+        LIMIT #{limit}
     </select>
 
     <select id="readMetadataByPathAndType" resultType="SecureDataRecord">
@@ -114,7 +162,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         From
           SECURE_DATA
         WHERE
@@ -153,7 +202,8 @@
           CREATED_BY,
           CREATED_TS,
           LAST_UPDATED_BY,
-          LAST_UPDATED_TS
+          LAST_UPDATED_TS,
+          LAST_ROTATED_TS
         FROM
           SECURE_DATA
         WHERE
