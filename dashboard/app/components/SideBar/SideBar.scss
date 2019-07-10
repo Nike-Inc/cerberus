@@ -7,6 +7,9 @@
   display: flex;
   flex-flow: column;
 
+  max-height: 800px;
+  overflow-y: auto;
+
   .sidebar-header {
     background-color: $snkrs_dark_grey;
     color: $snkrs_off_white;
