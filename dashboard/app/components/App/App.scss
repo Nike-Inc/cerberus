@@ -32,6 +32,9 @@ html, body {
   border-left-style: solid;
   border-left-width: 1px;
 
+  max-height: 800px;
+  overflow-y: auto;
+
   #workspace-wrapper {
     display: flex;
 
