@@ -77,6 +77,10 @@ dependencies {
             "com.okta.sdk:okta-sdk-httpclient:1.2.0",
             "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0",
             "org.reflections:reflections:0.9.11"
+            
+            'io.jsonwebtoken:jjwt-api:0.10.5',
+            'io.jsonwebtoken:jjwt-impl:0.10.5',
+            'io.jsonwebtoken:jjwt-jackson:0.10.5'
 
     )
 
