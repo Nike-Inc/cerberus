@@ -84,7 +84,7 @@ dependencies {
             "junit:junit:4.12",
             "org.assertj:assertj-core:3.0.0",
             "org.mockito:mockito-all:1.10.8",
-            "com.nike.backstopper:backstopper-reusable-tests:0.11.1",
+            "com.nike.backstopper:backstopper-reusable-tests:0.11.5",
             'com.openpojo:openpojo:0.8.4'
     )
 }
