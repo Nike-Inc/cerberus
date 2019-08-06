@@ -20,6 +20,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -45,6 +46,7 @@ import java.util.concurrent.Executor;
  * deposit box by its unique id.
  */
 @Deprecated
+@RiposteEndpoint
 public class GetSafeDepositBoxV1 extends AuditableEventEndpoint<Void, SafeDepositBoxV1> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

@@ -20,6 +20,7 @@ import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.domain.IamRoleCredentials;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
@@ -45,6 +46,7 @@ import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
 @Deprecated
+@RiposteEndpoint
 public class AuthenticateIamRole extends StandardEndpoint<IamRoleCredentials, IamRoleAuthResponse> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

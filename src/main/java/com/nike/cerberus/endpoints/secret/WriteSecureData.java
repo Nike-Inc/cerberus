@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
@@ -40,6 +41,7 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@RiposteEndpoint
 public class WriteSecureData extends SecureDataEndpointV1<Object, Object> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

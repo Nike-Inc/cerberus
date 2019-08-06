@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.admin;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@RiposteEndpoint
 public class TriggerScheduledJob extends AdminStandardEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

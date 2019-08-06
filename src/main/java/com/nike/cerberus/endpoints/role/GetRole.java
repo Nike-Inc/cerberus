@@ -17,6 +17,7 @@
 package com.nike.cerberus.endpoints.role;
 
 import com.nike.cerberus.domain.Role;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.RoleService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -36,6 +37,7 @@ import java.util.concurrent.Executor;
 /**
  * Returns the role for the specified ID.
  */
+@RiposteEndpoint
 public class GetRole extends StandardEndpoint<Void, Role> {
 
     public static final String PATH_PARAM_ID = "id";

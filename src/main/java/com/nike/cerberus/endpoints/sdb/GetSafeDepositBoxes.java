@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -45,6 +46,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
+@RiposteEndpoint
 public class GetSafeDepositBoxes extends AuditableEventEndpoint<Void, List<SafeDepositBoxSummary>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

@@ -23,6 +23,7 @@ import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.AuditableEvent;
 import com.nike.cerberus.service.PaginationService;
@@ -44,6 +45,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
+@RiposteEndpoint
 public class GetSecureDataVersions extends AuditableEventEndpoint<Void, SecureDataVersionsResult> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

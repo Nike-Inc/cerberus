@@ -25,6 +25,7 @@ import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataResponse;
 import com.nike.cerberus.domain.SecureDataVersion;
 import com.nike.cerberus.domain.VaultStyleErrorResponse;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.PermissionsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import com.nike.cerberus.service.SecureDataService;
@@ -49,6 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@RiposteEndpoint
 public class ReadSecureData extends SecureDataEndpointV1<Void, Object> {
 
 

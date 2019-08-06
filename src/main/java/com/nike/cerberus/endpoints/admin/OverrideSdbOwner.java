@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SafeDepositBoxService;
@@ -41,6 +42,7 @@ import java.util.concurrent.Executor;
 /**
  * Allows an Admin to override the owner of an SDB
  */
+@RiposteEndpoint
 public class OverrideSdbOwner extends AdminStandardEndpoint<SDBMetadata, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

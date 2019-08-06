@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.service.SecureDataService;
@@ -48,6 +49,7 @@ import static com.nike.cerberus.endpoints.file.WriteSecureFile.BASE_PATH;
 /**
  * Deletes the given secure file.
  */
+@RiposteEndpoint
 public class DeleteSecureFile extends AuditableEventEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

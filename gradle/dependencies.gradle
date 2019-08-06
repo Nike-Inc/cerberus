@@ -75,7 +75,8 @@ dependencies {
             "com.okta:okta-sdk:0.0.4",
             "com.okta.authn.sdk:okta-authn-sdk-api:0.1.0",
             "com.okta.sdk:okta-sdk-httpclient:1.2.0",
-            "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0"
+            "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0",
+            "org.reflections:reflections:0.9.11"
 
     )
 

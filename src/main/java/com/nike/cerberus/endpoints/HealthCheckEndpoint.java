@@ -32,6 +32,7 @@ import java.util.concurrent.Executor;
  *
  * @author Nic Munroe
  */
+@RiposteEndpoint
 public class HealthCheckEndpoint extends StandardEndpoint<Void, String> {
     @Override
     public CompletableFuture<ResponseInfo<String>> execute(RequestInfo<Void> request, Executor longRunningTaskExecutor, ChannelHandlerContext ctx) {

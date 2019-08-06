@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.UserCredentials;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
@@ -31,8 +32,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
@@ -45,6 +44,7 @@ import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
 /**
  * Authentication endpoint for user credentials.  If valid, a client token will be returned.
  */
+@RiposteEndpoint
 public class AuthenticateUser extends StandardEndpoint<Void, AuthResponse> {
 
     private final AuthenticationService authenticationService;

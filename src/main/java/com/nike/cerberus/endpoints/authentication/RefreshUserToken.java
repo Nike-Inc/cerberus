@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.authentication;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -39,6 +40,7 @@ import java.util.concurrent.Executor;
 /**
  * Authentication endpoint that allows refreshing the user token to pickup any permission changes.
  */
+@RiposteEndpoint
 public class RefreshUserToken extends AuditableEventEndpoint<Void, AuthResponse> {
 
     private final AuthenticationService authenticationService;

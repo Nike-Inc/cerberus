@@ -22,6 +22,7 @@ import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureFileSummaryResult;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.PaginationService;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -40,6 +41,7 @@ import java.util.concurrent.Executor;
 /**
  * Lists metadata for all files under the given path.
  */
+@RiposteEndpoint
 public class GetSecureFiles extends AuditableEventEndpoint<Void, SecureFileSummaryResult> {
 
     public static final String BASE_PATH = "/v1/secure-files";
