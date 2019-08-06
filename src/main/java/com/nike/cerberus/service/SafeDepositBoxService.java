@@ -194,16 +194,6 @@ public class SafeDepositBoxService {
      */
     public SafeDepositBoxV2 getSDBAndValidatePrincipalAssociationV2(CerberusPrincipal principal, String sdbId) {
 
-        Optional<SafeDepositBoxRecord> safeDepositBoxRecordOptional = safeDepositBoxDao.getSafeDepositBox(sdbId);
-
-        if (! safeDepositBoxRecordOptional.isPresent()) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                    .build();
-        }
-
-        SafeDepositBoxRecord safeDepositBoxRecord = safeDepositBoxRecordOptional.get();
-
         boolean doesPrincipalHaveReadPerms = sdbPermissionService
                 .doesPrincipalHaveReadPermission(principal, sdbId);
 
@@ -213,7 +203,7 @@ public class SafeDepositBoxService {
                     .build();
         }
 
-        return getSDBFromRecordV2(safeDepositBoxRecord);
+        return getSafeDepositBoxDangerouslyWithoutPermissionValidation(sdbId);
     }
 
     protected SafeDepositBoxV2 getSDBFromRecordV2(SafeDepositBoxRecord safeDepositBoxRecord) {
@@ -793,5 +783,16 @@ public class SafeDepositBoxService {
                 .collect(Collectors.toSet());
 
         return versionPaths;
+    }
+
+    public SafeDepositBoxV2 getSafeDepositBoxDangerouslyWithoutPermissionValidation(String sdbId) {
+        Optional<SafeDepositBoxRecord> safeDepositBoxRecordOptional = safeDepositBoxDao.getSafeDepositBox(sdbId);
+
+        return getSDBFromRecordV2(safeDepositBoxRecordOptional
+            .orElseThrow(() ->
+                ApiException.newBuilder()
+                    .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                    .build())
+        );
     }
 }
