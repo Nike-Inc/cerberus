@@ -23,6 +23,7 @@ import com.nike.cerberus.aws.sts.AwsStsClient;
 import com.nike.cerberus.aws.sts.AwsStsHttpHeader;
 import com.nike.cerberus.aws.sts.GetCallerIdentityResponse;
 import com.nike.cerberus.domain.AuthTokenResponse;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
@@ -47,6 +48,7 @@ import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
+@RiposteEndpoint
 public class AuthenticateStsIdentity extends StandardEndpoint<Void, AuthTokenResponse> {
 
     private final AuthenticationService authenticationService;

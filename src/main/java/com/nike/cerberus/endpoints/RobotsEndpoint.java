@@ -28,6 +28,7 @@ import java.util.concurrent.Executor;
 /**
  * robots.txt that says never index this site
  */
+@RiposteEndpoint
 public class RobotsEndpoint extends StandardEndpoint<Void, String> {
 
     private static final String ROBOTS_DISALLOW = "User-agent: *\nDisallow: /";

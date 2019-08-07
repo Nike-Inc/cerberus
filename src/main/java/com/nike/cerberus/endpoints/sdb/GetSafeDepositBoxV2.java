@@ -21,6 +21,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -45,6 +46,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and attempts to get details about the safe
  * deposit box by its unique id.
  */
+@RiposteEndpoint
 public class GetSafeDepositBoxV2 extends AuditableEventEndpoint<Void, SafeDepositBoxV2> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

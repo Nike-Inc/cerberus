@@ -35,6 +35,7 @@ import static com.nike.cerberus.endpoints.GetDashboard.DASHBOARD_ENDPOINT;
 /**
  * Redirect endpoint to the dashboard.
  */
+@RiposteEndpoint
 public class GetDashboardRedirect extends StandardEndpoint<Void, Void> {
 
     @Override

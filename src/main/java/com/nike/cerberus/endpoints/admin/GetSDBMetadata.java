@@ -19,6 +19,7 @@ package com.nike.cerberus.endpoints.admin;
 import com.google.inject.Inject;
 import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.cerberus.service.PaginationService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -36,6 +37,7 @@ import java.util.concurrent.Executor;
 /**
  * Returns meta data for all SDBs in CMS
  */
+@RiposteEndpoint
 public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResult> {
 
     private final MetadataService metadataService;

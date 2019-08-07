@@ -20,6 +20,7 @@ import com.nike.backstopper.apierror.sample.SampleCoreApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.Category;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -39,6 +40,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
 /**
  * Creates a category and returns a location header.
  */
+@RiposteEndpoint
 public class CreateCategory extends AdminStandardEndpoint<Category, Void> {
 
     public static final String CATEGORY_PATH = "/v1/category";

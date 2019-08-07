@@ -17,6 +17,7 @@
 package com.nike.cerberus.endpoints.category;
 
 import com.nike.cerberus.domain.Category;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -34,6 +35,7 @@ import java.util.concurrent.Executor;
 /**
  * Returns all known categories.
  */
+@RiposteEndpoint
 public class GetAllCategories extends StandardEndpoint<Void, List<Category>> {
 
     private final CategoryService categoryService;

@@ -2,6 +2,7 @@ package com.nike.cerberus.endpoints.admin;
 
 import com.nike.cerberus.domain.AuthKmsKeyMetadataResult;
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.KmsService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -19,6 +20,7 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for retrieving kms key metadata for all created keys in the db
  */
+@RiposteEndpoint
 public class GetAuthKmsKeyMetadata extends AdminStandardEndpoint<Void, AuthKmsKeyMetadataResult> {
 
     private final KmsService kmsService;

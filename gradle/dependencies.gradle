@@ -75,7 +75,8 @@ dependencies {
             "com.okta:okta-sdk:0.0.4",
             "com.okta.authn.sdk:okta-authn-sdk-api:0.1.0",
             "com.okta.sdk:okta-sdk-httpclient:1.2.0",
-            "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0"
+            "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0",
+            "org.reflections:reflections:0.9.11"
 
     )
 
@@ -83,7 +84,7 @@ dependencies {
             "junit:junit:4.12",
             "org.assertj:assertj-core:3.0.0",
             "org.mockito:mockito-all:1.10.8",
-            "com.nike.backstopper:backstopper-reusable-tests:0.11.1",
+            "com.nike.backstopper:backstopper-reusable-tests:0.11.5",
             'com.openpojo:openpojo:0.8.4'
     )
 }

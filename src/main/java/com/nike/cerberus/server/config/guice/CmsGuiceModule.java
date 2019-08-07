@@ -18,45 +18,14 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provides;
+import com.google.inject.*;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
-import com.nike.cerberus.endpoints.GetDashboard;
-import com.nike.cerberus.endpoints.GetDashboardRedirect;
-import com.nike.cerberus.endpoints.HealthCheckEndpoint;
-import com.nike.cerberus.endpoints.RobotsEndpoint;
-import com.nike.cerberus.endpoints.admin.*;
+import com.nike.cerberus.endpoints.*;
 import com.nike.cerberus.endpoints.authentication.*;
 import com.nike.cerberus.endpoints.authentication.CodeHandlingMfaCheck;
-import com.nike.cerberus.endpoints.category.CreateCategory;
-import com.nike.cerberus.endpoints.category.DeleteCategory;
-import com.nike.cerberus.endpoints.category.GetAllCategories;
-import com.nike.cerberus.endpoints.category.GetCategory;
-import com.nike.cerberus.endpoints.role.GetAllRoles;
-import com.nike.cerberus.endpoints.role.GetRole;
-import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV1;
-import com.nike.cerberus.endpoints.sdb.CreateSafeDepositBoxV2;
-import com.nike.cerberus.endpoints.sdb.DeleteSafeDepositBox;
-import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV1;
-import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxV2;
-import com.nike.cerberus.endpoints.sdb.GetSafeDepositBoxes;
-import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV1;
-import com.nike.cerberus.endpoints.sdb.UpdateSafeDepositBoxV2;
-import com.nike.cerberus.endpoints.secret.DeleteSecureData;
-import com.nike.cerberus.endpoints.file.DeleteSecureFile;
-import com.nike.cerberus.endpoints.file.HeadSecureFile;
-import com.nike.cerberus.endpoints.file.GetSecureFiles;
-import com.nike.cerberus.endpoints.secret.ReadSecureData;
-import com.nike.cerberus.endpoints.file.ReadSecureFile;
-import com.nike.cerberus.endpoints.secret.WriteSecureData;
-import com.nike.cerberus.endpoints.file.WriteSecureFile;
-import com.nike.cerberus.endpoints.version.GetSecretVersionPathsForSdb;
-import com.nike.cerberus.endpoints.version.GetSecureDataVersions;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.hystrix.HystrixKmsClientFactory;
@@ -76,6 +45,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,11 +57,7 @@ import javax.validation.Validator;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -164,68 +130,12 @@ public class CmsGuiceModule extends AbstractModule {
     @Provides
     @Singleton
     @Named("appEndpoints")
-    public Set<Endpoint<?>> appEndpoints(
-            HealthCheckEndpoint healthCheckEndpoint,
-            RobotsEndpoint robotsEndpoint,
-            // Cerberus endpoints
-            GetAllCategories getAllCategories,
-            GetCategory getCategory,
-            CreateCategory createCategory,
-            DeleteCategory deleteCategory,
-            AuthenticateUser authenticateUser,
-            CodeHandlingMfaCheck mfaCheck,
-            RefreshUserToken refreshUserToken,
-            AuthenticateIamRole authenticateIamRole,
-            AuthenticateIamPrincipal authenticateIamPrincipal,
-            AuthenticateStsIdentity authenticateStsIdentity,
-            RevokeToken revokeToken,
-            GetAllRoles getAllRoles,
-            GetRole getRole,
-            GetSafeDepositBoxes getSafeDepositBoxes,
-            GetSafeDepositBoxV1 getSafeDepositBoxV1,
-            GetSafeDepositBoxV2 getSafeDepositBoxV2,
-            DeleteSafeDepositBox deleteSafeDepositBox,
-            UpdateSafeDepositBoxV1 updateSafeDepositBoxV1,
-            UpdateSafeDepositBoxV2 updateSafeDepositBoxV2,
-            CreateSafeDepositBoxV1 createSafeDepositBoxV1,
-            CreateSafeDepositBoxV2 createSafeDepositBoxV2,
-            GetSDBMetadata getSDBMetadata,
-            OverrideSdbOwner overrideSdbOwner,
-            PutSDBMetadata putSDBMetadata,
-            GetDashboardRedirect getDashboardRedirect,
-            GetDashboard getDashboard,
-            WriteSecureData writeSecureData,
-            ReadSecureData readSecureData,
-            DeleteSecureData deleteSecureData,
-            TriggerScheduledJob triggerScheduledJob,
-            RestoreSafeDepositBox restoreSafeDepositBox,
-            GetSecretVersionPathsForSdb getSecretVersionPathsForSdb,
-            GetSecureDataVersions getSecureDataVersions,
-            WriteSecureFile writeSecureFile,
-            ReadSecureFile readSecureFile,
-            HeadSecureFile headSecureFile,
-            GetSecureFiles getSecureFiles,
-            DeleteSecureFile deleteSecureFile,
-            GetAuthKmsKeyMetadata getAuthKmsKeyMetadata
-    ) {
-        return new LinkedHashSet<>(Arrays.<Endpoint<?>>asList(
-                healthCheckEndpoint,
-                robotsEndpoint,
-                // Cerberus endpoints
-                getAllCategories, getCategory, createCategory, deleteCategory,
-                authenticateUser, authenticateIamPrincipal, authenticateStsIdentity, mfaCheck, refreshUserToken,
-                authenticateIamRole, revokeToken,
-                getAllRoles, getRole,
-                getSafeDepositBoxes, getSafeDepositBoxV1, getSafeDepositBoxV2,
-                deleteSafeDepositBox, updateSafeDepositBoxV1, updateSafeDepositBoxV2, createSafeDepositBoxV1, createSafeDepositBoxV2,
-                getSDBMetadata, putSDBMetadata, overrideSdbOwner,
-                writeSecureData, readSecureData, deleteSecureData,
-                triggerScheduledJob,
-                getDashboard, getDashboardRedirect,
-                writeSecureFile, readSecureFile, deleteSecureFile, headSecureFile, getSecureFiles,
-                restoreSafeDepositBox,
-                getSecretVersionPathsForSdb, getSecureDataVersions, getAuthKmsKeyMetadata
-        ));
+    public Set<Endpoint<?>> appEndpoints(Injector injector) {
+        Reflections packageReflections = new Reflections("com.nike.cerberus");
+        Set<Class<?>> riposteEndpoints = packageReflections.getTypesAnnotatedWith(RiposteEndpoint.class);
+        Set<Endpoint<?>> endpoints = new HashSet<>();
+        riposteEndpoints.forEach(c -> endpoints.add((Endpoint) injector.getInstance(c)));
+        return endpoints;
     }
 
     @Provides

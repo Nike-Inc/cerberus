@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -39,6 +40,7 @@ import java.util.concurrent.Executor;
 /**
  * Revokes the token supplied in the token header.
  */
+@RiposteEndpoint
 public class RevokeToken extends AuditableEventEndpoint<Void, Void> {
 
     private final AuthenticationService authenticationService;

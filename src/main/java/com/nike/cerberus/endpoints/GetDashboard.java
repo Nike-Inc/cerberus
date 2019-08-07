@@ -49,6 +49,7 @@ import static com.nike.cerberus.CerberusHttpHeaders.getXForwardedClientIp;
 /**
  * Endpoint for loading the dashboard and associated static assets.
  */
+@RiposteEndpoint
 public class GetDashboard extends StandardEndpoint<Void, byte[]> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

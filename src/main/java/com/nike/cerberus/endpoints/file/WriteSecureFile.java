@@ -23,6 +23,7 @@ import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 /**
  * Creates a secure file.
  */
+@RiposteEndpoint
 public class WriteSecureFile extends AuditableEventEndpoint<Void, Void> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

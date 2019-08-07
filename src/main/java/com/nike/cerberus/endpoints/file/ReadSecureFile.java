@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureFile;
 import com.nike.cerberus.domain.SecureFileVersion;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.cerberus.service.SecureDataVersionService;
@@ -49,6 +50,7 @@ import java.util.concurrent.Executor;
 import static com.nike.cerberus.endpoints.file.WriteSecureFile.BASE_PATH;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 
+@RiposteEndpoint
 public class ReadSecureFile extends AuditableEventEndpoint<Void, byte[]> {
 
     private final SecureDataService secureDataService;

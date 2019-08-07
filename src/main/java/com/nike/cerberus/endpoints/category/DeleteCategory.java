@@ -17,6 +17,7 @@
 package com.nike.cerberus.endpoints.category;
 
 import com.nike.cerberus.endpoints.AdminStandardEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.CategoryService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -34,6 +35,7 @@ import java.util.concurrent.Executor;
 /**
  * Deletes the category for the specified ID.  Admin only operation.
  */
+@RiposteEndpoint
 public class DeleteCategory extends AdminStandardEndpoint<Void, Void> {
 
     public static final String PATH_PARAM_ID = "id";

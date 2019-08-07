@@ -23,6 +23,7 @@ import com.nike.cerberus.SecureDataRequestService;
 import com.nike.cerberus.domain.SecureDataRequestInfo;
 import com.nike.cerberus.domain.SecureFileSummary;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -46,6 +47,7 @@ import java.util.concurrent.Executor;
 import static com.nike.cerberus.endpoints.file.WriteSecureFile.BASE_PATH;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 
+@RiposteEndpoint
 public class HeadSecureFile extends AuditableEventEndpoint<Void, Void> {
 
     private final SecureDataService secureDataService;

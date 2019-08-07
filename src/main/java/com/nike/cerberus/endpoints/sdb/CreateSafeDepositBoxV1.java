@@ -21,6 +21,7 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CmsRequestSecurityValidator;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -53,6 +54,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
  * Creates a new safe deposit box.  Returns the assigned unique identifier.
  */
 @Deprecated
+@RiposteEndpoint
 public class CreateSafeDepositBoxV1 extends AuditableEventEndpoint<SafeDepositBoxV1, Map<String, String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

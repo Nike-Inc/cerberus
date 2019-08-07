@@ -21,6 +21,7 @@ import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
 import com.nike.riposte.server.http.RequestInfo;
@@ -42,6 +43,7 @@ import static com.nike.cerberus.endpoints.AuditableEventEndpoint.auditableEvent;
  * Authentication endpoint for IAM roles.  If valid, a client token that is encrypted via KMS is returned.  The
  * IAM role will be the only role capable of decrypting the client token via KMS.
  */
+@RiposteEndpoint
 public class AuthenticateIamPrincipal extends StandardEndpoint<IamPrincipalCredentials, IamRoleAuthResponse> {
 
     private final AuthenticationService authenticationService;

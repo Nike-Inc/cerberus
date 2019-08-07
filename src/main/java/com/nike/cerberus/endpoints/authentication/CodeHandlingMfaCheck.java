@@ -18,6 +18,7 @@ package com.nike.cerberus.endpoints.authentication;
 
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.MfaCheckRequest;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.riposte.server.http.RequestInfo;
 import com.nike.riposte.server.http.ResponseInfo;
@@ -35,6 +36,7 @@ import java.util.concurrent.Executor;
 /**
  * Endpoint for verifying the token from the user's MFA device.  Returns the full auth response if verified.
  */
+@RiposteEndpoint
 public class CodeHandlingMfaCheck extends StandardEndpoint<MfaCheckRequest, AuthResponse> {
 
     private final AuthenticationService authenticationService;

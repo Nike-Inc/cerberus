@@ -20,6 +20,7 @@ package com.nike.cerberus.endpoints.version;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.endpoints.AuditableEventEndpoint;
 import com.nike.cerberus.endpoints.CustomizableAuditData;
+import com.nike.cerberus.endpoints.RiposteEndpoint;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.AuditableEvent;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -47,6 +48,7 @@ import java.util.concurrent.Executor;
  * Extracts the user groups from the security context for the request and returns any safe deposit boxes
  * associated with that list of user groups.
  */
+@RiposteEndpoint
 public class GetSecretVersionPathsForSdb extends AuditableEventEndpoint<Void, Set<String>> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
