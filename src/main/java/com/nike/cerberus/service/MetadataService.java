@@ -23,6 +23,7 @@ import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.error.InvalidCategoryNameApiError;
 import com.nike.cerberus.error.InvalidRoleNameApiError;
 import com.nike.cerberus.util.UuidSupplier;
@@ -30,13 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A service that can perform admin tasks around SDB metadata
@@ -174,16 +169,17 @@ public class MetadataService {
      * @param offset The int offset for paginating.
      * @return SDBMetadataResult of meta data.
      */
-    public SDBMetadataResult getSDBMetadata(int limit, int offset) {
+    public SDBMetadataResult getSDBMetadata(int limit, int offset, String sdbNameFilter) {
         SDBMetadataResult result = new SDBMetadataResult();
-        result.setLimit(limit);
-        result.setOffset(offset);
-        result.setTotalSDBCount(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes());
+        result.setLimit(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(limit));
+        result.setOffset(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(offset));
+        result.setTotalSDBCount(Optional.ofNullable(sdbNameFilter).map(it -> 1)
+            .orElseGet(safeDepositBoxService::getTotalNumberOfSafeDepositBoxes));
         result.setHasNext(result.getTotalSDBCount() > (offset + limit));
         if (result.isHasNext()) {
             result.setNextOffset(offset + limit);
         }
-        List<SDBMetadata> sdbMetadataList = getSDBMetadataList(limit, offset);
+        List<SDBMetadata> sdbMetadataList = getSDBMetadataList(limit, offset, sdbNameFilter);
         result.setSafeDepositBoxMetadata(sdbMetadataList);
         result.setSdbCountInResult(sdbMetadataList.size());
 
@@ -196,15 +192,29 @@ public class MetadataService {
      * @param offset The offset for pagination
      * @return A list of SDB Metadata
      */
-    protected List<SDBMetadata> getSDBMetadataList(int limit, int offset) {
+    protected List<SDBMetadata> getSDBMetadataList(int limit, int offset, String sdbNameFilter) {
         List<SDBMetadata> sdbs = new LinkedList<>();
 
         // Collect the categories.
         Map<String, String> catIdToStringMap = categoryService.getCategoryIdToCategoryNameMap();
         // Collect the roles
         Map<String, String> roleIdToStringMap = roleService.getRoleIdToStringMap();
-        // Collect The SDB Records
-        List<SafeDepositBoxV2> safeDepositBoxes = safeDepositBoxService.getSafeDepositBoxes(limit, offset);
+
+    List<SafeDepositBoxV2> safeDepositBoxes =
+        Optional.ofNullable(sdbNameFilter)
+            .map(
+                i ->
+                    Collections.singletonList(
+                        safeDepositBoxService
+                            .getSafeDepositBoxDangerouslyWithoutPermissionValidation(
+                                safeDepositBoxService
+                                    .getSafeDepositBoxIdByName(sdbNameFilter)
+                                    .orElseThrow(
+                                        () ->
+                                            ApiException.newBuilder()
+                                                .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+                                                .build()))))
+            .orElseGet(() -> safeDepositBoxService.getSafeDepositBoxes(limit, offset));
 
         // for each SDB collect the user and iam permissions and add to result
         safeDepositBoxes.forEach(sdb -> {

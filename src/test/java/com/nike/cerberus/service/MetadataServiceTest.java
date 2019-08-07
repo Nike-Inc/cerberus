@@ -85,9 +85,9 @@ public class MetadataServiceTest {
         when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
 
         SDBMetadata sdbMD = new SDBMetadata();
-        doReturn(Arrays.asList(sdbMD)).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
+        doReturn(Arrays.asList(sdbMD)).when(metadataServiceSpy).getSDBMetadataList(limit, offset, null);
 
-        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
+        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset, null);
 
         assertEquals("expected actual limit to be passed in limit", limit, actual.getLimit());
         assertEquals("expected actual offset to be passed in offset", offset, actual.getOffset());
@@ -104,9 +104,9 @@ public class MetadataServiceTest {
         int totalSDBs = 20;
 
         when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
-        doReturn(Arrays.asList(new SDBMetadata())).when(metadataServiceSpy).getSDBMetadataList(limit, offset);
+        doReturn(Arrays.asList(new SDBMetadata())).when(metadataServiceSpy).getSDBMetadataList(limit, offset, null);
 
-        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset);
+        SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset, null);
 
         assertEquals("expected actual limit to be passed in limit", limit, actual.getLimit());
         assertEquals("expected actual offset to be passed in offset", offset, actual.getOffset());
@@ -167,7 +167,7 @@ public class MetadataServiceTest {
 
         when(safeDepositBoxService.getSafeDepositBoxes(1,0)).thenReturn(Arrays.asList(box));
 
-        List<SDBMetadata> actual = metadataService.getSDBMetadataList(1,0);
+        List<SDBMetadata> actual = metadataService.getSDBMetadataList(1,0, null);
         assertEquals("List should have 1 entry", 1, actual.size());
         SDBMetadata data = actual.get(0);
         assertEquals("Name should match record", name, data.getName());

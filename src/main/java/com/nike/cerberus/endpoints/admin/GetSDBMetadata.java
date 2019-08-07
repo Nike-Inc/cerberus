@@ -51,7 +51,6 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
         this.paginationService = paginationService;
     }
 
-    @SuppressWarnings("ConstantConditions") // it lies
     @Override
     public CompletableFuture<ResponseInfo<SDBMetadataResult>> doExecute(final RequestInfo<Void> request,
                                                                         final Executor longRunningTaskExecutor,
@@ -64,10 +63,13 @@ public class GetSDBMetadata extends AdminStandardEndpoint<Void, SDBMetadataResul
     }
 
     private FullResponseInfo<SDBMetadataResult> getMetadata(RequestInfo<Void> request) {
-        return ResponseInfo.newBuilder(metadataService.getSDBMetadata(
+        String sdbNameFilter = request.getQueryParamSingle("sdbName");
+        return ResponseInfo.newBuilder(
+            metadataService.getSDBMetadata(
                 paginationService.getLimit(request),
-                paginationService.getOffset(request)))
-                .build();
+                paginationService.getOffset(request),
+                sdbNameFilter
+            )).build();
     }
 
     @Override
