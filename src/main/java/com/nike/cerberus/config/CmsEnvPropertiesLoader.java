@@ -47,6 +47,7 @@ public class CmsEnvPropertiesLoader {
     private static final String ENV_PATH = "cms/environment.properties";
     private static final String CERTIFICATE_PATH = "certificates/%s/cert.pem";
     private static final String PRIVATE_KEY_PATH = "certificates/%s/pkcs8-key.pem";
+    private static final String JWT_SECRETS_PATH = "jwt-secrets.json";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -105,6 +106,10 @@ public class CmsEnvPropertiesLoader {
      */
     public String getPrivateKey(String certificateName) {
         return getPlainText(String.format(PRIVATE_KEY_PATH, certificateName));
+    }
+
+    public String getJwtSecrets() {
+        return getPlainText(JWT_SECRETS_PATH);
     }
 
     private String getPlainText(String path) {
