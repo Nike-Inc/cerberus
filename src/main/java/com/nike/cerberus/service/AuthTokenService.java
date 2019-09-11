@@ -19,10 +19,9 @@ package com.nike.cerberus.service;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
-import com.nike.cerberus.record.AuthTokenRecord;
+import com.nike.cerberus.domain.CerberusJwtClaims;
 import com.nike.cerberus.util.AuthTokenGenerator;
 import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.cerberus.util.JwtUtils;
 import com.nike.cerberus.util.TokenHasher;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
@@ -51,21 +50,22 @@ public class AuthTokenService {
     private final AuthTokenGenerator authTokenGenerator;
     private final AuthTokenDao authTokenDao;
     private final DateTimeSupplier dateTimeSupplier;
-    private final JwtUtils jwtUtils;
+    private final JwtService jwtService;
 
     @Inject
     public AuthTokenService(UuidSupplier uuidSupplier,
                             TokenHasher tokenHasher,
                             AuthTokenGenerator authTokenGenerator,
                             AuthTokenDao authTokenDao,
-                            DateTimeSupplier dateTimeSupplier, JwtUtils jwtUtils) {
+                            DateTimeSupplier dateTimeSupplier,
+                            JwtService jwtService) {
 
         this.uuidSupplier = uuidSupplier;
         this.tokenHasher = tokenHasher;
         this.authTokenGenerator = authTokenGenerator;
         this.authTokenDao = authTokenDao;
         this.dateTimeSupplier = dateTimeSupplier;
-        this.jwtUtils = jwtUtils;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -81,7 +81,7 @@ public class AuthTokenService {
         String id = uuidSupplier.get();
         OffsetDateTime now = dateTimeSupplier.get();
 
-        AuthTokenRecord tokenRecord = new AuthTokenRecord()
+        CerberusJwtClaims claims = new CerberusJwtClaims()
                 .setId(id)
                 .setCreatedTs(now)
                 .setExpiresTs(now.plusMinutes(ttlInMinutes))
@@ -90,26 +90,26 @@ public class AuthTokenService {
                 .setIsAdmin(isAdmin)
                 .setGroups(groups)
                 .setRefreshCount(refreshCount);
-        String jwtToken = jwtUtils.generateJwtToken(tokenRecord);
+        String jwtToken = jwtService.generateJwtToken(claims);
 
-        return getCerberusAuthTokenFromRecord(jwtToken, tokenRecord);
+        return getCerberusAuthTokenFromRecord(jwtToken, claims);
     }
 
-    private CerberusAuthToken getCerberusAuthTokenFromRecord(String token, AuthTokenRecord tokenRecord) {
+    private CerberusAuthToken getCerberusAuthTokenFromRecord(String token, CerberusJwtClaims claims) {
         return CerberusAuthToken.Builder.create()
                 .withToken(token)
-                .withCreated(tokenRecord.getCreatedTs())
-                .withExpires(tokenRecord.getExpiresTs())
-                .withPrincipal(tokenRecord.getPrincipal())
-                .withPrincipalType(PrincipalType.fromName(tokenRecord.getPrincipalType()))
-                .withIsAdmin(tokenRecord.getIsAdmin())
-                .withGroups(tokenRecord.getGroups())
-                .withRefreshCount(tokenRecord.getRefreshCount())
+                .withCreated(claims.getCreatedTs())
+                .withExpires(claims.getExpiresTs())
+                .withPrincipal(claims.getPrincipal())
+                .withPrincipalType(PrincipalType.fromName(claims.getPrincipalType()))
+                .withIsAdmin(claims.getIsAdmin())
+                .withGroups(claims.getGroups())
+                .withRefreshCount(claims.getRefreshCount())
                 .build();
     }
 
     public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
-        Optional<AuthTokenRecord> tokenRecord = jwtUtils.parseClaim(token);
+        Optional<CerberusJwtClaims> tokenRecord = jwtService.parseAndValidateClaim(token);
 
         OffsetDateTime now = OffsetDateTime.now();
         if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {

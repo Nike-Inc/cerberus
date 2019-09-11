@@ -139,4 +139,8 @@ public class ConfigService {
     public String getSetRegion() {
         return System.getenv(REGION_KEY);
     }
+
+    public String getJwtSecrets() {
+        return cmsEnvPropertiesLoader.getJwtSecrets();
+    }
 }
