@@ -1,0 +1,92 @@
+package com.nike.cerberus.service;
+
+import com.nike.cerberus.jwt.CerberusJwtClaims;
+import com.nike.cerberus.jwt.CerberusJwtKeySpec;
+import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwsHeader;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+public class JwtServiceTest {
+
+    @Mock
+    CerberusSigningKeyResolver signingKeyResolver;
+
+    JwtService jwtService;
+
+    CerberusJwtKeySpec cerberusJwtKeySpec;
+
+    CerberusJwtClaims cerberusJwtClaims;
+
+    @Before
+    public void setUp() throws Exception {
+        initMocks(this);
+        jwtService = new JwtService(signingKeyResolver, "local");
+        cerberusJwtKeySpec = new CerberusJwtKeySpec(new byte[64], "HmacSHA512", "key id");
+        cerberusJwtClaims = new CerberusJwtClaims();
+        cerberusJwtClaims.setId("id");
+        cerberusJwtClaims.setPrincipal("principal");
+        cerberusJwtClaims.setGroups("groups");
+        cerberusJwtClaims.setIsAdmin(true);
+        cerberusJwtClaims.setPrincipalType("type");
+        cerberusJwtClaims.setRefreshCount(1);
+        cerberusJwtClaims.setCreatedTs(OffsetDateTime.of(2000, 1, 1, 1,
+                1, 1, 1, ZoneOffset.UTC));
+        cerberusJwtClaims.setExpiresTs(OffsetDateTime.of(3000, 1, 1, 1,
+                1, 1, 1, ZoneOffset.UTC)); // should be good for a while
+
+        when(signingKeyResolver.resolveSigningKey()).thenReturn(cerberusJwtKeySpec);
+        when(signingKeyResolver.resolveSigningKey(any(JwsHeader.class), any(Claims.class))).thenReturn(cerberusJwtKeySpec);
+    }
+
+    @Test
+    public void test_generate_jwt_token_parse_and_validate_claim() {
+        String token = jwtService.generateJwtToken(cerberusJwtClaims);
+        assertEquals(3, token.split("\\.").length);
+        Optional<CerberusJwtClaims> cerberusJwtClaimsOptional = jwtService.parseAndValidateToken(token);
+        assertTrue(cerberusJwtClaimsOptional.isPresent());
+        CerberusJwtClaims cerberusJwtClaims = cerberusJwtClaimsOptional.get();
+
+        assertEquals("id", cerberusJwtClaims.getId());
+        assertEquals("principal", cerberusJwtClaims.getPrincipal());
+        assertEquals("groups", cerberusJwtClaims.getGroups());
+        assertEquals(true, cerberusJwtClaims.getIsAdmin());
+        assertEquals("type", cerberusJwtClaims.getPrincipalType());
+        assertEquals(1, (long)cerberusJwtClaims.getRefreshCount());
+        assertEquals(OffsetDateTime.of(2000, 1, 1, 1,
+                1, 1, 1, ZoneOffset.UTC).toEpochSecond(),
+                cerberusJwtClaims.getCreatedTs().toEpochSecond());
+        assertEquals(OffsetDateTime.of(2099, 1, 1, 1,
+                1, 1, 1, ZoneOffset.UTC).toEpochSecond(),
+                cerberusJwtClaims.getExpiresTs().toEpochSecond());
+    }
+
+    @Test
+    public void test_expired_token_returns_empty() {
+        cerberusJwtClaims.setExpiresTs(OffsetDateTime.of(2000, 1, 1, 1,
+                1, 1, 1, ZoneOffset.UTC));
+        String token = jwtService.generateJwtToken(cerberusJwtClaims);
+        Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
+        assertFalse(cerberusJwtClaims.isPresent());
+    }
+
+    @Test
+    public void test_unsigned_token_returns_empty() {
+        String token = "eyJraWQiOiJrZXkgaWQiLCJhbGciOiJIUzUxMiJ9.eyJqdGkiOiJpZCIsImlzcyI6ImxvY2FsIiwic3ViIjoicHJpbm" +
+                "NpcGFsIiwicHJpbmNpcGFsVHlwZSI6InR5cGUiLCJncm91cHMiOiJncm91cHMiLCJpc0FkbWluIjp0cnVlLCJyZWZyZXNoQ291" +
+                "bnQiOjEsImV4cCI6NDA3MDkxMjQ2MSwiaWF0Ijo5NDY2ODg0NjF9";
+        Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
+        assertFalse(cerberusJwtClaims.isPresent());
+    }
+}

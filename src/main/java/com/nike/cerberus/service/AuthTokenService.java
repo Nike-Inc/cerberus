@@ -19,7 +19,7 @@ package com.nike.cerberus.service;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.CerberusAuthToken;
-import com.nike.cerberus.domain.CerberusJwtClaims;
+import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.util.AuthTokenGenerator;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.TokenHasher;
@@ -109,7 +109,7 @@ public class AuthTokenService {
     }
 
     public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
-        Optional<CerberusJwtClaims> tokenRecord = jwtService.parseAndValidateClaim(token);
+        Optional<CerberusJwtClaims> tokenRecord = jwtService.parseAndValidateToken(token);
 
         OffsetDateTime now = OffsetDateTime.now();
         if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {

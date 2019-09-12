@@ -18,6 +18,9 @@ package com.nike.cerberus.jwt;
 
 import java.util.LinkedList;
 
+/**
+ * A POJO that represents the JWT config
+ */
 public class JwtSecretData {
     private LinkedList<JwtSecret> jwtSecrets = new LinkedList<>();
 

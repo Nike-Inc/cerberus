@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.domain;
+package com.nike.cerberus.jwt;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
