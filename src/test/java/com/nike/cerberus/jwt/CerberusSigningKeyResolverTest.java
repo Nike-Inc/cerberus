@@ -23,19 +23,19 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class CerberusSigningKeyResolverTest {
     @Mock
-    CerberusSigningKeyResolver.JwtServiceOptionalPropertyHolder jwtServiceOptionalPropertyHolder;
+    private CerberusSigningKeyResolver.JwtServiceOptionalPropertyHolder jwtServiceOptionalPropertyHolder;
 
     @Mock
-    ConfigService configService;
+    private ConfigService configService;
 
     @Mock
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
-    CerberusSigningKeyResolver cerberusSigningKeyResolver;
+    private CerberusSigningKeyResolver cerberusSigningKeyResolver;
 
-    JwtSecretData jwtSecretData = new JwtSecretData();
+    private JwtSecretData jwtSecretData = new JwtSecretData();
 
-    String configStoreJwtSecretData;
+    private String configStoreJwtSecretData;
 
     @Before
     public void setUp() throws Exception {
