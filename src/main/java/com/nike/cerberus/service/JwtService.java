@@ -17,7 +17,7 @@
 package com.nike.cerberus.service;
 
 import com.google.inject.name.Named;
-import com.nike.cerberus.domain.CerberusJwtClaims;
+import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
 import io.jsonwebtoken.Claims;
@@ -36,6 +36,9 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
+/**
+ * Service for generating, parsing, and validating JWT tokens.
+ */
 @Singleton
 public class JwtService {
 
@@ -45,21 +48,21 @@ public class JwtService {
     private final static String IS_ADMIN_CLAIM_NAME = "isAdmin";
     private final static String REFRESH_COUNT_CLAIM_NAME = "refreshCount";
 
-
     private final CerberusSigningKeyResolver signingKeyResolver;
     private final String environmentName;
-
 
     @Inject
     public JwtService(CerberusSigningKeyResolver signingKeyResolver,
                       @Named("cms.env.name") String environmentName) {
-
         this.signingKeyResolver = signingKeyResolver;
         this.environmentName = environmentName;
-
     }
 
-
+    /**
+     * Generate JWT token
+     * @param cerberusJwtClaims Cerberus JWT claims
+     * @return JWT token
+     */
     public String generateJwtToken(CerberusJwtClaims cerberusJwtClaims){
         CerberusJwtKeySpec cerberusJwtKeySpec = signingKeyResolver.resolveSigningKey();
         String jwtToken = Jwts.builder()
@@ -78,7 +81,12 @@ public class JwtService {
         return jwtToken;
     }
 
-    public Optional<CerberusJwtClaims> parseAndValidateClaim(String token) {
+    /**
+     * Parse and validate JWT token
+     * @param token JWT token
+     * @return Cerberus JWT claims
+     */
+    public Optional<CerberusJwtClaims> parseAndValidateToken(String token) {
         Jws<Claims> claimsJws;
         try {
             claimsJws = Jwts.parser()
@@ -86,10 +94,13 @@ public class JwtService {
                     .setSigningKeyResolver(signingKeyResolver)
                     .parseClaimsJws(token);
         } catch (InvalidClaimException e) {
-            log.warn("Invalid claim: {}", token);
+            log.warn("Invalid claim when parsing token: {}", token, e);
             return Optional.empty();
         } catch (JwtException e) {
-            log.warn("Error parsing JWT token: {}", token);
+            log.warn("Error parsing JWT token: {}", token, e);
+            return Optional.empty();
+        } catch (IllegalArgumentException e) {
+            log.warn("Error parsing JWT token: {}", token, e);
             return Optional.empty();
         }
         Claims claims = claimsJws.getBody();
@@ -107,7 +118,9 @@ public class JwtService {
         return Optional.of(cerberusJwtClaims);
     }
 
-
+    /**
+     * Refresh signing keys in {@link CerberusSigningKeyResolver}
+     */
     public void refresh() {
         signingKeyResolver.refresh();
     }

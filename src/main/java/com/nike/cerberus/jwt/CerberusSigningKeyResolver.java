@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * A subclass of {@link SigningKeyResolverAdapter} that resolves the key used for JWT signing and signature validation
+ */
 @Singleton
 public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
@@ -42,6 +45,8 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
                                       ConfigService configService, ObjectMapper objectMapper) {
         this.configService = configService;
         this.objectMapper = objectMapper;
+
+        // Override key with properties, useful for local development
         if (!StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretOverrideMaterial) &&
                 !StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretOverrideKeyId)) {
             byte[] key = Base64.getDecoder().decode(jwtServiceOptionalPropertyHolder.jwtSecretOverrideMaterial);
@@ -54,55 +59,9 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         }
     }
 
-    @Override
-    public Key resolveSigningKey(JwsHeader jwsHeader, Claims claims) {
-        // reject non HmacSHA256 token
-        if (!StringUtils.equals(DEFAULT_JWT_ALG_HEADER, jwsHeader.getAlgorithm())) {
-            throw new IllegalArgumentException("Algorithm not supported");
-        }
-        String keyId = jwsHeader.getKeyId();
-        Key key = lookupVerificationKey(keyId);
-
-        return key;
-    }
-
-    public CerberusJwtKeySpec resolveSigningKey() {
-        // get primary key
-        if (checkKeyRotation) {
-            rotateSigningKey();
-            return signingKey;
-        } else {
-            return signingKey;
-        }
-    }
-
-    private void rotateSigningKey() {
-        long now = System.currentTimeMillis();
-        if (now >= nextRotationTs) {
-            this.signingKey = keyMap.get(nextKeyId);
-        }
-        checkKeyRotation = false;
-    }
-
-    private Key lookupVerificationKey(String keyId){
-        if (StringUtils.isBlank(keyId)) {
-            throw new IllegalArgumentException("Key ID cannot be empty"); // todo handle this
-        }
-        try {
-            CerberusJwtKeySpec keySpec = keyMap.get(keyId);
-            if (keySpec == null) {
-                throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
-            }
-
-            return keySpec;
-        } catch (NullPointerException e) {
-            throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
-        }
-    }
-
     /**
-     * This 'holder' class allows optional injection of SignalFx-specific properties that are only necessary when
-     * SignalFx metrics reporting is enabled.
+     * This 'holder' class allows optional injection of Cerberus JWT-specific properties that are only necessary for
+     * local development.
      *
      * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
      * or with constructor injection.
@@ -121,6 +80,43 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         String jwtSecretOverrideKeyId;
     }
 
+    @Override
+    public Key resolveSigningKey(JwsHeader jwsHeader, Claims claims) {
+        // Rejects non HS512 token
+        if (!StringUtils.equals(DEFAULT_JWT_ALG_HEADER, jwsHeader.getAlgorithm())) {
+            throw new IllegalArgumentException("Algorithm not supported");
+        }
+        String keyId = jwsHeader.getKeyId();
+        Key key = lookupVerificationKey(keyId);
+
+        return key;
+    }
+
+    /**
+     * Return the signing key that should be used to sign JWT. The signing key is defined as the "newest active key"
+     * i.e. key with the biggest effectiveTs value and effectiveTs <= now.
+     * @return The signing key
+     */
+    public CerberusJwtKeySpec resolveSigningKey() {
+        if (checkKeyRotation) {
+            rotateSigningKey();
+            return signingKey;
+        } else {
+            return signingKey;
+        }
+    }
+
+    private void rotateSigningKey() {
+        long now = System.currentTimeMillis();
+        if (now >= nextRotationTs) {
+            this.signingKey = keyMap.get(nextKeyId);
+        }
+        checkKeyRotation = false;
+    }
+
+    /**
+     * Poll {@link ConfigService} for JWT config and update key map with new data
+     */
     public void refresh() {
         JwtSecretData jwtSecretData = getJwtSecretData();
 
@@ -128,6 +124,10 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         setSigningKey(jwtSecretData);
     }
 
+    /**
+     * Poll {@link ConfigService} for JWT config and validate new data
+     * @return JWT config
+     */
     protected JwtSecretData getJwtSecretData() {
         String jwtSecretsString = configService.getJwtSecrets();
         try {
@@ -140,6 +140,10 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         }
     }
 
+    /**
+     * Validate {@link JwtSecretData}. Validates required fields and rejects weak keys.
+     * @param jwtSecretData JWT config
+     */
     protected void validateJwtSecretData(JwtSecretData jwtSecretData) {
         if (jwtSecretData == null || jwtSecretData.getJwtSecrets() == null) {
             throw new IllegalArgumentException("JWT secret data cannot be null");
@@ -165,24 +169,26 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
         long now = System.currentTimeMillis();
         if (now < minEffectiveTs) {
-            // prevent rotation or start up if no key is active
+            // Prevents rotation or start up if no key is active
             throw new IllegalArgumentException("Requires at least 1 active JWT secret");
         }
     }
 
+    /**
+     * Set the signing key that should be used to sign JWT and the next signing key in line. The signing key is defined
+     * as the "newest active key" i.e. key with the biggest effectiveTs value and effectiveTs <= now.
+     * @param jwtSecretData JWT config
+     */
     protected void setSigningKey(JwtSecretData jwtSecretData) {
-        // find the active key
+        // Find the active key
         long now = System.currentTimeMillis();
-        String currentKeyId = getCurrentKeyId(jwtSecretData, now);
+        String currentKeyId = getSigningKeyId(jwtSecretData, now);
         signingKey = keyMap.get(currentKeyId);
 
-        // find the next key
-        List<JwtSecret> futureJwtSecrets = jwtSecretData.getJwtSecrets().stream()
-                .filter(secretData -> secretData.getEffectiveTs() > now)
-                .sorted((secretData1, secretData2) -> secretData1.getEffectiveTs() - secretData2.getEffectiveTs()  > 0 ? -1 : 1) // this puts newer keys in the front of the list
-                .collect(Collectors.toList());
+        // Find the next key
+        List<JwtSecret> futureJwtSecrets = getFutureJwtSecrets(jwtSecretData, now);
 
-        // set up rotation
+        // Set up rotation
         if (!futureJwtSecrets.isEmpty()) {
             JwtSecret jwtSecret = futureJwtSecrets.get(0);
             checkKeyRotation = true;
@@ -193,7 +199,29 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         }
     }
 
-    protected String getCurrentKeyId(JwtSecretData jwtSecretData, long now) {
+    /**
+     * Get future signing keys i.e. keys with effectiveTs > now.
+     * @param jwtSecretData JWT config
+     * @param now Timestamp of now
+     * @return Future signing keys
+     */
+    protected List<JwtSecret> getFutureJwtSecrets(JwtSecretData jwtSecretData, long now) {
+        return jwtSecretData.getJwtSecrets().stream()
+                .filter(secretData -> secretData.getEffectiveTs() > now)
+                .sorted((secretData1, secretData2) ->
+                        secretData1.getEffectiveTs() - secretData2.getEffectiveTs() < 0 ? -1 : 1)
+                // this puts older keys in the front of the list
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the ID of signing key that should be used to sign JWT. The signing key is defined as the "newest active key"
+     * i.e. key with the biggest effectiveTs value and effectiveTs <= now.
+     * @param jwtSecretData JWT config
+     * @param now Timestamp of now in millisecond
+     * @return ID of the signing key
+     */
+    protected String getSigningKeyId(JwtSecretData jwtSecretData, long now) {
         List<JwtSecret> sortedJwtSecrets = jwtSecretData.getJwtSecrets().stream()
                 .filter(secretData -> secretData.getEffectiveTs() <= now)
                 .sorted((secretData1, secretData2) -> secretData1.getEffectiveTs() - secretData2.getEffectiveTs() > 0 ? -1 : 1) // this puts newer keys in the front of the list
@@ -220,4 +248,19 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         this.keyMap = keyMap;
     }
 
+    private Key lookupVerificationKey(String keyId){
+        if (StringUtils.isBlank(keyId)) {
+            throw new IllegalArgumentException("Key ID cannot be empty");
+        }
+        try {
+            CerberusJwtKeySpec keySpec = keyMap.get(keyId);
+            if (keySpec == null) {
+                throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
+            }
+
+            return keySpec;
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
+        }
+    }
 }
