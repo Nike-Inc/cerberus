@@ -21,13 +21,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class JwtServiceTest {
 
     @Mock
-    CerberusSigningKeyResolver signingKeyResolver;
+    private CerberusSigningKeyResolver signingKeyResolver;
 
-    JwtService jwtService;
+    private JwtService jwtService;
 
-    CerberusJwtKeySpec cerberusJwtKeySpec;
+    private CerberusJwtKeySpec cerberusJwtKeySpec;
 
-    CerberusJwtClaims cerberusJwtClaims;
+    private CerberusJwtClaims cerberusJwtClaims;
 
     @Before
     public void setUp() throws Exception {
@@ -67,7 +67,7 @@ public class JwtServiceTest {
         assertEquals(OffsetDateTime.of(2000, 1, 1, 1,
                 1, 1, 1, ZoneOffset.UTC).toEpochSecond(),
                 cerberusJwtClaims.getCreatedTs().toEpochSecond());
-        assertEquals(OffsetDateTime.of(2099, 1, 1, 1,
+        assertEquals(OffsetDateTime.of(3000, 1, 1, 1,
                 1, 1, 1, ZoneOffset.UTC).toEpochSecond(),
                 cerberusJwtClaims.getExpiresTs().toEpochSecond());
     }
