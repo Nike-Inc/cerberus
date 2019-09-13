@@ -105,7 +105,7 @@ public class JwtService {
         }
         Claims claims = claimsJws.getBody();
         String subject = claims.getSubject();
-        CerberusJwtClaims cerberusJwtClaims = new CerberusJwtClaims().setTokenHash(token)
+        CerberusJwtClaims cerberusJwtClaims = new CerberusJwtClaims()
                 .setId(claims.getId())
                 .setPrincipal(subject)
                 .setExpiresTs(OffsetDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault()))

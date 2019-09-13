@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Periodically send KPI metrics to the enabled metrics services.
+ * Periodically refresh JWT signing keys.
  */
 @Singleton
 public class JwtSecretRefreshJob extends Job {
@@ -42,13 +42,13 @@ public class JwtSecretRefreshJob extends Job {
 
     @Override
     public void doRun() throws JobInterruptException {
-        log.debug("Running KPI metrics processing job");
+        log.debug("Running JWT secret refresh job");
         try {
             jwtService.refresh();
         } catch (JobInterruptException e) {
             throw e;
         } catch (Exception e) {
-            log.warn("Error processing KPI metrics", e);
+            log.warn("Error refreshing JWT secret", e);
         }
     }
 }

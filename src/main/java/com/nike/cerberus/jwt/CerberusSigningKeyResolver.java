@@ -106,14 +106,6 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         }
     }
 
-    private void rotateSigningKey() {
-        long now = System.currentTimeMillis();
-        if (now >= nextRotationTs) {
-            this.signingKey = keyMap.get(nextKeyId);
-        }
-        checkKeyRotation = false;
-    }
-
     /**
      * Poll {@link ConfigService} for JWT config and update key map with new data
      */
@@ -255,12 +247,20 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
         try {
             CerberusJwtKeySpec keySpec = keyMap.get(keyId);
             if (keySpec == null) {
-                throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
+                throw new IllegalArgumentException("The key ID " + keyId + " is invalid or expired");
             }
 
             return keySpec;
         } catch (NullPointerException e) {
             throw new IllegalArgumentException("The key ID " + keyId + " is either invalid or expired");
         }
+    }
+
+    private void rotateSigningKey() {
+        long now = System.currentTimeMillis();
+        if (now >= nextRotationTs) {
+            this.signingKey = keyMap.get(nextKeyId);
+        }
+        checkKeyRotation = false;
     }
 }
