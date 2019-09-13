@@ -23,8 +23,6 @@ public class CerberusJwtClaims {
 
     private String id;
 
-    private String tokenHash;
-
     private OffsetDateTime createdTs;
 
     private OffsetDateTime expiresTs;
@@ -45,15 +43,6 @@ public class CerberusJwtClaims {
 
     public CerberusJwtClaims setId(String id) {
         this.id = id;
-        return this;
-    }
-
-    public String getTokenHash() {
-        return tokenHash;
-    }
-
-    public CerberusJwtClaims setTokenHash(String tokenHash) {
-        this.tokenHash = tokenHash;
         return this;
     }
 
@@ -118,10 +107,5 @@ public class CerberusJwtClaims {
     public CerberusJwtClaims setRefreshCount(Integer refreshCount) {
         this.refreshCount = refreshCount;
         return this;
-    }
-
-    public Map<String, String> getClaims() {
-        //todo implement
-        return null;
     }
 }

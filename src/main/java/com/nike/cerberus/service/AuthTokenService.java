@@ -68,7 +68,6 @@ public class AuthTokenService {
         this.jwtService = jwtService;
     }
 
-    @Transactional
     public CerberusAuthToken generateToken(String principal,
                                            PrincipalType principalType,
                                            boolean isAdmin,
