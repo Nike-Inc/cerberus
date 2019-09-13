@@ -15,11 +15,11 @@ To learn more about Cerberus, please visit the [Cerberus website](http://enginee
 
 If you wish to persist data permanently you can install MySQL locally
 
-**MySQL** is required to run the application locally.
+**MySQL Version 5.7** is required to run the application locally.
 
 To get MySQL setup on OS X:
 
-    $ brew install mysql
+    $ brew install mysql@5.7
     $ mysql.server restart
     $ mysql_secure_installation
 
