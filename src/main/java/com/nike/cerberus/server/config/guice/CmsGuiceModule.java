@@ -17,6 +17,14 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.MasterKeyProvider;
+import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.caching.CryptoMaterialsCache;
+import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.*;
 import com.google.inject.name.Names;
@@ -61,7 +69,10 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.nike.cerberus.service.EncryptionService.*;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -191,8 +202,8 @@ public class CmsGuiceModule extends AbstractModule {
     /**
      * Process the list of fully qualified class names under cms.event.enabledProcessors.
      * Using just to get an instance of the class and create a list of processors for the event processing service.
-     * @param injector The guice injector
      *
+     * @param injector The guice injector
      * @return List of enabled processors
      */
     @Provides
@@ -286,5 +297,53 @@ public class CmsGuiceModule extends AbstractModule {
     public StaticAssetManager dashboardStaticAssetManager() {
         int maxDepthOfFileTraversal = 2;
         return new StaticAssetManager(DASHBOARD_DIRECTORY_RELATIVE_PATH, maxDepthOfFileTraversal);
+    }
+
+    @Provides
+    @Singleton
+    @Named("encryptCryptoMaterialsManager")
+    public CryptoMaterialsManager encryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
+                                                                @Named("cms.encryption.encrypt.cache.maxSize") int maxSize,
+                                                                @Named("cms.encryption.encrypt.cache.maxAge") int maxAge,
+                                                                @Named("cms.encryption.encrypt.cache.messageUseLimit") int messageUseLimit,
+                                                                Region currentRegion) {
+        MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
+        CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+        CryptoMaterialsManager cachingCmm =
+                CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                        .withCache(cache)
+                        .withMaxAge(maxAge, TimeUnit.SECONDS)
+                        .withMessageUseLimit(messageUseLimit)
+                        .build();
+        return cachingCmm;
+    }
+
+    @Provides
+    @Singleton
+    @Named("decryptCryptoMaterialsManager")
+    public CryptoMaterialsManager decryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
+                                                                @Named("cms.encryption.decrypt.cache.maxSize") int maxSize,
+                                                                @Named("cms.encryption.decrypt.cache.maxAge") int maxAge,
+                                                                Region currentRegion) {
+        MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
+        CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+        CryptoMaterialsManager cachingCmm =
+                CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                        .withCache(cache)
+                        .withMaxAge(maxAge, TimeUnit.SECONDS)
+                        .build();
+        return cachingCmm;
+    }
+
+    /**
+     * Returns the current region
+     * @return current region
+     */
+    @Provides
+    @Singleton
+    public Region currentRegion() {
+        Region region = Regions.getCurrentRegion();
+        Region currentRegion = region == null ? Region.getRegion(Regions.DEFAULT_REGION ) : region;
+        return currentRegion;
     }
 }
