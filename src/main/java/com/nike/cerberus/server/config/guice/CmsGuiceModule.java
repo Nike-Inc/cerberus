@@ -307,6 +307,8 @@ public class CmsGuiceModule extends AbstractModule {
                                                                 @Named("cms.encryption.encrypt.cache.maxAge") int maxAge,
                                                                 @Named("cms.encryption.encrypt.cache.messageUseLimit") int messageUseLimit,
                                                                 Region currentRegion) {
+        logger.info("Initializing encryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}, " +
+                "messageUseLimit: {}", cmkArns, maxSize, maxAge, messageUseLimit);
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
         CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
         CryptoMaterialsManager cachingCmm =
@@ -325,6 +327,8 @@ public class CmsGuiceModule extends AbstractModule {
                                                                 @Named("cms.encryption.decrypt.cache.maxSize") int maxSize,
                                                                 @Named("cms.encryption.decrypt.cache.maxAge") int maxAge,
                                                                 Region currentRegion) {
+        logger.info("Initializing decryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}",
+                cmkArns, maxSize, maxAge);
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
         CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
         CryptoMaterialsManager cachingCmm =
