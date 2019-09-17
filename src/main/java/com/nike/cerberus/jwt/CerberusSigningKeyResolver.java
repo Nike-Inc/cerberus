@@ -3,13 +3,17 @@ package com.nike.cerberus.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Named;
 import com.nike.cerberus.service.ConfigService;
+import com.nike.cerberus.util.UuidSupplier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
+import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -28,6 +32,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
     private final ConfigService configService;
     private final ObjectMapper objectMapper;
+    private final UuidSupplier uuidSupplier;
     private CerberusJwtKeySpec signingKey;
     private Map<String, CerberusJwtKeySpec> keyMap;
     private boolean checkKeyRotation;
@@ -42,19 +47,37 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
     @Inject
     public CerberusSigningKeyResolver(JwtServiceOptionalPropertyHolder jwtServiceOptionalPropertyHolder,
-                                      ConfigService configService, ObjectMapper objectMapper) {
+                                      ConfigService configService,
+                                      ObjectMapper objectMapper,
+                                      @Named("cms.auth.jwt.secret.local.autoGenerate") boolean autoGenerate,
+                                      UuidSupplier uuidSupplier) {
         this.configService = configService;
         this.objectMapper = objectMapper;
+        this.uuidSupplier = uuidSupplier;
 
         // Override key with properties, useful for local development
-        if (!StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretOverrideMaterial) &&
-                !StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretOverrideKeyId)) {
-            byte[] key = Base64.getDecoder().decode(jwtServiceOptionalPropertyHolder.jwtSecretOverrideMaterial);
-            this.signingKey = new CerberusJwtKeySpec(key,
-                    DEFAULT_ALGORITHM,
-                    jwtServiceOptionalPropertyHolder.jwtSecretOverrideKeyId);
+        if (configService.isS3ConfigDisabled()) {
+            if (autoGenerate) {
+                log.info("Auto generating JWT secret for local development");
+                SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.forName(DEFAULT_JWT_ALG_HEADER));
+                this.signingKey = new CerberusJwtKeySpec(key, uuidSupplier.get());
+            } else {
+                log.info("Using JWT secret from properties");
+                if (!StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial) &&
+                        !StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId)) {
+                    byte[] key = Base64.getDecoder().decode(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial);
+                    this.signingKey = new CerberusJwtKeySpec(key,
+                            DEFAULT_ALGORITHM,
+                            jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId);
+                } else {
+                    throw new IllegalArgumentException("Invalid JWT config. To resolve, either set " +
+                            "cms.auth.jwt.secret.local.autoGenerate=true or provide both cms.auth.jwt.secret.local.material" +
+                            " and cms.auth.jwt.secret.local.kid");
+                }
+            }
             rotateKeyMap(signingKey);
         } else {
+            log.info("Initializing JWT key resolver using S3 config");
             refresh();
         }
     }
@@ -69,15 +92,15 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
      * https://github.com/google/guice/wiki/FrequentlyAskedQuestions
      */
     static class JwtServiceOptionalPropertyHolder {
-        private static final String JWT_SECRET_OVERRIDE_MATERIAL_CONFIG_PARAM = "cms.auth.jwt.secret.override.material";
+        private static final String JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM = "cms.auth.jwt.secret.local.material";
         @com.google.inject.Inject(optional=true)
-        @Named(JWT_SECRET_OVERRIDE_MATERIAL_CONFIG_PARAM)
-        String jwtSecretOverrideMaterial;
+        @Named(JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM)
+        String jwtSecretLocalMaterial;
 
-        private static final String JWT_SECRET_OVERRIDE_KID_CONFIG_PARAM = "cms.auth.jwt.secret.override.kid";
+        private static final String JWT_SECRET_LOCAL_KID_CONFIG_PARAM = "cms.auth.jwt.secret.local.kid";
         @com.google.inject.Inject(optional=true)
-        @Named(JWT_SECRET_OVERRIDE_KID_CONFIG_PARAM)
-        String jwtSecretOverrideKeyId;
+        @Named(JWT_SECRET_LOCAL_KID_CONFIG_PARAM)
+        String jwtSecretLocalKeyId;
     }
 
     @Override
