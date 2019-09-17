@@ -2,6 +2,7 @@ package com.nike.cerberus.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.cerberus.service.ConfigService;
+import com.nike.cerberus.util.UuidSupplier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -30,6 +31,9 @@ public class CerberusSigningKeyResolverTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private UuidSupplier uuidSupplier;
 
     private CerberusSigningKeyResolver cerberusSigningKeyResolver;
 
@@ -68,7 +72,7 @@ public class CerberusSigningKeyResolverTest {
         when(configService.getJwtSecrets()).thenReturn(configStoreJwtSecretData);
 
         cerberusSigningKeyResolver = new CerberusSigningKeyResolver(
-                jwtServiceOptionalPropertyHolder, configService, objectMapper);
+                jwtServiceOptionalPropertyHolder, configService, objectMapper, false, uuidSupplier);
     }
 
     @Test

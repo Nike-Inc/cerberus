@@ -1,5 +1,6 @@
 package com.nike.cerberus.jwt;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Objects;
 
@@ -9,6 +10,11 @@ public class CerberusJwtKeySpec extends SecretKeySpec {
 
     public CerberusJwtKeySpec(byte[] key, String algorithm, String kid) {
         super(key, algorithm);
+        this.kid = kid;
+    }
+
+    public CerberusJwtKeySpec(SecretKey secretKey, String kid) {
+        super(secretKey.getEncoded(), secretKey.getAlgorithm());
         this.kid = kid;
     }
 
