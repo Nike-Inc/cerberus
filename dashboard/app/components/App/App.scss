@@ -2,6 +2,7 @@
 
 html, body {
   height: 100%;
+  overflow-y: hidden;
 }
 
 #main-wrapper {
@@ -32,7 +33,7 @@ html, body {
   border-left-style: solid;
   border-left-width: 1px;
 
-  max-height: 800px;
+  max-height: 90vh;
   overflow-y: auto;
 
   #workspace-wrapper {
