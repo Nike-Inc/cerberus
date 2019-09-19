@@ -18,6 +18,7 @@
 package com.nike.cerberus.server.config.guice;
 
 import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
 import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.caching.CryptoMaterialsCache;
@@ -303,40 +304,54 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     @Named("encryptCryptoMaterialsManager")
     public CryptoMaterialsManager encryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
-                                                                @Named("cms.encryption.encrypt.cache.maxSize") int maxSize,
-                                                                @Named("cms.encryption.encrypt.cache.maxAge") int maxAge,
-                                                                @Named("cms.encryption.encrypt.cache.messageUseLimit") int messageUseLimit,
+                                                                @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
+                                                                KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
                                                                 Region currentRegion) {
-        logger.info("Initializing encryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}, " +
-                "messageUseLimit: {}", cmkArns, maxSize, maxAge, messageUseLimit);
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
-        CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
-        CryptoMaterialsManager cachingCmm =
-                CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
-                        .withCache(cache)
-                        .withMaxAge(maxAge, TimeUnit.SECONDS)
-                        .withMessageUseLimit(messageUseLimit)
-                        .build();
-        return cachingCmm;
+        if (cacheEnabled) {
+            int maxSize = kmsDataKeyCachingOptionalPropertyHolder.encryptMaxSize;
+            int maxAge = kmsDataKeyCachingOptionalPropertyHolder.encryptMaxAge;
+            int messageUseLimit = kmsDataKeyCachingOptionalPropertyHolder.encryptMessageUseLimit;
+            logger.info("Initializing caching encryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}, " +
+                    "messageUseLimit: {}", cmkArns, maxSize, maxAge, messageUseLimit);
+            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsManager cachingCmm =
+                    CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                            .withCache(cache)
+                            .withMaxAge(maxAge, TimeUnit.SECONDS)
+                            .withMessageUseLimit(messageUseLimit)
+                            .build();
+            return cachingCmm;
+        } else {
+            logger.info("Initializing encryptCryptoMaterialsManager with CMK: {}", cmkArns);
+            return new DefaultCryptoMaterialsManager(keyProvider);
+        }
     }
 
     @Provides
     @Singleton
     @Named("decryptCryptoMaterialsManager")
     public CryptoMaterialsManager decryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
-                                                                @Named("cms.encryption.decrypt.cache.maxSize") int maxSize,
-                                                                @Named("cms.encryption.decrypt.cache.maxAge") int maxAge,
+                                                                @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
+                                                                KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
                                                                 Region currentRegion) {
-        logger.info("Initializing decryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}",
-                cmkArns, maxSize, maxAge);
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
-        CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
-        CryptoMaterialsManager cachingCmm =
-                CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
-                        .withCache(cache)
-                        .withMaxAge(maxAge, TimeUnit.SECONDS)
-                        .build();
-        return cachingCmm;
+        if (cacheEnabled) {
+            int maxSize = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxSize;
+            int maxAge = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxAge;
+            logger.info("Initializing caching decryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}",
+                    cmkArns, maxSize, maxAge);
+            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsManager cachingCmm =
+                    CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                            .withCache(cache)
+                            .withMaxAge(maxAge, TimeUnit.SECONDS)
+                            .build();
+            return cachingCmm;
+        } else {
+            logger.info("Initializing decryptCryptoMaterialsManager with CMK: {}", cmkArns);
+            return new DefaultCryptoMaterialsManager(keyProvider);
+        }
     }
 
     /**
@@ -349,5 +364,36 @@ public class CmsGuiceModule extends AbstractModule {
         Region region = Regions.getCurrentRegion();
         Region currentRegion = region == null ? Region.getRegion(Regions.DEFAULT_REGION ) : region;
         return currentRegion;
+    }
+
+    /**
+     * This 'holder' class allows optional injection of KMS-data-key-caching-specific properties that are only necessary when
+     * SignalFx metrics reporting is enabled.
+     *
+     * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
+     * or with constructor injection.
+     *
+     * https://github.com/google/guice/wiki/FrequentlyAskedQuestions
+     */
+    static class KmsDataKeyCachingOptionalPropertyHolder {
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxSize")
+        int encryptMaxSize = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxAge")
+        int encryptMaxAge = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.messageUseLimit")
+        int encryptMessageUseLimit = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxSize")
+        int decryptMaxSize = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxAge")
+        int decryptMaxAge = 0;
     }
 }
