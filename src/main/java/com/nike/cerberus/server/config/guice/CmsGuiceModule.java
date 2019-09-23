@@ -17,6 +17,15 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.MasterKeyProvider;
+import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.caching.CryptoMaterialsCache;
+import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.*;
 import com.google.inject.name.Names;
@@ -61,7 +70,10 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.nike.cerberus.service.EncryptionService.*;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -191,8 +203,8 @@ public class CmsGuiceModule extends AbstractModule {
     /**
      * Process the list of fully qualified class names under cms.event.enabledProcessors.
      * Using just to get an instance of the class and create a list of processors for the event processing service.
-     * @param injector The guice injector
      *
+     * @param injector The guice injector
      * @return List of enabled processors
      */
     @Provides
@@ -286,5 +298,102 @@ public class CmsGuiceModule extends AbstractModule {
     public StaticAssetManager dashboardStaticAssetManager() {
         int maxDepthOfFileTraversal = 2;
         return new StaticAssetManager(DASHBOARD_DIRECTORY_RELATIVE_PATH, maxDepthOfFileTraversal);
+    }
+
+    @Provides
+    @Singleton
+    @Named("encryptCryptoMaterialsManager")
+    public CryptoMaterialsManager encryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
+                                                                @Named("cms.cache.enabled") boolean cacheEnabled,
+                                                                KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
+                                                                Region currentRegion) {
+        MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
+        if (cacheEnabled) {
+            int maxSize = kmsDataKeyCachingOptionalPropertyHolder.encryptMaxSize;
+            int maxAge = kmsDataKeyCachingOptionalPropertyHolder.encryptMaxAge;
+            int messageUseLimit = kmsDataKeyCachingOptionalPropertyHolder.encryptMessageUseLimit;
+            logger.info("Initializing caching encryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}, " +
+                    "messageUseLimit: {}", cmkArns, maxSize, maxAge, messageUseLimit);
+            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsManager cachingCmm =
+                    CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                            .withCache(cache)
+                            .withMaxAge(maxAge, TimeUnit.SECONDS)
+                            .withMessageUseLimit(messageUseLimit)
+                            .build();
+            return cachingCmm;
+        } else {
+            logger.info("Initializing encryptCryptoMaterialsManager with CMK: {}", cmkArns);
+            return new DefaultCryptoMaterialsManager(keyProvider);
+        }
+    }
+
+    @Provides
+    @Singleton
+    @Named("decryptCryptoMaterialsManager")
+    public CryptoMaterialsManager decryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
+                                                                @Named("cms.cache.enabled") boolean cacheEnabled,
+                                                                KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
+                                                                Region currentRegion) {
+        MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
+        if (cacheEnabled) {
+            int maxSize = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxSize;
+            int maxAge = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxAge;
+            logger.info("Initializing caching decryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}",
+                    cmkArns, maxSize, maxAge);
+            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsManager cachingCmm =
+                    CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
+                            .withCache(cache)
+                            .withMaxAge(maxAge, TimeUnit.SECONDS)
+                            .build();
+            return cachingCmm;
+        } else {
+            logger.info("Initializing decryptCryptoMaterialsManager with CMK: {}", cmkArns);
+            return new DefaultCryptoMaterialsManager(keyProvider);
+        }
+    }
+
+    /**
+     * Returns the current region
+     * @return current region
+     */
+    @Provides
+    @Singleton
+    public Region currentRegion() {
+        Region region = Regions.getCurrentRegion();
+        Region currentRegion = region == null ? Region.getRegion(Regions.DEFAULT_REGION ) : region;
+        return currentRegion;
+    }
+
+    /**
+     * This 'holder' class allows optional injection of KMS-data-key-caching-specific properties that are only necessary when
+     * SignalFx metrics reporting is enabled.
+     *
+     * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
+     * or with constructor injection.
+     *
+     * https://github.com/google/guice/wiki/FrequentlyAskedQuestions
+     */
+    static class KmsDataKeyCachingOptionalPropertyHolder {
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.cache.encryption.encrypt.maxSize")
+        int encryptMaxSize = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.cache.encryption.encrypt.maxAge")
+        int encryptMaxAge = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.cache.encryption.encrypt.messageUseLimit")
+        int encryptMessageUseLimit = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.cache.encryption.decrypt.maxSize")
+        int decryptMaxSize = 0;
+
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.cache.encryption.decrypt.maxAge")
+        int decryptMaxAge = 0;
     }
 }

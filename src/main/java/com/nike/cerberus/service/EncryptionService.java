@@ -1,13 +1,14 @@
 package com.nike.cerberus.service;
 
 import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
 import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
 import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.util.CiphertextUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,20 +40,26 @@ public class EncryptionService {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final AwsCrypto awsCrypto;
-    private final MasterKeyProvider<KmsMasterKey> encryptProvider;
+    private List<String> cmkArnList;
     private final String cmsVersion;
     private final Region currentRegion;
+    private final CryptoMaterialsManager decryptCryptoMaterialsManager;
+    private final CryptoMaterialsManager encryptCryptoMaterialsManager;
 
     @Inject
     public EncryptionService(AwsCrypto awsCrypto,
                              @Named("cms.encryption.cmk.arns") String cmkArns,
-                             @Named("service.version") String cmsVersion) {
-
-        Region region = Regions.getCurrentRegion();
-        currentRegion = region == null ? Region.getRegion(Regions.DEFAULT_REGION ) : region;
+                             @Named("service.version") String cmsVersion,
+                             @Named("decryptCryptoMaterialsManager") CryptoMaterialsManager decryptCryptoMaterialsManager,
+                             @Named("encryptCryptoMaterialsManager") CryptoMaterialsManager encryptCryptoMaterialsManager,
+                             Region currentRegion) {
+        this.currentRegion = currentRegion;
         this.awsCrypto = awsCrypto;
-        this.encryptProvider = initializeKeyProvider(splitArns(cmkArns), currentRegion);
+        log.info("CMK ARNs " + cmkArns);
+        this.cmkArnList = splitArns(cmkArns);
         this.cmsVersion = cmsVersion;
+        this.decryptCryptoMaterialsManager = decryptCryptoMaterialsManager;
+        this.encryptCryptoMaterialsManager = encryptCryptoMaterialsManager;
     }
 
     /**
@@ -66,11 +73,11 @@ public class EncryptionService {
      * @param sdbPath          the SDB path where these secrets are being stored (added to EncryptionContext)
      */
     public String encrypt(String plainTextPayload, String sdbPath) {
-        return awsCrypto.encryptString(encryptProvider, plainTextPayload, buildEncryptionContext(sdbPath)).getResult();
+        return awsCrypto.encryptString(encryptCryptoMaterialsManager, plainTextPayload, buildEncryptionContext(sdbPath)).getResult();
     }
 
     public byte[] encrypt(byte[] bytes, String sdbPath) {
-        return awsCrypto.encryptData(encryptProvider, bytes, buildEncryptionContext(sdbPath)).getResult();
+        return awsCrypto.encryptData(encryptCryptoMaterialsManager, bytes, buildEncryptionContext(sdbPath)).getResult();
     }
 
     /**
@@ -118,8 +125,17 @@ public class EncryptionService {
         // Parses the ARNs out of the encryptedPayload so that you can manually rotate the CMKs, if desired
         // Whatever CMKs were used in the encrypt operation will be used to decrypt
         List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
-        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
-        return new String(awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
+        CryptoMaterialsManager cryptoMaterialsManager = getCryptoMaterialsManager(cmkArns, currentRegion);
+        return new String(awsCrypto.decryptData(cryptoMaterialsManager, parsedCiphertext).getResult(), StandardCharsets.UTF_8);
+    }
+
+    private CryptoMaterialsManager getCryptoMaterialsManager(List<String> cmkArns, Region currentRegion) {
+        if (cmkArnList.containsAll(cmkArns)) {
+            return decryptCryptoMaterialsManager;
+        } else {
+            MasterKeyProvider<KmsMasterKey> provider = initializeKeyProvider(cmkArns, currentRegion);
+            return new DefaultCryptoMaterialsManager(provider);
+        }
     }
 
     /**
@@ -155,8 +171,8 @@ public class EncryptionService {
         // Parses the ARNs out of the encryptedPayload so that you can manually rotate the CMKs, if desired
         // Whatever CMKs were used in the encrypt operation will be used to decrypt
         List<String> cmkArns = CiphertextUtils.getCustomerMasterKeyArns(parsedCiphertext);
-        MasterKeyProvider<KmsMasterKey> decryptProvider = initializeKeyProvider(cmkArns, currentRegion);
-        return awsCrypto.decryptData(decryptProvider, parsedCiphertext).getResult();
+        CryptoMaterialsManager cryptoMaterialsManager = getCryptoMaterialsManager(cmkArns, currentRegion);
+        return awsCrypto.decryptData(cryptoMaterialsManager, parsedCiphertext).getResult();
     }
 
     /**
@@ -194,8 +210,7 @@ public class EncryptionService {
     /**
      * Split the ARNs from a single comma delimited string into a list.
      */
-    protected List<String> splitArns(String cmkArns) {
-        log.info("CMK ARNs " + cmkArns);
+    public static List<String> splitArns(String cmkArns) {
         List<String> keyArns = Lists.newArrayList(StringUtils.split(cmkArns, ","));
         if (keyArns.size() < 2) {
             throw new IllegalArgumentException("At least 2 CMK ARNs are required for high availability, size:" + keyArns.size());
@@ -209,12 +224,22 @@ public class EncryptionService {
      * For encrypt, KMS in all regions must be available.
      * For decrypt, KMS in at least one region must be available.
      */
-    protected static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns, Region currentRegion) {
+    public static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(List<String> cmkArns, Region currentRegion) {
         List<MasterKeyProvider<KmsMasterKey>> providers =
                 getSortedArnListByCurrentRegion(cmkArns, currentRegion).stream()
                         .map(KmsMasterKeyProvider::new)
                         .collect(Collectors.toList());
         return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
+    }
+
+    /**
+     * Initialize a Multi-KMS-MasterKeyProvider.
+     * <p>
+     * For encrypt, KMS in all regions must be available.
+     * For decrypt, KMS in at least one region must be available.
+     */
+    public static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(String cmkArns, Region currentRegion) {
+        return initializeKeyProvider(splitArns(cmkArns), currentRegion);
     }
 
     /**
