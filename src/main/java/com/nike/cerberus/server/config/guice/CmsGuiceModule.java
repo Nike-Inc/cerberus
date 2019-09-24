@@ -95,6 +95,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        requestStaticInjection(StaticInjector.class);
         bind(ObjectMapper.class).toInstance(objectMapper);
         bind(ConfigService.class).toInstance(configService);
 

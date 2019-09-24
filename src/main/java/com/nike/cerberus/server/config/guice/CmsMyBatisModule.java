@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.server.config.guice;
 
+import com.nike.cerberus.service.ConfigService;
+import com.typesafe.config.Config;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.guice.MyBatisModule;
 import org.mybatis.guice.datasource.c3p0.C3p0DataSourceProvider;
@@ -25,6 +27,8 @@ import org.mybatis.guice.datasource.c3p0.C3p0DataSourceProvider;
  */
 public class CmsMyBatisModule extends MyBatisModule {
 
+    private final Config config = ConfigService.getInstance().getAppConfigMergedWithCliGeneratedProperties();
+
     @Override
     protected void initialize() {
         bindDataSourceProviderType(C3p0DataSourceProvider.class);
@@ -32,7 +36,7 @@ public class CmsMyBatisModule extends MyBatisModule {
 
         addSimpleAliases("com.nike.cerberus.record");
         addMapperClasses("com.nike.cerberus.mapper");
-        useCacheEnabled(false);
+        useCacheEnabled(config.getBoolean("cms.mybatis.cache.enabled"));
         failFast(true);
     }
 }

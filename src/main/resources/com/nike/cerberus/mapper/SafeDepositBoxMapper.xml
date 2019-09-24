@@ -20,6 +20,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.nike.cerberus.mapper.SafeDepositBoxMapper">
 
+  <cache type="com.nike.cerberus.cache.DatabaseCache"/>
+
   <select id="getUserAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
     SELECT
       SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
