@@ -99,6 +99,7 @@ public class JwtServiceTest {
     public void test_parseAndValidateToken_returns_empty_for_blacklisted_token(){
         String token = jwtService.generateJwtToken(cerberusJwtClaims);
         when(jwtBlacklistDao.getBlacklist()).thenReturn(Sets.newHashSet("id"));
+        jwtService.refreshBlacklist();
         Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
         assertFalse(cerberusJwtClaims.isPresent());
     }

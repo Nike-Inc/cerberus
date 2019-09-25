@@ -76,7 +76,7 @@ public class RevokeTokenTest {
                 new CerberusSecurityContext(authPrincipal, "https"));
 
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
-        when(authPrincipal.getToken()).thenReturn(TOKEN_ID);
+        when(authPrincipal.getTokenId()).thenReturn(TOKEN_ID);
 
         final CompletableFuture<ResponseInfo<Void>> completableFuture =
                 subject.execute(requestInfo, executor, null);
