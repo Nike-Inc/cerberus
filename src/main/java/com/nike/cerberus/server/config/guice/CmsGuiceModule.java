@@ -304,7 +304,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     @Named("encryptCryptoMaterialsManager")
     public CryptoMaterialsManager encryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
-                                                                @Named("cms.cache.enabled") boolean cacheEnabled,
+                                                                @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
                                                                 KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
                                                                 Region currentRegion) {
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
@@ -332,7 +332,7 @@ public class CmsGuiceModule extends AbstractModule {
     @Singleton
     @Named("decryptCryptoMaterialsManager")
     public CryptoMaterialsManager decryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
-                                                                @Named("cms.cache.enabled") boolean cacheEnabled,
+                                                                @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
                                                                 KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
                                                                 Region currentRegion) {
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
@@ -377,23 +377,23 @@ public class CmsGuiceModule extends AbstractModule {
      */
     static class KmsDataKeyCachingOptionalPropertyHolder {
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.cache.encryption.encrypt.maxSize")
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxSize")
         int encryptMaxSize = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.cache.encryption.encrypt.maxAge")
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxAge")
         int encryptMaxAge = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.cache.encryption.encrypt.messageUseLimit")
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.messageUseLimit")
         int encryptMessageUseLimit = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.cache.encryption.decrypt.maxSize")
+        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxSize")
         int decryptMaxSize = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.cache.encryption.decrypt.maxAge")
+        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxAge")
         int decryptMaxAge = 0;
     }
 }
