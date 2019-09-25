@@ -381,7 +381,7 @@ public class CmsGuiceModule extends AbstractModule {
         int encryptMaxSize = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxAge")
+        @com.google.inject.name.Named("cms.encryption.cache.encrypt.maxAgeInSeconds")
         int encryptMaxAge = 0;
 
         @Inject(optional=true)
@@ -393,7 +393,7 @@ public class CmsGuiceModule extends AbstractModule {
         int decryptMaxSize = 0;
 
         @Inject(optional=true)
-        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxAge")
+        @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxAgeInSeconds")
         int decryptMaxAge = 0;
     }
 }
