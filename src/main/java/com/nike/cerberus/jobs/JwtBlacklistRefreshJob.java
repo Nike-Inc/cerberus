@@ -26,29 +26,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Periodically refresh JWT signing keys.
+ * Periodically refresh JWT blacklist.
  */
 @Singleton
-public class JwtSecretRefreshJob extends Job {
+public class JwtBlacklistRefreshJob extends Job {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtSecretRefreshJob.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtBlacklistRefreshJob.class);
 
     private final JwtService jwtService;
 
     @Inject
-    public JwtSecretRefreshJob(JwtService jwtService) {
+    public JwtBlacklistRefreshJob(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
     @Override
     public void doRun() throws JobInterruptException {
-        log.debug("Running JWT secret refresh job");
+        log.debug("Running JWT blacklist refresh job");
         try {
-            jwtService.refreshKeys();
+            jwtService.refreshBlacklist();
         } catch (JobInterruptException e) {
             throw e;
         } catch (Exception e) {
-            log.warn("Error refreshing JWT secret", e);
+            log.warn("Error refreshing JWT blacklist", e);
         }
     }
 }

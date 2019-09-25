@@ -104,6 +104,7 @@ public class AuthTokenService {
                 .withIsAdmin(claims.getIsAdmin())
                 .withGroups(claims.getGroups())
                 .withRefreshCount(claims.getRefreshCount())
+                .withId(claims.getId())
                 .build();
     }
 
@@ -120,9 +121,8 @@ public class AuthTokenService {
     }
 
     @Transactional
-    public void revokeToken(String token) {
-        String hash = tokenHasher.hashToken(token);
-        authTokenDao.deleteAuthTokenFromHash(hash);
+    public void revokeToken(String tokenId, OffsetDateTime tokenExpires) {
+       jwtService.revokeToken(tokenId, tokenExpires);
     }
 
     @Transactional(

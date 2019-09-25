@@ -1,5 +1,7 @@
 package com.nike.cerberus.service;
 
+import com.google.common.collect.Sets;
+import com.nike.cerberus.dao.JwtBlacklistDao;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
@@ -15,13 +17,16 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class JwtServiceTest {
 
     @Mock
     private CerberusSigningKeyResolver signingKeyResolver;
+
+    @Mock
+    private JwtBlacklistDao jwtBlacklistDao;
 
     private JwtService jwtService;
 
@@ -32,7 +37,7 @@ public class JwtServiceTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        jwtService = new JwtService(signingKeyResolver, "local");
+        jwtService = new JwtService(signingKeyResolver, "local", jwtBlacklistDao);
         cerberusJwtKeySpec = new CerberusJwtKeySpec(new byte[64], "HmacSHA512", "key id");
         cerberusJwtClaims = new CerberusJwtClaims();
         cerberusJwtClaims.setId("id");
@@ -88,5 +93,20 @@ public class JwtServiceTest {
                 "bnQiOjEsImV4cCI6NDA3MDkxMjQ2MSwiaWF0Ijo5NDY2ODg0NjF9";
         Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
         assertFalse(cerberusJwtClaims.isPresent());
+    }
+
+    @Test
+    public void test_parseAndValidateToken_returns_empty_for_blacklisted_token(){
+        String token = jwtService.generateJwtToken(cerberusJwtClaims);
+        when(jwtBlacklistDao.getBlacklist()).thenReturn(Sets.newHashSet("id"));
+        Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
+        assertFalse(cerberusJwtClaims.isPresent());
+    }
+
+    @Test
+    public void test_that_revokeToken_calls_the_dao() {
+        final String tokenId = "abc-123-def-456";
+        jwtService.revokeToken(tokenId, OffsetDateTime.now());
+        verify(jwtBlacklistDao, times(1)).addToBlacklist(any());
     }
 }

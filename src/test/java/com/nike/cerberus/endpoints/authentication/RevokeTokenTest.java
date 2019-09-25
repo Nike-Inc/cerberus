@@ -83,7 +83,7 @@ public class RevokeTokenTest {
         final ResponseInfo<Void> responseInfo = completableFuture.join();
 
         assertThat(responseInfo.getHttpStatusCode()).isEqualTo(HttpResponseStatus.NO_CONTENT.code());
-        verify(authenticationService).revoke(TOKEN_ID);
+        verify(authenticationService).revoke(TOKEN_ID, authPrincipal.getTokenExpires());
     }
 
     @Test
