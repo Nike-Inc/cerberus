@@ -82,7 +82,7 @@ export function fetchSecureFilePathKeys(path, token) {
                 let files = response.data['secure_file_summaries'];
                 let keys = [];
                 files.forEach(file => {
-                    keys.push(file["name"])
+                    keys.push(file["path"])
                 });
                 dispatch(updateSecureFilePathKeys(keys))
             })
