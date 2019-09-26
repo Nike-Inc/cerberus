@@ -50,9 +50,27 @@ export default createReducer(initialState, {
     },
     [action.FETCHED_SECURE_FILE_KEYS]: (state, payload) => {
         let updatedKeys = state.keysForSecureDataPath
-        payload.forEach((key) =>
-            updatedKeys[key] = {type: 'file'}
-        )
+        const navigatedPathComponentCount = state.navigatedPath.split("/").length
+        payload.forEach((key) => {
+            // For example let's say navigatedPath = "app/sdb/" and the file structure looks like this:
+            //
+            // app/sdb
+            //   |--file1.txt          filePath = "sdb/file1.txt"
+            //   |--folder
+            //        |--file2.txt     filePath = "sdb/folder/file2.txt"
+            //
+            // navigatedPath has 3 components ["app", "sdb", ""]
+            // file1.txt has 2 components ["sdb", "file1.txt"] because no category
+            // file2.txt has 3 components ["sdb", "folder", "file2.txt"]
+            // So file in the current folder level would have fewer components than navigatedPath
+            const filePathComponents = key.split("/")
+            if (filePathComponents.length > navigatedPathComponentCount - 1) {
+                const subPath = filePathComponents[navigatedPathComponentCount - 2]
+                updatedKeys[subPath + "/"] = {type: 'object'}
+            } else {
+                updatedKeys[filePathComponents[filePathComponents.length - 1]] = {type: 'file'}
+            }
+        })
 
         return Object.assign({}, state, {
             hasFetchedFileKeys: true,
