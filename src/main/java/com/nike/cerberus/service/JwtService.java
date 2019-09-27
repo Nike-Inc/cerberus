@@ -17,15 +17,18 @@
 package com.nike.cerberus.service;
 
 import com.google.inject.name.Named;
+import com.nike.cerberus.dao.JwtBlacklistDao;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
+import com.nike.cerberus.record.JwtBlacklistRecord;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import org.mybatis.guice.transactional.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,10 @@ import javax.inject.Singleton;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Optional;
+
+import static org.mybatis.guice.transactional.Isolation.READ_UNCOMMITTED;
 
 /**
  * Service for generating, parsing, and validating JWT tokens.
@@ -50,12 +56,18 @@ public class JwtService {
 
     private final CerberusSigningKeyResolver signingKeyResolver;
     private final String environmentName;
+    private final JwtBlacklistDao jwtBlacklistDao;
+
+    private HashSet<String> blacklist;
 
     @Inject
     public JwtService(CerberusSigningKeyResolver signingKeyResolver,
-                      @Named("cms.env.name") String environmentName) {
+                      @Named("cms.env.name") String environmentName,
+                      JwtBlacklistDao jwtBlacklistDao) {
         this.signingKeyResolver = signingKeyResolver;
         this.environmentName = environmentName;
+        this.jwtBlacklistDao = jwtBlacklistDao;
+        refreshBlacklist();
     }
 
     /**
@@ -104,6 +116,10 @@ public class JwtService {
             return Optional.empty();
         }
         Claims claims = claimsJws.getBody();
+        if (blacklist.contains(claims.getId())) {
+            log.warn("This JWT token is blacklisted. ID: {}", claims.getId());
+            return Optional.empty();
+        }
         String subject = claims.getSubject();
         CerberusJwtClaims cerberusJwtClaims = new CerberusJwtClaims()
                 .setId(claims.getId())
@@ -121,7 +137,38 @@ public class JwtService {
     /**
      * Refresh signing keys in {@link CerberusSigningKeyResolver}
      */
-    public void refresh() {
+    public void refreshKeys() {
         signingKeyResolver.refresh();
+    }
+
+    /**
+     * Refresh JWT blacklist
+     */
+    public void refreshBlacklist() {
+        blacklist = jwtBlacklistDao.getBlacklist();
+    }
+
+    /**
+     * Revoke JWT
+     * @param id JWT ID
+     * @param tokenExpires Expiration timestamp of the JWT
+     */
+    public void revokeToken(String id, OffsetDateTime tokenExpires) {
+        blacklist.add(id);
+        JwtBlacklistRecord jwtBlacklistRecord = new JwtBlacklistRecord()
+                .setId(id)
+                .setExpiresTs(tokenExpires);
+        jwtBlacklistDao.addToBlacklist(jwtBlacklistRecord);
+    }
+
+    /**
+     * Delete JWT blacklist entries that have expired
+     * @return
+     */
+    @Transactional(
+            isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
+    )
+    public int deleteExpiredTokens() {
+        return jwtBlacklistDao.deleteExpiredTokens();
     }
 }

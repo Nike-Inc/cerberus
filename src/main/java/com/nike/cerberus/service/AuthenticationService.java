@@ -425,7 +425,7 @@ public class AuthenticationService {
                     .build();
         }
 
-        revoke(authPrincipal.getToken());
+        revoke(authPrincipal.getToken(), authPrincipal.getTokenExpires());
 
         final AuthResponse authResponse = new AuthResponse();
         authResponse.setStatus(AuthStatus.SUCCESS);
@@ -440,10 +440,11 @@ public class AuthenticationService {
     }
 
     /**
-     * @param authToken Auth Token to be revoked
+     * @param tokenId Auth Token ID to be revoked
+     * @param tokenExpires Token expire timestamp
      */
-    public void revoke(final String authToken) {
-        authTokenService.revokeToken(authToken);
+    public void revoke(final String tokenId, OffsetDateTime tokenExpires) {
+        authTokenService.revokeToken(tokenId, tokenExpires);
     }
 
     /**

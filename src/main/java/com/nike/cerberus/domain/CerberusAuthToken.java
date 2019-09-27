@@ -31,6 +31,7 @@ public class CerberusAuthToken {
     private boolean isAdmin;
     private String groups;
     private int refreshCount;
+    private String id;
 
     public String getToken() {
         return token;
@@ -64,6 +65,10 @@ public class CerberusAuthToken {
         return refreshCount;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public static final class Builder {
         private String token;
         private OffsetDateTime created;
@@ -73,6 +78,7 @@ public class CerberusAuthToken {
         private boolean isAdmin;
         private String groups;
         private int refreshCount;
+        private String id;
 
         private Builder() {
         }
@@ -121,6 +127,11 @@ public class CerberusAuthToken {
             return this;
         }
 
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
         public CerberusAuthToken build() {
             CerberusAuthToken generateTokenResult = new CerberusAuthToken();
             generateTokenResult.refreshCount = this.refreshCount;
@@ -131,6 +142,7 @@ public class CerberusAuthToken {
             generateTokenResult.groups = this.groups;
             generateTokenResult.principalType = this.principalType;
             generateTokenResult.created = this.created;
+            generateTokenResult.id = this.id;
             return generateTokenResult;
         }
     }

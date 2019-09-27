@@ -150,16 +150,6 @@ public class AuthTokenServiceTest {
     }
 
     @Test
-    public void test_that_revokeToken_calls_the_dao_with_the_hashed_token() {
-        final String tokenId = "abc-123-def-456";
-        final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
-        when(tokenHasher.hashToken(tokenId)).thenReturn(fakeHash);
-
-        authTokenService.revokeToken(tokenId);
-        verify(authTokenDao).deleteAuthTokenFromHash(fakeHash);
-    }
-
-    @Test
     public void test_that_deleteExpiredTokens_directly_proxies_dao() {
         int maxDelete = 1;
         int batchSize = 2;

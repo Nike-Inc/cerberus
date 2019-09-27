@@ -87,6 +87,10 @@ public class CerberusPrincipal implements Principal {
         return cerberusAuthToken.getToken();
     }
 
+    public String getTokenId() {
+        return cerberusAuthToken.getId();
+    }
+
     public boolean hasRole(final String role) {
         return roles.contains(role);
     }

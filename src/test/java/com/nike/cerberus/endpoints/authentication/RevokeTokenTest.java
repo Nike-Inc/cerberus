@@ -76,14 +76,14 @@ public class RevokeTokenTest {
                 new CerberusSecurityContext(authPrincipal, "https"));
 
         when(requestInfo.getRequestAttributes()).thenReturn(requestAttributes);
-        when(authPrincipal.getToken()).thenReturn(TOKEN_ID);
+        when(authPrincipal.getTokenId()).thenReturn(TOKEN_ID);
 
         final CompletableFuture<ResponseInfo<Void>> completableFuture =
                 subject.execute(requestInfo, executor, null);
         final ResponseInfo<Void> responseInfo = completableFuture.join();
 
         assertThat(responseInfo.getHttpStatusCode()).isEqualTo(HttpResponseStatus.NO_CONTENT.code());
-        verify(authenticationService).revoke(TOKEN_ID);
+        verify(authenticationService).revoke(TOKEN_ID, authPrincipal.getTokenExpires());
     }
 
     @Test

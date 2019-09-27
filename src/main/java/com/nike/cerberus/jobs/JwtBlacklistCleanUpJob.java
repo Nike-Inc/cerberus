@@ -12,43 +12,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package com.nike.cerberus.jobs;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.nike.cerberus.service.JwtService;
-import org.knowm.sundial.Job;
-import org.knowm.sundial.exceptions.JobInterruptException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 /**
- * Periodically refresh JWT signing keys.
+ * Periodically clean up JWT blacklist.
  */
-@Singleton
-public class JwtSecretRefreshJob extends Job {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtSecretRefreshJob.class);
+public class JwtBlacklistCleanUpJob extends LockingJob {
 
     private final JwtService jwtService;
 
     @Inject
-    public JwtSecretRefreshJob(JwtService jwtService) {
+    public JwtBlacklistCleanUpJob(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
     @Override
-    public void doRun() throws JobInterruptException {
-        log.debug("Running JWT secret refresh job");
-        try {
-            jwtService.refreshKeys();
-        } catch (JobInterruptException e) {
-            throw e;
-        } catch (Exception e) {
-            log.warn("Error refreshing JWT secret", e);
-        }
+    protected void executeLockableCode() {
+        int numberOfDeletedTokens = jwtService.deleteExpiredTokens();
+        log.info("Deleted {} JWT blacklist entries", numberOfDeletedTokens);
     }
 }
