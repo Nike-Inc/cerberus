@@ -34,6 +34,8 @@ import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.cache.MetricReportingCache;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.endpoints.*;
 import com.nike.cerberus.endpoints.authentication.*;
 import com.nike.cerberus.endpoints.authentication.CodeHandlingMfaCheck;
@@ -372,8 +374,8 @@ public class CmsGuiceModule extends AbstractModule {
     @Provides
     @Singleton
     @Named("kmsAuthCache")
-    public Cache<Object, Object> kmsAuthCache(MetricsService metricsService,
-                                              KmsAuthCachingOptionalPropertyHolder kmsAuthCachingOptionalPropertyHolder) {
+    public Cache<IamPrincipalCredentials, IamRoleAuthResponse> kmsAuthCache(MetricsService metricsService,
+                                                                            KmsAuthCachingOptionalPropertyHolder kmsAuthCachingOptionalPropertyHolder) {
         return new MetricReportingCache("auth.kms",
                 kmsAuthCachingOptionalPropertyHolder.maxAge,
                 metricsService, null);

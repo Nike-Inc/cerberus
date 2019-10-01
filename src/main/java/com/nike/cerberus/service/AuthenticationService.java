@@ -120,7 +120,7 @@ public class AuthenticationService {
     private final AwsIamRoleService awsIamRoleService;
     private final int maxTokenRefreshCount;
     private final boolean cacheEnabled;
-    private final Cache cache;
+    private final Cache<IamPrincipalCredentials, IamRoleAuthResponse> cache;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -145,7 +145,7 @@ public class AuthenticationService {
                                  @Named(IAM_TOKEN_TTL) String iamTokenTTL,
                                  AwsIamRoleService awsIamRoleService,
                                  @Named(CACHE_ENABLED) boolean cacheEnabled,
-                                 @Named(CACHE) Cache<Object, Object> cache) {
+                                 @Named(CACHE) Cache<IamPrincipalCredentials, IamRoleAuthResponse> cache) {
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
         this.authServiceConnector = authConnector;
@@ -236,26 +236,16 @@ public class AuthenticationService {
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
-        return authenticate(iamPrincipalCredentials, authPrincipalMetadata);
+        return cachingKmsAuthenticate(iamPrincipalCredentials, authPrincipalMetadata);
     }
 
     public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
-        if (cacheEnabled) {
-            return (IamRoleAuthResponse)cache.get(credentials, key -> {
-                final String iamPrincipalArn = ((IamPrincipalCredentials)key).getIamPrincipalArn();
-                final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn,
-                        ((IamPrincipalCredentials)key).getRegion());
-                authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-                return authenticate((IamPrincipalCredentials)key, authPrincipalMetadata);
-            });
-        } else {
-            final String iamPrincipalArn = credentials.getIamPrincipalArn();
-            final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
-            authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
+        final String iamPrincipalArn = credentials.getIamPrincipalArn();
+        final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
+        authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-            return authenticate(credentials, authPrincipalMetadata);
-        }
+        return cachingKmsAuthenticate(credentials, authPrincipalMetadata);
     }
 
     /**
@@ -273,6 +263,14 @@ public class AuthenticationService {
         final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
         AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
         return authResponse;
+    }
+
+    private IamRoleAuthResponse cachingKmsAuthenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
+        if (cacheEnabled){
+            return cache.get(credentials, key -> authenticate(credentials, authPrincipalMetadata));
+        } else {
+            return authenticate(credentials, authPrincipalMetadata);
+        }
     }
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {

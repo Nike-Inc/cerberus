@@ -37,11 +37,11 @@ import static com.github.benmanes.caffeine.cache.Caffeine.newBuilder;
  * A simple Caffeine backed cache that auto expires items after a certain time period,
  * to help us against bursty traffic that does repeat reads.
  */
-public class MetricReportingCache implements Cache {
+public class MetricReportingCache<K, V> implements Cache<K, V> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private com.github.benmanes.caffeine.cache.Cache<Object, Object> delegate;
+    private com.github.benmanes.caffeine.cache.Cache<K, V> delegate;
     private final Counter hitCounter;
     private final Counter missCounter;
 
@@ -65,8 +65,8 @@ public class MetricReportingCache implements Cache {
     }
 
     @Override
-    public Object getIfPresent(Object key) {
-        Object value = delegate.getIfPresent(key);
+    public V getIfPresent(Object key) {
+        V value = delegate.getIfPresent(key);
         if (value == null) {
             missCounter.inc();
         } else {
@@ -76,12 +76,12 @@ public class MetricReportingCache implements Cache {
     }
 
     @Override
-    public Object get(Object key, Function mappingFunction) {
+    public V get(K key, Function<? super K, ? extends V> mappingFunction) {
         return delegate.get(key, mappingFunction);
     }
 
     @Override
-    public void put(Object key, Object value) {
+    public void put(K key, V value) {
         delegate.put(key, value);
     }
 
