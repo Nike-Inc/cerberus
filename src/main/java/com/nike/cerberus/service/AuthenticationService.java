@@ -99,7 +99,7 @@ public class AuthenticationService {
     public static final String MAX_TOKEN_REFRESH_COUNT = "cms.user.token.maxRefreshCount";
     public static final String USER_TOKEN_TTL = "cms.user.token.ttl";
     public static final String IAM_TOKEN_TTL = "cms.iam.token.ttl";
-    public static final String CACHE_ENABLED = "cms.iam.token.cache.enable";
+    public static final String CACHE_ENABLED = "cms.auth.iam.kms.cache.enabled";
     public static final String CACHE = "kmsAuthCache";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final int KMS_SIZE_LIMIT = 4096;

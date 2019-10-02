@@ -77,7 +77,14 @@ public class MetricReportingCache<K, V> implements Cache<K, V> {
 
     @Override
     public V get(K key, Function<? super K, ? extends V> mappingFunction) {
-        return delegate.get(key, mappingFunction);
+        V value = delegate.getIfPresent(key);
+        if (value == null) {
+            missCounter.inc();
+            return delegate.get(key, mappingFunction);
+        } else {
+            hitCounter.inc();
+            return value;
+        }
     }
 
     @Override
