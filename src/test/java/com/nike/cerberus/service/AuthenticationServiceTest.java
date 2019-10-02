@@ -130,7 +130,9 @@ public class AuthenticationServiceTest {
                 authTokenService,
                 "1h",
                 "1h",
-                awsIamRoleService
+                awsIamRoleService,
+                false,
+                null
         );
     }
 

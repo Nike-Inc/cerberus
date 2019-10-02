@@ -27,6 +27,7 @@ import com.amazonaws.services.kms.model.NotFoundException;
 import com.amazonaws.services.kms.model.KMSInvalidStateException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -98,6 +99,8 @@ public class AuthenticationService {
     public static final String MAX_TOKEN_REFRESH_COUNT = "cms.user.token.maxRefreshCount";
     public static final String USER_TOKEN_TTL = "cms.user.token.ttl";
     public static final String IAM_TOKEN_TTL = "cms.iam.token.ttl";
+    public static final String CACHE_ENABLED = "cms.auth.iam.kms.cache.enabled";
+    public static final String CACHE = "kmsAuthCache";
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final int KMS_SIZE_LIMIT = 4096;
 
@@ -116,6 +119,8 @@ public class AuthenticationService {
     private final String iamTokenTTL;
     private final AwsIamRoleService awsIamRoleService;
     private final int maxTokenRefreshCount;
+    private final boolean cacheEnabled;
+    private final Cache<IamPrincipalCredentials, IamRoleAuthResponse> cache;
 
     @Inject(optional=true)
     @Named(ADMIN_IAM_ROLES_PROPERTY)
@@ -138,8 +143,9 @@ public class AuthenticationService {
                                  AuthTokenService authTokenService,
                                  @Named(USER_TOKEN_TTL) String userTokenTTL,
                                  @Named(IAM_TOKEN_TTL) String iamTokenTTL,
-                                 AwsIamRoleService awsIamRoleService) {
-
+                                 AwsIamRoleService awsIamRoleService,
+                                 @Named(CACHE_ENABLED) boolean cacheEnabled,
+                                 @Named(CACHE) Cache<IamPrincipalCredentials, IamRoleAuthResponse> cache) {
         this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
         this.authServiceConnector = authConnector;
@@ -155,6 +161,8 @@ public class AuthenticationService {
         this.userTokenTTL = userTokenTTL;
         this.iamTokenTTL = iamTokenTTL;
         this.awsIamRoleService = awsIamRoleService;
+        this.cacheEnabled = cacheEnabled;
+        this.cache = cache;
     }
 
     /**
@@ -228,7 +236,7 @@ public class AuthenticationService {
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_ACCOUNT_ID, awsIamRoleArnParser.getAccountId(iamPrincipalArn));
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_ROLE_NAME, awsIamRoleArnParser.getRoleName(iamPrincipalArn));
 
-        return authenticate(iamPrincipalCredentials, authPrincipalMetadata);
+        return cachingKmsAuthenticate(iamPrincipalCredentials, authPrincipalMetadata);
     }
 
     public IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials) {
@@ -237,7 +245,7 @@ public class AuthenticationService {
         final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, credentials.getRegion());
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
 
-        return authenticate(credentials, authPrincipalMetadata);
+        return cachingKmsAuthenticate(credentials, authPrincipalMetadata);
     }
 
     /**
@@ -255,6 +263,14 @@ public class AuthenticationService {
         final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
         AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
         return authResponse;
+    }
+
+    private IamRoleAuthResponse cachingKmsAuthenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
+        if (cacheEnabled){
+            return cache.get(credentials, key -> authenticate(credentials, authPrincipalMetadata));
+        } else {
+            return authenticate(credentials, authPrincipalMetadata);
+        }
     }
 
     private IamRoleAuthResponse authenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {

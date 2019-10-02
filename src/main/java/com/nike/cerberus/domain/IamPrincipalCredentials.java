@@ -21,6 +21,8 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.Pattern;
 
+import java.util.Objects;
+
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_PRINCIPAL_ARN_REGEX_ROLE_GENERATION;
 
 /**
@@ -48,5 +50,19 @@ public class IamPrincipalCredentials {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IamPrincipalCredentials that = (IamPrincipalCredentials) o;
+        return Objects.equals(iamPrincipalArn, that.iamPrincipalArn) &&
+                Objects.equals(region, that.region);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(iamPrincipalArn, region);
     }
 }

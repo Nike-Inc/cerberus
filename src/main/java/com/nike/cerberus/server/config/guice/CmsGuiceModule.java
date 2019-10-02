@@ -27,11 +27,15 @@ import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.inject.*;
 import com.google.inject.name.Names;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
+import com.nike.cerberus.cache.MetricReportingCache;
+import com.nike.cerberus.domain.IamPrincipalCredentials;
+import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.endpoints.*;
 import com.nike.cerberus.endpoints.authentication.*;
 import com.nike.cerberus.endpoints.authentication.CodeHandlingMfaCheck;
@@ -74,6 +78,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.nike.cerberus.service.EncryptionService.*;
+import static com.github.benmanes.caffeine.cache.Caffeine.newBuilder;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -366,9 +371,19 @@ public class CmsGuiceModule extends AbstractModule {
         return currentRegion;
     }
 
+    @Provides
+    @Singleton
+    @Named("kmsAuthCache")
+    public Cache<IamPrincipalCredentials, IamRoleAuthResponse> kmsAuthCache(MetricsService metricsService,
+                                                                            KmsAuthCachingOptionalPropertyHolder kmsAuthCachingOptionalPropertyHolder) {
+        return new MetricReportingCache("auth.kms",
+                kmsAuthCachingOptionalPropertyHolder.maxAge,
+                metricsService, null);
+    }
+
     /**
      * This 'holder' class allows optional injection of KMS-data-key-caching-specific properties that are only necessary when
-     * SignalFx metrics reporting is enabled.
+     * KMS data key caching is enabled.
      *
      * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
      * or with constructor injection.
@@ -395,5 +410,20 @@ public class CmsGuiceModule extends AbstractModule {
         @Inject(optional=true)
         @com.google.inject.name.Named("cms.encryption.cache.decrypt.maxAgeInSeconds")
         int decryptMaxAge = 0;
+    }
+
+    /**
+     * This 'holder' class allows optional injection of KMS-auth-caching-specific properties that are only necessary when
+     * KMS-auth caching is enabled.
+     *
+     * The 'optional=true' parameter to Guice @Inject cannot be used in combination with the @Provides annotation
+     * or with constructor injection.
+     *
+     * https://github.com/google/guice/wiki/FrequentlyAskedQuestions
+     */
+    static class KmsAuthCachingOptionalPropertyHolder {
+        @Inject(optional=true)
+        @com.google.inject.name.Named("cms.iam.token.cache.maxAgeInSeconds")
+        int maxAge = 10;
     }
 }
