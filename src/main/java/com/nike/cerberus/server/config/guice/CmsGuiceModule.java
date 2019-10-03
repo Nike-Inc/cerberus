@@ -34,6 +34,7 @@ import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.cache.MetricReportingCache;
+import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.IamPrincipalCredentials;
 import com.nike.cerberus.domain.IamRoleAuthResponse;
 import com.nike.cerberus.endpoints.*;
@@ -311,7 +312,8 @@ public class CmsGuiceModule extends AbstractModule {
     public CryptoMaterialsManager encryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
                                                                 @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
                                                                 KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
-                                                                Region currentRegion) {
+                                                                Region currentRegion,
+                                                                MetricsService metricsService) {
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
         if (cacheEnabled) {
             int maxSize = kmsDataKeyCachingOptionalPropertyHolder.encryptMaxSize;
@@ -319,7 +321,7 @@ public class CmsGuiceModule extends AbstractModule {
             int messageUseLimit = kmsDataKeyCachingOptionalPropertyHolder.encryptMessageUseLimit;
             logger.info("Initializing caching encryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}, " +
                     "messageUseLimit: {}", cmkArns, maxSize, maxAge, messageUseLimit);
-            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsCache cache = new MetricReportingCryptoMaterialsCache(maxSize, metricsService);
             CryptoMaterialsManager cachingCmm =
                     CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
                             .withCache(cache)
@@ -339,14 +341,15 @@ public class CmsGuiceModule extends AbstractModule {
     public CryptoMaterialsManager decryptCryptoMaterialsManager(@Named("cms.encryption.cmk.arns") String cmkArns,
                                                                 @Named("cms.encryption.cache.enabled") boolean cacheEnabled,
                                                                 KmsDataKeyCachingOptionalPropertyHolder kmsDataKeyCachingOptionalPropertyHolder,
-                                                                Region currentRegion) {
+                                                                Region currentRegion,
+                                                                MetricsService metricsService) {
         MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
         if (cacheEnabled) {
             int maxSize = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxSize;
             int maxAge = kmsDataKeyCachingOptionalPropertyHolder.decryptMaxAge;
             logger.info("Initializing caching decryptCryptoMaterialsManager with CMK: {}, maxSize: {}, maxAge: {}",
                     cmkArns, maxSize, maxAge);
-            CryptoMaterialsCache cache = new LocalCryptoMaterialsCache(maxSize);
+            CryptoMaterialsCache cache = new MetricReportingCryptoMaterialsCache(maxSize, metricsService);
             CryptoMaterialsManager cachingCmm =
                     CachingCryptoMaterialsManager.newBuilder().withMasterKeyProvider(keyProvider)
                             .withCache(cache)
