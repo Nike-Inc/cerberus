@@ -122,7 +122,8 @@ public class AuthTokenService {
 
     @Transactional
     public void revokeToken(String tokenId, OffsetDateTime tokenExpires) {
-       jwtService.revokeToken(tokenId, tokenExpires);
+        logger.info("Revoking token ID: {}", tokenId);
+        jwtService.revokeToken(tokenId, tokenExpires);
     }
 
     @Transactional(
