@@ -425,7 +425,7 @@ public class AuthenticationService {
                     .build();
         }
 
-        revoke(authPrincipal.getToken(), authPrincipal.getTokenExpires());
+        revoke(authPrincipal.getTokenId(), authPrincipal.getTokenExpires());
 
         final AuthResponse authResponse = new AuthResponse();
         authResponse.setStatus(AuthStatus.SUCCESS);
