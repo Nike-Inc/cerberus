@@ -77,8 +77,9 @@ dependencies {
             "com.okta.sdk:okta-sdk-httpclient:1.2.0",
             "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0",
             "org.reflections:reflections:0.9.11",
-            "com.github.ben-manes.caffeine:caffeine:2.8.0"
+            "com.github.ben-manes.caffeine:caffeine:2.8.0",
 
+            "io.github.resilience4j:resilience4j-all:1.1.0"
     )
 
     testCompile (
