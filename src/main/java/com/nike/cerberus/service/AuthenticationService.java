@@ -28,11 +28,9 @@ import com.amazonaws.services.kms.model.KMSInvalidStateException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -56,7 +54,6 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.error.KeyInvalidForAuthException;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
-import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -73,12 +70,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_GROUPS;
 import static com.nike.cerberus.security.CerberusPrincipal.METADATA_KEY_IS_ADMIN;
@@ -104,7 +96,6 @@ public class AuthenticationService {
     public static final String LOOKUP_SELF_POLICY = "lookup-self";
     public static final int KMS_SIZE_LIMIT = 4096;
 
-    private final SafeDepositBoxDao safeDepositBoxDao;
     private final AwsIamRoleDao awsIamRoleDao;
     private final AuthConnector authServiceConnector;
     private final KmsService kmsService;
@@ -113,7 +104,6 @@ public class AuthenticationService {
     private final String adminGroup;
     private final DateTimeSupplier dateTimeSupplier;
     private final AwsIamRoleArnParser awsIamRoleArnParser;
-    private final Slugger slugger;
     private final AuthTokenService authTokenService;
     private final String userTokenTTL;
     private final String iamTokenTTL;
@@ -129,8 +119,7 @@ public class AuthenticationService {
     private Set<String> adminRoleArnSet;
 
     @Inject
-    public AuthenticationService(SafeDepositBoxDao safeDepositBoxDao,
-                                 AwsIamRoleDao awsIamRoleDao,
+    public AuthenticationService(AwsIamRoleDao awsIamRoleDao,
                                  AuthConnector authConnector,
                                  KmsService kmsService,
                                  KmsClientFactory kmsClientFactory,
@@ -139,14 +128,12 @@ public class AuthenticationService {
                                  @Named(MAX_TOKEN_REFRESH_COUNT) int maxTokenRefreshCount,
                                  DateTimeSupplier dateTimeSupplier,
                                  AwsIamRoleArnParser awsIamRoleArnParser,
-                                 Slugger slugger,
                                  AuthTokenService authTokenService,
                                  @Named(USER_TOKEN_TTL) String userTokenTTL,
                                  @Named(IAM_TOKEN_TTL) String iamTokenTTL,
                                  AwsIamRoleService awsIamRoleService,
                                  @Named(CACHE_ENABLED) boolean cacheEnabled,
                                  @Named(CACHE) Cache<IamPrincipalCredentials, IamRoleAuthResponse> cache) {
-        this.safeDepositBoxDao = safeDepositBoxDao;
         this.awsIamRoleDao = awsIamRoleDao;
         this.authServiceConnector = authConnector;
         this.kmsService = kmsService;
@@ -156,7 +143,6 @@ public class AuthenticationService {
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.maxTokenRefreshCount = maxTokenRefreshCount;
-        this.slugger = slugger;
         this.authTokenService = authTokenService;
         this.userTokenTTL = userTokenTTL;
         this.iamTokenTTL = iamTokenTTL;
@@ -256,13 +242,8 @@ public class AuthenticationService {
     public AuthTokenResponse stsAuthenticate(final String iamPrincipalArn) {
         final Map<String, String> authPrincipalMetadata = generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
         authPrincipalMetadata.put(CerberusPrincipal.METADATA_KEY_AWS_IAM_PRINCIPAL_ARN, iamPrincipalArn);
-
-        final AwsIamRoleRecord iamRoleRecord;
-        iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn);
-
-        final Set<String> policies = buildCompleteSetOfPolicies(iamPrincipalArn);
-        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
-        return authResponse;
+        final AwsIamRoleRecord iamRoleRecord = getIamPrincipalRecord(iamPrincipalArn); // throws error if iam principal not associated with SDB
+        return createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, authPrincipalMetadata, iamTokenTTL);
     }
 
     private IamRoleAuthResponse cachingKmsAuthenticate(IamPrincipalCredentials credentials, Map<String, String> authPrincipalMetadata) {
@@ -292,8 +273,7 @@ public class AuthenticationService {
             throw e;
         }
 
-        final Set<String> policies = buildCompleteSetOfPolicies(credentials.getIamPrincipalArn());
-        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, policies, authPrincipalMetadata, iamTokenTTL);
+        AuthTokenResponse authResponse = createToken(iamRoleRecord.getAwsIamRoleArn(), PrincipalType.IAM, authPrincipalMetadata, iamTokenTTL);
 
         byte[] authResponseJson;
         try {
@@ -320,7 +300,6 @@ public class AuthenticationService {
 
     private AuthTokenResponse createToken(String principal,
                                           PrincipalType principalType,
-                                          Set<String> policies,
                                           Map<String, String> metadata,
                                           String vaultStyleTTL) {
 
@@ -343,7 +322,7 @@ public class AuthenticationService {
 
         return new AuthTokenResponse()
                 .setClientToken(tokenResult.getToken())
-                .setPolicies(policies)
+                .setPolicies(Collections.emptySet())
                 .setMetadata(metadata)
                 .setLeaseDuration(Duration.between(tokenResult.getCreated(), tokenResult.getExpires()).getSeconds())
                 .setRenewable(PrincipalType.USER.equals(principalType));
@@ -466,71 +445,7 @@ public class AuthenticationService {
         meta.put(CerberusPrincipal.METADATA_KEY_TOKEN_REFRESH_COUNT, String.valueOf(refreshCount));
         meta.put(CerberusPrincipal.METADATA_KEY_MAX_TOKEN_REFRESH_COUNT, String.valueOf(maxTokenRefreshCount));
 
-        final Set<String> policies = buildPolicySet(userGroups);
-
-        return createToken(username, PrincipalType.USER, policies, meta, userTokenTTL);
-    }
-
-    /**
-     * Builds the policy set to be associated with the to-be generated auth token.  The lookup-self policy is
-     * included by default.  All other associated policies are based on the groups the user is a member of.
-     *
-     * @param groups Groups the user is a member of
-     * @return Set of policies to be associated
-     */
-    private Set<String> buildPolicySet(final Set<String> groups) {
-        final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
-        final List<SafeDepositBoxRoleRecord> sdbRoles = safeDepositBoxDao.getUserAssociatedSafeDepositBoxRoles(groups);
-
-        sdbRoles.forEach(i -> {
-            policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
-        });
-
-        return policies;
-    }
-
-    /**
-     * Builds the policy set with permissions given to the specific IAM principal
-     * (e.g. arn:aws:iam::1111111111:instance-profile/example), as well as the base role that is assumed by that
-     * principal (i.e. arn:aws:iam::1111111111:role/example)
-     * @param iamPrincipalArn - The given IAM principal ARN during authentication
-     * @return - List of all policies the given ARN has access to
-     */
-    protected Set<String> buildCompleteSetOfPolicies(final String iamPrincipalArn) {
-
-        final Set<String> allPolicies = buildPolicySet(iamPrincipalArn);
-
-        return allPolicies;
-    }
-
-    /**
-     * Builds the policy set to be associated with the to-be generated auth token.  The lookup-self policy is
-     * included by default.  All other associated policies are based on what permissions are granted to the IAM role.
-     *
-     * @param iamRoleArn IAM role ARN
-     * @return Set of policies to be associated
-     */
-    private Set<String> buildPolicySet(final String iamRoleArn) {
-        final String accountRootArn = awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn);
-        final Set<String> policies = Sets.newHashSet(LOOKUP_SELF_POLICY);
-        final List<SafeDepositBoxRoleRecord> sdbRolesForIamPrincipal;
-        // This may cause issues for user/instance-profile if someone's relying on the old code that converts everything
-        // that's not a role ARN.
-        if (awsIamRoleArnParser.isAssumedRoleArn(iamRoleArn)) {
-            logger.debug("Detected assumed-role ARN, attempting to collect policies for the principal's base role...");
-            String baseIamRoleArn = awsIamRoleArnParser.convertPrincipalArnToRoleArn(iamRoleArn);
-            sdbRolesForIamPrincipal =
-                    safeDepositBoxDao.getIamAssumedRoleAssociatedSafeDepositBoxRoles(iamRoleArn, baseIamRoleArn, accountRootArn);
-        } else {
-            sdbRolesForIamPrincipal =
-                    safeDepositBoxDao.getIamRoleAssociatedSafeDepositBoxRoles(iamRoleArn, accountRootArn);
-        }
-
-        sdbRolesForIamPrincipal.forEach(i -> {
-            policies.add(buildPolicyName(i.getSafeDepositBoxName(), i.getRoleName()));
-        });
-
-        return policies;
+        return createToken(username, PrincipalType.USER, meta, userTokenTTL);
     }
 
     protected AwsIamRoleRecord getIamPrincipalRecord(String iamPrincipalArn) {
@@ -718,19 +633,5 @@ public class AuthenticationService {
         }
 
         return iamRole;
-    }
-
-    /**
-     * Outputs the expected policy name format that was used in Vault, when Cerberus used Vault to store AC information.
-     *
-     * @param sdbName Safe deposit box name.
-     * @param roleName Role for safe deposit box.
-     * @return Formatted policy name.
-     */
-    public String buildPolicyName(final String sdbName, final String roleName) {
-        Preconditions.checkArgument(StringUtils.isNotBlank(sdbName), "sdbName cannot be blank!");
-        Preconditions.checkArgument(StringUtils.isNotBlank(roleName), "roleName cannot be blank!");
-
-        return slugger.toSlug(sdbName) + '-' + StringUtils.lowerCase(roleName);
     }
 }

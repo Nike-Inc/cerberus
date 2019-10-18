@@ -34,15 +34,12 @@ import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
-import com.nike.cerberus.record.SafeDepositBoxRoleRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.server.config.CmsConfig;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.util.Lists;
-import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -50,14 +47,12 @@ import org.mockito.Mock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
-import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.nike.cerberus.service.AuthenticationService.LOOKUP_SELF_POLICY;
 import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
 import static org.junit.Assert.assertEquals;
 
@@ -116,7 +111,6 @@ public class AuthenticationServiceTest {
         initMocks(this);
         objectMapper = CmsConfig.configureObjectMapper();
         authenticationService = new AuthenticationService(
-                safeDepositBoxDao,
                 awsIamRoleDao,
                 authConnector,
                 kmsService,
@@ -126,7 +120,6 @@ public class AuthenticationServiceTest {
                 MAX_LIMIT,
                 dateTimeSupplier,
                 awsIamRoleArnParser,
-                slugger,
                 authTokenService,
                 "1h",
                 "1h",
@@ -253,48 +246,6 @@ public class AuthenticationServiceTest {
         // verify validate is called once interval has passed
         assertEquals(cmkId, result);
         verify(kmsService, times(1)).validateKeyAndPolicy(awsIamRoleKmsKeyRecord, principalArn);
-    }
-
-    @Test
-    public void test_that_buildCompleteSetOfPolicies_returns_all_policies() {
-
-        String accountId = "0000000000";
-        String roleName = "role/path";
-        String read = "read";
-        String write = "write";
-        String owner = "owner";
-        String principalArn = String.format("arn:aws:iam::%s:assumed-role/%s/token-session", accountId, roleName);
-
-        String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
-        String rootArn = String.format("arn:aws:iam::%s:root", accountId);
-        when(awsIamRoleArnParser.isAssumedRoleArn(principalArn)).thenReturn(true);
-        when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
-        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(roleArn)).thenReturn(rootArn);
-        when(awsIamRoleArnParser.convertPrincipalArnToRootArn(principalArn)).thenReturn(rootArn);
-
-        String sdbName1 = "principal arn sdb 1";
-        String sdbName2 = "principal arn sdb 2";
-        SafeDepositBoxRoleRecord principalArnRecord1 = new SafeDepositBoxRoleRecord().setRoleName(read).setSafeDepositBoxName(sdbName1);
-        SafeDepositBoxRoleRecord principalArnRecord2 = new SafeDepositBoxRoleRecord().setRoleName(write).setSafeDepositBoxName(sdbName2);
-
-        String roleArnSdb = "role arn sdb";
-        SafeDepositBoxRoleRecord roleArnRecord = new SafeDepositBoxRoleRecord().setRoleName(owner).setSafeDepositBoxName(roleArnSdb);
-
-        List<SafeDepositBoxRoleRecord> principalArnRecords = Lists.newArrayList(principalArnRecord1, principalArnRecord2, roleArnRecord);
-        when(safeDepositBoxDao.getIamAssumedRoleAssociatedSafeDepositBoxRoles(principalArn, roleArn, rootArn)).thenReturn(principalArnRecords);
-
-        List<String> expectedPolicies = Lists.newArrayList(
-                "principal-arn-sdb-1-read",
-                "principal-arn-sdb-2-write",
-                "role-arn-sdb-owner",
-                LOOKUP_SELF_POLICY
-        );
-
-        Set<String> expected = Sets.newHashSet(expectedPolicies);
-        Set<String> result = authenticationService.buildCompleteSetOfPolicies(principalArn);
-
-        assertEquals(expected.size(), result.size());
-        assertTrue(result.containsAll(expected));
     }
 
     @Test
