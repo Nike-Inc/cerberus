@@ -188,6 +188,7 @@ public class DatabaseCache implements Cache, InitializingObject {
       counter.inc();
       autoExpiringRepeatReadCounterMap.put(key, counter);
     }
+
     return value;
   }
 
