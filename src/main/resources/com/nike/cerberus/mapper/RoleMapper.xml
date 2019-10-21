@@ -20,6 +20,8 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.nike.cerberus.mapper.RoleMapper">
 
+    <cache type="com.nike.cerberus.cache.DatabaseCache"/>
+
     <select id="getAllRoles" resultType="RoleRecord">
         SELECT
           ID,

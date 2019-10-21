@@ -22,7 +22,6 @@ import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
 import com.amazonaws.encryptionsdk.caching.CachingCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.caching.CryptoMaterialsCache;
-import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -53,6 +52,7 @@ import com.nike.riposte.server.http.Endpoint;
 import com.nike.riposte.util.AwsUtil;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.client.AuthenticationClients;
+import com.typesafe.config.Config;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -79,7 +79,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.nike.cerberus.service.EncryptionService.*;
-import static com.github.benmanes.caffeine.cache.Caffeine.newBuilder;
 
 public class CmsGuiceModule extends AbstractModule {
 
@@ -101,6 +100,7 @@ public class CmsGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        requestStaticInjection(StaticInjector.class);
         bind(ObjectMapper.class).toInstance(objectMapper);
         bind(ConfigService.class).toInstance(configService);
 
@@ -143,6 +143,12 @@ public class CmsGuiceModule extends AbstractModule {
         shutdownHooks.add(injector.getInstance(DistributedLockService.class));
 
         return shutdownHooks;
+    }
+
+    @Provides
+    @Singleton
+    public Config config() {
+        return configService.getAppConfigMergedWithCliGeneratedProperties();
     }
 
     @Provides
