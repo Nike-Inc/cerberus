@@ -187,8 +187,8 @@ public class DatabaseCacheTest {
     assertNull("The first get call to the cache should return null",
         databaseCache.getObject(key));
     chainedReadCount++;
-    assertEquals("The miss counter should have been incremented", 1, databaseCache.missCounter.getCount());
-    assertEquals("The hit counter should have  been incremented", 0, databaseCache.hitCounter.getCount());
+    assertEquals("The miss counter should have been incremented", 1, databaseCache.dataCache.getMissCounter().getCount());
+    assertEquals("The hit counter should have  been incremented", 0, databaseCache.dataCache.getHitCounter().getCount());
     assertEquals("The repeat read counter for the key should increment", chainedReadCount,
         Objects.requireNonNull(databaseCache.autoExpiringRepeatReadCounterMap.getIfPresent(key)).getCount());
     databaseCache.putObject(key, value);
@@ -199,8 +199,8 @@ public class DatabaseCacheTest {
     assertNull("The second get call to the cache should return null, because the 1st didn't exceed the threshold",
         databaseCache.getObject(key));
     chainedReadCount++;
-    assertEquals("The miss counter should have been incremented", 2, databaseCache.missCounter.getCount());
-    assertEquals("The hit counter should have  been incremented", 0, databaseCache.hitCounter.getCount());
+    assertEquals("The miss counter should have been incremented", 2, databaseCache.dataCache.getMissCounter().getCount());
+    assertEquals("The hit counter should have  been incremented", 0, databaseCache.dataCache.getHitCounter().getCount());
     assertEquals("The repeat read counter for the key should increment", chainedReadCount,
         Objects.requireNonNull(databaseCache.autoExpiringRepeatReadCounterMap.getIfPresent(key)).getCount());
     databaseCache.putObject(key, value);
@@ -211,8 +211,8 @@ public class DatabaseCacheTest {
     assertEquals("The third get call to the cache should return the cached value.",
         value, databaseCache.getObject(key));
     chainedReadCount++;
-    assertEquals("The miss counter should have not been incremented", 2, databaseCache.missCounter.getCount());
-    assertEquals("The hit counter should have  been incremented", 1, databaseCache.hitCounter.getCount());
+    assertEquals("The miss counter should have not been incremented", 2, databaseCache.dataCache.getMissCounter().getCount());
+    assertEquals("The hit counter should have  been incremented", 1, databaseCache.dataCache.getHitCounter().getCount());
     assertEquals("The repeat read counter for the key should increment", chainedReadCount,
         Objects.requireNonNull(databaseCache.autoExpiringRepeatReadCounterMap.getIfPresent(key)).getCount());
 

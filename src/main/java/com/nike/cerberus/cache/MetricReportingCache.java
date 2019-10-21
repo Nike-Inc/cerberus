@@ -45,7 +45,7 @@ public class MetricReportingCache<K, V> implements Cache<K, V> {
     private final Counter hitCounter;
     private final Counter missCounter;
 
-    public MetricReportingCache(String namespace,int expireTimeInSeconds, MetricsService metricsService,
+    public MetricReportingCache(String namespace, int expireTimeInSeconds, MetricsService metricsService,
                                 Map<String, String> dimensions) {
         log.info("Cerberus cache with namespace: {} has been initialized with ttl: {}", namespace, expireTimeInSeconds);
 
@@ -140,5 +140,13 @@ public class MetricReportingCache<K, V> implements Cache<K, V> {
     @Override
     public @NonNull Map getAllPresent(Iterable keys) {
         return delegate.getAllPresent(keys);
+    }
+
+    public Counter getHitCounter() {
+        return hitCounter;
+    }
+
+    public Counter getMissCounter() {
+        return missCounter;
     }
 }

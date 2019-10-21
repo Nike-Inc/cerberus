@@ -29,7 +29,6 @@ import org.apache.ibatis.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -47,7 +46,6 @@ import static java.util.Optional.ofNullable;
 public class DatabaseCache implements Cache, InitializingObject {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
-  private MetricsService metricsService;
   private Integer repeatReadThreshold;
 
   protected static final String GLOBAL_DATA_TTL_IN_SECONDS = "cms.mybatis.cache.global.dataTtlInSeconds";
@@ -61,10 +59,8 @@ public class DatabaseCache implements Cache, InitializingObject {
   protected static final int DEFAULT_REPEAT_READ_THRESHOLD = 2;
 
   protected final String id;
-  protected com.github.benmanes.caffeine.cache.Cache<Object, Object> dataCache;
+  protected MetricReportingCache<Object, Object> dataCache;
   protected com.github.benmanes.caffeine.cache.Cache<Object, Counter> autoExpiringRepeatReadCounterMap;
-  protected Counter hitCounter;
-  protected Counter missCounter;
 
   public DatabaseCache(String id) {
     this.id = id;
@@ -80,7 +76,7 @@ public class DatabaseCache implements Cache, InitializingObject {
     Injector injector = StaticInjector.getInstance();
 
     Config config = injector.getInstance(Config.class);
-    metricsService = injector.getInstance(MetricsService.class);
+    MetricsService metricsService = injector.getInstance(MetricsService.class);
 
     String mapperKey = StringUtils.uncapitalize(id.replaceFirst("com.nike.cerberus.mapper.", ""));
     int expireTimeInSeconds = getExpireTimeInSeconds(config, mapperKey);
@@ -90,31 +86,12 @@ public class DatabaseCache implements Cache, InitializingObject {
     log.info("Database cache created with mapperKey: {}, expireTimeInSeconds: {}, counterExpireTimeInSeconds: {}, repeatReadThreshold: {}",
         mapperKey, expireTimeInSeconds, counterExpireTimeInSeconds, repeatReadThreshold);
 
-    dataCache = newBuilder()
-        .expireAfterWrite(expireTimeInSeconds, TimeUnit.SECONDS)
-        .build();
+    dataCache = new MetricReportingCache<>("mybatis", expireTimeInSeconds, metricsService,
+        ImmutableMap.of("namespace", this.id));
 
     autoExpiringRepeatReadCounterMap = newBuilder()
         .expireAfterAccess(counterExpireTimeInSeconds, TimeUnit.SECONDS)
         .build();
-
-    instrumentCacheMetrics();
-  }
-
-  /**
-   * Instrument metrics about this database cache for monitoring, alerting, canary, etc.
-   */
-  private void instrumentCacheMetrics() {
-    Map<String, String> dimensions = ImmutableMap.of("namespace", this.id);
-    // Create Metrics for this cache for observability.
-    hitCounter = metricsService.getOrCreateCounter("cms.cache.mybatis.hit", dimensions);
-    missCounter = metricsService.getOrCreateCounter("cms.cache.mybatis.miss", dimensions);
-    metricsService.getOrCreateLongCallbackGauge("cms.cache.mybatis.size",
-        () -> dataCache.estimatedSize(), dimensions);
-    metricsService.getOrCreateLongCallbackGauge("cms.cache.mybatis.stats.totalHitCount",
-        () -> dataCache.stats().hitCount(), dimensions);
-    metricsService.getOrCreateLongCallbackGauge("cms.cache.mybatis.stats.totalMissCount",
-        () -> dataCache.stats().missCount(), dimensions);
   }
 
   /**
@@ -172,13 +149,6 @@ public class DatabaseCache implements Cache, InitializingObject {
 
   @Override
   public Object getObject(Object key) {
-    Object value = dataCache.getIfPresent(key);
-    if (value == null) {
-      missCounter.inc();
-    } else {
-      hitCounter.inc();
-    }
-
     // Increment the read counter, which resets after counterExpireTimeInSeconds.
     Counter counter = autoExpiringRepeatReadCounterMap.getIfPresent(key);
     if (counter != null) {
@@ -189,7 +159,7 @@ public class DatabaseCache implements Cache, InitializingObject {
       autoExpiringRepeatReadCounterMap.put(key, counter);
     }
 
-    return value;
+    return dataCache.getIfPresent(key);
   }
 
   @Override
