@@ -38,15 +38,17 @@ import static com.github.benmanes.caffeine.cache.Caffeine.newBuilder;
 import static java.util.Optional.ofNullable;
 
 /**
- * TODO rewrite
- * A simple Caffeine backed cache that auto expires items after a certain time period,
- * to help us against bursty traffic that does repeat reads.
+ * This is a custom MyBatis Cache, that allows use to do the following
+ * 1. Report cache statistics via Dropwizard
+ * 2. Expire items automatically after some TTL from when they were cached. (To avoid needing to deal with distributed cache busting, this basically makes cached data eventually consistent up to the defined TTL)
+ * 3. Only cache items after it has been proven via repeat reads that they should be cached. (To avoid unnecessary eventual consistency in the dashboard, only make the items under heavy reads eventually consistent)
+ * See cms.conf for all the configuration settings.
  */
 public class DatabaseCache implements Cache, InitializingObject {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
-  protected final String id;
   private MetricsService metricsService;
+  private Integer repeatReadThreshold;
 
   protected static final String GLOBAL_DATA_TTL_IN_SECONDS = "cms.mybatis.cache.global.dataTtlInSeconds";
   protected static final String DATA_TTL_IN_SECONDS_OVERRIDE_PATH_TEMPLATE = "cms.mybatis.cache.%s.dataTtlInSeconds";
@@ -55,12 +57,12 @@ public class DatabaseCache implements Cache, InitializingObject {
   protected static final String GLOBAL_REPEAT_READ_THRESHOLD = "cms.mybatis.cache.global.repeatReadThreshold";
   protected static final String REPEAT_READ_THRESHOLD_OVERRIDE_PATH_TEMPLATE = "cms.mybatis.cache.%s.repeatReadThreshold";
   protected static final int DEFAULT_GLOBAL_DATA_TTL_IN_SECONDS = 10;
-  protected static final int DEFAULT_REPEAT_READ_COUNTER_EXPIRE_IN_SECONDS = 1;
-  protected static final int DEFAULT_REPEAT_READ_THRESHOLD = 5;
+  protected static final int DEFAULT_REPEAT_READ_COUNTER_EXPIRE_IN_SECONDS = 2;
+  protected static final int DEFAULT_REPEAT_READ_THRESHOLD = 2;
 
+  protected final String id;
   protected com.github.benmanes.caffeine.cache.Cache<Object, Object> dataCache;
   protected com.github.benmanes.caffeine.cache.Cache<Object, Counter> autoExpiringRepeatReadCounterMap;
-  protected Integer repeatReadThreshold;
   protected Counter hitCounter;
   protected Counter missCounter;
 
