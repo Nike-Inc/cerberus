@@ -57,6 +57,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
     public final List<RequestAndResponseFilter> requestAndResponseFilters;
     public final SslContext sslContext;
     public final List<ServerShutdownHook> shutdownHooks;
+    public final Integer maxHeaderSizeInBytes;
 
     @Inject
     public GuiceProvidedServerConfigValues(@Named("endpoints.port") Integer endpointsPort,
@@ -68,6 +69,7 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
                                            @Named("appEndpoints") Set<Endpoint<?>> appEndpoints,
                                            @Named("debugActionsEnabled") Boolean debugActionsEnabled,
                                            @Named("debugChannelLifecycleLoggingEnabled") Boolean debugChannelLifecycleLoggingEnabled,
+                                           @Named("netty.maxHeaderSizeInBytes") Integer maxHeaderSizeInBytes,
                                            RiposteErrorHandler riposteErrorHandler,
                                            RiposteUnhandledErrorHandler riposteUnhandledErrorHandler,
                                            RequestValidator validationService,
@@ -90,5 +92,6 @@ public class GuiceProvidedServerConfigValues extends DependencyInjectionProvided
         this.shutdownHooks = shutdownHooks;
         this.requestAndResponseFilters = Lists.newArrayList(hystrixRequestAndResponseFilter, strictTransportSecurityRequestAndResponseFilter);
         this.sslContext = sslContext;
+        this.maxHeaderSizeInBytes = maxHeaderSizeInBytes;
     }
 }
