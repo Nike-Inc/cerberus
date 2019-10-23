@@ -233,4 +233,15 @@ public class CmsConfig implements ServerConfig {
         return guiceValues.shutdownHooks;
     }
 
+    @Override
+    public HttpRequestDecoderConfig httpRequestDecoderConfig() {
+        return new HttpRequestDecoderConfigImpl();
+    }
+
+    class HttpRequestDecoderConfigImpl implements HttpRequestDecoderConfig {
+        @Override
+        public int maxHeaderSize() {
+            return guiceValues.maxHeaderSizeInBytes;
+        }
+    }
 }
