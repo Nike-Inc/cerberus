@@ -32,7 +32,6 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
     private final ConfigService configService;
     private final ObjectMapper objectMapper;
-    private final UuidSupplier uuidSupplier;
     private CerberusJwtKeySpec signingKey;
     private Map<String, CerberusJwtKeySpec> keyMap;
     private boolean checkKeyRotation;
@@ -53,7 +52,6 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
                                       UuidSupplier uuidSupplier) {
         this.configService = configService;
         this.objectMapper = objectMapper;
-        this.uuidSupplier = uuidSupplier;
 
         // Override key with properties, useful for local development
         if (configService.isS3ConfigDisabled()) {

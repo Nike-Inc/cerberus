@@ -153,6 +153,16 @@ cms.auth.connector                    | Yes      | com.nike.cerberus.auth.connec
 auth.connector.okta.api_key           | Yes      | The Okta API key
 auth.connector.okta.base_url          | Yes      | The Okta base url (e.g. `"https://example.okta.com"` or `"https://example.oktapreview.com"`)
 
+### JSON Web Token (JWT)
+
+Authentication endpoints return a JWT upon successful authentication. The JWT is signed with HMAC with SHA-512 algorithm. The secrets for HMAC is encrypted and stored in S3 and can be configure via the CLI. For local development, you may let the application auto generate a secret, or use your own.
+
+property                              | required | notes
+------------------------------------- | -------- | ----------
+cms.auth.jwt.secret.local.autoGenerate| Yes      | (Local development only) let the application auto generate a secret to sign JWT
+cms.auth.jwt.secret.local.material    | No       | (Local development only && autoGenerate=false) Base64 encoded secret to sign JWT with. This needs to be at least 512 bits long
+cms.auth.jwt.secret.local.kid         | No       | (Local development only && autoGenerate=false) the key ID to identify the above key material. It's usually an UUID
+
 ## Development
 
 First, a few properties must be configured in `src/main/resources/cms-local-overrides.conf`
