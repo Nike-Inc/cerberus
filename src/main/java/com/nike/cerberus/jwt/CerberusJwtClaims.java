@@ -16,10 +16,11 @@
 
 package com.nike.cerberus.jwt;
 
-import java.time.OffsetDateTime;
-import java.util.Map;
+import com.nike.cerberus.domain.AuthTokenInfo;
 
-public class CerberusJwtClaims {
+import java.time.OffsetDateTime;
+
+public class CerberusJwtClaims implements AuthTokenInfo {
 
     private String id;
 
@@ -84,6 +85,16 @@ public class CerberusJwtClaims {
 
     public Boolean getIsAdmin() {
         return isAdmin;
+    }
+
+    @Override
+    public String getTokenHash() {
+        return null;
+    }
+
+    @Override
+    public CerberusJwtClaims setTokenHash(String tokenHash) {
+        return null;
     }
 
     public CerberusJwtClaims setIsAdmin(Boolean admin) {

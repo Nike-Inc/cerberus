@@ -68,7 +68,7 @@ public class RevokeToken extends AuditableEventEndpoint<Void, Void> {
             final CerberusPrincipal authPrincipal =
                     (CerberusPrincipal) securityContext.get().getUserPrincipal();
 
-            authenticationService.revoke(authPrincipal.getTokenId(), authPrincipal.getTokenExpires());
+            authenticationService.revoke(authPrincipal, authPrincipal.getTokenExpires());
             return ResponseInfo.<Void>newBuilder().withHttpStatusCode(HttpResponseStatus.NO_CONTENT.code()).build();
         }
 
