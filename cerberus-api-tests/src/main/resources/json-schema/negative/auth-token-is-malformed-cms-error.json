@@ -1,0 +1,48 @@
+{
+  "definitions": {}, 
+  "$schema": "http://json-schema.org/draft-06/schema#", 
+  "$id": "http://example.com/example.json", 
+  "type": "object", 
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id", 
+      "type": "string", 
+      "title": "The Error_id Schema.", 
+      "description": "An explanation about the purpose of this instance.", 
+      "default": "", 
+      "examples": [
+        "484faf82-b20b-4590-8244-0070bc200b9f"
+      ]
+    }, 
+    "errors": {
+      "$id": "/properties/errors", 
+      "type": "array", 
+      "items": {
+        "$id": "/properties/errors/items", 
+        "type": "object", 
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code", 
+            "type": "integer", 
+            "title": "The Code Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": 0, 
+            "examples": [
+              99105
+            ]
+          }, 
+          "message": {
+            "$id": "/properties/errors/items/properties/message", 
+            "type": "string", 
+            "title": "The Message Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": "", 
+            "examples": [
+              "X-Vault-Token header is malformed."
+            ]
+          }
+        }
+      }
+    }
+  }
+}

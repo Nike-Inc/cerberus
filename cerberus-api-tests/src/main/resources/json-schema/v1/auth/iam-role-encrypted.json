@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "auth_data": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "auth_data"
+  ]
+}

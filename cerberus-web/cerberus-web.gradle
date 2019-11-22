@@ -1,0 +1,128 @@
+plugins {
+  id 'org.springframework.boot' version '2.2.1.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+  id 'java'
+  id 'groovy'
+}
+
+group = 'com.nike.cerberus'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+  mavenCentral()
+}
+
+ext {
+  versions = [
+    lombok: '1.18.10',
+    resilience4j: '1.1.0',
+    awsSdkVersion: '1.11.160'
+  ]
+}
+
+sourceSets {
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integration-test/java')
+    }
+    resources.srcDir file('src/integration-test/resources')
+  }
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testImplementation
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+//noinspection GroovyAssignabilityCheck
+task integrationTest(type: Test) {
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+integrationTest {
+  testLogging {
+    showStandardStreams = true
+  }
+}
+
+dependencies {
+  // Lombok
+  compileOnly "org.projectlombok:lombok:${versions.lombok}"
+  annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+
+  // Spring
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+
+  // DB: Mybatis, Flyway, C3p0
+  implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
+  implementation 'org.mybatis:mybatis-spring:2.0.3'
+  implementation 'org.mybatis:mybatis:3.5.3'
+  implementation 'com.mchange:c3p0:0.9.5.4'
+  implementation 'mysql:mysql-connector-java:8.0.18'
+  implementation 'org.flywaydb:flyway-core:6.0.8'
+
+  // Misc
+  implementation "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
+  implementation "com.netflix.hystrix:hystrix-core:1.5.12" // TODO remove hystrix and use resilience4j
+  implementation 'com.github.ben-manes.caffeine:caffeine:2.8.0'
+  implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre' // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+  implementation "com.squareup.okhttp3:okhttp:4.2.2"
+  implementation 'com.google.code.gson:gson:2.8.1' // todo delete, should use jackson. see cipher text utils
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+  implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+
+  // Secure File Mime Type
+  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.22'
+
+  // Okta
+  implementation "com.okta:okta-sdk:0.0.4"
+  implementation "com.okta.authn.sdk:okta-authn-sdk-api:0.1.0"
+  implementation "com.okta.sdk:okta-sdk-httpclient:1.2.0"
+  implementation "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0"
+
+  // AWS
+  implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-kms:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-athena:${versions.awsSdkVersion}"
+  implementation 'com.amazonaws:aws-encryption-sdk-java:1.3.1'
+
+  // Metrics
+  implementation 'io.dropwizard.metrics:metrics-core:4.1.1'
+  implementation group: 'com.signalfx.public', name: 'signalfx-codahale', version: '0.2.1' // TODO this goes into new module
+  implementation "com.nike.riposte:riposte-metrics-codahale-signalfx:0.13.0" // todo shouldn't need this, refactor it out, this should go in the wrapper, think SLF4J API
+
+  //dist tracing
+  implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
+
+  // Error management
+  implementation 'com.nike.backstopper:backstopper-spring-web-mvc:0.12.0'
+
+  // test deps
+  testImplementation('org.springframework.boot:spring-boot-starter-test')
+  testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
+  testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+  testImplementation 'junit:junit:4.12'
+
+  // Integration Test Deps
+  integrationTestCompile sourceSets.main.output
+  integrationTestCompile configurations.testImplementation
+  integrationTestCompile sourceSets.test.output
+  integrationTestRuntime configurations.testRuntime
+  integrationTestCompileOnly 'org.projectlombok:lombok'
+  integrationTestAnnotationProcessor 'org.projectlombok:lombok'
+  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+}
+
+bootJar {
+  archiveClassifier = ''
+  archiveVersion = ''
+}

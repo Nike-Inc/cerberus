@@ -1,0 +1,83 @@
+logging.level:
+  VALID_WINGTIPS_SPANS: WARN
+
+management:
+  endpoints:
+    enabledByDefault: false
+    web:
+      basePath: /
+      pathMapping.health: healthcheck
+  endpoint:
+    info.enabled: true
+    health.enabled: true
+
+mybatis:
+  mapper-locations: classpath:com/nike/cerberus/mapper/*Mapper.xml
+  type-aliases-package: com.nike.cerberus.record
+  environment:
+    id: prod
+  configuration:
+    mapUnderscoreToCamelCase: true
+
+flyway:
+  schemas: cms
+  locations: classpath:com/nike/cerberus/migration/*.sql
+
+jdbc:
+  driver: com.mysql.jdbc.Driver
+#  url: jdbc:mysql://localhost:3306/cms?useUnicode=true&characterEncoding=utf8&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false
+#  username: yourDbUsername
+#  password: yourDbPassword
+
+c3p0:
+  initialPoolSize: 40
+  minPoolSize: 40
+  maxPoolSize: 400
+  acquireIncrement: 10
+  checkoutTimeout: 5000
+  testConnectionOnCheckin: true
+  idleConnectionTestPeriod: 300
+  maxIdleTimeExcessConnections: 4200
+  maxConnectionAge: 300
+  preferredTestQuery: SELECT 1
+
+cerberus:
+
+  version: TODO
+  environmentName: TODO
+  admin:
+#    roles: yourCommaDelimentatedListOfAdminArns
+#    group: yourAdminUserGroup
+  encryption.cache.enabled: false
+  auth:
+    iam:
+      kms:
+        rootUserArn:
+        adminRoleArn:
+        cmsRoleArn:
+        cache.enabled: false
+    token:
+      generate:
+        length: 64
+      hash:
+        iterations: 100
+        keyLength: 256
+        algorithm: PBKDF2WithHmacSHA512
+  user:
+    groups.caseSensitive: false
+    token:
+      maxRefreshCount: 0
+      ttl: 1h
+  iam.token.ttl: 1h
+  kms.policy.validation.interval.millis: 300000
+  userAuth:
+    connector:
+      okta:
+        enabled: false
+#        apiKey: yourApiKey
+#        baseUrl: yourOktaBaseUrl
+      oneLogin:
+        enabled: false
+#        clientId: yourClientId
+#        clientSecret: yourClientSecret
+#        subdomain: yourSubDomain

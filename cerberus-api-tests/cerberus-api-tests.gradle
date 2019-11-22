@@ -1,0 +1,37 @@
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+
+  testCompile group: 'org.testng', name: 'testng', version: '6.11'
+
+  compile 'junit:junit:4.12'
+  compile 'org.slf4j:slf4j-api:1.7.21'
+  compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.9'
+  compile 'io.rest-assured:rest-assured:3.0.2'
+  compile 'io.rest-assured:json-schema-validator:3.0.2'
+
+  compile 'com.google.guava:guava:23.0'
+
+  compile group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: '1.11.76'
+  compile group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.76'
+  compile group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+  compile group: 'com.thedeanda', name: 'lorem', version: '1.2'
+  compile 'com.fieldju:commons:1.2.0'
+
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+  implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+}
+
+test {
+  useTestNG()
+  testLogging {
+    showStandardStreams = true
+    events "passed", "skipped", "failed"
+  }
+}

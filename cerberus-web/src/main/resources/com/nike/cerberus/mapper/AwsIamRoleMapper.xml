@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2019 Nike, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nike.cerberus.mapper.AwsIamRoleMapper">
+
+<select id="getIamRoleById" resultType="AwsIamRoleRecord">
+    SELECT
+      ID,
+      AWS_IAM_ROLE_ARN,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      AWS_IAM_ROLE
+    WHERE
+      ID = #{id}
+  </select>
+
+  <select id="getIamRole" resultType="AwsIamRoleRecord">
+    SELECT
+      ID,
+      AWS_IAM_ROLE_ARN,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      AWS_IAM_ROLE
+    WHERE
+      AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+  </select>
+
+  <select id="getOrphanedIamRoles" resultType="AwsIamRoleRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE
+    WHERE
+      NOT EXISTS
+        (SELECT *
+          FROM
+            AWS_IAM_ROLE_PERMISSIONS
+          WHERE
+            AWS_IAM_ROLE.ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID)
+  </select>
+
+  <select id="getAllKmsKeys" resultType="AwsIamRoleKmsKeyRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE_KMS_KEY
+  </select>
+
+  <select id="getKmsKey" resultType="AwsIamRoleKmsKeyRecord">
+    SELECT
+      ID,
+      AWS_IAM_ROLE_ID,
+      AWS_REGION,
+      AWS_KMS_KEY_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS,
+      LAST_VALIDATED_TS
+    FROM
+      AWS_IAM_ROLE_KMS_KEY
+    WHERE
+        AWS_IAM_ROLE_ID = #{awsIamRoleId}
+      AND
+        AWS_REGION = #{awsRegion}
+  </select>
+
+  <select id="getInactiveOrOrphanedKmsKeys" resultType="AwsIamRoleKmsKeyRecord">
+    SELECT
+      *
+    FROM
+      AWS_IAM_ROLE_KMS_KEY
+    WHERE
+        LAST_VALIDATED_TS &lt; #{keyInactiveDateTime}
+      OR
+        NOT EXISTS
+          (
+             SELECT *
+               FROM
+                 AWS_IAM_ROLE_PERMISSIONS
+               WHERE
+                 AWS_IAM_ROLE_KMS_KEY.AWS_IAM_ROLE_ID = AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID
+           )
+  </select>
+
+  <select id="getTotalNumberOfUniqueIamRoles" resultType="java.lang.Integer">
+    SELECT COUNT(DISTINCT ID) FROM AWS_IAM_ROLE
+  </select>
+
+  <insert id="createIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">
+    INSERT INTO AWS_IAM_ROLE_KMS_KEY (
+      ID,
+      AWS_IAM_ROLE_ID,
+      AWS_REGION,
+      AWS_KMS_KEY_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS,
+      LAST_VALIDATED_TS
+    )
+    VALUES (
+      #{record.id},
+      #{record.awsIamRoleId},
+      #{record.awsRegion},
+      #{record.awsKmsKeyId},
+      #{record.createdBy},
+      #{record.lastUpdatedBy},
+      #{record.createdTs},
+      #{record.lastUpdatedTs},
+      #{record.lastValidatedTs}
+    )
+  </insert>
+
+  <insert id="createIamRole" parameterType="AwsIamRoleRecord">
+    INSERT INTO AWS_IAM_ROLE (
+      ID,
+      AWS_IAM_ROLE_ARN,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    )
+    VALUES (
+      #{record.id},
+      #{record.awsIamRoleArn},
+      #{record.createdBy},
+      #{record.lastUpdatedBy},
+      #{record.createdTs},
+      #{record.lastUpdatedTs}
+    )
+  </insert>
+
+  <select id="getIamRolePermissions" resultType="AwsIamRolePermissionRecord">
+    SELECT
+      ID,
+      AWS_IAM_ROLE_ID,
+      ROLE_ID,
+      SDBOX_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      AWS_IAM_ROLE_PERMISSIONS
+    WHERE
+      SDBOX_ID = #{safeDepositBoxId}
+  </select>
+
+  <insert id="createIamRolePermission" parameterType="AwsIamRolePermissionRecord">
+    INSERT INTO AWS_IAM_ROLE_PERMISSIONS (
+      ID,
+      AWS_IAM_ROLE_ID,
+      ROLE_ID,
+      SDBOX_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    )
+    VALUES (
+      #{record.id},
+      #{record.awsIamRoleId},
+      #{record.roleId},
+      #{record.sdboxId},
+      #{record.createdBy},
+      #{record.lastUpdatedBy},
+      #{record.createdTs},
+      #{record.lastUpdatedTs}
+    )
+  </insert>
+
+  <update id="updateIamRolePermission" parameterType="AwsIamRolePermissionRecord">
+    UPDATE
+      AWS_IAM_ROLE_PERMISSIONS
+    SET
+      ROLE_ID = #{record.roleId},
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs}
+    WHERE
+        SDBOX_ID = #{record.sdboxId}
+      AND
+        AWS_IAM_ROLE_ID = #{record.awsIamRoleId}
+  </update>
+
+  <update id="updateIamRoleKmsKey" parameterType="AwsIamRoleKmsKeyRecord">
+    UPDATE
+      AWS_IAM_ROLE_KMS_KEY
+    SET
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs},
+      LAST_VALIDATED_TS = #{record.lastValidatedTs}
+    WHERE
+        AWS_IAM_ROLE_ID = #{record.awsIamRoleId}
+      AND
+        AWS_REGION = #{record.awsRegion}
+  </update>
+
+  <delete id="deleteIamRolePermission">
+    DELETE FROM
+      AWS_IAM_ROLE_PERMISSIONS
+    WHERE
+        SDBOX_ID = #{safeDepositBoxId}
+      AND
+        AWS_IAM_ROLE_ID = #{awsIamRoleId}
+  </delete>
+
+  <delete id="deleteIamRolePermissions">
+    DELETE FROM
+      AWS_IAM_ROLE_PERMISSIONS
+    WHERE
+      SDBOX_ID = #{safeDepositBoxId}
+  </delete>
+
+  <delete id="deleteIamRoleById">
+    DELETE FROM
+      AWS_IAM_ROLE
+    WHERE
+      ID = #{id}
+  </delete>
+
+  <delete id="deleteKmsKeyById">
+    DELETE FROM
+      AWS_IAM_ROLE_KMS_KEY
+    WHERE
+      ID = #{id}
+  </delete>
+
+</mapper>

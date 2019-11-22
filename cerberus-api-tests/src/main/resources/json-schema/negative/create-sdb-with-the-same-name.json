@@ -1,0 +1,49 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id",
+      "type": "string",
+      "title": "The Error_id Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "84fb7526-9ab0-41a0-b658-71eb3bb7a9c9"
+      ]
+    },
+    "errors": {
+      "$id": "/properties/errors",
+      "type": "array",
+      "items": {
+        "$id": "/properties/errors/items",
+        "type": "object",
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code",
+            "type": "integer",
+            "title": "The Code Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+              99210
+            ]
+          },
+          "message": {
+            "$id": "/properties/errors/items/properties/message",
+            "type": "string",
+            "title": "The Message Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+              "Duplicate SDB names are not allowed."
+            ],
+            "pattern": "Duplicate SDB names are not allowed."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {},
+  "id": "http://example.com/example.json",
+  "properties": {
+    "category_id": {
+      "id": "/properties/category_id",
+      "type": "string"
+    },
+    "created_by": {
+      "id": "/properties/created_by",
+      "type": "string"
+    },
+    "created_ts": {
+      "id": "/properties/created_ts",
+      "type": "string"
+    },
+    "description": {
+      "id": "/properties/description",
+      "type": "string"
+    },
+    "iam_role_permissions": {
+      "id": "/properties/iam_role_permissions",
+      "items": {
+        "id": "/properties/iam_role_permissions/items",
+        "properties": {
+          "account_id": {
+            "id": "/properties/iam_role_permissions/items/properties/account_id",
+            "type": "string"
+          },
+          "iam_role_name": {
+            "id": "/properties/iam_role_permissions/items/properties/iam_role_name",
+            "type": "string"
+          },
+          "role_id": {
+            "id": "/properties/iam_role_permissions/items/properties/role_id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_id",
+          "account_id",
+          "iam_role_name"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "id": {
+      "id": "/properties/id",
+      "type": "string"
+    },
+    "last_updated_by": {
+      "id": "/properties/last_updated_by",
+      "type": "string"
+    },
+    "last_updated_ts": {
+      "id": "/properties/last_updated_ts",
+      "type": "string"
+    },
+    "name": {
+      "id": "/properties/name",
+      "type": "string"
+    },
+    "owner": {
+      "id": "/properties/owner",
+      "type": "string"
+    },
+    "path": {
+      "id": "/properties/path",
+      "type": "string"
+    },
+    "user_group_permissions": {
+      "id": "/properties/user_group_permissions",
+      "items": {},
+      "type": "array"
+    }
+  },
+  "required": [
+    "created_ts",
+    "description",
+    "last_updated_ts",
+    "user_group_permissions",
+    "created_by",
+    "iam_role_permissions",
+    "last_updated_by",
+    "owner",
+    "path",
+    "category_id",
+    "id",
+    "name"
+  ],
+  "type": "object"
+}

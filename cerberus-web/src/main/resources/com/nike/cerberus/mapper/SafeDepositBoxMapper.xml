@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2019 Nike, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nike.cerberus.mapper.SafeDepositBoxMapper">
+
+<select id="getUserAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
+    SELECT
+      SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
+      R.NAME AS ROLE_NAME
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON SDB.ID = UGP.SDBOX_ID
+      INNER JOIN
+        USER_GROUP UG ON UGP.USER_GROUP_ID = UG.ID
+      INNER JOIN
+        ROLE R ON UGP.ROLE_ID = R.ID
+    WHERE
+      UG.NAME IN
+      <foreach item="item" index="index" collection="userGroups"
+               open="(" separator="," close=")">
+        #{item}
+      </foreach>
+  </select>
+
+  <select id="getIamRoleAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
+    SELECT
+      SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
+      R.NAME AS ROLE_NAME
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        AWS_IAM_ROLE_PERMISSIONS AIRP ON SDB.ID = AIRP.SDBOX_ID
+      INNER JOIN
+        AWS_IAM_ROLE AIR ON AIRP.AWS_IAM_ROLE_ID = AIR.ID
+      INNER JOIN
+        ROLE R ON AIRP.ROLE_ID = R.ID
+    WHERE
+        (AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
+  <select id="getIamAssumedRoleAssociatedSafeDepositBoxRoles" resultType="SafeDepositBoxRoleRecord">
+    SELECT
+      SDB.NAME AS SAFE_DEPOSIT_BOX_NAME,
+      R.NAME AS ROLE_NAME
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        AWS_IAM_ROLE_PERMISSIONS AIRP ON SDB.ID = AIRP.SDBOX_ID
+      INNER JOIN
+        AWS_IAM_ROLE AIR ON AIRP.AWS_IAM_ROLE_ID = AIR.ID
+      INNER JOIN
+        ROLE R ON AIRP.ROLE_ID = R.ID
+    WHERE
+        (AIR.AWS_IAM_ROLE_ARN = #{iamAssumedRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{awsIamRoleArn}
+          OR
+        AIR.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
+  <select id="getSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      ID,
+      CATEGORY_ID,
+      NAME,
+      DESCRIPTION,
+      PATH,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX
+    ORDER BY CREATED_TS DESC
+    LIMIT #{limit}
+    OFFSET #{offset}
+  </select>
+
+  <select id="getUserAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON SDB.ID = UGP.SDBOX_ID
+      INNER JOIN
+        USER_GROUP UG ON UGP.USER_GROUP_ID = UG.ID
+    WHERE
+      UG.NAME IN
+      <foreach item="item" index="index" collection="userGroups"
+               open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    ORDER BY
+      SDB.CATEGORY_ID ASC,
+      SDB.ID ASC
+  </select>
+
+  <select id="getUserAssociatedSafeDepositBoxesIgnoreCase" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+        SAFE_DEPOSIT_BOX SDB
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON SDB.ID = UGP.SDBOX_ID
+      INNER JOIN
+        USER_GROUP UG ON UGP.USER_GROUP_ID = UG.ID
+    WHERE
+      UPPER(UG.NAME) IN
+      <foreach item="item" index="index" collection="userGroups"
+             open="(" separator="," close=")">
+        UPPER(#{item})
+      </foreach>
+    ORDER BY
+      SDB.CATEGORY_ID ASC,
+      SDB.ID ASC
+  </select>
+
+  <select id="getIamPrincipalAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX SDB
+    INNER JOIN
+      AWS_IAM_ROLE_PERMISSIONS ON SDB.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+    INNER JOIN
+      AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+    WHERE
+      (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
+  <select id="getIamAssumedRoleAssociatedSafeDepositBoxes" resultType="SafeDepositBoxRecord">
+    SELECT
+      DISTINCT SDB.ID,
+      SDB.CATEGORY_ID,
+      SDB.NAME,
+      SDB.DESCRIPTION,
+      SDB.PATH,
+      SDB.CREATED_BY,
+      SDB.LAST_UPDATED_BY,
+      SDB.CREATED_TS,
+      SDB.LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX SDB
+    INNER JOIN
+      AWS_IAM_ROLE_PERMISSIONS ON SDB.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+    INNER JOIN
+      AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+    WHERE
+      (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamAssumedRoleArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRoleArn}
+        OR
+      AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+  </select>
+
+  <select id="getSafeDepositBox" resultType="SafeDepositBoxRecord">
+    SELECT
+      ID,
+      CATEGORY_ID,
+      NAME,
+      DESCRIPTION,
+      PATH,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      SAFE_DEPOSIT_BOX
+    WHERE
+      ID = #{id}
+  </select>
+
+  <select id="count" resultType="java.lang.Integer">
+    SELECT COUNT(ID) FROM SAFE_DEPOSIT_BOX
+  </select>
+
+  <select id="countByPath" resultType="java.lang.Integer">
+    SELECT
+      COUNT(PATH)
+    FROM
+      SAFE_DEPOSIT_BOX
+    WHERE
+      PATH = #{path}
+  </select>
+
+  <select id="countBySdbNameSlug" resultType="java.lang.Integer">
+    SELECT
+      COUNT(SDB_NAME_SLUG)
+    FROM
+      SAFE_DEPOSIT_BOX
+    WHERE
+      SDB_NAME_SLUG = #{sdbNameSlug}
+  </select>
+
+  <insert id="createSafeDepositBox" parameterType="SafeDepositBoxRecord">
+    INSERT INTO SAFE_DEPOSIT_BOX (
+      ID,
+      CATEGORY_ID,
+      NAME,
+      DESCRIPTION,
+      PATH,
+      SDB_NAME_SLUG,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    )
+    VALUES (
+        #{record.id},
+        #{record.categoryId},
+        #{record.name},
+        #{record.description},
+        #{record.path},
+        #{record.sdbNameSlug},
+        #{record.createdBy},
+        #{record.lastUpdatedBy},
+        #{record.createdTs},
+        #{record.lastUpdatedTs}
+    )
+  </insert>
+
+  <update id="updateSafeDepositBox" parameterType="SafeDepositBoxRecord">
+    UPDATE
+      SAFE_DEPOSIT_BOX
+    SET
+      DESCRIPTION = #{record.description},
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs}
+    WHERE
+      ID = #{record.id}
+  </update>
+
+  <update id="fullUpdateSafeDepositBox" parameterType="SafeDepositBoxRecord">
+    UPDATE
+      SAFE_DEPOSIT_BOX
+    SET
+      CATEGORY_ID = #{record.categoryId},
+      DESCRIPTION = #{record.description},
+      CREATED_BY = #{record.createdBy},
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      CREATED_TS = #{record.createdTs},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs}
+    WHERE
+      ID = #{record.id}
+  </update>
+
+  <delete id="deleteSafeDepositBox">
+    DELETE FROM
+      SAFE_DEPOSIT_BOX
+    WHERE
+      ID = #{id}
+  </delete>
+
+  <select id="getSafeDepositBoxIdByName"  resultType="java.lang.String">
+    SELECT id FROM SAFE_DEPOSIT_BOX WHERE NAME = #{name}
+  </select>
+
+  <select id="getSafeDepositBoxIdByPath"  resultType="java.lang.String">
+    SELECT id FROM SAFE_DEPOSIT_BOX WHERE PATH = #{path}
+  </select>
+
+  <select id="getSafeDepositBoxNameById"  resultType="java.lang.String">
+    SELECT NAME FROM SAFE_DEPOSIT_BOX WHERE id = #{id}
+  </select>
+
+</mapper>

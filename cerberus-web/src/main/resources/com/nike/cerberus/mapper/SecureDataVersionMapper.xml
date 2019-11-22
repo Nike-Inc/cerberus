@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2019 Nike, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nike.cerberus.mapper.SecureDataVersionMapper">
+
+  <insert id="writeSecureDataVersion" parameterType="SecureDataVersionRecord">
+        INSERT INTO SECURE_DATA_VERSION (
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          ACTION,
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS
+        )
+        VALUES (
+          #{record.id},
+          #{record.sdboxId},
+          #{record.path},
+          #{record.encryptedBlob},
+          #{record.type},
+          #{record.sizeInBytes},
+          #{record.action},
+          #{record.versionCreatedBy},
+          #{record.versionCreatedTs},
+          #{record.actionPrincipal},
+          #{record.actionTs}
+        )
+    </insert>
+
+    <update id="updateSecureDataVersion" parameterType="SecureDataVersionRecord">
+        UPDATE
+          SECURE_DATA_VERSION
+        SET
+          ENCRYPTED_BLOB = #{record.encryptedBlob},
+          LAST_ROTATED_TS = #{record.lastRotatedTs}
+        WHERE
+          ID = #{record.id}
+    </update>
+
+    <select id="readSecureDataByPath" resultType="SecureDataRecord">
+        SELECT
+        ID,
+        SDBOX_ID,
+        PATH,
+        ENCRYPTED_BLOB,
+        `TYPE`,
+        SIZE_IN_BYTES,
+        CREATED_BY,
+        CREATED_TS,
+        LAST_UPDATED_BY,
+        LAST_UPDATED_TS
+        From
+        SECURE_DATA
+        WHERE
+        PATH = #{path}
+    </select>
+
+    <select id="getTotalNumVersionsForPath" resultType="java.lang.Integer">
+        SELECT
+          COUNT(ID)
+        FROM
+          SECURE_DATA_VERSION
+        WHERE
+          PATH = #{path}
+    </select>
+
+    <select id="listSecureDataVersionsByPath" resultType="SecureDataVersionRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          ACTION,
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS,
+          LAST_ROTATED_TS
+        From
+          SECURE_DATA_VERSION
+        WHERE
+          PATH = #{path}
+        ORDER BY ACTION_TS DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="readSecureDataVersionById" resultType="SecureDataVersionRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+          ACTION,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS,
+          LAST_ROTATED_TS
+        From
+          SECURE_DATA_VERSION
+        WHERE
+          ID = #{id}
+    </select>
+
+    <select id="readSecureDataVersionByIdLocking" resultType="SecureDataVersionRecord">
+        SELECT
+          ID,
+          SDBOX_ID,
+          PATH,
+        ACTION,
+          ENCRYPTED_BLOB,
+          `TYPE`,
+          SIZE_IN_BYTES,
+          VERSION_CREATED_BY,
+          VERSION_CREATED_TS,
+          ACTION_PRINCIPAL,
+          ACTION_TS,
+          LAST_ROTATED_TS
+        From
+          SECURE_DATA_VERSION
+        WHERE
+          ID = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="getVersionPathsByPartialPath" resultType="String">
+        SELECT DISTINCT PATH From SECURE_DATA_VERSION WHERE PATH LIKE '${partialPath}%';
+    </select>
+
+    <select id="getVersionPathsBySdbId" resultType="String">
+        SELECT DISTINCT PATH From SECURE_DATA_VERSION WHERE SDBOX_ID = #{sdbId};
+    </select>
+
+    <delete id="deleteAllVersionsThatStartWithPartialPath">
+        DELETE FROM SECURE_DATA_VERSION WHERE PATH LIKE '${partialPath}%';
+    </delete>
+
+</mapper>

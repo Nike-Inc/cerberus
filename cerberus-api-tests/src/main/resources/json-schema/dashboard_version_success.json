@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {},
+  "id": "http://example.com/example.json",
+  "properties": {
+    "version": {
+      "default": "2.0.0",
+      "description": "An explanation about the purpose of this instance.",
+      "id": "/properties/version",
+      "title": "The version schema",
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

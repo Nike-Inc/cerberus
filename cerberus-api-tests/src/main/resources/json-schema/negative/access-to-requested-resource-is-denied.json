@@ -1,0 +1,49 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id",
+      "type": "string",
+      "title": "The Error_id Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "5bf03ae4-c837-4317-886b-905859cb81cc"
+      ]
+    },
+    "errors": {
+      "$id": "/properties/errors",
+      "type": "array",
+      "items": {
+        "$id": "/properties/errors/items",
+        "type": "object",
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code",
+            "type": "integer",
+            "title": "The Code Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+              99994
+            ]
+          },
+          "message": {
+            "$id": "/properties/errors/items/properties/message",
+            "type": "string",
+            "title": "The Message Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+              "Access to the requested resource was denied."
+            ],
+            "pattern": "Access to the requested resource was denied."
+          }
+        }
+      }
+    }
+  }
+}
