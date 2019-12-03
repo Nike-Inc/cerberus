@@ -1,0 +1,13 @@
+.permissions-add-new-permission-button-container {
+  cursor: pointer;
+  display: flex;
+  padding-left: 1px;
+  width: 250px;
+
+  .permissions-add-new-permission-add-icon {
+    padding-left: 10px;
+  }
+  .permissions-add-new-permission-add-label {
+    padding-left: 7px;
+  }
+}

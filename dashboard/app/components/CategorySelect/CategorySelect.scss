@@ -1,0 +1,18 @@
+.category-select-container {
+  flex: .34;
+  display: flex;
+  flex-direction: column;
+
+
+  .category-select-label {
+    height: 26px;
+  }
+
+  .category-select {
+    margin-top: 6px;
+  }
+
+  .Select-menu-outer {
+    margin-top: -1px;
+  }
+}

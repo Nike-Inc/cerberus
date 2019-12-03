@@ -5,3 +5,10 @@
 build
 
 .idea
+
+# dashboard build artifacts
+/src/main/resources/dashboard/*
+/dashboard/build/*
+!/dashboard/build/index.html
+!/dashboard/build/help
+!/dashboard/build/favicon.ico

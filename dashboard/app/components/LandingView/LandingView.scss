@@ -1,0 +1,18 @@
+#landing-view {
+  padding: 20px;
+
+  li {
+    font-size: 20px;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  display: flex;
+  flex-flow: column;
+
+  #loader {
+    padding-bottom: 5px;
+  }
+}

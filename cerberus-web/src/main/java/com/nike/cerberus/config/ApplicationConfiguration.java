@@ -22,9 +22,11 @@ import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.service.MetricsService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -159,7 +161,7 @@ public class ApplicationConfiguration {
   }
 
   @Bean
-  AwsCrypto awsCrypto() {
+  public AwsCrypto awsCrypto() {
     return new AwsCrypto();
   }
 
