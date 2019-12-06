@@ -1,0 +1,5 @@
+@import '../CreateSDBoxForm/CreateSDBoxForm';
+
+#edit-sdb-form {
+  @extend #new-sdbox-form
+}

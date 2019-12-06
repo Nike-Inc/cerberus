@@ -1,0 +1,29 @@
+plugins {
+  id "com.github.node-gradle.node" version "2.2.0"
+  id 'java'
+}
+
+node {
+  version = '10.16.3'
+  download = true
+}
+
+task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
+  group 'build'
+  args = ["run", "build"]
+}
+
+group = 'com.nike.cerberus'
+version = '0.0.1-SNAPSHOT'
+
+jar {
+  dependsOn 'buildDashboard'
+  processResources {
+    from ("${project.projectDir.absolutePath}/static-assets/") {
+      into 'static/dashboard'
+    }
+    from ("${project.buildDir.absolutePath}/dist/") {
+      into 'static/dashboard'
+    }
+  }
+}

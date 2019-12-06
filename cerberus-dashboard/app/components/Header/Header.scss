@@ -1,0 +1,88 @@
+@import '../../assets/styles/common';
+
+#header {
+  height: $headerHeight;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+#bottom-header {
+  background-color: $snkrs_dark_grey;
+  color: $snkrs_off_white;
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  #header-logo {
+    background: url(../../assets/images/cerberus-logo-narrow-off-white.svg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 45px;
+    margin-left: 20px;
+    cursor: pointer;
+  }
+
+  #header-title {
+    font-size: 35px;
+    line-height: 1.2;
+    padding-left: 15px;
+    padding-top: 7px;
+  }
+
+  #user-box{
+    margin-left: auto;
+    padding-right: 20px;
+    padding-top: 12px;
+    font-size: 18px;
+
+    #u-b-container {
+      padding-left: 5px;
+
+      &:hover {
+        color: $snkrs_medium_grey;
+      }
+
+      #u-b-name {
+        cursor: pointer;
+        float: left;
+        padding-right: 3px;
+      }
+
+      #u-b-ico {
+        cursor: pointer;
+        margin-top: -6px;
+        font-size: 40px;
+      }
+    }
+
+    .rot-90 {
+      -webkit-transform: rotate(90deg) !important;
+      -moz-transform: rotate(90deg) !important;
+      -ms-transform: rotate(90deg) !important;
+      -o-transform: rotate(90deg) !important;
+    }
+
+    #u-b-context-menu {
+      position: absolute;
+      right: 20px;
+      width: 150px;
+      cursor: pointer;
+      margin-top: -3px;
+      text-align: right;
+      color: $snkrs_dark_grey;
+      background-color: $snkrs_off_white;
+      border: 1px solid $snkrs_dark_grey;
+
+      .context-menu-button {
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-right: 17px;
+
+        &:hover {
+          background-color: $snkrs_light_grey;
+        }
+      }
+    }
+  }
+}

@@ -1,14 +1,12 @@
 # Ignore Gradle project-specific cache directory
 .gradle
 
+.DS_Store
+
 # Ignore Gradle build output directory
 build
 
 .idea
 
-# dashboard build artifacts
-/src/main/resources/dashboard/*
-/dashboard/build/*
-!/dashboard/build/index.html
-!/dashboard/build/help
-!/dashboard/build/favicon.ico
+# node plugin stuffs
+node_modules

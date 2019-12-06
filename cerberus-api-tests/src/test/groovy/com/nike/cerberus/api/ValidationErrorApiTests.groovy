@@ -11,11 +11,8 @@ import org.testng.annotations.Test
 
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.CerberusCompositeApiActions.getNEGATIVE_JSON_SCHEMA_ROOT_PATH
-import static com.nike.cerberus.api.CerberusCompositeApiActions.getROOT_INTEGRATION_TEST_SDB_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
-import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
 import static io.restassured.RestAssured.given
-import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath
 
 class ValidationErrorApiTests {
 

@@ -30,10 +30,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   private static final List<String> AUTHENTICATION_NOT_REQUIRED_WHITELIST = List.of(
     "/info",
-    "/health",
     "/dashboard/**",
     "/healthcheck",
-    "/info", // TODO
     "/v2/auth/sts-identity",
     "/v2/auth/iam-principal",
     "/v1/auth/iam-role",

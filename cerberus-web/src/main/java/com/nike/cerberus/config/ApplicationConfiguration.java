@@ -100,7 +100,7 @@ public class ApplicationConfiguration {
 
   @Bean
   public Region currentRegion() {
-    return Region.getRegion(Regions.DEFAULT_REGION); // TODO
+    return Region.getRegion(Regions.DEFAULT_REGION); // TODO, this adds a long wait to app boot when local, spring way to avoid this when env = local?
 //    return Optional.ofNullable(Regions.getCurrentRegion())
 //      .orElse(Region.getRegion(Regions.DEFAULT_REGION ));
   }

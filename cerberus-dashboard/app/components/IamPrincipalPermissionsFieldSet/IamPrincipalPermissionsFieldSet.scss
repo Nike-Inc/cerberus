@@ -1,0 +1,43 @@
+@import '../../assets/styles/common';
+
+.iam-principal-permissions {
+  margin-top: 15px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: $snkrs_medium_grey;
+  border-width: 1px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-bottom: 7px;
+
+  .iam-principal-permissions-label {
+    padding-top: 5px;
+  }
+
+  .iam-principal-permissions-perms-container {
+    margin-top: -7px;
+  }
+
+  .iam-principal-permissions-permission {
+    width: 100%;
+    padding-top: 10px;
+    display: flex;
+
+    .role-perm-principal-arn {
+      flex: .75;
+      padding-left: 5px;
+      .ncss-error-msg {
+        padding-left: 3px;
+      }
+    }
+
+    .role-select {
+      flex: .25;
+      padding-left: 10px;
+      width: 250px;
+      .Select-menu-outer {
+        margin-top: -1px;
+      }
+    }
+  }
+}
