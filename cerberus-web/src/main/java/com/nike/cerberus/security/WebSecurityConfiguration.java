@@ -29,7 +29,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   static final String LEGACY_AUTH_TOKN_HEADER = "X-Vault-Token";
 
   private static final List<String> AUTHENTICATION_NOT_REQUIRED_WHITELIST = List.of(
+    "/",
     "/info",
+    "/dashboard",
     "/dashboard/**",
     "/healthcheck",
     "/v2/auth/sts-identity",
