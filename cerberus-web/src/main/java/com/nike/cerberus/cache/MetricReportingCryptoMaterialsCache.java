@@ -2,7 +2,7 @@ package com.nike.cerberus.cache;
 
 import com.amazonaws.encryptionsdk.caching.LocalCryptoMaterialsCache;
 import com.codahale.metrics.Counter;
-import com.nike.cerberus.service.MetricsService;
+import com.nike.cerberus.metrics.MetricsService;
 
 public class MetricReportingCryptoMaterialsCache extends LocalCryptoMaterialsCache {
     private final Counter hitCounter;

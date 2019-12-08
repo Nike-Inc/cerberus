@@ -9,6 +9,7 @@ import com.amazonaws.encryptionsdk.caching.CryptoMaterialsCache;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
+import com.codahale.metrics.Slf4jReporter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -20,13 +21,13 @@ import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.service.MetricsService;
+import com.nike.cerberus.metrics.LoggingMetricsService;
+import com.nike.cerberus.metrics.MetricsService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -186,5 +187,18 @@ public class ApplicationConfiguration {
         response.setStatus(HttpStatus.NO_CONTENT.value());
       }
     });
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(MetricsService.class)
+  public MetricsService defaultLoggingMetricsService(
+    @Value("${cerberus.metricsService.loggingMetricsService.level:INFO}") String levelString,
+    @Value("${cerberus.metricsService.loggingMetricsService.period:1}") String periodString,
+    @Value("${cerberus.metricsService.loggingMetricsService.timeUnit:MINUTES}") String timeUnitString
+  ) {
+    var level = Slf4jReporter.LoggingLevel.valueOf(levelString.toUpperCase());
+    var period = Long.parseLong(periodString);
+    var timeUnit = TimeUnit.valueOf(timeUnitString.toUpperCase());
+    return new LoggingMetricsService(level, period, timeUnit);
   }
 }

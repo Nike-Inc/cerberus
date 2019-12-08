@@ -1,4 +1,5 @@
 logging.level:
+  com.nike.cerberus.metrics.LoggingMetricsService: INFO
   VALID_WINGTIPS_SPANS: WARN
 
 management:
@@ -81,6 +82,13 @@ cerberus:
 #        clientId: yourClientId
 #        clientSecret: yourClientSecret
 #        subdomain: yourSubDomain
+  metricsService:
+    # If you do not supply your own impl of com.nike.cerberus.metrics.MetricsService on the classpath then the LoggingMetricsService is used.
+    # You can configure what log level and how frequently to log custom metrics at here.
+    loggingMetricsService:
+      level: INFO
+      period: 1
+      timeUnit: SECONDS
 
 management.endpoints.web.basePath: /
 management.endpoints.enabledByDefault: false
