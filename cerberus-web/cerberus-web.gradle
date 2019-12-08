@@ -5,8 +5,6 @@ plugins {
   id 'groovy'
 }
 
-group = 'com.nike.cerberus'
-version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 repositories {
@@ -65,9 +63,9 @@ dependencies {
   annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
   // Spring
-  implementation 'org.springframework.boot:spring-boot-starter-actuator'
-  implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-security'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.1.RELEASE'
+  implementation 'org.springframework.boot:spring-boot-starter-web:2.2.1.RELEASE'
+  implementation 'org.springframework.boot:spring-boot-starter-security:2.2.1.RELEASE'
 
   // DB: Mybatis, Flyway, C3p0
   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
@@ -130,6 +128,10 @@ dependencies {
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
   integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+}
+
+jar {
+  enabled = true
 }
 
 bootJar {

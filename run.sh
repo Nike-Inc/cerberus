@@ -6,7 +6,7 @@ set -e
 cd "$(dirname "$0")"
 
 # Build distribution
-./gradlew cerberus-web:jar cerberus-web:bootJar
+./gradlew cerberus-web:bootJar
 
 JAVA_OPT=""
 

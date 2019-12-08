@@ -211,7 +211,7 @@ public class PermissionValidationService {
 
         List.of("/v1/secret", "/v1/sdb-secret-version-paths", "/v1/secure-file").stream()
           .filter(requestPath::startsWith).findAny()
-          .orElseThrow(() -> new RuntimeException("Only secure data endpoints can use this perms checking endpoint"));
+          .orElseThrow(() -> new RuntimeException("Only secure data endpoints can use this perms checking method"));
 
         parseRequestPathInfo(requestPath);
 

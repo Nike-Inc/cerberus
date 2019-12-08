@@ -6,6 +6,7 @@ repositories {
 }
 
 dependencies {
+  testRuntime project(":cerberus-web")
 
   testCompile group: 'org.testng', name: 'testng', version: '6.11'
 

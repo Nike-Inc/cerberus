@@ -44,7 +44,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Autowired private AuthTokenService authTokenService;
   @Autowired private CerberusPrincipalAuthenticationProvider cerberusPrincipalAuthenticationProvider;
   @Autowired private SpringApiExceptionHandler springApiExceptionHandler;
-  @Autowired private CerberusAuthenticationEntryPoint cerberusAuthenticationEntryPoint;
 
   RequestMatcher getDoesRequestsRequireAuthMatcher() {
 

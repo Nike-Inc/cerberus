@@ -10,3 +10,5 @@ build
 
 # node plugin stuffs
 node_modules
+
+snapshot-tester.sh

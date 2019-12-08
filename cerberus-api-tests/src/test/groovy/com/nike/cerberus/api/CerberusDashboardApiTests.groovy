@@ -6,7 +6,7 @@ import static com.nike.cerberus.api.CerberusApiActions.*
 
 class CerberusDashboardApiTests {
 
-    @Test(enabled = false) // TODO
+    @Test
     void "test an unauthenticated user can load the dashboard page"() {
         def dashboardIndexHtmlURIs = ["/dashboard", "/dashboard/", "/", "/dashboard/index.html"]
 
