@@ -88,7 +88,7 @@ cerberus:
     loggingMetricsService:
       level: INFO
       period: 1
-      timeUnit: SECONDS
+      timeUnit: MINUTES
 
 management.endpoints.web.basePath: /
 management.endpoints.enabledByDefault: false

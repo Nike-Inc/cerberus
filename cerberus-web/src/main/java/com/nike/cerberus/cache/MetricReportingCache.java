@@ -56,11 +56,11 @@ public class MetricReportingCache<K, V> implements Cache<K, V> {
         // Create Metrics for this cache.
         hitCounter = metricsService.getOrCreateCounter(String.format("cms.cache.%s.hit", namespace), dimensions);
         missCounter = metricsService.getOrCreateCounter(String.format("cms.cache.%s.miss", namespace), dimensions);
-        metricsService.getOrCreateLongCallbackGauge(String.format("cms.cache.%s.size", namespace),
+        metricsService.getOrCreateCallbackGauge(String.format("cms.cache.%s.size", namespace),
                 () -> delegate.estimatedSize(), dimensions);
-        metricsService.getOrCreateLongCallbackGauge(String.format("cms.cache.%s.stats.totalHitCount", namespace),
+        metricsService.getOrCreateCallbackGauge(String.format("cms.cache.%s.stats.totalHitCount", namespace),
                 () -> delegate.stats().hitCount(), dimensions);
-        metricsService.getOrCreateLongCallbackGauge(String.format("cms.cache.%s.stats.totalMissCount", namespace),
+        metricsService.getOrCreateCallbackGauge(String.format("cms.cache.%s.stats.totalMissCount", namespace),
                 () -> delegate.stats().missCount(), dimensions);
     }
 

@@ -36,8 +36,8 @@ public class LoggingMetricsService implements MetricsService {
   }
 
   @Override
-  public Gauge getOrCreateLongCallbackGauge(String name, Supplier<Long> supplier, Map<String, String> dimensions) {
-    return metricRegistry.gauge(getMetricNameFromNameAndDimensions(name, dimensions), () -> new CallbackLongGauge(supplier));
+  public Gauge getOrCreateCallbackGauge(String name, Supplier<Number> supplier, Map<String, String> dimensions) {
+    return metricRegistry.gauge(getMetricNameFromNameAndDimensions(name, dimensions), () -> supplier::get);
   }
 
   private String getMetricNameFromNameAndDimensions(String name, Map<String, String> optionalDimensions) {

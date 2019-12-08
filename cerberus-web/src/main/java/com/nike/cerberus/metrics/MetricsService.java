@@ -25,5 +25,5 @@ import java.util.function.Supplier;
 
 public interface MetricsService {
     Counter getOrCreateCounter(String name, Map<String, String> dimensions);
-    Gauge getOrCreateLongCallbackGauge(String name, Supplier<Long> supplier, Map<String, String> dimensions);
+    Gauge getOrCreateCallbackGauge(String name, Supplier<Number> supplier, Map<String, String> dimensions);
 }
