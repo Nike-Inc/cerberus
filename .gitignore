@@ -5,10 +5,12 @@
 
 # Ignore Gradle build output directory
 build
+out
 
 .idea
 
 # node plugin stuffs
 node_modules
 
+.enable-composite-build
 snapshot-tester.sh

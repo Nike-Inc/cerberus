@@ -21,7 +21,7 @@ import com.codahale.metrics.Counter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Policy;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
-import com.nike.cerberus.metrics.MetricsService;
+import com.nike.cerberus.metric.MetricsService;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

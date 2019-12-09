@@ -21,8 +21,8 @@ import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.metrics.LoggingMetricsService;
-import com.nike.cerberus.metrics.MetricsService;
+import com.nike.cerberus.metric.LoggingMetricsService;
+import com.nike.cerberus.metric.MetricsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -49,6 +49,7 @@ import static com.nike.cerberus.service.EncryptionService.initializeKeyProvider;
 @ComponentScan({
   "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config that is disabled by default and has to be explicitly enabled.
   "com.nike.cerberus.config",
+  "com.netflix.spinnaker.kork.secrets",
   "com.nike.cerberus.security",
   "com.nike.cerberus.util",
   "com.nike.cerberus.service",
@@ -104,6 +105,11 @@ public class ApplicationConfiguration {
     return Region.getRegion(Regions.DEFAULT_REGION); // TODO, this adds a long wait to app boot when local, spring way to avoid this when env = local?
 //    return Optional.ofNullable(Regions.getCurrentRegion())
 //      .orElse(Region.getRegion(Regions.DEFAULT_REGION ));
+  }
+
+  @Bean("region")
+  public String currentRegionAsString() {
+    return currentRegion().getName();
   }
 
   @Bean("encryptCryptoMaterialsManager")

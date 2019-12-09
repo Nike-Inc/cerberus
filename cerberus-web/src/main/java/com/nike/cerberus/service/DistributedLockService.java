@@ -18,7 +18,7 @@ package com.nike.cerberus.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.mapper.LockMapper;
-import com.nike.cerberus.metrics.MetricsService;
+import com.nike.cerberus.metric.MetricsService;
 import com.nike.riposte.server.config.ServerConfig;
 import com.nike.riposte.server.hooks.ServerShutdownHook;
 import io.netty.channel.Channel;

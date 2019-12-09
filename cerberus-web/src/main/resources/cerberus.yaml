@@ -43,9 +43,6 @@ c3p0:
   preferredTestQuery: SELECT 1
 
 cerberus:
-
-  version: TODO
-  environmentName: TODO
   admin:
 #    roles: yourCommaDelimentatedListOfAdminArns
 #    group: yourAdminUserGroup
@@ -65,7 +62,7 @@ cerberus:
         keyLength: 256
         algorithm: PBKDF2WithHmacSHA512
   user:
-    groups.caseSensitive: false
+    groups.caseSensitive: true
     token:
       maxRefreshCount: 0
       ttl: 1h

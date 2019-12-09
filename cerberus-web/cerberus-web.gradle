@@ -9,14 +9,7 @@ sourceCompatibility = '11'
 
 repositories {
   mavenCentral()
-}
-
-ext {
-  versions = [
-    lombok: '1.18.10',
-    resilience4j: '1.1.0',
-    awsSdkVersion: '1.11.160'
-  ]
+  jcenter()
 }
 
 springBoot {
@@ -55,6 +48,15 @@ integrationTest {
   }
 }
 
+ext {
+  versions = [
+    lombok: '1.18.10',
+    resilience4j: '1.1.0',
+    awsSdkVersion: '1.11.688',
+    kork: '6.22.1'
+  ]
+}
+
 dependencies {
   implementation project(":cerberus-dashboard")
 
@@ -63,9 +65,9 @@ dependencies {
   annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
   // Spring
-  implementation 'org.springframework.boot:spring-boot-starter-actuator:2.2.1.RELEASE'
-  implementation 'org.springframework.boot:spring-boot-starter-web:2.2.1.RELEASE'
-  implementation 'org.springframework.boot:spring-boot-starter-security:2.2.1.RELEASE'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
 
   // DB: Mybatis, Flyway, C3p0
   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
@@ -74,6 +76,9 @@ dependencies {
   implementation 'com.mchange:c3p0:0.9.5.4'
   implementation 'mysql:mysql-connector-java:8.0.18'
   implementation 'org.flywaydb:flyway-core:6.0.8'
+
+  // First secrets
+  implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
   implementation "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
@@ -101,6 +106,7 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-athena:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.3.1'
 
   // Metrics
