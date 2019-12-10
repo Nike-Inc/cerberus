@@ -38,7 +38,6 @@ public class EncryptionService {
 
     private final AwsCrypto awsCrypto;
     private List<String> cmkArnList;
-    private final String cmsVersion;
     private final Region currentRegion;
     private final CryptoMaterialsManager decryptCryptoMaterialsManager;
     private final CryptoMaterialsManager encryptCryptoMaterialsManager;
@@ -46,7 +45,6 @@ public class EncryptionService {
     @Autowired
     public EncryptionService(AwsCrypto awsCrypto,
                              @Value("${cerberus.encryption.cmk.arns}") String cmkArns,
-                             @Value("${cerberus.version}") String cmsVersion,
                              @Qualifier("decryptCryptoMaterialsManager") CryptoMaterialsManager decryptCryptoMaterialsManager,
                              @Qualifier("encryptCryptoMaterialsManager") CryptoMaterialsManager encryptCryptoMaterialsManager,
                              Region currentRegion) {
@@ -54,7 +52,6 @@ public class EncryptionService {
         this.awsCrypto = awsCrypto;
         log.info("CMK ARNs " + cmkArns);
         this.cmkArnList = splitArns(cmkArns);
-        this.cmsVersion = cmsVersion;
         this.decryptCryptoMaterialsManager = decryptCryptoMaterialsManager;
         this.encryptCryptoMaterialsManager = encryptCryptoMaterialsManager;
     }
@@ -264,7 +261,6 @@ public class EncryptionService {
     protected Map<String, String> buildEncryptionContext(String sdbPath) {
         Map<String, String> context = new HashMap<>();
         context.put("created_on", DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
-        context.put("created_by", cmsVersion);
         context.put(SDB_PATH_PROPERTY_NAME, sdbPath);
         return context;
     }

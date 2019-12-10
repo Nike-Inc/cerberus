@@ -71,7 +71,6 @@ public class KmsService {
     private final AwsIamRoleArnParser awsIamRoleArnParser;
     private final Slugger slugger;
 
-    private final String cmsVersion;
     private final String environmentName;
     private final Integer kmsKeyPolicyValidationInterval;
 
@@ -83,7 +82,6 @@ public class KmsService {
                       DateTimeSupplier dateTimeSupplier,
                       AwsIamRoleArnParser awsIamRoleArnParser,
                       @Value("${cerberus.kms.policy.validation.interval.millis:300000}") int kmsKeyPolicyValidationInterval,
-                      @Value("${cerberus.version}") String cmsVersion,
                       @Value("${cerberus.environmentName}") String environmentName,
                       Slugger slugger) {
 
@@ -94,7 +92,6 @@ public class KmsService {
         this.dateTimeSupplier = dateTimeSupplier;
         this.awsIamRoleArnParser = awsIamRoleArnParser;
         this.kmsKeyPolicyValidationInterval = kmsKeyPolicyValidationInterval;
-        this.cmsVersion = cmsVersion;
         this.environmentName = environmentName;
         this.slugger = slugger;
     }
@@ -160,7 +157,6 @@ public class KmsService {
                 .withDescription("Key used by Cerberus " + environmentName + " for IAM role authentication. " + iamPrincipalArn)
                 .withPolicy(policy)
                 .withTags(
-                    createTag("created_by", "cms" + cmsVersion),
                     createTag("created_for", "cerberus_auth"),
                     createTag("auth_principal", iamPrincipalArn),
                     createTag("cerberus_env", environmentName)
