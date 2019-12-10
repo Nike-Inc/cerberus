@@ -15,7 +15,7 @@ repositories {
 springBoot {
   buildInfo {
     properties {
-      name = 'Cerberus Management Service'
+      name = 'Cerberus'
     }
   }
 }
