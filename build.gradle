@@ -9,16 +9,4 @@ test {
   }
 }
 
-task enableCompositeBuild() {
-  doLast {
-    new File("${project.rootDir.absolutePath}/.enable-composite-build").createNewFile()
-  }
-}
-
-task disableCompositeBuild() {
-  doLast {
-    new File("${project.rootDir.absolutePath}/.enable-composite-build").delete()
-  }
-}
-
 defaultTasks ':cerberus-web:bootRun'
