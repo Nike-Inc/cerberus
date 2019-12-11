@@ -43,6 +43,7 @@ c3p0:
   preferredTestQuery: SELECT 1
 
 cerberus:
+  environmentName: TODO
   admin:
 #    roles: yourCommaDelimentatedListOfAdminArns
 #    group: yourAdminUserGroup
@@ -89,6 +90,42 @@ cerberus:
   events:
     loggingProcessor.enabled: true
     auditLogProcessor.enabled: false;
+  jobs:
+    initialDelay: 0
+    initialDelayTimeUnits: minutes
+
+    dataKeyRotationJob:
+      numberOfDataKeyToRotatePerJobRun: 120
+      dataKeyRotationPauseTimeInMillis: 1000
+      dataKeyRotationIntervalInDays: 90
+      # Every hour
+      cronExpression: "0 0 * ? * *"
+
+    expiredTokenCleanUpJob:
+      maxNumberOfTokensToDeletePerJobRun: 2500
+      numberOfTokensToDeletePerBatch: 1000
+      batchPauseTimeInMillis: 0
+      # Every ten minutes
+      cronExpression: "0 */10 * ? * *"
+
+    hystrixMetricsProcessingJob:
+      # Every ten seconds
+      cronExpression: "0/10 * * ? * *"
+
+    inactiveKmsCleanUpJob:
+      batchPauseTimeInSeconds: 10
+      deleteKmsKeysOlderThanNDays: 30
+      # Every day at noon
+      cronExpression: "0 0 12 * * ?"
+
+    kpiMetricsProcessingJob:
+      # Every hour
+      cronExpression: "0 0 * ? * *"
+
+    orphanedKmsKeyCleanUpJob:
+      dryMode: true
+      # Every 15 days at noon
+      cronExpression: "0 0 12 */15 * ?"
 
 management.endpoints.web.basePath: /
 management.endpoints.enabledByDefault: false
