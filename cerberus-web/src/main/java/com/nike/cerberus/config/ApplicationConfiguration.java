@@ -51,6 +51,7 @@ import static com.nike.cerberus.service.EncryptionService.initializeKeyProvider;
 @ComponentScan({
   "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config that is disabled by default and has to be explicitly enabled.
   "com.nike.cerberus.config",
+  "com.nike.cerberus.jobs",
   "com.netflix.spinnaker.kork.secrets",
   "com.nike.cerberus.security",
   "com.nike.cerberus.util",
