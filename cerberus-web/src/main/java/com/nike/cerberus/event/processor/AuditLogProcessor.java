@@ -24,6 +24,7 @@ import com.nike.cerberus.event.Event;
 import com.nike.cerberus.security.CerberusPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,7 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
  * Event Processor that only cares about auditable events and outputs to a special audit log appender in a flat json
  * format that is optimized for use with AWS Athena
  */
+@ConditionalOnProperty("cerberus.events.auditLogProcessor.enabled")
 public class AuditLogProcessor implements EventProcessor {
 
     protected final Logger auditLogger = LoggerFactory.getLogger(this.getClass());

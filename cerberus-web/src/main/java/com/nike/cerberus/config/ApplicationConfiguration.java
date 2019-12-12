@@ -21,6 +21,7 @@ import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
+import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.metric.LoggingMetricsService;
 import com.nike.cerberus.metric.MetricsService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -170,6 +172,12 @@ public class ApplicationConfiguration {
   @Bean
   public AwsCrypto awsCrypto() {
     return new AwsCrypto();
+  }
+
+  @Bean
+  public List<EventProcessor> eventProcessorList(List<? extends EventProcessor> eventProcessors) {
+    // TODO
+    return (List<EventProcessor>) eventProcessors;
   }
 
   /**

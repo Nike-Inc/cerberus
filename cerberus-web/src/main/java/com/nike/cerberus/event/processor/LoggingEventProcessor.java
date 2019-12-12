@@ -19,10 +19,14 @@ package com.nike.cerberus.event.processor;
 import com.nike.cerberus.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 /**
  * Event Processor implementation that logs each event.
  */
+@Component
+@ConditionalOnProperty("cerberus.events.loggingProcessor.enabled")
 public class LoggingEventProcessor implements EventProcessor {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());

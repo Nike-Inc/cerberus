@@ -24,9 +24,9 @@ import com.nike.cerberus.event.Event;
 import com.nike.cerberus.event.processor.EventProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -44,10 +44,11 @@ public class EventProcessorService {
     private static final String THREAD_POOL_NAME = "event-processor-tp";
     private static final String INGEST_COMMAND = "process-event-command";
 
-    private final List<EventProcessor> eventProcessors = new LinkedList<>();
+    private final List<EventProcessor> eventProcessors;
 
-    public void registerProcessor(EventProcessor processor) {
-        eventProcessors.add(processor);
+    @Autowired
+    public EventProcessorService(List<EventProcessor> eventProcessors) {
+        this.eventProcessors = eventProcessors;
     }
 
     /**
