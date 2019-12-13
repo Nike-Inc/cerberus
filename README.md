@@ -1,7 +1,7 @@
 # Cerberus Management Service
 
 [![][travis img]][travis]
-[![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-management-service/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus)
+[![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-management-service/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus-management-service)
 [![][license img]][license]
 
 The Cerberus Management Service (CMS) is a core component of the Cerberus [REST API](http://engineering.nike.com/cerberus/docs/architecture/rest-api)
@@ -279,8 +279,8 @@ See [API.md](API.md)
 
 Cerberus Management Service is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-[travis]:https://travis-ci.org/Nike-Inc/cerberus-management-service
-[travis img]:https://api.travis-ci.org/Nike-Inc/cerberus-management-service.svg?branch=master
+[travis]:https://travis-ci.org/Nike-Inc/cerberus
+[travis img]:https://api.travis-ci.org/Nike-Inc/cerberus.svg?branch=master
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
