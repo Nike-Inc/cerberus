@@ -33,6 +33,18 @@ public class OneLoginHttpClient {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
 
+    static ObjectMapper getObjectMapper() {
+        var objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper;
+    }
+
     public OneLoginHttpClient(OneLoginConfigurationProperties oneLoginConfigurationProperties) {
 
         this.oneloginApiUri = URI.create(String.format(DEFAULT_ONELOGIN_API_URI_TEMPLATE,
@@ -44,14 +56,7 @@ public class OneLoginHttpClient {
           .readTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
           .build();
 
-        this.objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        this.objectMapper = getObjectMapper();
     }
 
     /**

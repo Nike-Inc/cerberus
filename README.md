@@ -1,7 +1,7 @@
 # Cerberus
 
 [![][travis img]][travis]
-[![][coveralls img]]coveralls]
+[![][coveralls img]][coveralls]
 [![][license img]][license]
 
 The Cerberus API is a cloud native, scalable Springboot application that can securely store application properties and files with robust auditing features.
@@ -69,9 +69,9 @@ You can start it with a remote debugger
 
 `./gradlew cerberus-web:bootRun --debug-jvm`
 
-You can start it and skip building the dashboard, once the dashboard has been built once for faster app start times.
+You must build the dashboard once and after you make changes
 
-`./gradlew cerberus-web:bootRun -x cerberus-dashboard:buildDashboard`   
+`./gradlew cerberus-web:bootRun cerberus-dashboard:buildDashboard`
 
 We have also including 2 convenience scripts that are nice because they give you pretty colors
 

@@ -11,9 +11,9 @@ task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
   group 'build'
   args = ["run", "build"]
 }
+tasks.buildDashboard.finalizedBy 'build'
 
 jar {
-  dependsOn 'buildDashboard'
   processResources {
     from ("${project.projectDir.absolutePath}/static-assets/") {
       into 'static/dashboard'

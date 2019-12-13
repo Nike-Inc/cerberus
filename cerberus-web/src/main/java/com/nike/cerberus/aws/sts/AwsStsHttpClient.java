@@ -43,7 +43,7 @@ public class AwsStsHttpClient {
     private static final String AWS_STS_ENDPOINT_TEMPLATE = "https://sts.%s.amazonaws.com";
     private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION = "Action=GetCallerIdentity&Version=2011-06-15";
     private static final String DEFAULT_METHOD = "POST";
-    private static final int DEFAULT_AUTH_RETRIES = 3;
+    protected static final int DEFAULT_AUTH_RETRIES = 3;
     private static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
     private static final int DEFAULT_TIMEOUT = 15;
     private static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
@@ -61,6 +61,11 @@ public class AwsStsHttpClient {
           .writeTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
           .readTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
           .build();
+    }
+
+    public AwsStsHttpClient(OkHttpClient httpClient, ObjectMapper objectMapper) {
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     /**

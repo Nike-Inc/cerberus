@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2019 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ package com.nike.cerberus.service;
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.mapper.LockMapper;
 import com.nike.cerberus.metric.MetricsService;
-import com.nike.riposte.server.config.ServerConfig;
-import com.nike.riposte.server.hooks.ServerShutdownHook;
-import io.netty.channel.Channel;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -29,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -40,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * If you can lock and do work in a single transaction then using the LockDao directly is more efficient.
  */
 @Component
-public class DistributedLockService implements ServerShutdownHook {
+public class DistributedLockService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -133,8 +131,9 @@ public class DistributedLockService implements ServerShutdownHook {
      * Explicitly releasing the locks is not required, as the mysql will release the lock when the connection is closed.
      * However this will kill the threads which might try to keep the Java process alive during a graceful shutdown.
      */
-    @Override
-    public void executeServerShutdownHook(ServerConfig serverConfig, Channel channel) {
+    @PreDestroy
+    public void executeServerShutdownHook() {
+        // TODO verify that this is called
         log.info("Received shutdown hook, attempting to shutdown gracefully");
         locks.forEach((name, lock) -> {
             try {

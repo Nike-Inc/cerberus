@@ -69,8 +69,8 @@ import static com.nike.cerberus.service.EncryptionService.initializeKeyProvider;
 @EnableScheduling
 public class ApplicationConfiguration {
 
-  @Bean
-  public ObjectMapper objectMapper() {
+  // TODO temp hack for unit tests, will need to revist this.
+  public static ObjectMapper getObjectMapper() {
     ObjectMapper om = new ObjectMapper();
     om.findAndRegisterModules();
     om.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -80,6 +80,11 @@ public class ApplicationConfiguration {
     om.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
     om.enable(SerializationFeature.INDENT_OUTPUT);
     return om;
+  }
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    return getObjectMapper();
   }
 
   /**

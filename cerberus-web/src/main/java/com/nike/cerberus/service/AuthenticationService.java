@@ -100,7 +100,9 @@ public class AuthenticationService {
     private final int maxTokenRefreshCount;
     private final boolean cacheEnabled;
     private final Cache<AwsIamKmsAuthRequest, EncryptedAuthDataWrapper> kmsAuthCache;
-    private final String adminRoleArns;
+
+    // package exposed for testing, todo maybe fix?
+    String adminRoleArns;
 
     private Set<String> adminRoleArnSet;
 
