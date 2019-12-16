@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ public class AthenaService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @NotBlank
     private static final String TABLE_TEMPLATE = "%s_audit_db.audit_data";
 
     private final String environmentName;

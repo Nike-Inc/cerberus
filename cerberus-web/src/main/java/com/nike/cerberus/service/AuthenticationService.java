@@ -71,7 +71,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 import static com.nike.cerberus.security.CerberusPrincipal.*;
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
+import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE;
 
 /**
  * Authentication service for Users and IAM roles to be able to authenticate and get an assigned auth token.

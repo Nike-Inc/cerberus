@@ -1,16 +1,8 @@
 plugins {
-  id 'org.springframework.boot' version '2.2.1.RELEASE'
-  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-  id 'java'
-  id 'groovy'
+  id 'org.springframework.boot' version "${springBootVersion}"
 }
 
 sourceCompatibility = '11'
-
-repositories {
-  mavenCentral()
-  jcenter()
-}
 
 springBoot {
   buildInfo {
@@ -20,49 +12,12 @@ springBoot {
   }
 }
 
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integration-test/java')
-    }
-    resources.srcDir file('src/integration-test/resources')
-  }
-}
-
-configurations {
-  integrationTestCompile.extendsFrom testImplementation
-  integrationTestRuntime.extendsFrom testRuntime
-}
-
-//noinspection GroovyAssignabilityCheck
-task integrationTest(type: Test) {
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
-integrationTest {
-  testLogging {
-    showStandardStreams = true
-  }
-}
-
-ext {
-  versions = [
-    lombok: '1.18.10',
-    resilience4j: '1.1.0',
-    awsSdkVersion: '1.11.688',
-    kork: '6.22.1'
-  ]
-}
-
 dependencies {
+  implementation project(":cerberus-auth-connector-okta")
+  implementation project(":cerberus-auth-connector-onelogin")
+  implementation project(":cerberus-core")
   implementation project(":cerberus-dashboard")
-
-  // Lombok
-  compileOnly "org.projectlombok:lombok:${versions.lombok}"
-  annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+  implementation project(":cerberus-domain")
 
   // Spring
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -81,24 +36,12 @@ dependencies {
   implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
-  implementation "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
   implementation "com.netflix.hystrix:hystrix-core:1.5.12" // TODO remove hystrix and use resilience4j
-  implementation 'com.github.ben-manes.caffeine:caffeine:2.8.0'
   implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre' // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-  implementation "com.squareup.okhttp3:okhttp:4.2.2"
   implementation 'com.google.code.gson:gson:2.8.1' // todo delete, should use jackson. see cipher text utils
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-  implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 
   // Secure File Mime Type
   implementation group: 'org.apache.tika', name: 'tika-core', version: '1.22'
-
-  // Okta
-  implementation "com.okta:okta-sdk:0.0.4"
-  implementation "com.okta.authn.sdk:okta-authn-sdk-api:0.1.0"
-  implementation "com.okta.sdk:okta-sdk-httpclient:1.2.0"
-  implementation "com.okta.authn.sdk:okta-authn-sdk-impl:0.1.0"
 
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
@@ -109,22 +52,11 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.3.1'
 
-  // Metrics
-  implementation 'io.dropwizard.metrics:metrics-core:4.1.1'
-
   //dist tracing
   implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
 
-  // Error management
-  implementation 'com.nike.backstopper:backstopper-spring-web-mvc:0.12.0'
-
   // test deps
   testImplementation('org.springframework.boot:spring-boot-starter-test')
-  testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
-  testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
-  testImplementation 'junit:junit:4.12'
-  testImplementation 'com.openpojo:openpojo:0.8.13'
-  testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
   testImplementation "commons-io:commons-io:2.5"
   testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.12.0"
 

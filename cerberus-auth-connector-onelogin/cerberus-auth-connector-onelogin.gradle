@@ -1,0 +1,5 @@
+dependencies {
+  implementation project(":cerberus-core")
+  implementation project(":cerberus-domain")
+  implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
+}

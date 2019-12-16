@@ -20,7 +20,7 @@ package com.nike.cerberus.util;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.nike.cerberus.util.AwsIamRoleArnParser.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED;
+import static com.nike.cerberus.domain.DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED;
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertFalse;

@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.nike.cerberus.util.AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE;
+import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE;
 import static org.junit.Assert.assertEquals;
 
 import static org.junit.Assert.assertNotEquals;
