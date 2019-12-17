@@ -16,18 +16,17 @@
 
 package com.nike.cerberus.aws.sts;
 
-/**
- * POJO representing a get-caller-identity full response.
- */
+/** POJO representing a get-caller-identity full response. */
 class GetCallerIdentityFullResponse {
-    private GetCallerIdentityResponse getCallerIdentityResponse;
+  private GetCallerIdentityResponse getCallerIdentityResponse;
 
-    public GetCallerIdentityResponse getGetCallerIdentityResponse() {
-        return getCallerIdentityResponse;
-    }
+  public GetCallerIdentityResponse getGetCallerIdentityResponse() {
+    return getCallerIdentityResponse;
+  }
 
-    public GetCallerIdentityFullResponse setGetCallerIdentityResponse(GetCallerIdentityResponse getCallerIdentityResponse) {
-        this.getCallerIdentityResponse = getCallerIdentityResponse;
-        return this;
-    }
+  public GetCallerIdentityFullResponse setGetCallerIdentityResponse(
+      GetCallerIdentityResponse getCallerIdentityResponse) {
+    this.getCallerIdentityResponse = getCallerIdentityResponse;
+    return this;
+  }
 }

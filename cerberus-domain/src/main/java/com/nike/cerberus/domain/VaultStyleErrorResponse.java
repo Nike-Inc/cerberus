@@ -21,36 +21,34 @@ import java.util.List;
 
 public class VaultStyleErrorResponse {
 
-    private List<String> errors;
+  private List<String> errors;
 
-    public List<String> getErrors() {
-        return errors;
+  public List<String> getErrors() {
+    return errors;
+  }
+
+  public void setErrors(List<String> errors) {
+    this.errors = errors;
+  }
+
+  public static final class Builder {
+    List<String> errors = new LinkedList<>();
+
+    private Builder() {}
+
+    public static Builder create() {
+      return new Builder();
     }
 
-    public void setErrors(List<String> errors) {
-        this.errors = errors;
+    public Builder withError(String error) {
+      errors.add(error);
+      return this;
     }
 
-
-    public static final class Builder {
-        List<String> errors = new LinkedList<>();
-
-        private Builder() {
-        }
-
-        public static Builder create() {
-            return new Builder();
-        }
-
-        public Builder withError(String error) {
-            errors.add(error);
-            return this;
-        }
-
-        public VaultStyleErrorResponse build() {
-            VaultStyleErrorResponse vaultStyleErrorResponse = new VaultStyleErrorResponse();
-            vaultStyleErrorResponse.setErrors(errors);
-            return vaultStyleErrorResponse;
-        }
+    public VaultStyleErrorResponse build() {
+      VaultStyleErrorResponse vaultStyleErrorResponse = new VaultStyleErrorResponse();
+      vaultStyleErrorResponse.setErrors(errors);
+      return vaultStyleErrorResponse;
     }
+  }
 }

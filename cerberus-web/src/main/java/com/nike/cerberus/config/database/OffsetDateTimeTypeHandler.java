@@ -1,21 +1,21 @@
 package com.nike.cerberus.config.database;
 
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
- * Port of org.apache.ibatis.type.OffsetDateTimeTypeHandler from old lib, the current one appears to be broken?
- * https://github.com/mybatis/mybatis-3/issues/1751
+ * Port of org.apache.ibatis.type.OffsetDateTimeTypeHandler from old lib, the current one appears to
+ * be broken? https://github.com/mybatis/mybatis-3/issues/1751
  */
 public class OffsetDateTimeTypeHandler extends BaseTypeHandler<OffsetDateTime> {
 
   @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, OffsetDateTime parameter, JdbcType jdbcType)
-    throws SQLException {
+  public void setNonNullParameter(
+      PreparedStatement ps, int i, OffsetDateTime parameter, JdbcType jdbcType)
+      throws SQLException {
     ps.setTimestamp(i, Timestamp.from(parameter.toInstant()));
   }
 
@@ -32,7 +32,8 @@ public class OffsetDateTimeTypeHandler extends BaseTypeHandler<OffsetDateTime> {
   }
 
   @Override
-  public OffsetDateTime getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+  public OffsetDateTime getNullableResult(CallableStatement cs, int columnIndex)
+      throws SQLException {
     Timestamp timestamp = cs.getTimestamp(columnIndex);
     return getOffsetDateTime(timestamp);
   }

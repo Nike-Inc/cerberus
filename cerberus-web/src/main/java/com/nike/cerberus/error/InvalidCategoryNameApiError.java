@@ -17,40 +17,40 @@
 package com.nike.cerberus.error;
 
 import com.nike.backstopper.apierror.ApiError;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 public class InvalidCategoryNameApiError implements ApiError {
 
-    private final String categoryName;
+  private final String categoryName;
 
-    public InvalidCategoryNameApiError(String categoryName) {
-        this.categoryName = categoryName;
-    }
+  public InvalidCategoryNameApiError(String categoryName) {
+    this.categoryName = categoryName;
+  }
 
-    @Override
-    public String getName() {
-        return "InvalidCategoryNameApiError";
-    }
+  @Override
+  public String getName() {
+    return "InvalidCategoryNameApiError";
+  }
 
-    @Override
-    public String getErrorCode() {
-        return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
-    }
+  @Override
+  public String getErrorCode() {
+    return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
+  }
 
-    @Override
-    public String getMessage() {
-        return String.format("The category %s could not be mapped to a valid category id", categoryName);
-    }
+  @Override
+  public String getMessage() {
+    return String.format(
+        "The category %s could not be mapped to a valid category id", categoryName);
+  }
 
-    @Override
-    public Map<String, Object> getMetadata() {
-        return null;
-    }
+  @Override
+  public Map<String, Object> getMetadata() {
+    return null;
+  }
 
-    @Override
-    public int getHttpStatusCode() {
-        return HttpServletResponse.SC_BAD_REQUEST;
-    }
+  @Override
+  public int getHttpStatusCode() {
+    return HttpServletResponse.SC_BAD_REQUEST;
+  }
 }

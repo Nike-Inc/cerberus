@@ -19,20 +19,18 @@ package com.nike.cerberus.domain;
 
 import java.util.Set;
 
-/**
- * Represents a logical grouping of secrets.
- */
+/** Represents a logical grouping of secrets. */
 public interface SafeDepositBox {
 
-    String getName();
+  String getName();
 
-    void setName(String name);
+  void setName(String name);
 
-    String getOwner();
+  String getOwner();
 
-    void setOwner(String owner);
+  void setOwner(String owner);
 
-    Set<UserGroupPermission> getUserGroupPermissions();
+  Set<UserGroupPermission> getUserGroupPermissions();
 
-    void setUserGroupPermissions(Set<UserGroupPermission> userGroupPermissions);
+  void setUserGroupPermissions(Set<UserGroupPermission> userGroupPermissions);
 }

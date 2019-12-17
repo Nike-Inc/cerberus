@@ -17,26 +17,26 @@
 
 package com.nike.cerberus.validation;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 /**
  * Validation annotation to ensure a set of user group permission objects represent unique groups.
  */
-@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
+@Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE})
 @Retention(RUNTIME)
 @Constraint(validatedBy = IamPrincipalPermissionsValidator.class)
 @Documented
 public @interface UniqueIamPrincipalPermissions {
-    String message() default "SDB_IAM_PRINCIPAL_REPEATED";
+  String message() default "SDB_IAM_PRINCIPAL_REPEATED";
 
-    Class<?>[] groups() default { };
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default { };
+  Class<? extends Payload>[] payload() default {};
 }

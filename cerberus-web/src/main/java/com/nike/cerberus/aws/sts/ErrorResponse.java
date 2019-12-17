@@ -16,18 +16,16 @@
 
 package com.nike.cerberus.aws.sts;
 
-/**
- * POJO representing a get-caller-identity error response.
- */
+/** POJO representing a get-caller-identity error response. */
 class ErrorResponse {
-    private Error error;
+  private Error error;
 
-    public Error getError() {
-        return error;
-    }
+  public Error getError() {
+    return error;
+  }
 
-    public ErrorResponse setError(Error error) {
-        this.error = error;
-        return this;
-    }
+  public ErrorResponse setError(Error error) {
+    this.error = error;
+    return this;
+  }
 }

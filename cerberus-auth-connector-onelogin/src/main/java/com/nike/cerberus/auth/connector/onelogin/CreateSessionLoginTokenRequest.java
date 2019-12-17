@@ -16,63 +16,61 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing a create session login token request.
- */
+/** POJO representing a create session login token request. */
 class CreateSessionLoginTokenRequest {
 
-    private String usernameOrEmail;
+  private String usernameOrEmail;
 
-    private String password;
+  private String password;
 
-    private String subdomain;
+  private String subdomain;
 
-    public String getUsernameOrEmail() {
-        return usernameOrEmail;
-    }
+  public String getUsernameOrEmail() {
+    return usernameOrEmail;
+  }
 
-    public CreateSessionLoginTokenRequest setUsernameOrEmail(String usernameOrEmail) {
-        this.usernameOrEmail = usernameOrEmail;
-        return this;
-    }
+  public CreateSessionLoginTokenRequest setUsernameOrEmail(String usernameOrEmail) {
+    this.usernameOrEmail = usernameOrEmail;
+    return this;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public CreateSessionLoginTokenRequest setPassword(String password) {
-        this.password = password;
-        return this;
-    }
+  public CreateSessionLoginTokenRequest setPassword(String password) {
+    this.password = password;
+    return this;
+  }
 
-    public String getSubdomain() {
-        return subdomain;
-    }
+  public String getSubdomain() {
+    return subdomain;
+  }
 
-    public CreateSessionLoginTokenRequest setSubdomain(String subdomain) {
-        this.subdomain = subdomain;
-        return this;
-    }
+  public CreateSessionLoginTokenRequest setSubdomain(String subdomain) {
+    this.subdomain = subdomain;
+    return this;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
-        CreateSessionLoginTokenRequest that = (CreateSessionLoginTokenRequest) o;
+    CreateSessionLoginTokenRequest that = (CreateSessionLoginTokenRequest) o;
 
-        if (usernameOrEmail != null ? !usernameOrEmail.equals(that.usernameOrEmail) : that.usernameOrEmail != null)
-            return false;
-        if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        return subdomain != null ? subdomain.equals(that.subdomain) : that.subdomain == null;
+    if (usernameOrEmail != null
+        ? !usernameOrEmail.equals(that.usernameOrEmail)
+        : that.usernameOrEmail != null) return false;
+    if (password != null ? !password.equals(that.password) : that.password != null) return false;
+    return subdomain != null ? subdomain.equals(that.subdomain) : that.subdomain == null;
+  }
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = usernameOrEmail != null ? usernameOrEmail.hashCode() : 0;
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (subdomain != null ? subdomain.hashCode() : 0);
-        return result;
-    }
+  @Override
+  public int hashCode() {
+    int result = usernameOrEmail != null ? usernameOrEmail.hashCode() : 0;
+    result = 31 * result + (password != null ? password.hashCode() : 0);
+    result = 31 * result + (subdomain != null ? subdomain.hashCode() : 0);
+    return result;
+  }
 }

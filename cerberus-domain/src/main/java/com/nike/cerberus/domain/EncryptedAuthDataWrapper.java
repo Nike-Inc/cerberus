@@ -16,18 +16,16 @@
 
 package com.nike.cerberus.domain;
 
-/**
- * Wraps the KMS encrypted IAM role auth response.
- */
+/** Wraps the KMS encrypted IAM role auth response. */
 public class EncryptedAuthDataWrapper {
 
-    public String getAuthData() {
-        return authData;
-    }
+  public String getAuthData() {
+    return authData;
+  }
 
-    public void setAuthData(String authData) {
-        this.authData = authData;
-    }
+  public void setAuthData(String authData) {
+    this.authData = authData;
+  }
 
-    private String authData;
+  private String authData;
 }

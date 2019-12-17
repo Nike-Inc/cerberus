@@ -16,35 +16,32 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing a generate token request.
- */
+/** POJO representing a generate token request. */
 class GenerateTokenRequest {
 
-    private String grantType = "client_credentials";
+  private String grantType = "client_credentials";
 
-    public String getGrantType() {
-        return grantType;
-    }
+  public String getGrantType() {
+    return grantType;
+  }
 
-    public GenerateTokenRequest setGrantType(String grantType) {
-        this.grantType = grantType;
-        return this;
-    }
+  public GenerateTokenRequest setGrantType(String grantType) {
+    this.grantType = grantType;
+    return this;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
-        GenerateTokenRequest that = (GenerateTokenRequest) o;
+    GenerateTokenRequest that = (GenerateTokenRequest) o;
 
-        return grantType != null ? grantType.equals(that.grantType) : that.grantType == null;
+    return grantType != null ? grantType.equals(that.grantType) : that.grantType == null;
+  }
 
-    }
-
-    @Override
-    public int hashCode() {
-        return grantType != null ? grantType.hashCode() : 0;
-    }
+  @Override
+  public int hashCode() {
+    return grantType != null ? grantType.hashCode() : 0;
+  }
 }

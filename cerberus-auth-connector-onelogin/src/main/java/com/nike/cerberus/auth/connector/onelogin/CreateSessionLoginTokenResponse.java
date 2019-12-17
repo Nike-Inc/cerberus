@@ -18,30 +18,28 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
 
-/**
- * POJO representing a create session login token response.
- */
+/** POJO representing a create session login token response. */
 class CreateSessionLoginTokenResponse {
 
-    private ResponseStatus status;
+  private ResponseStatus status;
 
-    private List<SessionLoginTokenData> data;
+  private List<SessionLoginTokenData> data;
 
-    public ResponseStatus getStatus() {
-        return status;
-    }
+  public ResponseStatus getStatus() {
+    return status;
+  }
 
-    public CreateSessionLoginTokenResponse setStatus(ResponseStatus status) {
-        this.status = status;
-        return this;
-    }
+  public CreateSessionLoginTokenResponse setStatus(ResponseStatus status) {
+    this.status = status;
+    return this;
+  }
 
-    public List<SessionLoginTokenData> getData() {
-        return data;
-    }
+  public List<SessionLoginTokenData> getData() {
+    return data;
+  }
 
-    public CreateSessionLoginTokenResponse setData(List<SessionLoginTokenData> data) {
-        this.data = data;
-        return this;
-    }
+  public CreateSessionLoginTokenResponse setData(List<SessionLoginTokenData> data) {
+    this.data = data;
+    return this;
+  }
 }

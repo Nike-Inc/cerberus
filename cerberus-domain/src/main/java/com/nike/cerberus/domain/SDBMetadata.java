@@ -21,112 +21,112 @@ import java.util.Map;
 
 public class SDBMetadata {
 
-    private String name;
-    private String path;
-    private String category;
-    private String owner;
-    private String description;
-    private OffsetDateTime createdTs;
-    private String createdBy;
-    private OffsetDateTime lastUpdatedTs;
-    private String lastUpdatedBy;
-    private Map<String, String> userGroupPermissions;
-    private Map<String, String> iamRolePermissions;
-    private Map<String, Map<String, Object>> data;
+  private String name;
+  private String path;
+  private String category;
+  private String owner;
+  private String description;
+  private OffsetDateTime createdTs;
+  private String createdBy;
+  private OffsetDateTime lastUpdatedTs;
+  private String lastUpdatedBy;
+  private Map<String, String> userGroupPermissions;
+  private Map<String, String> iamRolePermissions;
+  private Map<String, Map<String, Object>> data;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+  public void setPath(String path) {
+    this.path = path;
+  }
 
-    public String getCategory() {
-        return category;
-    }
+  public String getCategory() {
+    return category;
+  }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+  public void setCategory(String category) {
+    this.category = category;
+  }
 
-    public String getOwner() {
-        return owner;
-    }
+  public String getOwner() {
+    return owner;
+  }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public void setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-    }
+  public void setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+  }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+  public String getCreatedBy() {
+    return createdBy;
+  }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
+  public void setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+  }
 
-    public OffsetDateTime getLastUpdatedTs() {
-        return lastUpdatedTs;
-    }
+  public OffsetDateTime getLastUpdatedTs() {
+    return lastUpdatedTs;
+  }
 
-    public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-        this.lastUpdatedTs = lastUpdatedTs;
-    }
+  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+    this.lastUpdatedTs = lastUpdatedTs;
+  }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
+  public String getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
 
-    public void setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
+  public void setLastUpdatedBy(String lastUpdatedBy) {
+    this.lastUpdatedBy = lastUpdatedBy;
+  }
 
-    public Map<String, String> getUserGroupPermissions() {
-        return userGroupPermissions;
-    }
+  public Map<String, String> getUserGroupPermissions() {
+    return userGroupPermissions;
+  }
 
-    public void setUserGroupPermissions(Map<String, String> userGroupPermissions) {
-        this.userGroupPermissions = userGroupPermissions;
-    }
+  public void setUserGroupPermissions(Map<String, String> userGroupPermissions) {
+    this.userGroupPermissions = userGroupPermissions;
+  }
 
-    public Map<String, String> getIamRolePermissions() {
-        return iamRolePermissions;
-    }
+  public Map<String, String> getIamRolePermissions() {
+    return iamRolePermissions;
+  }
 
-    public void setIamRolePermissions(Map<String, String> iamRolePermissions) {
-        this.iamRolePermissions = iamRolePermissions;
-    }
+  public void setIamRolePermissions(Map<String, String> iamRolePermissions) {
+    this.iamRolePermissions = iamRolePermissions;
+  }
 
-    public Map<String, Map<String, Object>> getData() {
-        return data;
-    }
+  public Map<String, Map<String, Object>> getData() {
+    return data;
+  }
 
-    public void setData(Map<String, Map<String, Object>> data) {
-        this.data = data;
-    }
+  public void setData(Map<String, Map<String, Object>> data) {
+    this.data = data;
+  }
 }

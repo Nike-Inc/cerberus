@@ -18,74 +18,72 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.time.OffsetDateTime;
 
-/**
- * POJO representing the payload of a generate token response.
- */
+/** POJO representing the payload of a generate token response. */
 class GenerateTokenResponseData {
 
-    private String accessToken;
+  private String accessToken;
 
-    private OffsetDateTime createdAt;
+  private OffsetDateTime createdAt;
 
-    private int expiresIn;
+  private int expiresIn;
 
-    private String refreshToken;
+  private String refreshToken;
 
-    private String tokenType;
+  private String tokenType;
 
-    private long accountId;
+  private long accountId;
 
-    public String getAccessToken() {
-        return accessToken;
-    }
+  public String getAccessToken() {
+    return accessToken;
+  }
 
-    public GenerateTokenResponseData setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-        return this;
-    }
+  public GenerateTokenResponseData setAccessToken(String accessToken) {
+    this.accessToken = accessToken;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
+  public OffsetDateTime getCreatedAt() {
+    return createdAt;
+  }
 
-    public GenerateTokenResponseData setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-        return this;
-    }
+  public GenerateTokenResponseData setCreatedAt(OffsetDateTime createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
 
-    public int getExpiresIn() {
-        return expiresIn;
-    }
+  public int getExpiresIn() {
+    return expiresIn;
+  }
 
-    public GenerateTokenResponseData setExpiresIn(int expiresIn) {
-        this.expiresIn = expiresIn;
-        return this;
-    }
+  public GenerateTokenResponseData setExpiresIn(int expiresIn) {
+    this.expiresIn = expiresIn;
+    return this;
+  }
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
+  public String getRefreshToken() {
+    return refreshToken;
+  }
 
-    public GenerateTokenResponseData setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-        return this;
-    }
+  public GenerateTokenResponseData setRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
+    return this;
+  }
 
-    public String getTokenType() {
-        return tokenType;
-    }
+  public String getTokenType() {
+    return tokenType;
+  }
 
-    public GenerateTokenResponseData setTokenType(String tokenType) {
-        this.tokenType = tokenType;
-        return this;
-    }
+  public GenerateTokenResponseData setTokenType(String tokenType) {
+    this.tokenType = tokenType;
+    return this;
+  }
 
-    public long getAccountId() {
-        return accountId;
-    }
+  public long getAccountId() {
+    return accountId;
+  }
 
-    public GenerateTokenResponseData setAccountId(long accountId) {
-        this.accountId = accountId;
-        return this;
-    }
+  public GenerateTokenResponseData setAccountId(long accountId) {
+    this.accountId = accountId;
+    return this;
+  }
 }

@@ -16,11 +16,8 @@
 
 package com.nike.cerberus.event;
 
-/**
- * Interface for a Cerberus event.
- */
+/** Interface for a Cerberus event. */
 public interface Event {
 
-    String getEventAsString();
-
+  String getEventAsString();
 }

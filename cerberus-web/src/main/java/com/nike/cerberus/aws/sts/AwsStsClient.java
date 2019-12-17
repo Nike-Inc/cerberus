@@ -16,41 +16,47 @@
 
 package com.nike.cerberus.aws.sts;
 
+import static io.github.resilience4j.decorators.Decorators.ofSupplier;
+
 import io.github.resilience4j.retry.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-
-import static io.github.resilience4j.decorators.Decorators.ofSupplier;
-
-/**
- * Client for calling AWS STS APIs
- */
+/** Client for calling AWS STS APIs */
 @Component
 public class AwsStsClient {
-    private final AwsStsHttpClient httpClient;
+  private final AwsStsHttpClient httpClient;
 
-    private static final RetryConfig RETRY_CONFIG = RetryConfig.custom()
-        .maxAttempts(5)
-        .intervalFunction(IntervalFunction.ofExponentialBackoff(Duration.of(250, ChronoUnit.MILLIS)))
-        .build();
+  private static final RetryConfig RETRY_CONFIG =
+      RetryConfig.custom()
+          .maxAttempts(5)
+          .intervalFunction(
+              IntervalFunction.ofExponentialBackoff(Duration.of(250, ChronoUnit.MILLIS)))
+          .build();
 
-    private final Retry retry = Retry.of(this.getClass().getName(), RETRY_CONFIG);
+  private final Retry retry = Retry.of(this.getClass().getName(), RETRY_CONFIG);
 
-    @Autowired
-    public AwsStsClient(AwsStsHttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
+  @Autowired
+  public AwsStsClient(AwsStsHttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
 
-    public GetCallerIdentityResponse getCallerIdentity(AwsStsHttpHeader header) {
-        return ofSupplier(() -> {
-            GetCallerIdentityFullResponse response = httpClient.execute(header.getRegion(), header.generateHeaders(), GetCallerIdentityFullResponse.class);
-            return response.getGetCallerIdentityResponse();
-        }).withRetry(retry).decorate().get();
-    }
+  public GetCallerIdentityResponse getCallerIdentity(AwsStsHttpHeader header) {
+    return ofSupplier(
+            () -> {
+              GetCallerIdentityFullResponse response =
+                  httpClient.execute(
+                      header.getRegion(),
+                      header.generateHeaders(),
+                      GetCallerIdentityFullResponse.class);
+              return response.getGetCallerIdentityResponse();
+            })
+        .withRetry(retry)
+        .decorate()
+        .get();
+  }
 }

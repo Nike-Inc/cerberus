@@ -19,30 +19,28 @@ package com.nike.cerberus.auth.connector.onelogin;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * POJO representing a generate token response.
- */
+/** POJO representing a generate token response. */
 class GenerateTokenResponse {
 
-    private ResponseStatus status;
+  private ResponseStatus status;
 
-    private List<GenerateTokenResponseData> data = new LinkedList<>();
+  private List<GenerateTokenResponseData> data = new LinkedList<>();
 
-    public ResponseStatus getStatus() {
-        return status;
-    }
+  public ResponseStatus getStatus() {
+    return status;
+  }
 
-    public GenerateTokenResponse setStatus(ResponseStatus status) {
-        this.status = status;
-        return this;
-    }
+  public GenerateTokenResponse setStatus(ResponseStatus status) {
+    this.status = status;
+    return this;
+  }
 
-    public List<GenerateTokenResponseData> getData() {
-        return data;
-    }
+  public List<GenerateTokenResponseData> getData() {
+    return data;
+  }
 
-    public GenerateTokenResponse setData(List<GenerateTokenResponseData> data) {
-        this.data = data;
-        return this;
-    }
+  public GenerateTokenResponse setData(List<GenerateTokenResponseData> data) {
+    this.data = data;
+    return this;
+  }
 }

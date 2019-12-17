@@ -20,97 +20,98 @@ import com.google.common.collect.Lists;
 import com.nike.cerberus.dao.RoleDao;
 import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.record.RoleRecord;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-/**
- * Business logic for interacting with roles
- */
+/** Business logic for interacting with roles */
 @Component
 public class RoleService {
 
-    private final RoleDao roleDao;
+  private final RoleDao roleDao;
 
-    @Autowired
-    public RoleService(final RoleDao roleDao) {
-        this.roleDao = roleDao;
+  @Autowired
+  public RoleService(final RoleDao roleDao) {
+    this.roleDao = roleDao;
+  }
+
+  /**
+   * Retrieves all roles from the data store and returns them.
+   *
+   * @return List of role domain objects.
+   */
+  public List<Role> getAllRoles() {
+    final List<RoleRecord> roleRecords = roleDao.getAllRoles();
+    final List<Role> roles = Lists.newArrayListWithCapacity(roleRecords.size());
+
+    roleRecords.forEach(
+        r ->
+            roles.add(
+                new Role()
+                    .setId(r.getId())
+                    .setName(r.getName())
+                    .setCreatedBy(r.getCreatedBy())
+                    .setLastUpdatedBy(r.getLastUpdatedBy())
+                    .setCreatedTs(r.getCreatedTs())
+                    .setLastUpdatedTs(r.getLastUpdatedTs())));
+
+    return roles;
+  }
+
+  /**
+   * Retrieves the specific role by ID.
+   *
+   * @param id The identifier for the role to retrieve.
+   * @return The role, if it exists.
+   */
+  public Optional<Role> getRoleById(final String id) {
+    final Optional<RoleRecord> record = roleDao.getRoleById(id);
+
+    if (record.isPresent()) {
+      return Optional.of(
+          new Role()
+              .setId(record.get().getId())
+              .setName(record.get().getName())
+              .setCreatedBy(record.get().getCreatedBy())
+              .setLastUpdatedBy(record.get().getLastUpdatedBy())
+              .setCreatedTs(record.get().getCreatedTs())
+              .setLastUpdatedTs(record.get().getLastUpdatedTs()));
     }
 
-    /**
-     * Retrieves all roles from the data store and returns them.
-     *
-     * @return List of role domain objects.
-     */
-    public List<Role> getAllRoles() {
-        final List<RoleRecord> roleRecords = roleDao.getAllRoles();
-        final List<Role> roles = Lists.newArrayListWithCapacity(roleRecords.size());
+    return Optional.empty();
+  }
 
-        roleRecords.forEach(r -> roles.add(new Role()
-                .setId(r.getId())
-                .setName(r.getName())
-                .setCreatedBy(r.getCreatedBy())
-                .setLastUpdatedBy(r.getLastUpdatedBy())
-                .setCreatedTs(r.getCreatedTs())
-                .setLastUpdatedTs(r.getLastUpdatedTs())));
+  /**
+   * Retrieves the specific role by name.
+   *
+   * @param name The name of the role to retrieve.
+   * @return The role, if it exists.
+   */
+  public Optional<Role> getRoleByName(final String name) {
+    final Optional<RoleRecord> record = roleDao.getRoleByName(name);
 
-        return roles;
+    if (record.isPresent()) {
+      return Optional.of(
+          new Role()
+              .setId(record.get().getId())
+              .setName(record.get().getName())
+              .setCreatedBy(record.get().getCreatedBy())
+              .setLastUpdatedBy(record.get().getLastUpdatedBy())
+              .setCreatedTs(record.get().getCreatedTs())
+              .setLastUpdatedTs(record.get().getLastUpdatedTs()));
     }
 
-    /**
-     * Retrieves the specific role by ID.
-     *
-     * @param id The identifier for the role to retrieve.
-     * @return The role, if it exists.
-     */
-    public Optional<Role> getRoleById(final String id) {
-        final Optional<RoleRecord> record = roleDao.getRoleById(id);
+    return Optional.empty();
+  }
 
-        if (record.isPresent()) {
-            return Optional.of(new Role()
-                    .setId(record.get().getId())
-                    .setName(record.get().getName())
-                    .setCreatedBy(record.get().getCreatedBy())
-                    .setLastUpdatedBy(record.get().getLastUpdatedBy())
-                    .setCreatedTs(record.get().getCreatedTs())
-                    .setLastUpdatedTs(record.get().getLastUpdatedTs()));
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Retrieves the specific role by name.
-     *
-     * @param name The name of the role to retrieve.
-     * @return The role, if it exists.
-     */
-    public Optional<Role> getRoleByName(final String name) {
-        final Optional<RoleRecord> record = roleDao.getRoleByName(name);
-
-        if (record.isPresent()) {
-            return Optional.of(new Role()
-                    .setId(record.get().getId())
-                    .setName(record.get().getName())
-                    .setCreatedBy(record.get().getCreatedBy())
-                    .setLastUpdatedBy(record.get().getLastUpdatedBy())
-                    .setCreatedTs(record.get().getCreatedTs())
-                    .setLastUpdatedTs(record.get().getLastUpdatedTs()));
-        }
-
-        return Optional.empty();
-    }
-
-    public Map<String, String> getRoleIdToStringMap() {
-        List<RoleRecord> roleRecords = roleDao.getAllRoles();
-        Map<String, String> roleIdToStringMap = new HashMap<>(roleRecords.size());
-        roleRecords.forEach(roleRecord -> roleIdToStringMap.put(roleRecord.getId(), roleRecord.getName()));
-        return roleIdToStringMap;
-    }
+  public Map<String, String> getRoleIdToStringMap() {
+    List<RoleRecord> roleRecords = roleDao.getAllRoles();
+    Map<String, String> roleIdToStringMap = new HashMap<>(roleRecords.size());
+    roleRecords.forEach(
+        roleRecord -> roleIdToStringMap.put(roleRecord.getId(), roleRecord.getName()));
+    return roleIdToStringMap;
+  }
 }

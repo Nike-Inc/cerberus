@@ -1,5 +1,9 @@
 package com.nike.cerberus.auth.connector.okta;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
@@ -11,178 +15,173 @@ import com.okta.authn.sdk.resource.AuthenticationResponse;
 import com.okta.authn.sdk.resource.User;
 import com.okta.sdk.resource.user.factor.FactorProvider;
 import com.okta.sdk.resource.user.factor.FactorType;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 public class InitialLoginStateHandlerTest {
 
-    // class under test
-    private InitialLoginStateHandler initialLoginStateHandler;
+  // class under test
+  private InitialLoginStateHandler initialLoginStateHandler;
 
-    // Dependencies
-    @Mock
-    private AuthenticationClient client;
-    private CompletableFuture<AuthResponse> authenticationResponseFuture;
+  // Dependencies
+  @Mock private AuthenticationClient client;
+  private CompletableFuture<AuthResponse> authenticationResponseFuture;
 
-    @Before
-    public void setup() {
+  @Before
+  public void setup() {
 
-        initMocks(this);
+    initMocks(this);
 
-        authenticationResponseFuture = new CompletableFuture<>();
+    authenticationResponseFuture = new CompletableFuture<>();
 
-        // create test object
-        this.initialLoginStateHandler = new InitialLoginStateHandler(client, authenticationResponseFuture) {};
-    }
+    // create test object
+    this.initialLoginStateHandler =
+        new InitialLoginStateHandler(client, authenticationResponseFuture) {};
+  }
 
-    /////////////////////////
-    // Test Methods
-    /////////////////////////
+  /////////////////////////
+  // Test Methods
+  /////////////////////////
 
-    @Test
-    public void handleMfaRequired() throws Exception {
+  @Test
+  public void handleMfaRequired() throws Exception {
 
-        String email = "email";
-        String id = "id";
-        AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
+    String email = "email";
+    String id = "id";
+    AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
-        String deviceId = "device id";
-        String status = "status";
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+    String deviceId = "device id";
+    String status = "status";
 
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
+    User user = mock(User.class);
+    when(user.getId()).thenReturn(id);
+    when(user.getLogin()).thenReturn(email);
+    when(expectedResponse.getUser()).thenReturn(user);
 
-        DefaultFactor factor = mock(DefaultFactor.class);
+    DefaultFactor factor = mock(DefaultFactor.class);
 
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
-        when(factor.getStatus()).thenReturn(status);
-        when(factor.getId()).thenReturn(deviceId);
-        when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
+    when(factor.getStatus()).thenReturn(status);
+    when(factor.getId()).thenReturn(deviceId);
+    when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
-        // do the call
-        initialLoginStateHandler.handleMfaRequired(expectedResponse);
+    // do the call
+    initialLoginStateHandler.handleMfaRequired(expectedResponse);
 
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
-        //  verify results
-        assertEquals(id, actualResponse.getData().getUserId());
-        assertEquals(email, actualResponse.getData().getUsername());
-        assertEquals(expectedStatus, actualResponse.getStatus());
-    }
+    //  verify results
+    assertEquals(id, actualResponse.getData().getUserId());
+    assertEquals(email, actualResponse.getData().getUsername());
+    assertEquals(expectedStatus, actualResponse.getStatus());
+  }
 
-    @Test(expected = ApiException.class)
-    public void handleMfaRequiredFailNoSupportedDevicesEnrolled() throws Exception {
+  @Test(expected = ApiException.class)
+  public void handleMfaRequiredFailNoSupportedDevicesEnrolled() throws Exception {
 
-        String email = "email";
-        String id = "id";
-        AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
+    String email = "email";
+    String id = "id";
+    AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.PUSH;
-        String deviceId = "device id";
-        String status = "status";
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.PUSH;
+    String deviceId = "device id";
+    String status = "status";
 
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
+    User user = mock(User.class);
+    when(user.getId()).thenReturn(id);
+    when(user.getLogin()).thenReturn(email);
+    when(expectedResponse.getUser()).thenReturn(user);
 
-        DefaultFactor factor = mock(DefaultFactor.class);
+    DefaultFactor factor = mock(DefaultFactor.class);
 
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
-        when(factor.getStatus()).thenReturn(status);
-        when(factor.getId()).thenReturn(deviceId);
-        when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
+    when(factor.getStatus()).thenReturn(status);
+    when(factor.getId()).thenReturn(deviceId);
+    when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
-        // do the call
-        initialLoginStateHandler.handleMfaRequired(expectedResponse);
+    // do the call
+    initialLoginStateHandler.handleMfaRequired(expectedResponse);
 
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
-        //  verify results
-        assertEquals(id, actualResponse.getData().getUserId());
-        assertEquals(email, actualResponse.getData().getUsername());
-        assertEquals(expectedStatus, actualResponse.getStatus());
-    }
+    //  verify results
+    assertEquals(id, actualResponse.getData().getUserId());
+    assertEquals(email, actualResponse.getData().getUsername());
+    assertEquals(expectedStatus, actualResponse.getStatus());
+  }
 
-    @Test
-    public void handleMfaEnroll() throws Exception {
+  @Test
+  public void handleMfaEnroll() throws Exception {
 
-        String email = "email";
-        String id = "id";
-        AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
+    String email = "email";
+    String id = "id";
+    AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
-        String deviceId = "device id";
-        String status = "status";
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+    String deviceId = "device id";
+    String status = "status";
 
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
+    User user = mock(User.class);
+    when(user.getId()).thenReturn(id);
+    when(user.getLogin()).thenReturn(email);
+    when(expectedResponse.getUser()).thenReturn(user);
 
-        DefaultFactor factor = mock(DefaultFactor.class);
+    DefaultFactor factor = mock(DefaultFactor.class);
 
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
-        when(factor.getStatus()).thenReturn(status);
-        when(factor.getId()).thenReturn(deviceId);
-        when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
+    when(factor.getStatus()).thenReturn(status);
+    when(factor.getId()).thenReturn(deviceId);
+    when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
-        // do the call
-        initialLoginStateHandler.handleMfaEnroll(expectedResponse);
+    // do the call
+    initialLoginStateHandler.handleMfaEnroll(expectedResponse);
 
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
-        //  verify results
-        assertEquals(id, actualResponse.getData().getUserId());
-        assertEquals(email, actualResponse.getData().getUsername());
-        assertEquals(expectedStatus, actualResponse.getStatus());
-    }
+    //  verify results
+    assertEquals(id, actualResponse.getData().getUserId());
+    assertEquals(email, actualResponse.getData().getUsername());
+    assertEquals(expectedStatus, actualResponse.getStatus());
+  }
 
-    @Test(expected = ApiException.class)
-    public void handleMfaEnrollFails() throws Exception {
+  @Test(expected = ApiException.class)
+  public void handleMfaEnrollFails() throws Exception {
 
-        String email = "email";
-        String id = "id";
-        AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
+    String email = "email";
+    String id = "id";
+    AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
 
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
+    User user = mock(User.class);
+    when(user.getId()).thenReturn(id);
+    when(user.getLogin()).thenReturn(email);
+    when(expectedResponse.getUser()).thenReturn(user);
 
-        // do the call
-        initialLoginStateHandler.handleMfaEnroll(expectedResponse);
+    // do the call
+    initialLoginStateHandler.handleMfaEnroll(expectedResponse);
 
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
-        //  verify results
-        assertEquals(id, actualResponse.getData().getUserId());
-        assertEquals(email, actualResponse.getData().getUsername());
-        assertEquals(expectedStatus, actualResponse.getStatus());
-    }
+    //  verify results
+    assertEquals(id, actualResponse.getData().getUserId());
+    assertEquals(email, actualResponse.getData().getUsername());
+    assertEquals(expectedStatus, actualResponse.getStatus());
+  }
 }

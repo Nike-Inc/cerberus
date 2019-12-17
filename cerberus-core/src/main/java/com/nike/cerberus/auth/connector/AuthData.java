@@ -17,67 +17,64 @@
 package com.nike.cerberus.auth.connector;
 
 import com.nike.cerberus.domain.AuthTokenResponse;
-
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Represents the authentication data returned by the auth connector.
- */
+/** Represents the authentication data returned by the auth connector. */
 public class AuthData {
 
-    private String userId;
+  private String userId;
 
-    private String username;
+  private String username;
 
-    private String stateToken;
+  private String stateToken;
 
-    private List<AuthMfaDevice> devices = new LinkedList<>();
+  private List<AuthMfaDevice> devices = new LinkedList<>();
 
-    private AuthTokenResponse clientToken;
+  private AuthTokenResponse clientToken;
 
-    public String getUserId() {
-        return userId;
-    }
+  public String getUserId() {
+    return userId;
+  }
 
-    public AuthData setUserId(String userId) {
-        this.userId = userId;
-        return this;
-    }
+  public AuthData setUserId(String userId) {
+    this.userId = userId;
+    return this;
+  }
 
-    public String getUsername() {
-        return username;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public AuthData setUsername(String username) {
-        this.username = username;
-        return this;
-    }
+  public AuthData setUsername(String username) {
+    this.username = username;
+    return this;
+  }
 
-    public String getStateToken() {
-        return stateToken;
-    }
+  public String getStateToken() {
+    return stateToken;
+  }
 
-    public AuthData setStateToken(String stateToken) {
-        this.stateToken = stateToken;
-        return this;
-    }
+  public AuthData setStateToken(String stateToken) {
+    this.stateToken = stateToken;
+    return this;
+  }
 
-    public List<AuthMfaDevice> getDevices() {
-        return devices;
-    }
+  public List<AuthMfaDevice> getDevices() {
+    return devices;
+  }
 
-    public AuthData setDevices(List<AuthMfaDevice> devices) {
-        this.devices = devices;
-        return this;
-    }
+  public AuthData setDevices(List<AuthMfaDevice> devices) {
+    this.devices = devices;
+    return this;
+  }
 
-    public AuthTokenResponse getClientToken() {
-        return clientToken;
-    }
+  public AuthTokenResponse getClientToken() {
+    return clientToken;
+  }
 
-    public AuthData setClientToken(AuthTokenResponse clientToken) {
-        this.clientToken = clientToken;
-        return this;
-    }
+  public AuthData setClientToken(AuthTokenResponse clientToken) {
+    this.clientToken = clientToken;
+    return this;
+  }
 }

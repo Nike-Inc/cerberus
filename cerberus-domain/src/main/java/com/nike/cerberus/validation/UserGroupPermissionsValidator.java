@@ -17,39 +17,40 @@
 package com.nike.cerberus.validation;
 
 import com.nike.cerberus.domain.UserGroupPermission;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Set;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
- * Validator class for validating that a set of user group permissions contain no duplicate user group names.
+ * Validator class for validating that a set of user group permissions contain no duplicate user
+ * group names.
  */
 public class UserGroupPermissionsValidator
-        implements ConstraintValidator<UniqueUserGroupPermissions, Set<UserGroupPermission>> {
+    implements ConstraintValidator<UniqueUserGroupPermissions, Set<UserGroupPermission>> {
 
-    public void initialize(UniqueUserGroupPermissions constraint) {
-        // no-op
+  public void initialize(UniqueUserGroupPermissions constraint) {
+    // no-op
+  }
+
+  public boolean isValid(
+      Set<UserGroupPermission> userGroupPermissionSet, ConstraintValidatorContext context) {
+    if (userGroupPermissionSet == null || userGroupPermissionSet.isEmpty()) {
+      return true;
     }
 
-   public boolean isValid(Set<UserGroupPermission> userGroupPermissionSet, ConstraintValidatorContext context) {
-       if (userGroupPermissionSet == null || userGroupPermissionSet.isEmpty()) {
-           return true;
-       }
+    boolean isValid = true;
+    Set<String> userGroups = new HashSet<>();
 
-       boolean isValid = true;
-       Set<String> userGroups = new HashSet<>();
+    for (UserGroupPermission userGroupPermission : userGroupPermissionSet) {
+      if (userGroups.contains(userGroupPermission.getName())) {
+        isValid = false;
+        break;
+      } else {
+        userGroups.add(userGroupPermission.getName());
+      }
+    }
 
-       for (UserGroupPermission userGroupPermission : userGroupPermissionSet) {
-           if (userGroups.contains(userGroupPermission.getName())) {
-               isValid = false;
-               break;
-           } else {
-               userGroups.add(userGroupPermission.getName());
-           }
-       }
-
-      return isValid;
-   }
+    return isValid;
+  }
 }

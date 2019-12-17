@@ -21,74 +21,75 @@ import java.util.List;
 
 public class SecureFileSummaryResult {
 
-    private boolean hasNext = false;
-    private Integer nextOffset = null;
-    private int limit = 0;
-    private int offset = 0;
-    private int fileCountInResult;
-    private int totalFileCount;
-    private List<SecureFileSummary> secureFileSummaries;
+  private boolean hasNext = false;
+  private Integer nextOffset = null;
+  private int limit = 0;
+  private int offset = 0;
+  private int fileCountInResult;
+  private int totalFileCount;
+  private List<SecureFileSummary> secureFileSummaries;
 
-    public boolean isHasNext() {
-        return hasNext;
-    }
+  public boolean isHasNext() {
+    return hasNext;
+  }
 
-    public SecureFileSummaryResult setHasNext(boolean hasNext) {
-        this.hasNext = hasNext;
-        return this;
-    }
+  public SecureFileSummaryResult setHasNext(boolean hasNext) {
+    this.hasNext = hasNext;
+    return this;
+  }
 
-    public Integer getNextOffset() {
-        return nextOffset;
-    }
+  public Integer getNextOffset() {
+    return nextOffset;
+  }
 
-    public SecureFileSummaryResult setNextOffset(Integer nextOffset) {
-        this.nextOffset = nextOffset;
-        return this;
-    }
+  public SecureFileSummaryResult setNextOffset(Integer nextOffset) {
+    this.nextOffset = nextOffset;
+    return this;
+  }
 
-    public int getLimit() {
-        return limit;
-    }
+  public int getLimit() {
+    return limit;
+  }
 
-    public SecureFileSummaryResult setLimit(int limit) {
-        this.limit = limit;
-        return this;
-    }
+  public SecureFileSummaryResult setLimit(int limit) {
+    this.limit = limit;
+    return this;
+  }
 
-    public int getOffset() {
-        return offset;
-    }
+  public int getOffset() {
+    return offset;
+  }
 
-    public SecureFileSummaryResult setOffset(int offset) {
-        this.offset = offset;
-        return this;
-    }
+  public SecureFileSummaryResult setOffset(int offset) {
+    this.offset = offset;
+    return this;
+  }
 
-    public int getFileCountInResult() {
-        return fileCountInResult;
-    }
+  public int getFileCountInResult() {
+    return fileCountInResult;
+  }
 
-    public SecureFileSummaryResult setFileCountInResult(int fileCountInResult) {
-        this.fileCountInResult = fileCountInResult;
-        return this;
-    }
+  public SecureFileSummaryResult setFileCountInResult(int fileCountInResult) {
+    this.fileCountInResult = fileCountInResult;
+    return this;
+  }
 
-    public int getTotalFileCount() {
-        return totalFileCount;
-    }
+  public int getTotalFileCount() {
+    return totalFileCount;
+  }
 
-    public SecureFileSummaryResult setTotalFileCount(int totalFileCount) {
-        this.totalFileCount = totalFileCount;
-        return this;
-    }
+  public SecureFileSummaryResult setTotalFileCount(int totalFileCount) {
+    this.totalFileCount = totalFileCount;
+    return this;
+  }
 
-    public List<SecureFileSummary> getSecureFileSummaries() {
-        return secureFileSummaries;
-    }
+  public List<SecureFileSummary> getSecureFileSummaries() {
+    return secureFileSummaries;
+  }
 
-    public SecureFileSummaryResult setSecureFileSummaries(List<SecureFileSummary> secureFileSummaries) {
-        this.secureFileSummaries = secureFileSummaries;
-        return this;
-    }
+  public SecureFileSummaryResult setSecureFileSummaries(
+      List<SecureFileSummary> secureFileSummaries) {
+    this.secureFileSummaries = secureFileSummaries;
+    return this;
+  }
 }

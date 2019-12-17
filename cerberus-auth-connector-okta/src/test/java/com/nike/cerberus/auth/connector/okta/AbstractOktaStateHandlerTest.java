@@ -1,9 +1,13 @@
 package com.nike.cerberus.auth.connector.okta;
 
+import static groovy.util.GroovyTestCase.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
-
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.auth.connector.okta.statehandlers.AbstractOktaStateHandler;
 import com.okta.authn.sdk.client.AuthenticationClient;
@@ -12,255 +16,240 @@ import com.okta.authn.sdk.resource.AuthenticationResponse;
 import com.okta.authn.sdk.resource.User;
 import com.okta.sdk.resource.user.factor.FactorProvider;
 import com.okta.sdk.resource.user.factor.FactorType;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static groovy.util.GroovyTestCase.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-
-/**
- * Tests the AbstractOktaStateHandler class
- */
+/** Tests the AbstractOktaStateHandler class */
 public class AbstractOktaStateHandlerTest {
 
-    // class under test
-    private AbstractOktaStateHandler abstractOktaStateHandler;
+  // class under test
+  private AbstractOktaStateHandler abstractOktaStateHandler;
 
-    // Dependencies
-    @Mock
-    private AuthenticationClient client;
-    private CompletableFuture<AuthResponse> authenticationResponseFuture;
+  // Dependencies
+  @Mock private AuthenticationClient client;
+  private CompletableFuture<AuthResponse> authenticationResponseFuture;
 
-    @Before
-    public void setup() {
+  @Before
+  public void setup() {
 
-        initMocks(this);
+    initMocks(this);
 
+    authenticationResponseFuture = new CompletableFuture<>();
 
-        authenticationResponseFuture = new CompletableFuture<>();
+    // create test object
+    this.abstractOktaStateHandler =
+        new AbstractOktaStateHandler(client, authenticationResponseFuture) {};
+  }
 
-        // create test object
-        this.abstractOktaStateHandler = new AbstractOktaStateHandler(client, authenticationResponseFuture) {
+  /////////////////////////
+  // Test Methods
+  /////////////////////////
 
-        };
-    }
+  @Test
+  public void getFactorKey() {
 
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(FactorType.PUSH);
+    when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
 
-    /////////////////////////
-    // Test Methods
-    /////////////////////////
+    String expected = "okta-push";
+    String actual = abstractOktaStateHandler.getFactorKey(factor);
 
-    @Test
-    public void getFactorKey() {
+    assertEquals(expected, actual);
+  }
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(FactorType.PUSH);
-        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
+  @Test
+  public void getDeviceNameGoogleTotp() {
 
-        String expected = "okta-push";
-        String actual = abstractOktaStateHandler.getFactorKey(factor);
+    FactorProvider provider = FactorProvider.GOOGLE;
+    FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
 
-        assertEquals(expected, actual);
-    }
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
 
-    @Test
-    public void getDeviceNameGoogleTotp() {
+    String result = this.abstractOktaStateHandler.getDeviceName(factor);
 
-        FactorProvider provider = FactorProvider.GOOGLE;
-        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+    assertEquals("Google Authenticator", result);
+  }
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
+  @Test
+  public void getDeviceNameOktaTotp() {
 
-        String result = this.abstractOktaStateHandler.getDeviceName(factor);
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
 
-        assertEquals("Google Authenticator", result);
-    }
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
 
-    @Test
-    public void getDeviceNameOktaTotp() {
+    String result = this.abstractOktaStateHandler.getDeviceName(factor);
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+    assertEquals("Okta Verify TOTP", result);
+  }
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
+  @Test
+  public void getDeviceNameOktaPush() {
 
-        String result = this.abstractOktaStateHandler.getDeviceName(factor);
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.PUSH;
 
-        assertEquals("Okta Verify TOTP", result);
-    }
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
 
-    @Test
-    public void getDeviceNameOktaPush() {
+    String result = this.abstractOktaStateHandler.getDeviceName(factor);
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.PUSH;
+    assertEquals("Okta Verify Push", result);
+  }
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
+  @Test
+  public void getDeviceNameOktaCall() {
 
-        String result = this.abstractOktaStateHandler.getDeviceName(factor);
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.CALL;
 
-        assertEquals("Okta Verify Push", result);
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
 
-    }
+    String result = this.abstractOktaStateHandler.getDeviceName(factor);
 
-    @Test
-    public void getDeviceNameOktaCall() {
+    assertEquals("Okta Voice Call", result);
+  }
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.CALL;
+  @Test
+  public void getDeviceNameOktaSms() {
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.SMS;
 
-        String result = this.abstractOktaStateHandler.getDeviceName(factor);
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
 
-        assertEquals("Okta Voice Call", result);
-    }
+    String result = this.abstractOktaStateHandler.getDeviceName(factor);
 
-    @Test
-    public void getDeviceNameOktaSms() {
+    assertEquals("Okta Text Message Code", result);
+  }
 
-        FactorProvider provider = FactorProvider.OKTA;
-        FactorType type = FactorType.SMS;
+  @Test(expected = IllegalArgumentException.class)
+  public void getDeviceNameFailsNullFactor() {
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(type);
-        when(factor.getProvider()).thenReturn(provider);
+    this.abstractOktaStateHandler.getDeviceName(null);
+  }
 
-        String result = this.abstractOktaStateHandler.getDeviceName(factor);
+  @Test
+  public void isSupportedFactorFalse() {
 
-        assertEquals("Okta Text Message Code", result);
-    }
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(FactorType.PUSH);
+    when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getDeviceNameFailsNullFactor() {
+    boolean expected = false;
+    boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
 
-        this.abstractOktaStateHandler.getDeviceName(null);
-    }
+    TestCase.assertEquals(expected, actual);
+  }
 
-    @Test
-    public void isSupportedFactorFalse() {
+  @Test
+  public void isSupportedFactorTrue() {
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(FactorType.PUSH);
-        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
+    DefaultFactor factor = mock(DefaultFactor.class);
+    when(factor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
+    when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
 
-        boolean expected = false;
-        boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
+    boolean expected = true;
+    boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
 
-        TestCase.assertEquals(expected, actual);
-    }
+    TestCase.assertEquals(expected, actual);
+  }
 
-    @Test
-    public void isSupportedFactorTrue() {
+  @Test
+  public void validateUserFactorsSuccess() {
 
-        DefaultFactor factor = mock(DefaultFactor.class);
-        when(factor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
-        when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
+    DefaultFactor factor1 = mock(DefaultFactor.class);
+    when(factor1.getStatus()).thenReturn(AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS);
+    DefaultFactor factor2 = mock(DefaultFactor.class);
 
-        boolean expected = true;
-        boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
+    this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
+  }
 
-        TestCase.assertEquals(expected, actual);
-    }
+  @Test(expected = ApiException.class)
+  public void validateUserFactorsFailsNull() {
 
-    @Test
-    public void validateUserFactorsSuccess() {
+    this.abstractOktaStateHandler.validateUserFactors(null);
+  }
 
-        DefaultFactor factor1 = mock(DefaultFactor.class);
-        when(factor1.getStatus()).thenReturn(AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS);
-        DefaultFactor factor2 = mock(DefaultFactor.class);
+  @Test(expected = ApiException.class)
+  public void validateUserFactorsFailsEmpty() {
 
-        this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
-    }
+    this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList());
+  }
 
-    @Test(expected = ApiException.class)
-    public void validateUserFactorsFailsNull() {
+  @Test(expected = ApiException.class)
+  public void validateUserFactorsFailsAllFactorsNotSetUp() {
 
-        this.abstractOktaStateHandler.validateUserFactors(null);
-    }
+    String status = AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS;
 
-    @Test(expected = ApiException.class)
-    public void validateUserFactorsFailsEmpty() {
+    DefaultFactor factor1 = mock(DefaultFactor.class);
+    when(factor1.getStatus()).thenReturn(status);
 
-        this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList());
-    }
+    DefaultFactor factor2 = mock(DefaultFactor.class);
+    when(factor2.getStatus()).thenReturn(status);
 
-    @Test(expected = ApiException.class)
-    public void validateUserFactorsFailsAllFactorsNotSetUp() {
+    this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
+  }
 
-        String status = AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS;
+  @Test
+  public void handleSuccess() throws Exception {
 
-        DefaultFactor factor1 = mock(DefaultFactor.class);
-        when(factor1.getStatus()).thenReturn(status);
+    String email = "email";
+    String id = "id";
+    AuthStatus status = AuthStatus.SUCCESS;
 
-        DefaultFactor factor2 = mock(DefaultFactor.class);
-        when(factor2.getStatus()).thenReturn(status);
+    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
 
-        this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
-    }
+    User user = mock(User.class);
+    when(user.getId()).thenReturn(id);
+    when(user.getLogin()).thenReturn(email);
+    when(expectedResponse.getUser()).thenReturn(user);
 
-    @Test
-    public void handleSuccess() throws Exception {
+    // do the call
+    abstractOktaStateHandler.handleSuccess(expectedResponse);
 
-        String email = "email";
-        String id = "id";
-        AuthStatus status = AuthStatus.SUCCESS;
+    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
 
-        AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
+    //  verify results
+    Assert.assertEquals(id, actualResponse.getData().getUserId());
+    Assert.assertEquals(email, actualResponse.getData().getUsername());
+    Assert.assertEquals(status, actualResponse.getStatus());
+  }
 
-        User user = mock(User.class);
-        when(user.getId()).thenReturn(id);
-        when(user.getLogin()).thenReturn(email);
-        when(expectedResponse.getUser()).thenReturn(user);
+  @Test(expected = ApiException.class)
+  public void handleUnknownLockout() {
 
-        // do the call
-        abstractOktaStateHandler.handleSuccess(expectedResponse);
+    String status = "LOCKED_OUT";
 
-        AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
+    AuthenticationResponse unknownResponse = mock(AuthenticationResponse.class);
+    when(unknownResponse.getStatusString()).thenReturn(status);
 
-        //  verify results
-        Assert.assertEquals(id, actualResponse.getData().getUserId());
-        Assert.assertEquals(email, actualResponse.getData().getUsername());
-        Assert.assertEquals(status, actualResponse.getStatus());
-    }
+    abstractOktaStateHandler.handleUnknown(unknownResponse);
+  }
 
-    @Test(expected = ApiException.class)
-    public void handleUnknownLockout() {
+  @Test(expected = ApiException.class)
+  public void handleUnknownPasswordExpired() {
 
-        String status = "LOCKED_OUT";
+    String status = "PASSWORD_EXPIRED";
 
-        AuthenticationResponse unknownResponse = mock(AuthenticationResponse.class);
-        when(unknownResponse.getStatusString()).thenReturn(status);
+    AuthenticationResponse unknownResponse = mock(AuthenticationResponse.class);
+    when(unknownResponse.getStatusString()).thenReturn(status);
 
-        abstractOktaStateHandler.handleUnknown(unknownResponse);
-    }
-
-    @Test(expected = ApiException.class)
-    public void handleUnknownPasswordExpired() {
-
-        String status = "PASSWORD_EXPIRED";
-
-        AuthenticationResponse unknownResponse = mock(AuthenticationResponse.class);
-        when(unknownResponse.getStatusString()).thenReturn(status);
-
-        abstractOktaStateHandler.handleUnknown(unknownResponse);
-    }
+    abstractOktaStateHandler.handleUnknown(unknownResponse);
+  }
 }
-

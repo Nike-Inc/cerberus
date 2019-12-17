@@ -16,28 +16,27 @@
 
 package com.nike.cerberus.util;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DateTimeSupplierTest {
 
-    private DateTimeSupplier subject;
+  private DateTimeSupplier subject;
 
-    @Before
-    public void setUp() throws Exception {
-        subject = new DateTimeSupplier();
-    }
+  @Before
+  public void setUp() throws Exception {
+    subject = new DateTimeSupplier();
+  }
 
-    @Test
-    public void test_now_returns_utc_time() {
-        final OffsetDateTime dateTime = subject.get();
-        final ZoneOffset offset = dateTime.getOffset();
+  @Test
+  public void test_now_returns_utc_time() {
+    final OffsetDateTime dateTime = subject.get();
+    final ZoneOffset offset = dateTime.getOffset();
 
-        assertThat(offset.getTotalSeconds()).isEqualTo(0);
-    }
+    assertThat(offset.getTotalSeconds()).isEqualTo(0);
+  }
 }

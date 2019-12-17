@@ -21,16 +21,16 @@ import com.nike.cerberus.event.Event;
 /**
  * Interface for a Cerberus Event processor
  *
- * Once an implementation of this interface is added the the named 'eventProcessors' list in the CmsGuiceModule it will
- * get registered with the event processor. All events that go through the event processor will get processed by
- * all processors asynchronously.
+ * <p>Once an implementation of this interface is added the the named 'eventProcessors' list in the
+ * CmsGuiceModule it will get registered with the event processor. All events that go through the
+ * event processor will get processed by all processors asynchronously.
  *
- * ex: Another useful processor might be one that send all events to a sns topic so that a lambda could process the events.
+ * <p>ex: Another useful processor might be one that send all events to a sns topic so that a lambda
+ * could process the events.
  */
 public interface EventProcessor {
 
-    void process(Event event);
+  void process(Event event);
 
-    String getName();
-
+  String getName();
 }

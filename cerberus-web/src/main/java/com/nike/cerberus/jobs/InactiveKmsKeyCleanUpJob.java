@@ -24,41 +24,42 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/**
- * Scans through the data store and deletes in-active KMS CMKs
- */
+/** Scans through the data store and deletes in-active KMS CMKs */
 @Slf4j
 @Component
 public class InactiveKmsKeyCleanUpJob extends LockingJob {
 
-    private final CleanUpService cleanUpService;
+  private final CleanUpService cleanUpService;
 
-    private final int expirationPeriodInDays;
+  private final int expirationPeriodInDays;
 
-    private final int pauseTimeInSeconds;
+  private final int pauseTimeInSeconds;
 
-    @Autowired
-    public InactiveKmsKeyCleanUpJob(CleanUpService cleanUpService,
-                                    @Value("${cerberus.jobs.inactiveKmsCleanUpJob.deleteKmsKeysOlderThanNDays}")
-                                    int expirationPeriodInDays,
-                                    @Value("${cerberus.jobs.inactiveKmsCleanUpJob.batchPauseTimeInSeconds}")
-                                    int pauseTimeInSeconds) {
+  @Autowired
+  public InactiveKmsKeyCleanUpJob(
+      CleanUpService cleanUpService,
+      @Value("${cerberus.jobs.inactiveKmsCleanUpJob.deleteKmsKeysOlderThanNDays}")
+          int expirationPeriodInDays,
+      @Value("${cerberus.jobs.inactiveKmsCleanUpJob.batchPauseTimeInSeconds}")
+          int pauseTimeInSeconds) {
 
-        this.cleanUpService = cleanUpService;
-        this.expirationPeriodInDays = expirationPeriodInDays;
-        this.pauseTimeInSeconds = pauseTimeInSeconds;
-    }
+    this.cleanUpService = cleanUpService;
+    this.expirationPeriodInDays = expirationPeriodInDays;
+    this.pauseTimeInSeconds = pauseTimeInSeconds;
+  }
 
-    @Override
-    @Scheduled(cron = "${cerberus.jobs.inactiveKmsCleanUpJob.cronExpression}")
-    public void execute() {
-        super.execute();
-    }
+  @Override
+  @Scheduled(cron = "${cerberus.jobs.inactiveKmsCleanUpJob.cronExpression}")
+  public void execute() {
+    super.execute();
+  }
 
-    @Override
-    protected void executeLockableCode() {
-        log.info("Starting KMS clean up...");
-        int numKmsKeysCleanedUp = cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(expirationPeriodInDays, pauseTimeInSeconds);
-        log.info("Cleaned up {} KMS keys...", numKmsKeysCleanedUp);
-    }
+  @Override
+  protected void executeLockableCode() {
+    log.info("Starting KMS clean up...");
+    int numKmsKeysCleanedUp =
+        cleanUpService.cleanUpInactiveAndOrphanedKmsKeys(
+            expirationPeriodInDays, pauseTimeInSeconds);
+    log.info("Cleaned up {} KMS keys...", numKmsKeysCleanedUp);
+  }
 }

@@ -17,11 +17,52 @@
 package com.nike.cerberus.domain;
 
 import com.nike.cerberus.PrincipalType;
-
 import java.time.OffsetDateTime;
 
 public class CerberusAuthToken {
 
+  private String token;
+  private OffsetDateTime created;
+  private OffsetDateTime expires;
+  private String principal;
+  private PrincipalType principalType;
+  private boolean isAdmin;
+  private String groups;
+  private int refreshCount;
+
+  public String getToken() {
+    return token;
+  }
+
+  public OffsetDateTime getCreated() {
+    return created;
+  }
+
+  public OffsetDateTime getExpires() {
+    return expires;
+  }
+
+  public String getPrincipal() {
+    return principal;
+  }
+
+  public PrincipalType getPrincipalType() {
+    return principalType;
+  }
+
+  public boolean isAdmin() {
+    return isAdmin;
+  }
+
+  public String getGroups() {
+    return groups;
+  }
+
+  public int getRefreshCount() {
+    return refreshCount;
+  }
+
+  public static final class Builder {
     private String token;
     private OffsetDateTime created;
     private OffsetDateTime expires;
@@ -31,106 +72,63 @@ public class CerberusAuthToken {
     private String groups;
     private int refreshCount;
 
-    public String getToken() {
-        return token;
+    private Builder() {}
+
+    public static Builder create() {
+      return new Builder();
     }
 
-    public OffsetDateTime getCreated() {
-        return created;
+    public Builder withToken(String token) {
+      this.token = token;
+      return this;
     }
 
-    public OffsetDateTime getExpires() {
-        return expires;
+    public Builder withCreated(OffsetDateTime created) {
+      this.created = created;
+      return this;
     }
 
-    public String getPrincipal() {
-        return principal;
+    public Builder withExpires(OffsetDateTime expires) {
+      this.expires = expires;
+      return this;
     }
 
-    public PrincipalType getPrincipalType() {
-        return principalType;
+    public Builder withPrincipal(String principal) {
+      this.principal = principal;
+      return this;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
+    public Builder withPrincipalType(PrincipalType principalType) {
+      this.principalType = principalType;
+      return this;
     }
 
-    public String getGroups() {
-        return groups;
+    public Builder withIsAdmin(boolean isAdmin) {
+      this.isAdmin = isAdmin;
+      return this;
     }
 
-    public int getRefreshCount() {
-        return refreshCount;
+    public Builder withGroups(String groups) {
+      this.groups = groups;
+      return this;
     }
 
-    public static final class Builder {
-        private String token;
-        private OffsetDateTime created;
-        private OffsetDateTime expires;
-        private String principal;
-        private PrincipalType principalType;
-        private boolean isAdmin;
-        private String groups;
-        private int refreshCount;
-
-        private Builder() {
-        }
-
-        public static Builder create() {
-            return new Builder();
-        }
-
-        public Builder withToken(String token) {
-            this.token = token;
-            return this;
-        }
-
-        public Builder withCreated(OffsetDateTime created) {
-            this.created = created;
-            return this;
-        }
-
-        public Builder withExpires(OffsetDateTime expires) {
-            this.expires = expires;
-            return this;
-        }
-
-        public Builder withPrincipal(String principal) {
-            this.principal = principal;
-            return this;
-        }
-
-        public Builder withPrincipalType(PrincipalType principalType) {
-            this.principalType = principalType;
-            return this;
-        }
-
-        public Builder withIsAdmin(boolean isAdmin) {
-            this.isAdmin = isAdmin;
-            return this;
-        }
-
-        public Builder withGroups(String groups) {
-            this.groups = groups;
-            return this;
-        }
-
-        public Builder withRefreshCount(int refreshCount) {
-            this.refreshCount = refreshCount;
-            return this;
-        }
-
-        public CerberusAuthToken build() {
-            CerberusAuthToken generateTokenResult = new CerberusAuthToken();
-            generateTokenResult.refreshCount = this.refreshCount;
-            generateTokenResult.principal = this.principal;
-            generateTokenResult.token = this.token;
-            generateTokenResult.isAdmin = this.isAdmin;
-            generateTokenResult.expires = this.expires;
-            generateTokenResult.groups = this.groups;
-            generateTokenResult.principalType = this.principalType;
-            generateTokenResult.created = this.created;
-            return generateTokenResult;
-        }
+    public Builder withRefreshCount(int refreshCount) {
+      this.refreshCount = refreshCount;
+      return this;
     }
+
+    public CerberusAuthToken build() {
+      CerberusAuthToken generateTokenResult = new CerberusAuthToken();
+      generateTokenResult.refreshCount = this.refreshCount;
+      generateTokenResult.principal = this.principal;
+      generateTokenResult.token = this.token;
+      generateTokenResult.isAdmin = this.isAdmin;
+      generateTokenResult.expires = this.expires;
+      generateTokenResult.groups = this.groups;
+      generateTokenResult.principalType = this.principalType;
+      generateTokenResult.created = this.created;
+      return generateTokenResult;
+    }
+  }
 }

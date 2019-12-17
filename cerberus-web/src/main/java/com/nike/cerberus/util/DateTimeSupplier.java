@@ -16,22 +16,19 @@
 
 package com.nike.cerberus.util;
 
-import org.springframework.stereotype.Component;
-
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.function.Supplier;
+import org.springframework.stereotype.Component;
 
-/**
- * Utility class for getting the current time in UTC.
- */
+/** Utility class for getting the current time in UTC. */
 @Component
 public class DateTimeSupplier implements Supplier<OffsetDateTime> {
 
-    private final ZoneId UTC = ZoneId.of("UTC");
+  private final ZoneId UTC = ZoneId.of("UTC");
 
-    @Override
-    public OffsetDateTime get() {
-        return OffsetDateTime.now(UTC);
-    }
+  @Override
+  public OffsetDateTime get() {
+    return OffsetDateTime.now(UTC);
+  }
 }

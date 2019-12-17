@@ -16,49 +16,46 @@
 
 package com.nike.cerberus.validation;
 
+import static org.mockito.Mockito.mock;
+
 import com.nike.cerberus.domain.UserGroupPermission;
+import java.util.HashSet;
+import javax.validation.ConstraintValidatorContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
-import javax.validation.ConstraintValidatorContext;
-import java.util.HashSet;
-
-import static org.mockito.Mockito.mock;
-
-/**
- * Tests the UserGroupPermissionsValidator class
- */
+/** Tests the UserGroupPermissionsValidator class */
 public class UserGroupPermissionsValidatorTest {
 
-    private ConstraintValidatorContext mockConstraintValidatorContext;
+  private ConstraintValidatorContext mockConstraintValidatorContext;
 
-    private UserGroupPermissionsValidator subject;
+  private UserGroupPermissionsValidator subject;
 
-    @Before
-    public void setup() {
-        mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
-        subject = new UserGroupPermissionsValidator();
-    }
+  @Before
+  public void setup() {
+    mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
+    subject = new UserGroupPermissionsValidator();
+  }
 
-    @Test
-    public void null_set_is_valid() {
-        Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
-    }
+  @Test
+  public void null_set_is_valid() {
+    Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void empty_set_is_valid() {
-        Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
-    }
+  @Test
+  public void empty_set_is_valid() {
+    Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void unique_set_is_valid() {
-        UserGroupPermission a = new UserGroupPermission();
-        a.setName("abc");
-        UserGroupPermission b = new UserGroupPermission();
-        b.setName("def");
+  @Test
+  public void unique_set_is_valid() {
+    UserGroupPermission a = new UserGroupPermission();
+    a.setName("abc");
+    UserGroupPermission b = new UserGroupPermission();
+    b.setName("def");
 
-        Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
-    }
+    Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
+  }
 }

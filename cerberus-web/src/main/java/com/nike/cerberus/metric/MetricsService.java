@@ -19,11 +19,12 @@ package com.nike.cerberus.metric;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
-
 import java.util.Map;
 import java.util.function.Supplier;
 
 public interface MetricsService {
-    Counter getOrCreateCounter(String name, Map<String, String> dimensions);
-    Gauge getOrCreateCallbackGauge(String name, Supplier<Number> supplier, Map<String, String> dimensions);
+  Counter getOrCreateCounter(String name, Map<String, String> dimensions);
+
+  Gauge getOrCreateCallbackGauge(
+      String name, Supplier<Number> supplier, Map<String, String> dimensions);
 }

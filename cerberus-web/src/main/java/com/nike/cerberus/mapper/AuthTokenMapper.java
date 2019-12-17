@@ -21,11 +21,11 @@ import org.apache.ibatis.annotations.Param;
 
 public interface AuthTokenMapper {
 
-    int createAuthToken(@Param("record") AuthTokenRecord record);
+  int createAuthToken(@Param("record") AuthTokenRecord record);
 
-    AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
+  AuthTokenRecord getAuthTokenFromHash(@Param("hash") String hash);
 
-    void deleteAuthTokenFromHash(@Param("hash") String hash);
+  void deleteAuthTokenFromHash(@Param("hash") String hash);
 
-    int deleteExpiredTokens(@Param("limit") int limit);
+  int deleteExpiredTokens(@Param("limit") int limit);
 }

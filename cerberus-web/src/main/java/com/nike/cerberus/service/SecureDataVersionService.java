@@ -17,138 +17,144 @@
 
 package com.nike.cerberus.service;
 
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.*;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 @Component
 public class SecureDataVersionService {
 
-    // the default ID for current versions of secure data
-    public static final String DEFAULT_ID_FOR_CURRENT_VERSIONS = "CURRENT";
+  // the default ID for current versions of secure data
+  public static final String DEFAULT_ID_FOR_CURRENT_VERSIONS = "CURRENT";
 
-    private final SecureDataVersionDao secureDataVersionDao;
-    private final SecureDataService secureDataService;
-    private final EncryptionService encryptionService;
+  private final SecureDataVersionDao secureDataVersionDao;
+  private final SecureDataService secureDataService;
+  private final EncryptionService encryptionService;
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    public SecureDataVersionService(SecureDataVersionDao secureDataVersionDao,
-                                    SecureDataService secureDataService,
-                                    EncryptionService encryptionService) {
-        this.secureDataVersionDao = secureDataVersionDao;
-        this.secureDataService = secureDataService;
-        this.encryptionService = encryptionService;
+  @Autowired
+  public SecureDataVersionService(
+      SecureDataVersionDao secureDataVersionDao,
+      SecureDataService secureDataService,
+      EncryptionService encryptionService) {
+    this.secureDataVersionDao = secureDataVersionDao;
+    this.secureDataService = secureDataService;
+    this.encryptionService = encryptionService;
+  }
+
+  public Optional<SecureDataVersion> getSecureDataVersionById(
+      String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
+    log.debug("Reading secure data version: ID: {}", versionId);
+    Optional<SecureDataVersionRecord> secureDataVersionRecord =
+        StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS)
+            ? getCurrentSecureDataVersion(sdbId, pathToSecureData)
+            : secureDataVersionDao.readSecureDataVersionById(versionId);
+
+    if (!secureDataVersionRecord.isPresent()
+        || !StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath())
+        || secureDataVersionRecord.get().getType() != SecureDataType.OBJECT) {
+      return Optional.empty();
     }
 
-    public Optional<SecureDataVersion> getSecureDataVersionById(String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
-        log.debug("Reading secure data version: ID: {}", versionId);
-        Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
-                        getCurrentSecureDataVersion(sdbId, pathToSecureData) :
-                        secureDataVersionDao.readSecureDataVersionById(versionId);
+    SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+    byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
 
-        if (! secureDataVersionRecord.isPresent() ||
-                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath()) ||
-                secureDataVersionRecord.get().getType() != SecureDataType.OBJECT) {
-            return Optional.empty();
-        }
+    // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
+    // error if the ciphertext was encrypted as a String, but is not decrypted as a String.
+    String ciphertext = new String(encryptedBlob, StandardCharsets.UTF_8);
+    String plainText = encryptionService.decrypt(ciphertext, secureDataVersion.getPath());
 
-        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
-        byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
+    return Optional.of(
+        new SecureDataVersion()
+            .setAction(secureDataVersion.getAction())
+            .setActionPrincipal(secureDataVersion.getActionPrincipal())
+            .setActionTs(secureDataVersion.getActionTs())
+            .setData(plainText)
+            .setId(secureDataVersion.getId())
+            .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+            .setSdboxId(secureDataVersion.getSdboxId())
+            .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
+            .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+  }
 
-        // Make sure to convert ciphertext to a String first, then decrypt, because Amazon throws an
-        // error if the ciphertext was encrypted as a String, but is not decrypted as a String.
-        String ciphertext = new String(encryptedBlob, StandardCharsets.UTF_8);
-        String plainText = encryptionService.decrypt(ciphertext, secureDataVersion.getPath());
+  public Optional<SecureFileVersion> getSecureFileVersionById(
+      String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
+    log.debug("Reading secure data version: ID: {}", versionId);
+    Optional<SecureDataVersionRecord> secureDataVersionRecord =
+        StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS)
+            ? getCurrentSecureDataVersion(sdbId, pathToSecureData)
+            : secureDataVersionDao.readSecureDataVersionById(versionId);
 
-        return Optional.of(new SecureDataVersion()
-                .setAction(secureDataVersion.getAction())
-                .setActionPrincipal(secureDataVersion.getActionPrincipal())
-                .setActionTs(secureDataVersion.getActionTs())
-                .setData(plainText)
-                .setId(secureDataVersion.getId())
-                .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
-                .setSdboxId(secureDataVersion.getSdboxId())
-                .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
-                .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+    if (!secureDataVersionRecord.isPresent()
+        || !StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath())
+        || secureDataVersionRecord.get().getType() != SecureDataType.FILE) {
+      return Optional.empty();
     }
 
-    public Optional<SecureFileVersion> getSecureFileVersionById(String sdbId, String versionId, String sdbCategory, String pathToSecureData) {
-        log.debug("Reading secure data version: ID: {}", versionId);
-        Optional<SecureDataVersionRecord> secureDataVersionRecord = StringUtils.equals(versionId, DEFAULT_ID_FOR_CURRENT_VERSIONS) ?
-                getCurrentSecureDataVersion(sdbId, pathToSecureData) :
-                secureDataVersionDao.readSecureDataVersionById(versionId);
+    SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
+    byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
+    byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
 
-        if (! secureDataVersionRecord.isPresent() ||
-                ! StringUtils.equals(pathToSecureData, secureDataVersionRecord.get().getPath()) ||
-                secureDataVersionRecord.get().getType() != SecureDataType.FILE) {
-            return Optional.empty();
-        }
+    return Optional.of(
+        new SecureFileVersion()
+            .setAction(secureDataVersion.getAction())
+            .setActionPrincipal(secureDataVersion.getActionPrincipal())
+            .setActionTs(secureDataVersion.getActionTs())
+            .setData(unencryptedBlob)
+            .setName(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
+            .setSizeInBytes(secureDataVersion.getSizeInBytes())
+            .setId(secureDataVersion.getId())
+            .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+            .setSdboxId(secureDataVersion.getSdboxId())
+            .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
+            .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+  }
 
-        SecureDataVersionRecord secureDataVersion = secureDataVersionRecord.get();
-        byte[] encryptedBlob = secureDataVersion.getEncryptedBlob();
-        byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
+  public SecureDataVersionsResult getSecureDataVersionSummariesByPath(
+      String sdbId, String pathToSecureData, String sdbCategory, int limit, int offset) {
 
-        return Optional.of(new SecureFileVersion()
-                .setAction(secureDataVersion.getAction())
-                .setActionPrincipal(secureDataVersion.getActionPrincipal())
-                .setActionTs(secureDataVersion.getActionTs())
-                .setData(unencryptedBlob)
-                .setName(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
-                .setSizeInBytes(secureDataVersion.getSizeInBytes())
-                .setId(secureDataVersion.getId())
-                .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
-                .setSdboxId(secureDataVersion.getSdboxId())
-                .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
-                .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+    List<SecureDataVersionSummary> secureDataVersionSummaries = Lists.newArrayList();
+    List<SecureDataVersionRecord> secureDataVersions = Lists.newArrayList();
+    int actualLimit = limit;
+    int actualOffset = offset;
+    int totalNumVersionsForPath = secureDataVersionDao.getTotalNumVersionsForPath(pathToSecureData);
 
-    }
+    // retrieve current secrets versions from secure data table
+    Optional<SecureDataVersionRecord> currentSecureDataVersionOpt =
+        getCurrentSecureDataVersion(sdbId, pathToSecureData);
+    if (currentSecureDataVersionOpt.isPresent()) {
+      if (offset == 0) {
+        SecureDataVersionRecord currentSecureDataVersion = currentSecureDataVersionOpt.get();
+        secureDataVersions.add(currentSecureDataVersion);
+        actualLimit--;
+      } else {
+        actualOffset--;
+      }
+      totalNumVersionsForPath++;
+    } // else, the secret has been deleted and the last version should already be in the list
 
-    public SecureDataVersionsResult getSecureDataVersionSummariesByPath(String sdbId,
-                                                                        String pathToSecureData,
-                                                                        String sdbCategory,
-                                                                        int limit,
-                                                                        int offset) {
+    // retrieve previous secrets versions from the secure data versions table
+    secureDataVersions.addAll(
+        secureDataVersionDao.listSecureDataVersionByPath(
+            pathToSecureData, actualLimit, actualOffset));
 
-        List<SecureDataVersionSummary> secureDataVersionSummaries = Lists.newArrayList();
-        List<SecureDataVersionRecord> secureDataVersions = Lists.newArrayList();
-        int actualLimit = limit;
-        int actualOffset = offset;
-        int totalNumVersionsForPath = secureDataVersionDao.getTotalNumVersionsForPath(pathToSecureData);
-
-        // retrieve current secrets versions from secure data table
-        Optional<SecureDataVersionRecord> currentSecureDataVersionOpt = getCurrentSecureDataVersion(sdbId, pathToSecureData);
-        if (currentSecureDataVersionOpt.isPresent()) {
-            if (offset == 0) {
-                SecureDataVersionRecord currentSecureDataVersion = currentSecureDataVersionOpt.get();
-                secureDataVersions.add(currentSecureDataVersion);
-                actualLimit--;
-            } else {
-                actualOffset--;
-            }
-            totalNumVersionsForPath++;
-        }  // else, the secret has been deleted and the last version should already be in the list
-
-        // retrieve previous secrets versions from the secure data versions table
-        secureDataVersions.addAll(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, actualLimit, actualOffset));
-
-        secureDataVersions.forEach(versionRecord ->
-            secureDataVersionSummaries.add(new SecureDataVersionSummary()
+    secureDataVersions.forEach(
+        versionRecord ->
+            secureDataVersionSummaries.add(
+                new SecureDataVersionSummary()
                     .setAction(versionRecord.getAction())
                     .setActionPrincipal(versionRecord.getActionPrincipal())
                     .setActionTs(versionRecord.getActionTs())
@@ -158,78 +164,82 @@ public class SecureDataVersionService {
                     .setPath(String.format("%s/%s", sdbCategory, versionRecord.getPath()))
                     .setSdboxId(versionRecord.getSdboxId())
                     .setVersionCreatedBy(versionRecord.getVersionCreatedBy())
-                    .setVersionCreatedTs(versionRecord.getVersionCreatedTs())
-            )
-        );
+                    .setVersionCreatedTs(versionRecord.getVersionCreatedTs())));
 
-        return generateSecureDataVersionsResult(secureDataVersionSummaries, totalNumVersionsForPath, limit, offset);
+    return generateSecureDataVersionsResult(
+        secureDataVersionSummaries, totalNumVersionsForPath, limit, offset);
+  }
+
+  public SecureDataVersionsResult generateSecureDataVersionsResult(
+      List<SecureDataVersionSummary> summaries,
+      int totalNumVersionsForPath,
+      int limit,
+      int offset) {
+
+    int nextOffset = limit + offset;
+    boolean hasNext = totalNumVersionsForPath > nextOffset;
+
+    SecureDataVersionsResult result =
+        new SecureDataVersionsResult()
+            .setLimit(limit)
+            .setOffset(offset)
+            .setTotalVersionCount(totalNumVersionsForPath)
+            .setVersionCountInResult(summaries.size())
+            .setHasNext(hasNext)
+            .setSecureDataVersionSummaries(summaries);
+
+    if (hasNext) {
+      result.setNextOffset(nextOffset);
     }
 
-    public SecureDataVersionsResult generateSecureDataVersionsResult(List<SecureDataVersionSummary> summaries,
-                                                                     int totalNumVersionsForPath,
-                                                                     int limit,
-                                                                     int offset) {
+    return result;
+  }
 
-        int nextOffset = limit + offset;
-        boolean hasNext = totalNumVersionsForPath > nextOffset;
+  private Optional<SecureDataVersionRecord> getCurrentSecureDataVersion(
+      String sdbId, String pathToSecureData) {
+    Optional<SecureDataRecord> currentSecureDataRecordOpt =
+        secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData);
+    SecureDataVersionRecord newSecureDataVersionRecord = null;
 
-        SecureDataVersionsResult result = new SecureDataVersionsResult()
-                .setLimit(limit)
-                .setOffset(offset)
-                .setTotalVersionCount(totalNumVersionsForPath)
-                .setVersionCountInResult(summaries.size())
-                .setHasNext(hasNext)
-                .setSecureDataVersionSummaries(summaries);
+    if (currentSecureDataRecordOpt.isPresent()) {
+      SecureDataRecord currentSecureDataRecord = currentSecureDataRecordOpt.get();
+      SecureDataVersionRecord.SecretsAction action =
+          secureDataService.secureDataHasBeenUpdated(currentSecureDataRecord)
+              ? SecureDataVersionRecord.SecretsAction.UPDATE
+              : SecureDataVersionRecord.SecretsAction.CREATE;
 
-        if (hasNext) {
-            result.setNextOffset(nextOffset);
-        }
-
-        return result;
+      newSecureDataVersionRecord =
+          new SecureDataVersionRecord()
+              .setId(DEFAULT_ID_FOR_CURRENT_VERSIONS)
+              .setAction(action.name())
+              .setEncryptedBlob(currentSecureDataRecord.getEncryptedBlob())
+              .setType(currentSecureDataRecord.getType())
+              .setSizeInBytes(currentSecureDataRecord.getSizeInBytes())
+              .setVersionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
+              .setVersionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
+              .setActionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
+              .setActionTs(currentSecureDataRecord.getLastUpdatedTs())
+              .setSdboxId(currentSecureDataRecord.getSdboxId())
+              .setPath(currentSecureDataRecord.getPath());
     }
 
-    private Optional<SecureDataVersionRecord> getCurrentSecureDataVersion(String sdbId, String pathToSecureData) {
-        Optional<SecureDataRecord> currentSecureDataRecordOpt = secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData);
-        SecureDataVersionRecord newSecureDataVersionRecord = null;
+    return Optional.ofNullable(newSecureDataVersionRecord);
+  }
 
-        if (currentSecureDataRecordOpt.isPresent()) {
-            SecureDataRecord currentSecureDataRecord = currentSecureDataRecordOpt.get();
-            SecureDataVersionRecord.SecretsAction action =
-                    secureDataService.secureDataHasBeenUpdated(currentSecureDataRecord) ?
-                        SecureDataVersionRecord.SecretsAction.UPDATE :
-                        SecureDataVersionRecord.SecretsAction.CREATE;
+  public Map<String, String> parseVersionMetadata(SecureDataVersion secureDataVersion) {
+    Map<String, String> metadata = Maps.newHashMap();
 
-            newSecureDataVersionRecord = new SecureDataVersionRecord()
-                    .setId(DEFAULT_ID_FOR_CURRENT_VERSIONS)
-                    .setAction(action.name())
-                    .setEncryptedBlob(currentSecureDataRecord.getEncryptedBlob())
-                    .setType(currentSecureDataRecord.getType())
-                    .setSizeInBytes(currentSecureDataRecord.getSizeInBytes())
-                    .setVersionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
-                    .setVersionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
-                    .setActionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
-                    .setActionTs(currentSecureDataRecord.getLastUpdatedTs())
-                    .setSdboxId(currentSecureDataRecord.getSdboxId())
-                    .setPath(currentSecureDataRecord.getPath());
-        }
-
-        return Optional.ofNullable(newSecureDataVersionRecord);
+    if (secureDataVersion == null) {
+      return metadata;
     }
 
-    public Map<String, String> parseVersionMetadata(SecureDataVersion secureDataVersion) {
-        Map<String, String> metadata = Maps.newHashMap();
+    metadata.put("version_id", secureDataVersion.getId());
+    metadata.put("action", secureDataVersion.getAction());
+    metadata.put("action_ts", secureDataVersion.getActionTs().toString());
+    metadata.put("action_principal", secureDataVersion.getActionPrincipal());
+    metadata.put("version_created_by", secureDataVersion.getVersionCreatedBy());
+    metadata.put("version_created_ts", secureDataVersion.getVersionCreatedTs().toString());
 
-        if (secureDataVersion == null) {
-            return metadata;
-        }
-
-        metadata.put("version_id", secureDataVersion.getId());
-        metadata.put("action", secureDataVersion.getAction());
-        metadata.put("action_ts", secureDataVersion.getActionTs().toString());
-        metadata.put("action_principal", secureDataVersion.getActionPrincipal());
-        metadata.put("version_created_by", secureDataVersion.getVersionCreatedBy());
-        metadata.put("version_created_ts", secureDataVersion.getVersionCreatedTs().toString());
-
-        return metadata;
-    }
+    return metadata;
+  }
 }

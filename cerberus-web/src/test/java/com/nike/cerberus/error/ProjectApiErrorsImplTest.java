@@ -20,17 +20,17 @@ import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrorsTestBase;
 
 /**
- * Extends {@link ProjectApiErrorsTestBase} in order to inherit tests that will verify the correctness of this
- * project's {@link DefaultApiErrorsImpl}.
+ * Extends {@link ProjectApiErrorsTestBase} in order to inherit tests that will verify the
+ * correctness of this project's {@link DefaultApiErrorsImpl}.
  *
  * @author Nic Munroe
  */
 public class ProjectApiErrorsImplTest extends ProjectApiErrorsTestBase {
 
-    private static final ProjectApiErrors projectApiErrors = new DefaultApiErrorsImpl();
+  private static final ProjectApiErrors projectApiErrors = new DefaultApiErrorsImpl();
 
-    @Override
-    protected ProjectApiErrors getProjectApiErrors() {
-        return projectApiErrors;
-    }
+  @Override
+  protected ProjectApiErrors getProjectApiErrors() {
+    return projectApiErrors;
+  }
 }

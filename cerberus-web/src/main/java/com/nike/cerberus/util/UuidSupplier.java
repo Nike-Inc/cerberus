@@ -17,17 +17,14 @@
 package com.nike.cerberus.util;
 
 import com.google.common.base.Supplier;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
-/**
- * Simple wrapper around {@link UUID#randomUUID}.
- */
+/** Simple wrapper around {@link UUID#randomUUID}. */
 @Component
 public class UuidSupplier implements Supplier<String> {
-    @Override
-    public String get() {
-        return UUID.randomUUID().toString();
-    }
+  @Override
+  public String get() {
+    return UUID.randomUUID().toString();
+  }
 }

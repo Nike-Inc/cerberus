@@ -19,21 +19,20 @@ package com.nike.cerberus.aws;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.Maps;
-
 import java.util.Map;
 
 public class S3ClientFactory {
 
-    private final Map<String, AmazonS3> s3ClientMap = Maps.newConcurrentMap();
+  private final Map<String, AmazonS3> s3ClientMap = Maps.newConcurrentMap();
 
-    public AmazonS3 getClient(String region) {
-        AmazonS3 client = s3ClientMap.get(region);
+  public AmazonS3 getClient(String region) {
+    AmazonS3 client = s3ClientMap.get(region);
 
-        if (client == null) {
-            client = AmazonS3Client.builder().withRegion(region).build();
-            s3ClientMap.put(region, client);
-        }
-
-        return client;
+    if (client == null) {
+      client = AmazonS3Client.builder().withRegion(region).build();
+      s3ClientMap.put(region, client);
     }
+
+    return client;
+  }
 }

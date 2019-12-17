@@ -16,180 +16,186 @@
 
 package com.nike.cerberus.dao;
 
-import com.google.common.collect.Lists;
-import com.nike.cerberus.mapper.UserGroupMapper;
-import com.nike.cerberus.record.UserGroupPermissionRecord;
-import com.nike.cerberus.record.UserGroupRecord;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import com.nike.cerberus.mapper.UserGroupMapper;
+import com.nike.cerberus.record.UserGroupPermissionRecord;
+import com.nike.cerberus.record.UserGroupRecord;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import org.junit.Before;
+import org.junit.Test;
+
 public class UserGroupDaoTest {
 
-    private final String userGroupName = "USER_GROUP_NAME";
+  private final String userGroupName = "USER_GROUP_NAME";
 
-    private final String safeDepositBoxId = "SDB_ID";
+  private final String safeDepositBoxId = "SDB_ID";
 
-    private final String roleId = "ROLE_ID";
+  private final String roleId = "ROLE_ID";
 
-    private final String userGroupId = "USER_GROUP_ID";
+  private final String userGroupId = "USER_GROUP_ID";
 
-    private final String userGroupPermissionId = "USER_GROUP_PERMISSION_ID";
+  private final String userGroupPermissionId = "USER_GROUP_PERMISSION_ID";
 
-    private final String createdBy = "system";
+  private final String createdBy = "system";
 
-    private final String lastUpdatedBy = "system";
+  private final String lastUpdatedBy = "system";
 
-    private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
+  private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
-    private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
+  private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
-    private final UserGroupRecord userGroupRecord = new UserGroupRecord()
-            .setId(userGroupId)
-            .setName(userGroupName)
-            .setCreatedBy(createdBy)
-            .setLastUpdatedBy(lastUpdatedBy)
-            .setCreatedTs(createdTs)
-            .setLastUpdatedTs(lastUpdatedTs);
+  private final UserGroupRecord userGroupRecord =
+      new UserGroupRecord()
+          .setId(userGroupId)
+          .setName(userGroupName)
+          .setCreatedBy(createdBy)
+          .setLastUpdatedBy(lastUpdatedBy)
+          .setCreatedTs(createdTs)
+          .setLastUpdatedTs(lastUpdatedTs);
 
-    private final List<UserGroupRecord> userGroupRecordList = Lists.newArrayList(userGroupRecord);
+  private final List<UserGroupRecord> userGroupRecordList = Lists.newArrayList(userGroupRecord);
 
-    private final UserGroupPermissionRecord userGroupPermissionRecord = new UserGroupPermissionRecord()
-            .setId(userGroupPermissionId)
-            .setUserGroupId(userGroupId)
-            .setSdboxId(safeDepositBoxId)
-            .setRoleId(roleId)
-            .setCreatedBy(createdBy)
-            .setLastUpdatedBy(lastUpdatedBy)
-            .setCreatedTs(createdTs)
-            .setLastUpdatedTs(lastUpdatedTs);
+  private final UserGroupPermissionRecord userGroupPermissionRecord =
+      new UserGroupPermissionRecord()
+          .setId(userGroupPermissionId)
+          .setUserGroupId(userGroupId)
+          .setSdboxId(safeDepositBoxId)
+          .setRoleId(roleId)
+          .setCreatedBy(createdBy)
+          .setLastUpdatedBy(lastUpdatedBy)
+          .setCreatedTs(createdTs)
+          .setLastUpdatedTs(lastUpdatedTs);
 
-    private final List<UserGroupPermissionRecord> userGroupPermissionRecordList =
-            Lists.newArrayList(userGroupPermissionRecord);
+  private final List<UserGroupPermissionRecord> userGroupPermissionRecordList =
+      Lists.newArrayList(userGroupPermissionRecord);
 
-    private UserGroupMapper userGroupMapper;
+  private UserGroupMapper userGroupMapper;
 
-    private UserGroupDao subject;
+  private UserGroupDao subject;
 
-    @Before
-    public void setUp() throws Exception {
-        userGroupMapper = mock(UserGroupMapper.class);
-        subject = new UserGroupDao(userGroupMapper);
-    }
+  @Before
+  public void setUp() throws Exception {
+    userGroupMapper = mock(UserGroupMapper.class);
+    subject = new UserGroupDao(userGroupMapper);
+  }
 
-    @Test
-    public void getUserGroup_by_id_returns_record_when_found() {
-        when(userGroupMapper.getUserGroup(userGroupId)).thenReturn(userGroupRecord);
+  @Test
+  public void getUserGroup_by_id_returns_record_when_found() {
+    when(userGroupMapper.getUserGroup(userGroupId)).thenReturn(userGroupRecord);
 
-        final Optional<UserGroupRecord> actual = subject.getUserGroup(userGroupId);
+    final Optional<UserGroupRecord> actual = subject.getUserGroup(userGroupId);
 
-        assertThat(actual.isPresent()).isTrue();
-        assertThat(actual.get()).isEqualTo(userGroupRecord);
-    }
+    assertThat(actual.isPresent()).isTrue();
+    assertThat(actual.get()).isEqualTo(userGroupRecord);
+  }
 
-    @Test
-    public void getUserGroup_by_id_returns_empty_when_record_not_found() {
-        when(userGroupMapper.getUserGroup(userGroupId)).thenReturn(null);
+  @Test
+  public void getUserGroup_by_id_returns_empty_when_record_not_found() {
+    when(userGroupMapper.getUserGroup(userGroupId)).thenReturn(null);
 
-        final Optional<UserGroupRecord> actual = subject.getUserGroup(userGroupId);
+    final Optional<UserGroupRecord> actual = subject.getUserGroup(userGroupId);
 
-        assertThat(actual.isPresent()).isFalse();
-    }
+    assertThat(actual.isPresent()).isFalse();
+  }
 
-    @Test
-    public void getUserGroupByName_returns_record_when_found() {
-        when(userGroupMapper.getUserGroupByName(userGroupName)).thenReturn(userGroupRecord);
+  @Test
+  public void getUserGroupByName_returns_record_when_found() {
+    when(userGroupMapper.getUserGroupByName(userGroupName)).thenReturn(userGroupRecord);
 
-        final Optional<UserGroupRecord> actual = subject.getUserGroupByName(userGroupName);
+    final Optional<UserGroupRecord> actual = subject.getUserGroupByName(userGroupName);
 
-        assertThat(actual.isPresent()).isTrue();
-        assertThat(actual.get()).isEqualTo(userGroupRecord);
-    }
+    assertThat(actual.isPresent()).isTrue();
+    assertThat(actual.get()).isEqualTo(userGroupRecord);
+  }
 
-    @Test
-    public void getUserGroupByName_returns_empty_when_record_not_found() {
-        when(userGroupMapper.getUserGroupByName(userGroupName)).thenReturn(null);
+  @Test
+  public void getUserGroupByName_returns_empty_when_record_not_found() {
+    when(userGroupMapper.getUserGroupByName(userGroupName)).thenReturn(null);
 
-        final Optional<UserGroupRecord> actual = subject.getUserGroupByName(userGroupName);
+    final Optional<UserGroupRecord> actual = subject.getUserGroupByName(userGroupName);
 
-        assertThat(actual.isPresent()).isFalse();
-    }
+    assertThat(actual.isPresent()).isFalse();
+  }
 
-    @Test
-    public void getUserGroupByRole_returns_record_when_found() {
-        when(userGroupMapper.getUserGroupsByRole(safeDepositBoxId, roleId)).thenReturn(userGroupRecordList);
+  @Test
+  public void getUserGroupByRole_returns_record_when_found() {
+    when(userGroupMapper.getUserGroupsByRole(safeDepositBoxId, roleId))
+        .thenReturn(userGroupRecordList);
 
-        List<UserGroupRecord> actual = subject.getUserGroupsByRole(safeDepositBoxId, roleId);
+    List<UserGroupRecord> actual = subject.getUserGroupsByRole(safeDepositBoxId, roleId);
 
-        assertThat(actual).isNotEmpty();
-        assertThat(actual).hasSameElementsAs(userGroupRecordList);
-    }
+    assertThat(actual).isNotEmpty();
+    assertThat(actual).hasSameElementsAs(userGroupRecordList);
+  }
 
-    @Test
-    public void createUserGroup_returns_record_count() {
-        final int recordCount = 1;
-        when(userGroupMapper.createUserGroup(userGroupRecord)).thenReturn(recordCount);
+  @Test
+  public void createUserGroup_returns_record_count() {
+    final int recordCount = 1;
+    when(userGroupMapper.createUserGroup(userGroupRecord)).thenReturn(recordCount);
 
-        final int actualCount = subject.createUserGroup(userGroupRecord);
+    final int actualCount = subject.createUserGroup(userGroupRecord);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 
-    @Test
-    public void getUserGroupPermissions_returns_list_of_records() {
-        when(userGroupMapper.getUserGroupPermissions(safeDepositBoxId)).thenReturn(userGroupPermissionRecordList);
+  @Test
+  public void getUserGroupPermissions_returns_list_of_records() {
+    when(userGroupMapper.getUserGroupPermissions(safeDepositBoxId))
+        .thenReturn(userGroupPermissionRecordList);
 
-        List<UserGroupPermissionRecord> actual = subject.getUserGroupPermissions(safeDepositBoxId);
+    List<UserGroupPermissionRecord> actual = subject.getUserGroupPermissions(safeDepositBoxId);
 
-        assertThat(actual).isNotEmpty();
-        assertThat(actual).hasSameElementsAs(userGroupPermissionRecordList);
-    }
+    assertThat(actual).isNotEmpty();
+    assertThat(actual).hasSameElementsAs(userGroupPermissionRecordList);
+  }
 
-    @Test
-    public void createUserGroupPermission_returns_record_count() {
-        final int recordCount = 1;
-        when(userGroupMapper.createUserGroupPermission(userGroupPermissionRecord)).thenReturn(recordCount);
+  @Test
+  public void createUserGroupPermission_returns_record_count() {
+    final int recordCount = 1;
+    when(userGroupMapper.createUserGroupPermission(userGroupPermissionRecord))
+        .thenReturn(recordCount);
 
-        final int actualCount = subject.createUserGroupPermission(userGroupPermissionRecord);
+    final int actualCount = subject.createUserGroupPermission(userGroupPermissionRecord);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 
-    @Test
-    public void updateUserGroupPermission_returns_record_count() {
-        final int recordCount = 1;
-        when(userGroupMapper.updateUserGroupPermission(userGroupPermissionRecord)).thenReturn(recordCount);
+  @Test
+  public void updateUserGroupPermission_returns_record_count() {
+    final int recordCount = 1;
+    when(userGroupMapper.updateUserGroupPermission(userGroupPermissionRecord))
+        .thenReturn(recordCount);
 
-        final int actualCount = subject.updateUserGroupPermission(userGroupPermissionRecord);
+    final int actualCount = subject.updateUserGroupPermission(userGroupPermissionRecord);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 
-    @Test
-    public void deleteUserGroupPermission_returns_record_count() {
-        final int recordCount = 1;
-        when(userGroupMapper.deleteUserGroupPermission(safeDepositBoxId, userGroupId)).thenReturn(recordCount);
+  @Test
+  public void deleteUserGroupPermission_returns_record_count() {
+    final int recordCount = 1;
+    when(userGroupMapper.deleteUserGroupPermission(safeDepositBoxId, userGroupId))
+        .thenReturn(recordCount);
 
-        final int actualCount = subject.deleteUserGroupPermission(safeDepositBoxId, userGroupId);
+    final int actualCount = subject.deleteUserGroupPermission(safeDepositBoxId, userGroupId);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 
-    @Test
-    public void deleteUserGroupPermissions_returns_record_count() {
-        final int recordCount = 1;
-        when(userGroupMapper.deleteUserGroupPermissions(safeDepositBoxId)).thenReturn(recordCount);
+  @Test
+  public void deleteUserGroupPermissions_returns_record_count() {
+    final int recordCount = 1;
+    when(userGroupMapper.deleteUserGroupPermissions(safeDepositBoxId)).thenReturn(recordCount);
 
-        final int actualCount = subject.deleteUserGroupPermissions(safeDepositBoxId);
+    final int actualCount = subject.deleteUserGroupPermissions(safeDepositBoxId);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 }

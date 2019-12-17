@@ -16,63 +16,61 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing the session user.
- */
+/** POJO representing the session user. */
 class SessionUser {
 
-    private long id;
+  private long id;
 
-    private String email;
+  private String email;
 
-    private String username;
+  private String username;
 
-    private String firstname;
+  private String firstname;
 
-    private String lastname;
+  private String lastname;
 
-    public long getId() {
-        return id;
-    }
+  public long getId() {
+    return id;
+  }
 
-    public SessionUser setId(long id) {
-        this.id = id;
-        return this;
-    }
+  public SessionUser setId(long id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public SessionUser setEmail(String email) {
-        this.email = email;
-        return this;
-    }
+  public SessionUser setEmail(String email) {
+    this.email = email;
+    return this;
+  }
 
-    public String getUsername() {
-        return username;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public SessionUser setUsername(String username) {
-        this.username = username;
-        return this;
-    }
+  public SessionUser setUsername(String username) {
+    this.username = username;
+    return this;
+  }
 
-    public String getFirstname() {
-        return firstname;
-    }
+  public String getFirstname() {
+    return firstname;
+  }
 
-    public SessionUser setFirstname(String firstname) {
-        this.firstname = firstname;
-        return this;
-    }
+  public SessionUser setFirstname(String firstname) {
+    this.firstname = firstname;
+    return this;
+  }
 
-    public String getLastname() {
-        return lastname;
-    }
+  public String getLastname() {
+    return lastname;
+  }
 
-    public SessionUser setLastname(String lastname) {
-        this.lastname = lastname;
-        return this;
-    }
+  public SessionUser setLastname(String lastname) {
+    this.lastname = lastname;
+    return this;
+  }
 }

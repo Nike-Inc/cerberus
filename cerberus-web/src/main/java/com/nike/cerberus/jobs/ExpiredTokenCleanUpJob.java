@@ -27,36 +27,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExpiredTokenCleanUpJob extends LockingJob {
 
-    private final AuthTokenService authTokenService;
-    private final int maxNumberOfTokensToDeletePerJobRun;
-    private final int numberOfTokensToDeletePerBatch;
-    private final int batchPauseTimeInMillis;
+  private final AuthTokenService authTokenService;
+  private final int maxNumberOfTokensToDeletePerJobRun;
+  private final int numberOfTokensToDeletePerBatch;
+  private final int batchPauseTimeInMillis;
 
-    @Autowired
-    public ExpiredTokenCleanUpJob(AuthTokenService authTokenService,
-                                  @Value("${cerberus.jobs.expiredTokenCleanUpJob.maxNumberOfTokensToDeletePerJobRun}")
-                                          int maxNumberOfTokensToDeletePerJobRun,
-                                  @Value("${cerberus.jobs.expiredTokenCleanUpJob.numberOfTokensToDeletePerBatch}")
-                                          int numberOfTokensToDeletePerBatch,
-                                  @Value("${cerberus.jobs.expiredTokenCleanUpJob.batchPauseTimeInMillis}")
-                                          int batchPauseTimeInMillis) {
+  @Autowired
+  public ExpiredTokenCleanUpJob(
+      AuthTokenService authTokenService,
+      @Value("${cerberus.jobs.expiredTokenCleanUpJob.maxNumberOfTokensToDeletePerJobRun}")
+          int maxNumberOfTokensToDeletePerJobRun,
+      @Value("${cerberus.jobs.expiredTokenCleanUpJob.numberOfTokensToDeletePerBatch}")
+          int numberOfTokensToDeletePerBatch,
+      @Value("${cerberus.jobs.expiredTokenCleanUpJob.batchPauseTimeInMillis}")
+          int batchPauseTimeInMillis) {
 
-        this.authTokenService = authTokenService;
-        this.maxNumberOfTokensToDeletePerJobRun = maxNumberOfTokensToDeletePerJobRun;
-        this.numberOfTokensToDeletePerBatch = numberOfTokensToDeletePerBatch;
-        this.batchPauseTimeInMillis = batchPauseTimeInMillis;
-    }
+    this.authTokenService = authTokenService;
+    this.maxNumberOfTokensToDeletePerJobRun = maxNumberOfTokensToDeletePerJobRun;
+    this.numberOfTokensToDeletePerBatch = numberOfTokensToDeletePerBatch;
+    this.batchPauseTimeInMillis = batchPauseTimeInMillis;
+  }
 
-    @Override
-    @Scheduled(cron = "${cerberus.jobs.expiredTokenCleanUpJob.cronExpression}")
-    public void execute() {
-        super.execute();
-    }
+  @Override
+  @Scheduled(cron = "${cerberus.jobs.expiredTokenCleanUpJob.cronExpression}")
+  public void execute() {
+    super.execute();
+  }
 
-    @Override
-    protected void executeLockableCode() {
-        int numberOfDeletedTokens = authTokenService.deleteExpiredTokens(maxNumberOfTokensToDeletePerJobRun,
-                numberOfTokensToDeletePerBatch, batchPauseTimeInMillis);
-        log.info("Deleted {} tokens", numberOfDeletedTokens);
-    }
+  @Override
+  protected void executeLockableCode() {
+    int numberOfDeletedTokens =
+        authTokenService.deleteExpiredTokens(
+            maxNumberOfTokensToDeletePerJobRun,
+            numberOfTokensToDeletePerBatch,
+            batchPauseTimeInMillis);
+    log.info("Deleted {} tokens", numberOfDeletedTokens);
+  }
 }

@@ -16,30 +16,29 @@
 
 package com.nike.cerberus.util;
 
+import static org.assertj.core.api.Fail.fail;
+
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.UUID;
-
-import static org.assertj.core.api.Fail.fail;
-
 public class UuidSupplierTest {
 
-    private UuidSupplier subject;
+  private UuidSupplier subject;
 
-    @Before
-    public void setUp() throws Exception {
-        subject = new UuidSupplier();
+  @Before
+  public void setUp() throws Exception {
+    subject = new UuidSupplier();
+  }
+
+  @Test
+  public void get_returns_valid_uuid() {
+    final String uuid = subject.get();
+
+    try {
+      UUID.fromString(uuid);
+    } catch (IllegalArgumentException iae) {
+      fail("UUID generated unable to be parsed by UUID.fromString()");
     }
-
-    @Test
-    public void get_returns_valid_uuid() {
-        final String uuid = subject.get();
-
-        try {
-            UUID.fromString(uuid);
-        } catch (IllegalArgumentException iae) {
-            fail("UUID generated unable to be parsed by UUID.fromString()");
-        }
-    }
+  }
 }

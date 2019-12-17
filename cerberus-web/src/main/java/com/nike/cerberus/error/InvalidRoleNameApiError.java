@@ -17,40 +17,39 @@
 package com.nike.cerberus.error;
 
 import com.nike.backstopper.apierror.ApiError;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 public class InvalidRoleNameApiError implements ApiError {
 
-    private final String roleName;
+  private final String roleName;
 
-    public InvalidRoleNameApiError(String roleName) {
-        this.roleName = roleName;
-    }
+  public InvalidRoleNameApiError(String roleName) {
+    this.roleName = roleName;
+  }
 
-    @Override
-    public String getName() {
-        return "InvalidRoleNameApiError";
-    }
+  @Override
+  public String getName() {
+    return "InvalidRoleNameApiError";
+  }
 
-    @Override
-    public String getErrorCode() {
-        return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
-    }
+  @Override
+  public String getErrorCode() {
+    return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
+  }
 
-    @Override
-    public String getMessage() {
-        return String.format("The role %s could not be mapped to a valid role id", roleName);
-    }
+  @Override
+  public String getMessage() {
+    return String.format("The role %s could not be mapped to a valid role id", roleName);
+  }
 
-    @Override
-    public Map<String, Object> getMetadata() {
-        return null;
-    }
+  @Override
+  public Map<String, Object> getMetadata() {
+    return null;
+  }
 
-    @Override
-    public int getHttpStatusCode() {
-        return HttpServletResponse.SC_BAD_REQUEST;
-    }
+  @Override
+  public int getHttpStatusCode() {
+    return HttpServletResponse.SC_BAD_REQUEST;
+  }
 }

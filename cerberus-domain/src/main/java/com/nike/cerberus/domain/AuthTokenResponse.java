@@ -21,59 +21,58 @@ import java.util.Set;
 
 public class AuthTokenResponse {
 
-    private String clientToken;
+  private String clientToken;
 
-    private Set<String> policies;
+  private Set<String> policies;
 
-    private Map<String, String> metadata;
+  private Map<String, String> metadata;
 
-    private long leaseDuration;
+  private long leaseDuration;
 
-    private boolean renewable;
+  private boolean renewable;
 
-    public String getClientToken() {
-        return clientToken;
-    }
+  public String getClientToken() {
+    return clientToken;
+  }
 
-    public AuthTokenResponse setClientToken(String clientToken) {
-        this.clientToken = clientToken;
-        return this;
-    }
+  public AuthTokenResponse setClientToken(String clientToken) {
+    this.clientToken = clientToken;
+    return this;
+  }
 
-    public Set<String> getPolicies() {
-        return policies;
-    }
+  public Set<String> getPolicies() {
+    return policies;
+  }
 
-    public AuthTokenResponse setPolicies(Set<String> policies) {
-        this.policies = policies;
-        return this;
-    }
+  public AuthTokenResponse setPolicies(Set<String> policies) {
+    this.policies = policies;
+    return this;
+  }
 
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
+  public Map<String, String> getMetadata() {
+    return metadata;
+  }
 
-    public AuthTokenResponse setMetadata(Map<String, String> metadata) {
-        this.metadata = metadata;
-        return this;
-    }
+  public AuthTokenResponse setMetadata(Map<String, String> metadata) {
+    this.metadata = metadata;
+    return this;
+  }
 
-    public long getLeaseDuration() {
-        return leaseDuration;
-    }
+  public long getLeaseDuration() {
+    return leaseDuration;
+  }
 
-    public AuthTokenResponse setLeaseDuration(long leaseDuration) {
-        this.leaseDuration = leaseDuration;
-        return this;
-    }
+  public AuthTokenResponse setLeaseDuration(long leaseDuration) {
+    this.leaseDuration = leaseDuration;
+    return this;
+  }
 
-    public boolean isRenewable() {
-        return renewable;
-    }
+  public boolean isRenewable() {
+    return renewable;
+  }
 
-    public AuthTokenResponse setRenewable(boolean renewable) {
-        this.renewable = renewable;
-        return this;
-    }
-
+  public AuthTokenResponse setRenewable(boolean renewable) {
+    this.renewable = renewable;
+    return this;
+  }
 }

@@ -17,49 +17,50 @@
 package com.nike.cerberus.validation;
 
 import com.nike.cerberus.domain.IamRolePermission;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * Validator class for validating that a set of IAM role permissions contain no duplicate user group names.
+ * Validator class for validating that a set of IAM role permissions contain no duplicate user group
+ * names.
  */
 @Deprecated
 public class IamRolePermissionsValidator
-        implements ConstraintValidator<UniqueIamRolePermissions, Set<IamRolePermission>> {
+    implements ConstraintValidator<UniqueIamRolePermissions, Set<IamRolePermission>> {
 
-    public void initialize(UniqueIamRolePermissions constraint) {
-        // no-op
+  public void initialize(UniqueIamRolePermissions constraint) {
+    // no-op
+  }
+
+  public boolean isValid(
+      Set<IamRolePermission> iamRolePermissionSet, ConstraintValidatorContext context) {
+    if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
+      return true;
     }
 
-    public boolean isValid(Set<IamRolePermission> iamRolePermissionSet, ConstraintValidatorContext context) {
-        if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
-            return true;
-        }
+    boolean isValid = true;
+    Set<String> iamRoles = new HashSet<>();
 
-        boolean isValid = true;
-        Set<String> iamRoles = new HashSet<>();
-
-        for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
-            final String key = buildKey(iamRolePermission);
-            if (iamRoles.contains(key)) {
-                isValid = false;
-                break;
-            } else {
-                iamRoles.add(key);
-            }
-        }
-
-        return isValid;
+    for (IamRolePermission iamRolePermission : iamRolePermissionSet) {
+      final String key = buildKey(iamRolePermission);
+      if (iamRoles.contains(key)) {
+        isValid = false;
+        break;
+      } else {
+        iamRoles.add(key);
+      }
     }
 
-    private String buildKey(IamRolePermission iamRolePermission) {
-        return StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH) + '-' +
-                StringUtils.lowerCase(iamRolePermission.getIamRoleName(), Locale.ENGLISH);
-    }
+    return isValid;
+  }
 
+  private String buildKey(IamRolePermission iamRolePermission) {
+    return StringUtils.lowerCase(iamRolePermission.getAccountId(), Locale.ENGLISH)
+        + '-'
+        + StringUtils.lowerCase(iamRolePermission.getIamRoleName(), Locale.ENGLISH);
+  }
 }

@@ -21,84 +21,84 @@ import java.time.OffsetDateTime;
 
 public class SecureData {
 
-    private String id;
-    private String sdboxId;
-    private String path;
-    private String data;
-    private String createdBy;
-    private OffsetDateTime createdTs;
-    private String lastUpdatedBy;
-    private OffsetDateTime lastUpdatedTs;
+  private String id;
+  private String sdboxId;
+  private String path;
+  private String data;
+  private String createdBy;
+  private OffsetDateTime createdTs;
+  private String lastUpdatedBy;
+  private OffsetDateTime lastUpdatedTs;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public SecureData setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public SecureData setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getSdboxId() {
-        return sdboxId;
-    }
+  public String getSdboxId() {
+    return sdboxId;
+  }
 
-    public SecureData setSdboxId(String sdboxId) {
-        this.sdboxId = sdboxId;
-        return this;
-    }
+  public SecureData setSdboxId(String sdboxId) {
+    this.sdboxId = sdboxId;
+    return this;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public SecureData setPath(String path) {
-        this.path = path;
-        return this;
-    }
+  public SecureData setPath(String path) {
+    this.path = path;
+    return this;
+  }
 
-    public String getData() {
-        return data;
-    }
+  public String getData() {
+    return data;
+  }
 
-    public SecureData setData(String data) {
-        this.data = data;
-        return this;
-    }
+  public SecureData setData(String data) {
+    this.data = data;
+    return this;
+  }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+  public String getCreatedBy() {
+    return createdBy;
+  }
 
-    public SecureData setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-        return this;
-    }
+  public SecureData setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public SecureData setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-        return this;
-    }
+  public SecureData setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+    return this;
+  }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
+  public String getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
 
-    public SecureData setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-        return this;
-    }
+  public SecureData setLastUpdatedBy(String lastUpdatedBy) {
+    this.lastUpdatedBy = lastUpdatedBy;
+    return this;
+  }
 
-    public OffsetDateTime getLastUpdatedTs() {
-        return lastUpdatedTs;
-    }
+  public OffsetDateTime getLastUpdatedTs() {
+    return lastUpdatedTs;
+  }
 
-    public SecureData setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-        this.lastUpdatedTs = lastUpdatedTs;
-        return this;
-    }
+  public SecureData setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+    this.lastUpdatedTs = lastUpdatedTs;
+    return this;
+  }
 }

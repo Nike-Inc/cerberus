@@ -16,63 +16,60 @@
 
 package com.nike.cerberus.validation;
 
+import static org.mockito.Mockito.mock;
+
 import com.nike.cerberus.domain.IamRolePermission;
+import java.util.HashSet;
+import javax.validation.ConstraintValidatorContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
-import javax.validation.ConstraintValidatorContext;
-import java.util.HashSet;
-
-import static org.mockito.Mockito.mock;
-
-/**
- * Tests the IamRolePermissionsValidator class
- */
+/** Tests the IamRolePermissionsValidator class */
 public class IamRolePermissionsValidatorTest {
 
-    private ConstraintValidatorContext mockConstraintValidatorContext;
+  private ConstraintValidatorContext mockConstraintValidatorContext;
 
-    private IamRolePermissionsValidator subject;
+  private IamRolePermissionsValidator subject;
 
-    @Before
-    public void setup() {
-        mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
-        subject = new IamRolePermissionsValidator();
-    }
+  @Before
+  public void setup() {
+    mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
+    subject = new IamRolePermissionsValidator();
+  }
 
-    @Test
-    public void null_set_is_valid() {
-        Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
-    }
+  @Test
+  public void null_set_is_valid() {
+    Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void empty_set_is_valid() {
-        Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
-    }
+  @Test
+  public void empty_set_is_valid() {
+    Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void unique_set_is_valid() {
-        IamRolePermission a = new IamRolePermission();
-        a.setAccountId("123");
-        a.setIamRoleName("abc");
-        IamRolePermission b = new IamRolePermission();
-        b.setAccountId("123");
-        b.setIamRoleName("def");
+  @Test
+  public void unique_set_is_valid() {
+    IamRolePermission a = new IamRolePermission();
+    a.setAccountId("123");
+    a.setIamRoleName("abc");
+    IamRolePermission b = new IamRolePermission();
+    b.setAccountId("123");
+    b.setIamRoleName("def");
 
-        Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
-    }
+    Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void duplicate_set_is_invalid() {
-        IamRolePermission a = new IamRolePermission();
-        a.setAccountId("123");
-        a.setIamRoleName("abc");
-        IamRolePermission b = new IamRolePermission();
-        b.setAccountId("123");
-        b.setIamRoleName("ABC");
+  @Test
+  public void duplicate_set_is_invalid() {
+    IamRolePermission a = new IamRolePermission();
+    a.setAccountId("123");
+    a.setIamRoleName("abc");
+    IamRolePermission b = new IamRolePermission();
+    b.setAccountId("123");
+    b.setIamRoleName("ABC");
 
-        Assert.assertFalse(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
-    }
+    Assert.assertFalse(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
+  }
 }

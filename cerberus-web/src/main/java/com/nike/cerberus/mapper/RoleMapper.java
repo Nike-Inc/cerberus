@@ -17,18 +17,15 @@
 package com.nike.cerberus.mapper;
 
 import com.nike.cerberus.record.RoleRecord;
+import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
-/**
- * Data access layer for roles
- */
+/** Data access layer for roles */
 public interface RoleMapper {
 
-    List<RoleRecord> getAllRoles();
+  List<RoleRecord> getAllRoles();
 
-    RoleRecord getRoleById(@Param("id") final String id);
+  RoleRecord getRoleById(@Param("id") final String id);
 
-    RoleRecord getRoleByName(@Param("name") final String name);
+  RoleRecord getRoleByName(@Param("name") final String name);
 }

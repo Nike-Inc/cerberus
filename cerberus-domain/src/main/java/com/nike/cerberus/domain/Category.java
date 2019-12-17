@@ -16,101 +16,92 @@
 
 package com.nike.cerberus.domain;
 
+import java.time.OffsetDateTime;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotBlank;
-import java.time.OffsetDateTime;
-
-/**
- * Represents a category.
- */
+/** Represents a category. */
 public class Category {
 
-    /**
-     * Unique identifier for a category.
-     */
-    private String id;
+  /** Unique identifier for a category. */
+  private String id;
 
-    /**
-     * User friendly display name for a category.
-     */
-    @NotBlank(message = "CATEGORY_DISPLAY_NAME_BLANK")
-    @Length(max = 100, message = "CATEGORY_DISPLAY_NAME_TOO_LONG")
-    private String displayName;
+  /** User friendly display name for a category. */
+  @NotBlank(message = "CATEGORY_DISPLAY_NAME_BLANK")
+  @Length(max = 100, message = "CATEGORY_DISPLAY_NAME_TOO_LONG")
+  private String displayName;
 
-    /**
-     * The path segment used in provisioning.
-     */
-    private String path;
+  /** The path segment used in provisioning. */
+  private String path;
 
-    private OffsetDateTime createdTs;
+  private OffsetDateTime createdTs;
 
-    private OffsetDateTime lastUpdatedTs;
+  private OffsetDateTime lastUpdatedTs;
 
-    private String createdBy;
+  private String createdBy;
 
-    private String lastUpdatedBy;
+  private String lastUpdatedBy;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public Category setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public Category setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    public Category setDisplayName(String displayName) {
-        this.displayName = displayName;
-        return this;
-    }
+  public Category setDisplayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public Category setPath(String path) {
-        this.path = path;
-        return this;
-    }
+  public Category setPath(String path) {
+    this.path = path;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public Category setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-        return this;
-    }
+  public Category setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+    return this;
+  }
 
-    public OffsetDateTime getLastUpdatedTs() {
-        return lastUpdatedTs;
-    }
+  public OffsetDateTime getLastUpdatedTs() {
+    return lastUpdatedTs;
+  }
 
-    public Category setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-        this.lastUpdatedTs = lastUpdatedTs;
-        return this;
-    }
+  public Category setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+    this.lastUpdatedTs = lastUpdatedTs;
+    return this;
+  }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+  public String getCreatedBy() {
+    return createdBy;
+  }
 
-    public Category setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-        return this;
-    }
+  public Category setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+    return this;
+  }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
+  public String getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
 
-    public Category setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-        return this;
-    }
+  public Category setLastUpdatedBy(String lastUpdatedBy) {
+    this.lastUpdatedBy = lastUpdatedBy;
+    return this;
+  }
 }

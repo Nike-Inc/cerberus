@@ -16,32 +16,32 @@
 
 package com.nike.cerberus.util;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
+import org.junit.Test;
+
 public class SluggerTest {
 
-    private Slugger subject;
+  private Slugger subject;
 
-    @Before
-    public void setUp() throws Exception {
-        subject = new Slugger();
-    }
+  @Before
+  public void setUp() throws Exception {
+    subject = new Slugger();
+  }
 
-    @Test
-    public void test_to_slug() {
-        final String testCase = "èternäl testíng";
-        final String expected = "eternal-testing";
+  @Test
+  public void test_to_slug() {
+    final String testCase = "èternäl testíng";
+    final String expected = "eternal-testing";
 
-        assertThat(subject.toSlug(testCase)).isEqualTo(expected);
-    }
+    assertThat(subject.toSlug(testCase)).isEqualTo(expected);
+  }
 
-    @Test
-    public void test_sluggify_kms_alias() {
-        assertEquals("x-y-z", subject.slugifyKmsAliases("x.y.z"));
-        assertEquals("accountId/role-name", subject.slugifyKmsAliases("accountId/role.name"));
-    }
+  @Test
+  public void test_sluggify_kms_alias() {
+    assertEquals("x-y-z", subject.slugifyKmsAliases("x.y.z"));
+    assertEquals("accountId/role-name", subject.slugifyKmsAliases("accountId/role.name"));
+  }
 }

@@ -1,5 +1,8 @@
 package com.nike.cerberus.controller.authentication;
 
+import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
+
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.aws.sts.AwsStsClient;
 import com.nike.cerberus.aws.sts.AwsStsHttpHeader;
@@ -14,9 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
-import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @Slf4j
 @Validated
@@ -33,9 +33,10 @@ public class AwsIamStsAuthController {
   private final AwsStsClient awsStsClient;
 
   @Autowired
-  public AwsIamStsAuthController(AuthenticationService authenticationService,
-                                 EventProcessorService eventProcessorService,
-                                 AwsStsClient awsStsClient) {
+  public AwsIamStsAuthController(
+      AuthenticationService authenticationService,
+      EventProcessorService eventProcessorService,
+      AwsStsClient awsStsClient) {
 
     this.authenticationService = authenticationService;
     this.eventProcessorService = eventProcessorService;
@@ -43,39 +44,42 @@ public class AwsIamStsAuthController {
   }
 
   @RequestMapping(method = POST)
-  public AuthTokenResponse authenticate(@RequestHeader(value = HEADER_X_AMZ_DATE, required = false) String headerXAmzDate, // TODO should we make this required = true?
-                                        @RequestHeader(value = HEADER_X_AMZ_SECURITY_TOKEN, required = false) String headerXAmzSecurityToken,  // TODO should we make this required = true?
-                                        @RequestHeader(value = HEADER_AUTHORIZATION, required = false) String headerAuthorization) {
+  public AuthTokenResponse authenticate(
+      @RequestHeader(value = HEADER_X_AMZ_DATE, required = false)
+          String headerXAmzDate, // TODO should we make this required = true?
+      @RequestHeader(value = HEADER_X_AMZ_SECURITY_TOKEN, required = false)
+          String headerXAmzSecurityToken, // TODO should we make this required = true?
+      @RequestHeader(value = HEADER_AUTHORIZATION, required = false) String headerAuthorization) {
 
     String iamPrincipalArn = null;
     AuthTokenResponse authResponse;
     try {
-      if (headerAuthorization == null || headerXAmzDate == null || headerXAmzSecurityToken == null) {
+      if (headerAuthorization == null
+          || headerXAmzDate == null
+          || headerXAmzSecurityToken == null) {
         throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
       }
 
-      AwsStsHttpHeader header = new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+      AwsStsHttpHeader header =
+          new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
       GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
       iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
 
       authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
     } catch (Exception e) {
-      eventProcessorService.ingestEvent(createBaseAuditableEvent(
-        iamPrincipalArn) // TODO this arn will always be null
-        .withAction("Failed to authenticate with AWS IAM STS Auth")
-        .withSuccess(false)
-        .build()
-      );
+      eventProcessorService.ingestEvent(
+          createBaseAuditableEvent(iamPrincipalArn) // TODO this arn will always be null
+              .withAction("Failed to authenticate with AWS IAM STS Auth")
+              .withSuccess(false)
+              .build());
       throw e; // TODO, throw a Backstopper error here
     }
 
-    eventProcessorService.ingestEvent(createBaseAuditableEvent(
-      iamPrincipalArn)
-      .withAction("Successfully authenticated with AWS IAM STS Auth")
-      .build()
-    );
+    eventProcessorService.ingestEvent(
+        createBaseAuditableEvent(iamPrincipalArn)
+            .withAction("Successfully authenticated with AWS IAM STS Auth")
+            .build());
 
     return authResponse;
   }
-
 }

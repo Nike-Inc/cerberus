@@ -19,139 +19,143 @@ package com.nike.cerberus.security;
 import com.google.common.collect.ImmutableSet;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
 /**
- * Represents the authenticated principal.
- * This contains the client token entity and any assigned roles based on that.
+ * Represents the authenticated principal. This contains the client token entity and any assigned
+ * roles based on that.
  */
 public class CerberusPrincipal implements Authentication {
 
-    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+  public static final String ROLE_ADMIN = "ROLE_ADMIN";
 
-    public static final String ROLE_USER = "ROLE_USER";
+  public static final String ROLE_USER = "ROLE_USER";
 
-    public static final String METADATA_KEY_IS_ADMIN = "is_admin";
+  public static final String METADATA_KEY_IS_ADMIN = "is_admin";
 
-    public static final String METADATA_KEY_GROUPS = "groups";
+  public static final String METADATA_KEY_GROUPS = "groups";
 
-    public static final String METADATA_KEY_USERNAME = "username";
+  public static final String METADATA_KEY_USERNAME = "username";
 
-    public static final String METADATA_KEY_AWS_ACCOUNT_ID = "aws_account_id";
+  public static final String METADATA_KEY_AWS_ACCOUNT_ID = "aws_account_id";
 
-    public static final String METADATA_KEY_AWS_IAM_ROLE_NAME = "aws_iam_role_name";
+  public static final String METADATA_KEY_AWS_IAM_ROLE_NAME = "aws_iam_role_name";
 
-    public static final String METADATA_KEY_AWS_IAM_PRINCIPAL_ARN = "aws_iam_principal_arn";
+  public static final String METADATA_KEY_AWS_IAM_PRINCIPAL_ARN = "aws_iam_principal_arn";
 
-    public static final String METADATA_KEY_IS_IAM_PRINCIPAL = "is_iam_principal";
+  public static final String METADATA_KEY_IS_IAM_PRINCIPAL = "is_iam_principal";
 
-    public static final String METADATA_KEY_AWS_REGION = "aws_region";
+  public static final String METADATA_KEY_AWS_REGION = "aws_region";
 
-    public static final String METADATA_KEY_TOKEN_REFRESH_COUNT = "refresh_count";
+  public static final String METADATA_KEY_TOKEN_REFRESH_COUNT = "refresh_count";
 
-    public static final String METADATA_KEY_MAX_TOKEN_REFRESH_COUNT = "max_refresh_count";
+  public static final String METADATA_KEY_MAX_TOKEN_REFRESH_COUNT = "max_refresh_count";
 
-    private boolean authenticated = false;
+  private boolean authenticated = false;
 
-    private final CerberusAuthToken cerberusAuthToken;
-    private final Set<GrantedAuthority> grantedAuthorities;
+  private final CerberusAuthToken cerberusAuthToken;
+  private final Set<GrantedAuthority> grantedAuthorities;
 
-    public CerberusPrincipal(CerberusAuthToken cerberusAuthToken) {
-        this.cerberusAuthToken = cerberusAuthToken;
-        grantedAuthorities = buildGrantedAuthorities(cerberusAuthToken);
+  public CerberusPrincipal(CerberusAuthToken cerberusAuthToken) {
+    this.cerberusAuthToken = cerberusAuthToken;
+    grantedAuthorities = buildGrantedAuthorities(cerberusAuthToken);
+  }
+
+  private Set<GrantedAuthority> buildGrantedAuthorities(CerberusAuthToken cerberusAuthToken) {
+    final ImmutableSet.Builder<GrantedAuthority> roleSetBuilder = ImmutableSet.builder();
+
+    if (cerberusAuthToken.isAdmin()) {
+      roleSetBuilder.add(new SimpleGrantedAuthority(ROLE_ADMIN));
     }
 
-    private Set<GrantedAuthority> buildGrantedAuthorities(CerberusAuthToken cerberusAuthToken) {
-        final ImmutableSet.Builder<GrantedAuthority> roleSetBuilder = ImmutableSet.builder();
+    roleSetBuilder.add(new SimpleGrantedAuthority(ROLE_USER));
 
-        if (cerberusAuthToken.isAdmin()) {
-            roleSetBuilder.add(new SimpleGrantedAuthority(ROLE_ADMIN));
-        }
+    return roleSetBuilder.build();
+  }
 
-        roleSetBuilder.add(new SimpleGrantedAuthority(ROLE_USER));
+  @Override
+  public String getName() {
+    return cerberusAuthToken.getPrincipal();
+  }
 
-        return roleSetBuilder.build();
+  public String getToken() {
+    return cerberusAuthToken.getToken();
+  }
+
+  public Set<String> getUserGroups() {
+    if (cerberusAuthToken.getGroups() == null) {
+      return new HashSet<>();
     }
+    return new HashSet<>(Arrays.asList(cerberusAuthToken.getGroups().split(",")));
+  }
 
-    @Override
-    public String getName() {
-        return cerberusAuthToken.getPrincipal();
-    }
+  public PrincipalType getPrincipalType() {
+    return cerberusAuthToken.getPrincipalType();
+  }
 
-    public String getToken() {
-        return cerberusAuthToken.getToken();
-    }
+  public Integer getTokenRefreshCount() {
+    return cerberusAuthToken.getRefreshCount();
+  }
 
-    public Set<String> getUserGroups() {
-        if (cerberusAuthToken.getGroups() == null) {
-            return new HashSet<>();
-        }
-        return new HashSet<>(Arrays.asList(cerberusAuthToken.getGroups().split(",")));
-    }
+  public OffsetDateTime getTokenCreated() {
+    return cerberusAuthToken.getCreated();
+  }
 
-    public PrincipalType getPrincipalType() {
-        return cerberusAuthToken.getPrincipalType();
-    }
+  public OffsetDateTime getTokenExpires() {
+    return cerberusAuthToken.getExpires();
+  }
 
-    public Integer getTokenRefreshCount() {
-        return cerberusAuthToken.getRefreshCount();
-    }
+  public boolean isAdmin() {
+    return cerberusAuthToken.isAdmin();
+  }
 
-    public OffsetDateTime getTokenCreated() {
-        return cerberusAuthToken.getCreated();
-    }
+  @Override
+  public String toString() {
+    return String.format(
+        "[ Name: %s, Type: %s, Token Created: %s, Token Expires: %s, isAdmin: %s ]",
+        cerberusAuthToken.getPrincipal(),
+        cerberusAuthToken.getPrincipalType().getName(),
+        cerberusAuthToken
+            .getCreated()
+            .format(DateTimeFormatter.ofPattern("MMM d yyyy, hh:mm:ss a Z")),
+        cerberusAuthToken
+            .getExpires()
+            .format(DateTimeFormatter.ofPattern("MMM d yyyy, hh:mm:ss a Z")),
+        cerberusAuthToken.isAdmin());
+  }
 
-    public OffsetDateTime getTokenExpires() {
-        return cerberusAuthToken.getExpires();
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return grantedAuthorities;
+  }
 
-    public boolean isAdmin() {
-        return cerberusAuthToken.isAdmin();
-    }
+  @Override
+  public Object getCredentials() {
+    return cerberusAuthToken.getToken();
+  }
 
-    @Override
-    public String toString() {
-        return String.format("[ Name: %s, Type: %s, Token Created: %s, Token Expires: %s, isAdmin: %s ]",
-                cerberusAuthToken.getPrincipal(),
-                cerberusAuthToken.getPrincipalType().getName(),
-                cerberusAuthToken.getCreated().format(DateTimeFormatter.ofPattern("MMM d yyyy, hh:mm:ss a Z")),
-                cerberusAuthToken.getExpires().format(DateTimeFormatter.ofPattern("MMM d yyyy, hh:mm:ss a Z")),
-                cerberusAuthToken.isAdmin());
-    }
+  @Override
+  public Object getDetails() {
+    return null;
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return grantedAuthorities;
-    }
+  @Override
+  public Object getPrincipal() {
+    return cerberusAuthToken;
+  }
 
-    @Override
-    public Object getCredentials() {
-        return cerberusAuthToken.getToken();
-    }
+  @Override
+  public boolean isAuthenticated() {
+    return authenticated;
+  }
 
-    @Override
-    public Object getDetails() {
-        return null;
-    }
-
-    @Override
-    public Object getPrincipal() {
-        return cerberusAuthToken;
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
-    @Override
-    public void setAuthenticated(boolean authenticated) {
-        this.authenticated = authenticated;
-    }
+  @Override
+  public void setAuthenticated(boolean authenticated) {
+    this.authenticated = authenticated;
+  }
 }

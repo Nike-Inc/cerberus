@@ -16,29 +16,25 @@
 
 package com.nike.cerberus.domain;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class SecureDataResponse {
-    private String requestId;
-    @Builder.Default
-    private String leaseId = "";
-    private boolean renewable;
-    @Builder.Default
-    private int leaseDuration = 3600;
-    private Object data;
-    private Object wrapInfo;
-    private Object warnings;
-    private Object auth;
-    @Builder.Default
-    private Map<String, String> metadata = new HashMap<>();
+  private String requestId;
+  @Builder.Default private String leaseId = "";
+  private boolean renewable;
+  @Builder.Default private int leaseDuration = 3600;
+  private Object data;
+  private Object wrapInfo;
+  private Object warnings;
+  private Object auth;
+  @Builder.Default private Map<String, String> metadata = new HashMap<>();
 }

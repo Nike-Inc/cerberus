@@ -18,30 +18,28 @@
 package com.nike.cerberus.mapper;
 
 import com.nike.cerberus.record.SecureDataVersionRecord;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Set;
+import org.apache.ibatis.annotations.Param;
 
 public interface SecureDataVersionMapper {
 
-    int writeSecureDataVersion(@Param("record") SecureDataVersionRecord record);
+  int writeSecureDataVersion(@Param("record") SecureDataVersionRecord record);
 
-    int updateSecureDataVersion(@Param("record") SecureDataVersionRecord record);
+  int updateSecureDataVersion(@Param("record") SecureDataVersionRecord record);
 
-    Integer getTotalNumVersionsForPath(String path);
+  Integer getTotalNumVersionsForPath(String path);
 
-    List<SecureDataVersionRecord> listSecureDataVersionsByPath(@Param("path") String path,
-                                                               @Param("limit") int limit,
-                                                               @Param("offset") int offset);
+  List<SecureDataVersionRecord> listSecureDataVersionsByPath(
+      @Param("path") String path, @Param("limit") int limit, @Param("offset") int offset);
 
-    SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
+  SecureDataVersionRecord readSecureDataVersionById(@Param("id") String id);
 
-    SecureDataVersionRecord readSecureDataVersionByIdLocking(@Param("id") String id);
+  SecureDataVersionRecord readSecureDataVersionByIdLocking(@Param("id") String id);
 
-    String[] getVersionPathsByPartialPath(@Param("partialPath") String partialPath);
+  String[] getVersionPathsByPartialPath(@Param("partialPath") String partialPath);
 
-    Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);
+  Set<String> getVersionPathsBySdbId(@Param("sdbId") String sdbId);
 
-    int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
+  int deleteAllVersionsThatStartWithPartialPath(@Param("partialPath") String partialPath);
 }

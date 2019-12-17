@@ -18,45 +18,45 @@
 package com.nike.cerberus.validation;
 
 import com.nike.cerberus.domain.IamPrincipalPermission;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Set;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
- * Validator class for validating that a set of IAM role permissions contain no duplicate user group names.
+ * Validator class for validating that a set of IAM role permissions contain no duplicate user group
+ * names.
  */
 public class IamPrincipalPermissionsValidator
-        implements ConstraintValidator<UniqueIamPrincipalPermissions, Set<IamPrincipalPermission>> {
+    implements ConstraintValidator<UniqueIamPrincipalPermissions, Set<IamPrincipalPermission>> {
 
-    public void initialize(UniqueIamPrincipalPermissions constraint) {
-        // no-op
+  public void initialize(UniqueIamPrincipalPermissions constraint) {
+    // no-op
+  }
+
+  public boolean isValid(
+      Set<IamPrincipalPermission> iamRolePermissionSet, ConstraintValidatorContext context) {
+    if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
+      return true;
     }
 
-    public boolean isValid(Set<IamPrincipalPermission> iamRolePermissionSet, ConstraintValidatorContext context) {
-        if (iamRolePermissionSet == null || iamRolePermissionSet.isEmpty()) {
-            return true;
-        }
+    boolean isValid = true;
+    Set<String> iamRoles = new HashSet<>();
 
-        boolean isValid = true;
-        Set<String> iamRoles = new HashSet<>();
-
-        for (IamPrincipalPermission iamRolePermission : iamRolePermissionSet) {
-            final String key = buildKey(iamRolePermission);
-            if (iamRoles.contains(key)) {
-                isValid = false;
-                break;
-            } else {
-                iamRoles.add(key);
-            }
-        }
-
-        return isValid;
+    for (IamPrincipalPermission iamRolePermission : iamRolePermissionSet) {
+      final String key = buildKey(iamRolePermission);
+      if (iamRoles.contains(key)) {
+        isValid = false;
+        break;
+      } else {
+        iamRoles.add(key);
+      }
     }
 
-    private String buildKey(IamPrincipalPermission iamRolePermission) {
-        return iamRolePermission.getIamPrincipalArn();
-    }
+    return isValid;
+  }
 
+  private String buildKey(IamPrincipalPermission iamRolePermission) {
+    return iamRolePermission.getIamPrincipalArn();
+  }
 }

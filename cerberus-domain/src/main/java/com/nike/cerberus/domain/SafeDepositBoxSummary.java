@@ -16,52 +16,50 @@
 
 package com.nike.cerberus.domain;
 
-/**
- * Represents a summary for a specific safe deposit box.
- */
+/** Represents a summary for a specific safe deposit box. */
 public class SafeDepositBoxSummary {
 
-    private String id;
+  private String id;
 
-    private String name;
+  private String name;
 
-    private String path;
+  private String path;
 
-    private String categoryId;
+  private String categoryId;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public SafeDepositBoxSummary setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public SafeDepositBoxSummary setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public SafeDepositBoxSummary setName(String name) {
-        this.name = name;
-        return this;
-    }
+  public SafeDepositBoxSummary setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public SafeDepositBoxSummary setPath(String path) {
-        this.path = path;
-        return this;
-    }
+  public SafeDepositBoxSummary setPath(String path) {
+    this.path = path;
+    return this;
+  }
 
-    public String getCategoryId() {
-        return categoryId;
-    }
+  public String getCategoryId() {
+    return categoryId;
+  }
 
-    public SafeDepositBoxSummary setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-        return this;
-    }
+  public SafeDepositBoxSummary setCategoryId(String categoryId) {
+    this.categoryId = categoryId;
+    return this;
+  }
 }

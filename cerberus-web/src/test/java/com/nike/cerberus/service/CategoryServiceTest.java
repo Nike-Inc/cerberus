@@ -16,56 +16,49 @@
 
 package com.nike.cerberus.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.nike.cerberus.dao.CategoryDao;
 import com.nike.cerberus.record.CategoryRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 public class CategoryServiceTest {
 
-    @Mock
-    private CategoryDao categoryDao;
+  @Mock private CategoryDao categoryDao;
 
-    @Mock
-    private UuidSupplier uuidSupplier;
+  @Mock private UuidSupplier uuidSupplier;
 
-    @Mock
-    private Slugger slugger;
+  @Mock private Slugger slugger;
 
-    @Mock
-    private DateTimeSupplier dateTimeSupplier;
+  @Mock private DateTimeSupplier dateTimeSupplier;
 
-    @InjectMocks
-    private CategoryService categoryService;
+  @InjectMocks private CategoryService categoryService;
 
-    @Before
-    public void before() {
-        initMocks(this);
-    }
+  @Before
+  public void before() {
+    initMocks(this);
+  }
 
-    @Test
-    public void test_that_getCategoryIdToStringMap_returns_valid_map() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("abc", "foo");
+  @Test
+  public void test_that_getCategoryIdToStringMap_returns_valid_map() {
+    Map<String, String> expected = new HashMap<>();
+    expected.put("abc", "foo");
 
-        when(categoryDao.getAllCategories())
-                .thenReturn(Arrays.asList(new CategoryRecord().setId("abc").setDisplayName("foo")));
+    when(categoryDao.getAllCategories())
+        .thenReturn(Arrays.asList(new CategoryRecord().setId("abc").setDisplayName("foo")));
 
-        Map<String, String> actual = categoryService.getCategoryIdToCategoryNameMap();
-        assertEquals(expected, actual);
-    }
-
+    Map<String, String> actual = categoryService.getCategoryIdToCategoryNameMap();
+    assertEquals(expected, actual);
+  }
 }

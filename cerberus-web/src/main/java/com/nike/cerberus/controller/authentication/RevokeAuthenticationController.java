@@ -1,5 +1,7 @@
 package com.nike.cerberus.controller.authentication;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 
 @Slf4j
 @RestController

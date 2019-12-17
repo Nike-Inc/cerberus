@@ -19,24 +19,22 @@ package com.nike.cerberus.aws;
 import com.amazonaws.services.athena.AmazonAthena;
 import com.amazonaws.services.athena.AmazonAthenaClient;
 import com.google.common.collect.Maps;
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AthenaClientFactory {
 
-    private final Map<String, AmazonAthena> athenaClientMap = Maps.newConcurrentMap();
+  private final Map<String, AmazonAthena> athenaClientMap = Maps.newConcurrentMap();
 
-    public AmazonAthena getClient(String region) {
-        AmazonAthena client = athenaClientMap.get(region);
+  public AmazonAthena getClient(String region) {
+    AmazonAthena client = athenaClientMap.get(region);
 
-        if (client == null) {
-            client = AmazonAthenaClient.builder().withRegion(region).build();
-            athenaClientMap.put(region, client);
-        }
-
-        return client;
+    if (client == null) {
+      client = AmazonAthenaClient.builder().withRegion(region).build();
+      athenaClientMap.put(region, client);
     }
 
+    return client;
+  }
 }

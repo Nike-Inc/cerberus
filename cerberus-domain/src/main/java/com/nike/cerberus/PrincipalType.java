@@ -19,23 +19,23 @@ package com.nike.cerberus;
 import java.util.Arrays;
 
 public enum PrincipalType {
-    USER("USER"),
-    IAM("IAM");
+  USER("USER"),
+  IAM("IAM");
 
-    private final String name;
+  private final String name;
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    PrincipalType(String name) {
-        this.name = name;
-    }
+  PrincipalType(String name) {
+    this.name = name;
+  }
 
-    public static PrincipalType fromName(String name) {
-        return Arrays.stream(values())
-                .filter(e -> e.name.equalsIgnoreCase(name))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Invalid principal type"));
-    }
+  public static PrincipalType fromName(String name) {
+    return Arrays.stream(values())
+        .filter(e -> e.name.equalsIgnoreCase(name))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Invalid principal type"));
+  }
 }

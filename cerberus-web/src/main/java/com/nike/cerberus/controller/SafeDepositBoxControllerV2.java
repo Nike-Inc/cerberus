@@ -1,14 +1,19 @@
 package com.nike.cerberus.controller;
 
+import static com.nike.cerberus.security.CerberusPrincipal.ROLE_USER;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
+
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.PrincipalHasOwnerPermsForSdb;
 import com.nike.cerberus.security.PrincipalHasReadPermsForSdb;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -17,15 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.annotation.security.RolesAllowed;
-import java.util.List;
-import java.util.Map;
-
-import static com.nike.cerberus.security.CerberusPrincipal.ROLE_USER;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @Slf4j
 @Validated
@@ -42,9 +38,10 @@ public class SafeDepositBoxControllerV2 {
 
   @RolesAllowed(ROLE_USER)
   @RequestMapping(method = POST, consumes = APPLICATION_JSON_VALUE)
-  public ResponseEntity<SafeDepositBoxV2> createSafeDepositBox(@RequestBody SafeDepositBoxV2 request,
-                                                               Authentication authentication,
-                                                               UriComponentsBuilder b) {
+  public ResponseEntity<SafeDepositBoxV2> createSafeDepositBox(
+      @RequestBody SafeDepositBoxV2 request,
+      Authentication authentication,
+      UriComponentsBuilder b) {
 
     var sdb = safeDepositBoxService.createSafeDepositBoxV2(request, authentication.getName());
     var url = b.path("/V2/safe-deposit-box/{id}").buildAndExpand(sdb.getId()).toUri();
@@ -59,8 +56,12 @@ public class SafeDepositBoxControllerV2 {
 
   @PrincipalHasOwnerPermsForSdb
   @RequestMapping(value = "/{sdbId:.+}", method = PUT)
-  public SafeDepositBoxV2 updateSafeDepositBox(@PathVariable("sdbId") String sdbId, @RequestBody SafeDepositBoxV2 request, Authentication authentication) {
-    return safeDepositBoxService.updateSafeDepositBoxV2(request, (CerberusPrincipal) authentication, sdbId);
+  public SafeDepositBoxV2 updateSafeDepositBox(
+      @PathVariable("sdbId") String sdbId,
+      @RequestBody SafeDepositBoxV2 request,
+      Authentication authentication) {
+    return safeDepositBoxService.updateSafeDepositBoxV2(
+        request, (CerberusPrincipal) authentication, sdbId);
   }
 
   @PrincipalHasOwnerPermsForSdb
@@ -74,5 +75,4 @@ public class SafeDepositBoxControllerV2 {
   public List<SafeDepositBoxSummary> getSafeDepositBoxes(Authentication authentication) {
     return safeDepositBoxService.getAssociatedSafeDepositBoxes((CerberusPrincipal) authentication);
   }
-
 }

@@ -25,11 +25,12 @@ public class OktaConfiguration {
   }
 
   @Bean
-  AuthenticationClient authenticationClient(OktaConfigurationProperties oktaConfigurationProperties) {
+  AuthenticationClient authenticationClient(
+      OktaConfigurationProperties oktaConfigurationProperties) {
     System.setProperty("okta.client.token", oktaConfigurationProperties.getApiKey());
     return AuthenticationClients.builder()
-      .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
-      .build();
+        .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
+        .build();
   }
 
   @Bean

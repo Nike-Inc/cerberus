@@ -17,28 +17,28 @@
 
 package com.nike.cerberus.validation;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 /**
  * Validation annotation to ensure a set of user group permission objects represent unique groups.
  */
-@Target({ FIELD, METHOD, PARAMETER, CONSTRUCTOR, ANNOTATION_TYPE })
+@Target({FIELD, METHOD, PARAMETER, CONSTRUCTOR, ANNOTATION_TYPE})
 @Retention(RUNTIME)
 @Constraint(validatedBy = PatternListAnyMatchValidator.class)
 @Documented
 public @interface PatternListAnyMatch {
-    String message() default "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID";
+  String message() default "SDB_IAM_PRINCIPAL_PERMISSION_ARN_INVALID";
 
-    String[] value();
+  String[] value();
 
-    Class<?>[] groups() default { };
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default { };
+  Class<? extends Payload>[] payload() default {};
 }

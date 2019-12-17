@@ -16,30 +16,27 @@
 
 package com.nike.cerberus.domain;
 
+import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
+import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
+
+import javax.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.Pattern;
-
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_ACCT_ID_REGEX;
-import static com.nike.cerberus.domain.IamRoleRegex.IAM_ROLE_NAME_REGEX;
-
-/**
- * Represents the IAM role credentials sent during authentication.
- */
+/** Represents the IAM role credentials sent during authentication. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class IamRoleCredentials {
 
-    @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID")
-    private String accountId;
+  @Pattern(regexp = IAM_ROLE_ACCT_ID_REGEX, message = "IAM_ROLE_ACCT_ID_INVALID")
+  private String accountId;
 
-    @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
-    private String roleName;
+  @Pattern(regexp = IAM_ROLE_NAME_REGEX, message = "AUTH_IAM_ROLE_NAME_INVALID")
+  private String roleName;
 
-    @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
-    private String region;
+  @NotBlank(message = "AUTH_IAM_ROLE_AWS_REGION_BLANK")
+  private String region;
 }

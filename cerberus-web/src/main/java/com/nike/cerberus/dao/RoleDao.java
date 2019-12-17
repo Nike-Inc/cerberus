@@ -18,34 +18,31 @@ package com.nike.cerberus.dao;
 
 import com.nike.cerberus.mapper.RoleMapper;
 import com.nike.cerberus.record.RoleRecord;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Optional;
-
-/**
- * Data access layer for the role data.
- */
+/** Data access layer for the role data. */
 @Component
 public class RoleDao {
 
-    private final RoleMapper roleMapper;
+  private final RoleMapper roleMapper;
 
-    @Autowired
-    public RoleDao(final RoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
-    }
+  @Autowired
+  public RoleDao(final RoleMapper roleMapper) {
+    this.roleMapper = roleMapper;
+  }
 
-    public List<RoleRecord> getAllRoles() {
-        return roleMapper.getAllRoles();
-    }
+  public List<RoleRecord> getAllRoles() {
+    return roleMapper.getAllRoles();
+  }
 
-    public Optional<RoleRecord> getRoleById(final String id) {
-        return Optional.ofNullable(roleMapper.getRoleById(id));
-    }
+  public Optional<RoleRecord> getRoleById(final String id) {
+    return Optional.ofNullable(roleMapper.getRoleById(id));
+  }
 
-    public Optional<RoleRecord> getRoleByName(final String name) {
-        return Optional.ofNullable(roleMapper.getRoleByName(name));
-    }
+  public Optional<RoleRecord> getRoleByName(final String name) {
+    return Optional.ofNullable(roleMapper.getRoleByName(name));
+  }
 }

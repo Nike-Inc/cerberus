@@ -20,75 +20,75 @@ import java.time.OffsetDateTime;
 
 public class RoleRecord {
 
-    public static final String ROLE_OWNER = "owner";
+  public static final String ROLE_OWNER = "owner";
 
-    public static final String ROLE_WRITE = "write";
+  public static final String ROLE_WRITE = "write";
 
-    public static final String ROLE_READ = "read";
+  public static final String ROLE_READ = "read";
 
-    private String id;
+  private String id;
 
-    private String name;
+  private String name;
 
-    private OffsetDateTime createdTs;
+  private OffsetDateTime createdTs;
 
-    private OffsetDateTime lastUpdatedTs;
+  private OffsetDateTime lastUpdatedTs;
 
-    private String createdBy;
+  private String createdBy;
 
-    private String lastUpdatedBy;
+  private String lastUpdatedBy;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public RoleRecord setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public RoleRecord setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public RoleRecord setName(String name) {
-        this.name = name;
-        return this;
-    }
+  public RoleRecord setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public RoleRecord setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-        return this;
-    }
+  public RoleRecord setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+    return this;
+  }
 
-    public OffsetDateTime getLastUpdatedTs() {
-        return lastUpdatedTs;
-    }
+  public OffsetDateTime getLastUpdatedTs() {
+    return lastUpdatedTs;
+  }
 
-    public RoleRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-        this.lastUpdatedTs = lastUpdatedTs;
-        return this;
-    }
+  public RoleRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+    this.lastUpdatedTs = lastUpdatedTs;
+    return this;
+  }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+  public String getCreatedBy() {
+    return createdBy;
+  }
 
-    public RoleRecord setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-        return this;
-    }
+  public RoleRecord setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+    return this;
+  }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
+  public String getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
 
-    public RoleRecord setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-        return this;
-    }
+  public RoleRecord setLastUpdatedBy(String lastUpdatedBy) {
+    this.lastUpdatedBy = lastUpdatedBy;
+    return this;
+  }
 }

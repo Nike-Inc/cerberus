@@ -16,83 +16,80 @@
 
 package com.nike.cerberus.validation;
 
+import static org.mockito.Mockito.mock;
+
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
+import javax.validation.ConstraintValidatorContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.validation.ConstraintValidatorContext;
-
-import static org.mockito.Mockito.mock;
-
-/**
- * Tests the UniqueOwnerValidator class
- */
+/** Tests the UniqueOwnerValidator class */
 public class UniqueOwnerValidatorTest {
 
-    private ConstraintValidatorContext mockConstraintValidatorContext;
+  private ConstraintValidatorContext mockConstraintValidatorContext;
 
-    private UniqueOwnerValidator subject;
+  private UniqueOwnerValidator subject;
 
-    @Before
-    public void setup() {
-        mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
-        subject = new UniqueOwnerValidator();
-    }
+  @Before
+  public void setup() {
+    mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
+    subject = new UniqueOwnerValidator();
+  }
 
-    @Test
-    public void blank_owner_returns_valid() {
-        SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
-        safeDepositBox1.setOwner("   ");
-        SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
-        safeDepositBox2.setOwner("   ");
-        Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
-        Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
-    }
+  @Test
+  public void blank_owner_returns_valid() {
+    SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
+    safeDepositBox1.setOwner("   ");
+    SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
+    safeDepositBox2.setOwner("   ");
+    Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
+    Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void empty_user_group_set_is_valid() {
-        SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
-        safeDepositBox1.setOwner("owner");
-        SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
-        safeDepositBox2.setOwner("owner");
-        Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
-        Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
-    }
+  @Test
+  public void empty_user_group_set_is_valid() {
+    SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
+    safeDepositBox1.setOwner("owner");
+    SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
+    safeDepositBox2.setOwner("owner");
+    Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
+    Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void unique_owner_is_valid() {
-        UserGroupPermission userGroupPermission = new UserGroupPermission();
-        userGroupPermission.setName("group");
+  @Test
+  public void unique_owner_is_valid() {
+    UserGroupPermission userGroupPermission = new UserGroupPermission();
+    userGroupPermission.setName("group");
 
-        SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
-        safeDepositBox1.setOwner("owner");
-        safeDepositBox1.getUserGroupPermissions().add(userGroupPermission);
+    SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
+    safeDepositBox1.setOwner("owner");
+    safeDepositBox1.getUserGroupPermissions().add(userGroupPermission);
 
-        SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
-        safeDepositBox2.setOwner("owner");
-        safeDepositBox2.getUserGroupPermissions().add(userGroupPermission);
+    SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
+    safeDepositBox2.setOwner("owner");
+    safeDepositBox2.getUserGroupPermissions().add(userGroupPermission);
 
-        Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
-        Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
-    }
+    Assert.assertTrue(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
+    Assert.assertTrue(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void owner_in_group_permissions_is_invalid() {
-        UserGroupPermission userGroupPermission = new UserGroupPermission();
-        userGroupPermission.setName("owner");
+  @Test
+  public void owner_in_group_permissions_is_invalid() {
+    UserGroupPermission userGroupPermission = new UserGroupPermission();
+    userGroupPermission.setName("owner");
 
-        SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
-        safeDepositBox1.setOwner("owner");
-        safeDepositBox1.getUserGroupPermissions().add(userGroupPermission);
+    SafeDepositBoxV1 safeDepositBox1 = new SafeDepositBoxV1();
+    safeDepositBox1.setOwner("owner");
+    safeDepositBox1.getUserGroupPermissions().add(userGroupPermission);
 
-        SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
-        safeDepositBox2.setOwner("owner");
-        safeDepositBox2.getUserGroupPermissions().add(userGroupPermission);
+    SafeDepositBoxV2 safeDepositBox2 = new SafeDepositBoxV2();
+    safeDepositBox2.setOwner("owner");
+    safeDepositBox2.getUserGroupPermissions().add(userGroupPermission);
 
-        Assert.assertFalse(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
-        Assert.assertFalse(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
-    }
+    Assert.assertFalse(subject.isValid(safeDepositBox1, mockConstraintValidatorContext));
+    Assert.assertFalse(subject.isValid(safeDepositBox2, mockConstraintValidatorContext));
+  }
 }

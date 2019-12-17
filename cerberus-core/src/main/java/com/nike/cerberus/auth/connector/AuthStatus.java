@@ -18,25 +18,22 @@ package com.nike.cerberus.auth.connector;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-/**
- * Auth response status codes.
- */
+/** Auth response status codes. */
 public enum AuthStatus {
+  SUCCESS("success"),
 
-    SUCCESS("success"),
+  MFA_REQUIRED("mfa_req"),
 
-    MFA_REQUIRED("mfa_req"),
+  MFA_CHALLENGE("mfa_challenge");
 
-    MFA_CHALLENGE("mfa_challenge");
+  private final String status;
 
-    private final String status;
+  AuthStatus(final String status) {
+    this.status = status;
+  }
 
-    AuthStatus(final String status) {
-        this.status = status;
-    }
-
-    @JsonValue
-    public String code() {
-        return status;
-    }
+  @JsonValue
+  public String code() {
+    return status;
+  }
 }

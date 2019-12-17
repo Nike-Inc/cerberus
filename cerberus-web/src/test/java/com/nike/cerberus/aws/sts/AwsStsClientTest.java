@@ -16,51 +16,57 @@
 
 package com.nike.cerberus.aws.sts;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
+import org.junit.Test;
+
 public class AwsStsClientTest {
 
-    private AwsStsHttpClient httpClient;
-    private AwsStsClient awsStsClient;
-    private AwsStsHttpHeader awsStsHttpHeader;
+  private AwsStsHttpClient httpClient;
+  private AwsStsClient awsStsClient;
+  private AwsStsHttpHeader awsStsHttpHeader;
 
-    @Before
-    public void setup() {
-        httpClient = mock(AwsStsHttpClient.class);
-        awsStsClient = new AwsStsClient(httpClient);
-        awsStsHttpHeader = new AwsStsHttpHeader(
-                "test amz date",
-                "test amz security token",
-                "AWS4-HMAC-SHA256 Credential=ASIA5S2FQS2GYQLK5FFF/20180904/us-west-2/sts/aws4_request, SignedHeaders=host;x-amz-date, Signature=ddb9417d2b9bfe6f8b03e31a8f5d8ab98e0f4alkj12312098asdf"
-        );
-    }
+  @Before
+  public void setup() {
+    httpClient = mock(AwsStsHttpClient.class);
+    awsStsClient = new AwsStsClient(httpClient);
+    awsStsHttpHeader =
+        new AwsStsHttpHeader(
+            "test amz date",
+            "test amz security token",
+            "AWS4-HMAC-SHA256 Credential=ASIA5S2FQS2GYQLK5FFF/20180904/us-west-2/sts/aws4_request, SignedHeaders=host;x-amz-date, Signature=ddb9417d2b9bfe6f8b03e31a8f5d8ab98e0f4alkj12312098asdf");
+  }
 
-    @Test
-    public void test_getCallerIdentity() {
+  @Test
+  public void test_getCallerIdentity() {
 
-        setupMocks();
+    setupMocks();
 
-        GetCallerIdentityFullResponse response = mock(GetCallerIdentityFullResponse.class);
+    GetCallerIdentityFullResponse response = mock(GetCallerIdentityFullResponse.class);
 
-        when(httpClient.execute(awsStsHttpHeader.getRegion(), awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
-                .thenReturn(response);
+    when(httpClient.execute(
+            awsStsHttpHeader.getRegion(),
+            awsStsHttpHeader.generateHeaders(),
+            GetCallerIdentityFullResponse.class))
+        .thenReturn(response);
 
-        // invoke method under test
-        GetCallerIdentityResponse actualResponse = awsStsClient.getCallerIdentity(awsStsHttpHeader);
+    // invoke method under test
+    GetCallerIdentityResponse actualResponse = awsStsClient.getCallerIdentity(awsStsHttpHeader);
 
-        assertEquals(response.getGetCallerIdentityResponse(), actualResponse);
-    }
+    assertEquals(response.getGetCallerIdentityResponse(), actualResponse);
+  }
 
-    private void setupMocks() {
+  private void setupMocks() {
 
-        GetCallerIdentityFullResponse response = new GetCallerIdentityFullResponse();
+    GetCallerIdentityFullResponse response = new GetCallerIdentityFullResponse();
 
-        when(httpClient.execute(awsStsHttpHeader.getRegion(), awsStsHttpHeader.generateHeaders(), GetCallerIdentityFullResponse.class))
-                .thenReturn(response);
-    }
+    when(httpClient.execute(
+            awsStsHttpHeader.getRegion(),
+            awsStsHttpHeader.generateHeaders(),
+            GetCallerIdentityFullResponse.class))
+        .thenReturn(response);
+  }
 }

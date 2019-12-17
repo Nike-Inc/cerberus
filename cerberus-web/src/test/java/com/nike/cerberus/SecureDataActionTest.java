@@ -16,19 +16,19 @@
 
 package com.nike.cerberus;
 
-import org.junit.Test;
-
 import static com.nike.cerberus.SecureDataAction.DELETE;
 import static com.nike.cerberus.SecureDataAction.READ;
 import static com.nike.cerberus.SecureDataAction.WRITE;
 import static junit.framework.TestCase.assertEquals;
 
+import org.junit.Test;
+
 public class SecureDataActionTest {
 
-    @Test
-    public void test_that_SecureDataAction_fromString_returns_proper_actions() {
-        assertEquals(READ, SecureDataAction.fromString("read"));
-        assertEquals(WRITE,  SecureDataAction.fromString("write"));
-        assertEquals(DELETE,  SecureDataAction.fromString("delete"));
-    }
+  @Test
+  public void test_that_SecureDataAction_fromString_returns_proper_actions() {
+    assertEquals(READ, SecureDataAction.fromString("read"));
+    assertEquals(WRITE, SecureDataAction.fromString("write"));
+    assertEquals(DELETE, SecureDataAction.fromString("delete"));
+  }
 }

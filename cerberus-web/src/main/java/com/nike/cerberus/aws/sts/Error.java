@@ -16,38 +16,36 @@
 
 package com.nike.cerberus.aws.sts;
 
-/**
- * POJO representing a get-caller-identity error.
- */
+/** POJO representing a get-caller-identity error. */
 class Error {
-    private String type;
-    private String code;
-    private String message;
+  private String type;
+  private String code;
+  private String message;
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public Error setType(String type) {
-        this.type = type;
-        return this;
-    }
+  public Error setType(String type) {
+    this.type = type;
+    return this;
+  }
 
-    public String getCode() {
-        return code;
-    }
+  public String getCode() {
+    return code;
+  }
 
-    public Error setCode(String code) {
-        this.code = code;
-        return this;
-    }
+  public Error setCode(String code) {
+    this.code = code;
+    return this;
+  }
 
-    public String getMessage() {
-        return message;
-    }
+  public String getMessage() {
+    return message;
+  }
 
-    public Error setMessage(String message) {
-        this.message = message;
-        return this;
-    }
+  public Error setMessage(String message) {
+    this.message = message;
+    return this;
+  }
 }

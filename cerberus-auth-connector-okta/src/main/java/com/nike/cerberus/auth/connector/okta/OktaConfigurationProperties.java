@@ -1,13 +1,11 @@
 package com.nike.cerberus.auth.connector.okta;
 
-import lombok.Data;
-
 import javax.validation.constraints.NotBlank;
+import lombok.Data;
 
 @Data
 public class OktaConfigurationProperties {
   @NotBlank // TODO this didn't work
   private String apiKey;
-  @NotBlank
-  private String baseUrl;
+  @NotBlank private String baseUrl;
 }

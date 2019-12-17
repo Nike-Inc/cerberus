@@ -16,9 +16,5 @@
 
 package com.nike.cerberus.validation.group;
 
-/**
- * Validation group interface to make fields that are updatable on domain objects.
- */
-public interface Updatable {
-
-}
+/** Validation group interface to make fields that are updatable on domain objects. */
+public interface Updatable {}

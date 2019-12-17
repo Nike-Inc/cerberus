@@ -16,28 +16,31 @@
 
 package com.nike.cerberus.mapper;
 
-import org.apache.ibatis.annotations.Param;
-
 import java.util.Set;
+import org.apache.ibatis.annotations.Param;
 
 public interface PermissionsMapper {
 
-    Boolean doesIamPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
-                                                @Param("iamPrincipalArn") String iamPrincipalArn,
-                                                @Param("iamRootArn") String iamRootArn,
-                                                @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
+  Boolean doesIamPrincipalHaveGivenRoleForSdb(
+      @Param("sdbId") String sdbId,
+      @Param("iamPrincipalArn") String iamPrincipalArn,
+      @Param("iamRootArn") String iamRootArn,
+      @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
 
-    Boolean doesAssumedRoleHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
-                                               @Param("assumedRoleArn") String assumedRoleArn,
-                                               @Param("iamRoleArn") String iamRoleArn,
-                                               @Param("iamRootArn") String iamRootArn,
-                                               @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
+  Boolean doesAssumedRoleHaveGivenRoleForSdb(
+      @Param("sdbId") String sdbId,
+      @Param("assumedRoleArn") String assumedRoleArn,
+      @Param("iamRoleArn") String iamRoleArn,
+      @Param("iamRootArn") String iamRootArn,
+      @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission);
 
-    Boolean doesUserPrincipalHaveGivenRoleForSdb(@Param("sdbId") String sdbId,
-                                                 @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
-                                                 @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
+  Boolean doesUserPrincipalHaveGivenRoleForSdb(
+      @Param("sdbId") String sdbId,
+      @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
+      @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 
-    Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(@Param("sdbId") String sdbId,
-                                                          @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
-                                                          @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
+  Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(
+      @Param("sdbId") String sdbId,
+      @Param("rolesThatAllowPermission") Set<String> rolesThatAllowPermission,
+      @Param("userGroupsThatPrincipalBelongsTo") Set<String> userGroupsThatPrincipalBelongsTo);
 }

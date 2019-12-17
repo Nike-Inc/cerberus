@@ -18,42 +18,39 @@ package com.nike.cerberus.dao;
 
 import com.nike.cerberus.mapper.CategoryMapper;
 import com.nike.cerberus.record.CategoryRecord;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Optional;
-
-/**
- * Data access layer for the category data.
- */
+/** Data access layer for the category data. */
 @Component
 public class CategoryDao {
 
-    private final CategoryMapper categoryMapper;
+  private final CategoryMapper categoryMapper;
 
-    @Autowired
-    public CategoryDao(CategoryMapper categoryMapper) {
-        this.categoryMapper = categoryMapper;
-    }
+  @Autowired
+  public CategoryDao(CategoryMapper categoryMapper) {
+    this.categoryMapper = categoryMapper;
+  }
 
-    public List<CategoryRecord> getAllCategories() {
-        return categoryMapper.getAllCategories();
-    }
+  public List<CategoryRecord> getAllCategories() {
+    return categoryMapper.getAllCategories();
+  }
 
-    public Optional<CategoryRecord> getCategory(final String id) {
-        return Optional.ofNullable(categoryMapper.getCategoryById(id));
-    }
+  public Optional<CategoryRecord> getCategory(final String id) {
+    return Optional.ofNullable(categoryMapper.getCategoryById(id));
+  }
 
-    public int createCategory(final CategoryRecord record) {
-        return categoryMapper.createCategory(record);
-    }
+  public int createCategory(final CategoryRecord record) {
+    return categoryMapper.createCategory(record);
+  }
 
-    public int deleteCategory(final String id) {
-        return categoryMapper.deleteCategory(id);
-    }
+  public int deleteCategory(final String id) {
+    return categoryMapper.deleteCategory(id);
+  }
 
-    public String getCategoryIdByName(String categoryName) {
-        return categoryMapper.getCategoryIdByName(categoryName);
-    }
+  public String getCategoryIdByName(String categoryName) {
+    return categoryMapper.getCategoryIdByName(categoryName);
+  }
 }

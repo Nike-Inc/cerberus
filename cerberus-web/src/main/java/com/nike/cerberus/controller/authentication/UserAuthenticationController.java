@@ -1,5 +1,10 @@
 package com.nike.cerberus.controller.authentication;
 
+import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.MfaCheckRequest;
@@ -8,6 +13,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
+import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
@@ -20,13 +26,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.charset.Charset;
-
-import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 @Slf4j
 @RestController
 @RequestMapping("/v2/auth")
@@ -36,31 +35,31 @@ public class UserAuthenticationController {
   private final EventProcessorService eventProcessorService;
 
   @Autowired
-  public UserAuthenticationController(AuthenticationService authenticationService, EventProcessorService eventProcessorService) {
+  public UserAuthenticationController(
+      AuthenticationService authenticationService, EventProcessorService eventProcessorService) {
     this.authenticationService = authenticationService;
     this.eventProcessorService = eventProcessorService;
   }
 
   @RequestMapping(value = "/user", method = GET)
-  public AuthResponse authenticate(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+  public AuthResponse authenticate(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
     final UserCredentials credentials = extractCredentials(authHeader);
 
     AuthResponse authResponse;
     try {
       authResponse = authenticationService.authenticate(credentials);
     } catch (ApiException e) {
-      eventProcessorService.ingestEvent(createBaseAuditableEvent(credentials.getUsername())
-        .withAction("failed to authenticate")
-        .withSuccess(false)
-        .build()
-      );
+      eventProcessorService.ingestEvent(
+          createBaseAuditableEvent(credentials.getUsername())
+              .withAction("failed to authenticate")
+              .withSuccess(false)
+              .build());
       throw e;
     }
 
-    eventProcessorService.ingestEvent(createBaseAuditableEvent(credentials.getUsername())
-      .withAction("authenticated")
-      .build()
-    );
+    eventProcessorService.ingestEvent(
+        createBaseAuditableEvent(credentials.getUsername()).withAction("authenticated").build());
 
     return authResponse;
   }
@@ -81,7 +80,7 @@ public class UserAuthenticationController {
   }
 
   /**
-   * Extracts credentials from the Authorization header.  Assumes its Basic auth.
+   * Extracts credentials from the Authorization header. Assumes its Basic auth.
    *
    * @param authorizationHeader Value from the authorization header
    * @return User credentials that were extracted
@@ -93,10 +92,12 @@ public class UserAuthenticationController {
       final byte[] decodedCredentials = Base64.decodeBase64(encodedCredentials);
 
       if (ArrayUtils.isNotEmpty(decodedCredentials)) {
-        final String[] credentials = new String(decodedCredentials, Charset.defaultCharset()).split(":", 2);
+        final String[] credentials =
+            new String(decodedCredentials, Charset.defaultCharset()).split(":", 2);
 
         if (credentials.length == 2) {
-          return new UserCredentials(credentials[0], credentials[1].getBytes(Charset.defaultCharset()));
+          return new UserCredentials(
+              credentials[0], credentials[1].getBytes(Charset.defaultCharset()));
         }
       }
     }

@@ -16,41 +16,39 @@
 
 package com.nike.cerberus.domain;
 
-/**
- * MFA check request.
- */
+/** MFA check request. */
 public class MfaCheckRequest {
 
-    private String stateToken;
+  private String stateToken;
 
-    private String deviceId;
+  private String deviceId;
 
-    private String otpToken;
+  private String otpToken;
 
-    public String getStateToken() {
-        return stateToken;
-    }
+  public String getStateToken() {
+    return stateToken;
+  }
 
-    public MfaCheckRequest setStateToken(String stateToken) {
-        this.stateToken = stateToken;
-        return this;
-    }
+  public MfaCheckRequest setStateToken(String stateToken) {
+    this.stateToken = stateToken;
+    return this;
+  }
 
-    public String getDeviceId() {
-        return deviceId;
-    }
+  public String getDeviceId() {
+    return deviceId;
+  }
 
-    public MfaCheckRequest setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
+  public MfaCheckRequest setDeviceId(String deviceId) {
+    this.deviceId = deviceId;
+    return this;
+  }
 
-    public String getOtpToken() {
-        return otpToken;
-    }
+  public String getOtpToken() {
+    return otpToken;
+  }
 
-    public MfaCheckRequest setOtpToken(String otpToken) {
-        this.otpToken = otpToken;
-        return this;
-    }
+  public MfaCheckRequest setOtpToken(String otpToken) {
+    this.otpToken = otpToken;
+    return this;
+  }
 }

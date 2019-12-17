@@ -22,22 +22,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-/**
- * Event Processor implementation that logs each event.
- */
+/** Event Processor implementation that logs each event. */
 @Component
 @ConditionalOnProperty("cerberus.events.loggingProcessor.enabled")
 public class LoggingEventProcessor implements EventProcessor {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+  protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Override
-    public void process(Event event) {
-        log.info(event.getEventAsString());
-    }
+  @Override
+  public void process(Event event) {
+    log.info(event.getEventAsString());
+  }
 
-    @Override
-    public String getName() {
-        return "logging-processor";
-    }
+  @Override
+  public String getName() {
+    return "logging-processor";
+  }
 }

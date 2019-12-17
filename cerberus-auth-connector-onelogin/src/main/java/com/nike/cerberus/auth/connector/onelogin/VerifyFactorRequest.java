@@ -16,62 +16,60 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing the payload of a verify factor request.
- */
+/** POJO representing the payload of a verify factor request. */
 class VerifyFactorRequest {
 
-    private String deviceId;
+  private String deviceId;
 
-    private String stateToken;
+  private String stateToken;
 
-    private String otpToken;
+  private String otpToken;
 
-    public String getDeviceId() {
-        return deviceId;
-    }
+  public String getDeviceId() {
+    return deviceId;
+  }
 
-    public VerifyFactorRequest setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
+  public VerifyFactorRequest setDeviceId(String deviceId) {
+    this.deviceId = deviceId;
+    return this;
+  }
 
-    public String getStateToken() {
-        return stateToken;
-    }
+  public String getStateToken() {
+    return stateToken;
+  }
 
-    public VerifyFactorRequest setStateToken(String stateToken) {
-        this.stateToken = stateToken;
-        return this;
-    }
+  public VerifyFactorRequest setStateToken(String stateToken) {
+    this.stateToken = stateToken;
+    return this;
+  }
 
-    public String getOtpToken() {
-        return otpToken;
-    }
+  public String getOtpToken() {
+    return otpToken;
+  }
 
-    public VerifyFactorRequest setOtpToken(String otpToken) {
-        this.otpToken = otpToken;
-        return this;
-    }
+  public VerifyFactorRequest setOtpToken(String otpToken) {
+    this.otpToken = otpToken;
+    return this;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
 
-        VerifyFactorRequest that = (VerifyFactorRequest) o;
+    VerifyFactorRequest that = (VerifyFactorRequest) o;
 
-        if (deviceId != null ? !deviceId.equals(that.deviceId) : that.deviceId != null) return false;
-        if (stateToken != null ? !stateToken.equals(that.stateToken) : that.stateToken != null) return false;
-        return otpToken != null ? otpToken.equals(that.otpToken) : that.otpToken == null;
+    if (deviceId != null ? !deviceId.equals(that.deviceId) : that.deviceId != null) return false;
+    if (stateToken != null ? !stateToken.equals(that.stateToken) : that.stateToken != null)
+      return false;
+    return otpToken != null ? otpToken.equals(that.otpToken) : that.otpToken == null;
+  }
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = deviceId != null ? deviceId.hashCode() : 0;
-        result = 31 * result + (stateToken != null ? stateToken.hashCode() : 0);
-        result = 31 * result + (otpToken != null ? otpToken.hashCode() : 0);
-        return result;
-    }
+  @Override
+  public int hashCode() {
+    int result = deviceId != null ? deviceId.hashCode() : 0;
+    result = 31 * result + (stateToken != null ? stateToken.hashCode() : 0);
+    result = 31 * result + (otpToken != null ? otpToken.hashCode() : 0);
+    return result;
+  }
 }

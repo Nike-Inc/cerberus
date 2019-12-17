@@ -23,18 +23,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class LockDao {
 
-    private final LockMapper lockMapper;
+  private final LockMapper lockMapper;
 
-    @Autowired
-    public LockDao(LockMapper lockMapper) {
-        this.lockMapper = lockMapper;
-    }
+  @Autowired
+  public LockDao(LockMapper lockMapper) {
+    this.lockMapper = lockMapper;
+  }
 
-    public Integer getLock(String name) {
-        return lockMapper.getLock(name);
-    }
+  public Integer getLock(String name) {
+    return lockMapper.getLock(name);
+  }
 
-    public Integer releaseLock(String jobName) {
-        return lockMapper.releaseLock(jobName);
-    }
+  public Integer releaseLock(String jobName) {
+    return lockMapper.releaseLock(jobName);
+  }
 }

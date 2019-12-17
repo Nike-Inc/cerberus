@@ -18,52 +18,51 @@ package com.nike.cerberus.dao;
 
 import com.nike.cerberus.mapper.AuthTokenMapper;
 import com.nike.cerberus.record.AuthTokenRecord;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Component
 public class AuthTokenDao {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final AuthTokenMapper authTokenMapper;
+  private final AuthTokenMapper authTokenMapper;
 
-    @Autowired
-    public AuthTokenDao(AuthTokenMapper authTokenMapper) {
-        this.authTokenMapper = authTokenMapper;
-    }
+  @Autowired
+  public AuthTokenDao(AuthTokenMapper authTokenMapper) {
+    this.authTokenMapper = authTokenMapper;
+  }
 
-    public int createAuthToken(AuthTokenRecord record) {
-        return authTokenMapper.createAuthToken(record);
-    }
+  public int createAuthToken(AuthTokenRecord record) {
+    return authTokenMapper.createAuthToken(record);
+  }
 
-    public Optional<AuthTokenRecord> getAuthTokenFromHash(String hash) {
-        return Optional.ofNullable(authTokenMapper.getAuthTokenFromHash(hash));
-    }
+  public Optional<AuthTokenRecord> getAuthTokenFromHash(String hash) {
+    return Optional.ofNullable(authTokenMapper.getAuthTokenFromHash(hash));
+  }
 
-    public void deleteAuthTokenFromHash(String hash) {
-        authTokenMapper.deleteAuthTokenFromHash(hash);
-    }
+  public void deleteAuthTokenFromHash(String hash) {
+    authTokenMapper.deleteAuthTokenFromHash(hash);
+  }
 
-    public int deleteExpiredTokens(int maxDelete, int batchSize, int batchPauseTimeInMillis) {
-        int numberOfDeletedTokens = 0;
-        int cur;
-        do {
-            cur = authTokenMapper.deleteExpiredTokens(batchSize);
-            logger.info("Deleted {} tokens in this batch {} so far", cur, numberOfDeletedTokens);
-            numberOfDeletedTokens += cur;
-            if (cur > 0 && numberOfDeletedTokens < maxDelete && batchPauseTimeInMillis > 0) {
-                try {
-                    Thread.sleep(batchPauseTimeInMillis);
-                } catch (InterruptedException e) {
-                    logger.error("Failed to sleep between delete batches", e);
-                }
-            }
-        } while (cur > 0 && numberOfDeletedTokens < maxDelete);
-        return numberOfDeletedTokens;
-    }
+  public int deleteExpiredTokens(int maxDelete, int batchSize, int batchPauseTimeInMillis) {
+    int numberOfDeletedTokens = 0;
+    int cur;
+    do {
+      cur = authTokenMapper.deleteExpiredTokens(batchSize);
+      logger.info("Deleted {} tokens in this batch {} so far", cur, numberOfDeletedTokens);
+      numberOfDeletedTokens += cur;
+      if (cur > 0 && numberOfDeletedTokens < maxDelete && batchPauseTimeInMillis > 0) {
+        try {
+          Thread.sleep(batchPauseTimeInMillis);
+        } catch (InterruptedException e) {
+          logger.error("Failed to sleep between delete batches", e);
+        }
+      }
+    } while (cur > 0 && numberOfDeletedTokens < maxDelete);
+    return numberOfDeletedTokens;
+  }
 }

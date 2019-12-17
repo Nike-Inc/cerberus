@@ -16,30 +16,28 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing a MFA device.
- */
+/** POJO representing a MFA device. */
 class MfaDevice {
 
-    private String deviceType;
+  private String deviceType;
 
-    private long deviceId;
+  private long deviceId;
 
-    public String getDeviceType() {
-        return deviceType;
-    }
+  public String getDeviceType() {
+    return deviceType;
+  }
 
-    public MfaDevice setDeviceType(String deviceType) {
-        this.deviceType = deviceType;
-        return this;
-    }
+  public MfaDevice setDeviceType(String deviceType) {
+    this.deviceType = deviceType;
+    return this;
+  }
 
-    public long getDeviceId() {
-        return deviceId;
-    }
+  public long getDeviceId() {
+    return deviceId;
+  }
 
-    public MfaDevice setDeviceId(long deviceId) {
-        this.deviceId = deviceId;
-        return this;
-    }
+  public MfaDevice setDeviceId(long deviceId) {
+    this.deviceId = deviceId;
+    return this;
+  }
 }

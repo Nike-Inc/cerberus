@@ -17,6 +17,12 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
@@ -28,229 +34,246 @@ import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
 import com.okta.sdk.models.usergroups.UserGroup;
 import com.okta.sdk.models.usergroups.UserGroupProfile;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-/**
- * Tests the OktaAuthConnector class
- */
+/** Tests the OktaAuthConnector class */
 public class OktaAuthConnectorTest {
 
-    // class under test
-    private OktaAuthConnector oktaAuthConnector;
+  // class under test
+  private OktaAuthConnector oktaAuthConnector;
 
-    // dependencies
-    @Mock
-    private OktaApiClientHelper oktaApiClientHelper;
+  // dependencies
+  @Mock private OktaApiClientHelper oktaApiClientHelper;
 
-    @Mock
-    private AuthenticationClient client;
+  @Mock private AuthenticationClient client;
 
-    @Before
-    public void setup() {
+  @Before
+  public void setup() {
 
     initMocks(this);
-        // create test object
-        oktaAuthConnector = new OktaAuthConnector(oktaApiClientHelper, client);
+    // create test object
+    oktaAuthConnector = new OktaAuthConnector(oktaApiClientHelper, client);
 
-        reset(oktaApiClientHelper);
-    }
+    reset(oktaApiClientHelper);
+  }
 
-    /////////////////////////
-    // Test Methods
-    /////////////////////////
+  /////////////////////////
+  // Test Methods
+  /////////////////////////
 
-    @Test
-    public void authenticateSuccess() throws Exception {
+  @Test
+  public void authenticateSuccess() throws Exception {
 
-        String username = "username";
-        String password = "password";
+    String username = "username";
+    String password = "password";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
-        when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
+    when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
 
-        doAnswer(invocation -> {
-            InitialLoginStateHandler stateHandler = (InitialLoginStateHandler) invocation.getArguments()[3];
-            stateHandler.authenticationResponseFuture.complete(expectedResponse);
-            return null;
-        }).when(client).authenticate(any(), any(), any(), any());
+    doAnswer(
+            invocation -> {
+              InitialLoginStateHandler stateHandler =
+                  (InitialLoginStateHandler) invocation.getArguments()[3];
+              stateHandler.authenticationResponseFuture.complete(expectedResponse);
+              return null;
+            })
+        .when(client)
+        .authenticate(any(), any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.authenticate(username, password);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.authenticate(username, password);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+  }
 
-    @Test(expected = ApiException.class)
-    public void authenticateFails() throws Exception {
+  @Test(expected = ApiException.class)
+  public void authenticateFails() throws Exception {
 
-        String username = "username";
-        String password = "password";
+    String username = "username";
+    String password = "password";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
-        when(expectedResponse.getStatus()).thenReturn(AuthStatus.MFA_REQUIRED);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
+    when(expectedResponse.getStatus()).thenReturn(AuthStatus.MFA_REQUIRED);
 
-        doAnswer(invocation -> {
-            InitialLoginStateHandler stateHandler = (InitialLoginStateHandler) invocation.getArguments()[3];
-            stateHandler.authenticationResponseFuture.cancel(true);
-            return null;
-        }).when(client).authenticate(any(), any(), any(), any());
+    doAnswer(
+            invocation -> {
+              InitialLoginStateHandler stateHandler =
+                  (InitialLoginStateHandler) invocation.getArguments()[3];
+              stateHandler.authenticationResponseFuture.cancel(true);
+              return null;
+            })
+        .when(client)
+        .authenticate(any(), any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.authenticate(username, password);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.authenticate(username, password);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+  }
 
-    @Test
-    public void triggerChallengeSuccess() throws Exception {
+  @Test
+  public void triggerChallengeSuccess() throws Exception {
 
-        String stateToken = "state token";
-        String deviceId = "device id";
+    String stateToken = "state token";
+    String deviceId = "device id";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
 
-        AuthData expectedData = mock(AuthData.class);
-        when(expectedData.getStateToken()).thenReturn(stateToken);
-        when(expectedResponse.getData()).thenReturn(expectedData);
+    AuthData expectedData = mock(AuthData.class);
+    when(expectedData.getStateToken()).thenReturn(stateToken);
+    when(expectedResponse.getData()).thenReturn(expectedData);
 
-        doAnswer(invocation -> {
-            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
-            stateHandler.authenticationResponseFuture.complete(expectedResponse);
-            return null;
-        }).when(client).challengeFactor(any(), any(), any());
+    doAnswer(
+            invocation -> {
+              MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+              stateHandler.authenticationResponseFuture.complete(expectedResponse);
+              return null;
+            })
+        .when(client)
+        .challengeFactor(any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-        assertEquals(expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+    assertEquals(
+        expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
+  }
 
-    @Test (expected = ApiException.class)
-    public void triggerChallengeFails() throws Exception {
+  @Test(expected = ApiException.class)
+  public void triggerChallengeFails() throws Exception {
 
-        String stateToken = "state token";
-        String deviceId = "device id";
+    String stateToken = "state token";
+    String deviceId = "device id";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
 
-        AuthData expectedData = mock(AuthData.class);
-        when(expectedData.getStateToken()).thenReturn(stateToken);
-        when(expectedResponse.getData()).thenReturn(expectedData);
+    AuthData expectedData = mock(AuthData.class);
+    when(expectedData.getStateToken()).thenReturn(stateToken);
+    when(expectedResponse.getData()).thenReturn(expectedData);
 
-        doAnswer(invocation -> {
-            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
-            stateHandler.authenticationResponseFuture.cancel(true);
-            return null;
-        }).when(client).challengeFactor(any(), any(), any());
+    doAnswer(
+            invocation -> {
+              MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+              stateHandler.authenticationResponseFuture.cancel(true);
+              return null;
+            })
+        .when(client)
+        .challengeFactor(any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.triggerChallenge(stateToken, deviceId);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-        assertEquals(expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+    assertEquals(
+        expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
+  }
 
-    @Test
-    public void mfaCheckSuccess() throws Exception {
+  @Test
+  public void mfaCheckSuccess() throws Exception {
 
-        String stateToken = "state token";
-        String deviceId = "device id";
-        String otpToken = "otp token";
+    String stateToken = "state token";
+    String deviceId = "device id";
+    String otpToken = "otp token";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
-        when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
+    when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
 
-        DefaultVerifyPassCodeFactorRequest request = mock(DefaultVerifyPassCodeFactorRequest.class);
+    DefaultVerifyPassCodeFactorRequest request = mock(DefaultVerifyPassCodeFactorRequest.class);
 
-        doAnswer(invocation -> {
-            request.setPassCode(stateToken);
-            request.setStateToken(otpToken);
-            return request;
-        }).when(client).instantiate(DefaultVerifyPassCodeFactorRequest.class);
-        doAnswer(invocation -> {
-            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
-            stateHandler.authenticationResponseFuture.complete(expectedResponse);
-            return null;
-        }).when(client).verifyFactor(any(), any(), any());
+    doAnswer(
+            invocation -> {
+              request.setPassCode(stateToken);
+              request.setStateToken(otpToken);
+              return request;
+            })
+        .when(client)
+        .instantiate(DefaultVerifyPassCodeFactorRequest.class);
+    doAnswer(
+            invocation -> {
+              MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+              stateHandler.authenticationResponseFuture.complete(expectedResponse);
+              return null;
+            })
+        .when(client)
+        .verifyFactor(any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+  }
 
-    @Test (expected = ApiException.class)
-    public void mfaCheckFails() throws Exception {
+  @Test(expected = ApiException.class)
+  public void mfaCheckFails() throws Exception {
 
-        String stateToken = "state token";
-        String deviceId = "device id";
-        String otpToken = "otp token";
+    String stateToken = "state token";
+    String deviceId = "device id";
+    String otpToken = "otp token";
 
-        AuthResponse expectedResponse = mock(AuthResponse.class);
-        when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
+    AuthResponse expectedResponse = mock(AuthResponse.class);
+    when(expectedResponse.getStatus()).thenReturn(AuthStatus.SUCCESS);
 
-        DefaultVerifyPassCodeFactorRequest request = mock(DefaultVerifyPassCodeFactorRequest.class);
+    DefaultVerifyPassCodeFactorRequest request = mock(DefaultVerifyPassCodeFactorRequest.class);
 
-        doAnswer(invocation -> {
-            request.setPassCode(stateToken);
-            request.setStateToken(otpToken);
-            return request;
-        }).when(client).instantiate(DefaultVerifyPassCodeFactorRequest.class);
-        doAnswer(invocation -> {
-            MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
-            stateHandler.authenticationResponseFuture.cancel(true);
-            return null;
-        }).when(client).verifyFactor(any(), any(), any());
+    doAnswer(
+            invocation -> {
+              request.setPassCode(stateToken);
+              request.setStateToken(otpToken);
+              return request;
+            })
+        .when(client)
+        .instantiate(DefaultVerifyPassCodeFactorRequest.class);
+    doAnswer(
+            invocation -> {
+              MfaStateHandler stateHandler = (MfaStateHandler) invocation.getArguments()[2];
+              stateHandler.authenticationResponseFuture.cancel(true);
+              return null;
+            })
+        .when(client)
+        .verifyFactor(any(), any(), any());
 
-        // do the call
-        AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
+    // do the call
+    AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
 
-        //  verify results
-        assertEquals(expectedResponse, actualResponse);
-    }
+    //  verify results
+    assertEquals(expectedResponse, actualResponse);
+  }
 
-    @Test
-    public void getGroupsHappy() {
+  @Test
+  public void getGroupsHappy() {
 
-        String id = "id";
-        AuthData authData = mock(AuthData.class);
-        when(authData.getUserId()).thenReturn(id);
+    String id = "id";
+    AuthData authData = mock(AuthData.class);
+    when(authData.getUserId()).thenReturn(id);
 
-        String name1 = "name 1";
-        UserGroupProfile profile1 = mock(UserGroupProfile.class);
-        UserGroup group1 = mock(UserGroup.class);
-        when(profile1.getName()).thenReturn(name1);
-        when(group1.getProfile()).thenReturn(profile1);
+    String name1 = "name 1";
+    UserGroupProfile profile1 = mock(UserGroupProfile.class);
+    UserGroup group1 = mock(UserGroup.class);
+    when(profile1.getName()).thenReturn(name1);
+    when(group1.getProfile()).thenReturn(profile1);
 
-        String name2 = "name 2";
-        UserGroupProfile profile2 = mock(UserGroupProfile.class);
-        UserGroup group2 = mock(UserGroup.class);
-        when(profile2.getName()).thenReturn(name2);
-        when(group2.getProfile()).thenReturn(profile2);
+    String name2 = "name 2";
+    UserGroupProfile profile2 = mock(UserGroupProfile.class);
+    UserGroup group2 = mock(UserGroup.class);
+    when(profile2.getName()).thenReturn(name2);
+    when(group2.getProfile()).thenReturn(profile2);
 
-        when(oktaApiClientHelper.getUserGroups(id)).thenReturn(Lists.newArrayList(group1, group2));
+    when(oktaApiClientHelper.getUserGroups(id)).thenReturn(Lists.newArrayList(group1, group2));
 
-        // do the call
-        Set<String> result = this.oktaAuthConnector.getGroups(authData);
+    // do the call
+    Set<String> result = this.oktaAuthConnector.getGroups(authData);
 
-        // verify results
-        assertTrue(result.contains(name1));
-        assertTrue(result.contains(name2));
-    }
+    // verify results
+    assertTrue(result.contains(name1));
+    assertTrue(result.contains(name2));
+  }
 }

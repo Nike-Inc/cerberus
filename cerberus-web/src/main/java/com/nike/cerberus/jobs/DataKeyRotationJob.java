@@ -27,35 +27,39 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataKeyRotationJob extends LockingJob {
 
-    private final SecureDataService secureDataService;
-    private final int numberOfDataKeyToRotatePerJobRun;
-    private final int dataKeyRotationPauseTimeInMillis;
-    private final int dataKeyRotationIntervalInDays;
+  private final SecureDataService secureDataService;
+  private final int numberOfDataKeyToRotatePerJobRun;
+  private final int dataKeyRotationPauseTimeInMillis;
+  private final int dataKeyRotationIntervalInDays;
 
-    @Autowired
-    public DataKeyRotationJob(SecureDataService secureDataService,
-                              @Value("${cerberus.jobs.dataKeyRotationJob.numberOfDataKeyToRotatePerJobRun}")
-                                      int numberOfDataKeyToRotatePerJobRun,
-                              @Value("${cerberus.jobs.dataKeyRotationJob.dataKeyRotationPauseTimeInMillis}")
-                                          int dataKeyRotationPauseTimeInMillis,
-                              @Value("${cerberus.jobs.dataKeyRotationJob.dataKeyRotationIntervalInDays}")
-                                      int dataKeyRotationIntervalInDays) {
+  @Autowired
+  public DataKeyRotationJob(
+      SecureDataService secureDataService,
+      @Value("${cerberus.jobs.dataKeyRotationJob.numberOfDataKeyToRotatePerJobRun}")
+          int numberOfDataKeyToRotatePerJobRun,
+      @Value("${cerberus.jobs.dataKeyRotationJob.dataKeyRotationPauseTimeInMillis}")
+          int dataKeyRotationPauseTimeInMillis,
+      @Value("${cerberus.jobs.dataKeyRotationJob.dataKeyRotationIntervalInDays}")
+          int dataKeyRotationIntervalInDays) {
 
-        this.secureDataService = secureDataService;
-        this.numberOfDataKeyToRotatePerJobRun = numberOfDataKeyToRotatePerJobRun;
-        this.dataKeyRotationPauseTimeInMillis = dataKeyRotationPauseTimeInMillis;
-        this.dataKeyRotationIntervalInDays = dataKeyRotationIntervalInDays;
-    }
+    this.secureDataService = secureDataService;
+    this.numberOfDataKeyToRotatePerJobRun = numberOfDataKeyToRotatePerJobRun;
+    this.dataKeyRotationPauseTimeInMillis = dataKeyRotationPauseTimeInMillis;
+    this.dataKeyRotationIntervalInDays = dataKeyRotationIntervalInDays;
+  }
 
-    @Override
-    @Scheduled(cron = "${cerberus.jobs.dataKeyRotationJob.cronExpression}")
-    public void execute() {
-        super.execute();
-    }
+  @Override
+  @Scheduled(cron = "${cerberus.jobs.dataKeyRotationJob.cronExpression}")
+  public void execute() {
+    super.execute();
+  }
 
-    @Override
-    protected void executeLockableCode() {
-        secureDataService.rotateDataKeys(numberOfDataKeyToRotatePerJobRun, dataKeyRotationPauseTimeInMillis, dataKeyRotationIntervalInDays);
-        log.info("Rotated {} keys", numberOfDataKeyToRotatePerJobRun);
-    }
+  @Override
+  protected void executeLockableCode() {
+    secureDataService.rotateDataKeys(
+        numberOfDataKeyToRotatePerJobRun,
+        dataKeyRotationPauseTimeInMillis,
+        dataKeyRotationIntervalInDays);
+    log.info("Rotated {} keys", numberOfDataKeyToRotatePerJobRun);
+  }
 }

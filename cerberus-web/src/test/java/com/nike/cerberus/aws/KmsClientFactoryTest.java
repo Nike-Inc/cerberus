@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.aws;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
@@ -23,42 +25,38 @@ import com.nike.backstopper.exception.ApiException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * Tests the KmsClientFactory class
- */
+/** Tests the KmsClientFactory class */
 public class KmsClientFactoryTest {
 
-    private final String goodRegionName = "us-west-2";
+  private final String goodRegionName = "us-west-2";
 
-    private final Region goodRegion = Region.getRegion(Regions.fromName(goodRegionName));
+  private final Region goodRegion = Region.getRegion(Regions.fromName(goodRegionName));
 
-    private final String badRegionName = "zz-space-1";
+  private final String badRegionName = "zz-space-1";
 
-    private KmsClientFactory subject;
+  private KmsClientFactory subject;
 
-    @Before
-    public void setup() {
-        subject = new KmsClientFactory();
-    }
+  @Before
+  public void setup() {
+    subject = new KmsClientFactory();
+  }
 
-    @Test
-    public void get_client_by_region_returns_configured_kms_client() {
-        AWSKMSClient client = subject.getClient(goodRegion);
+  @Test
+  public void get_client_by_region_returns_configured_kms_client() {
+    AWSKMSClient client = subject.getClient(goodRegion);
 
-        assertThat(client).isNotNull();
-    }
+    assertThat(client).isNotNull();
+  }
 
-    @Test
-    public void get_client_by_region_string_returns_configured_kms_client() {
-        AWSKMSClient client = subject.getClient(goodRegionName);
+  @Test
+  public void get_client_by_region_string_returns_configured_kms_client() {
+    AWSKMSClient client = subject.getClient(goodRegionName);
 
-        assertThat(client).isNotNull();
-    }
+    assertThat(client).isNotNull();
+  }
 
-    @Test(expected = ApiException.class)
-    public void get_client_by_region_string_throws_exception_if_bad_region_passed() {
-        subject.getClient(badRegionName);
-    }
+  @Test(expected = ApiException.class)
+  public void get_client_by_region_string_throws_exception_if_bad_region_passed() {
+    subject.getClient(badRegionName);
+  }
 }

@@ -18,7 +18,7 @@ package com.nike.cerberus.domain;
 
 public class IamRoleRegex {
 
-    public static final String IAM_ROLE_NAME_REGEX = "^[a-zA-Z0-9-\\/_+=,@\\.]+$";
+  public static final String IAM_ROLE_NAME_REGEX = "^[a-zA-Z0-9-\\/_+=,@\\.]+$";
 
-    public static final String IAM_ROLE_ACCT_ID_REGEX = "^\\d+$";
+  public static final String IAM_ROLE_ACCT_ID_REGEX = "^\\d+$";
 }

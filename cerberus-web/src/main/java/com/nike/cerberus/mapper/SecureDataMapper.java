@@ -19,52 +19,58 @@ package com.nike.cerberus.mapper;
 import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
-import org.apache.ibatis.annotations.Param;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
+import org.apache.ibatis.annotations.Param;
 
 public interface SecureDataMapper {
 
-    int writeSecureData(@Param("record") SecureDataRecord record);
+  int writeSecureData(@Param("record") SecureDataRecord record);
 
-    int updateSecureData(@Param("record") SecureDataRecord record);
+  int updateSecureData(@Param("record") SecureDataRecord record);
 
-    SecureDataRecord readSecureDataByPath(@Param("sdbId") String sdbId, @Param("path") String path);
+  SecureDataRecord readSecureDataByPath(@Param("sdbId") String sdbId, @Param("path") String path);
 
-    SecureDataRecord readSecureDataByIdLocking(@Param("id") String id);
+  SecureDataRecord readSecureDataByIdLocking(@Param("id") String id);
 
-    SecureDataRecord readSecureDataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
+  SecureDataRecord readSecureDataByPathAndType(
+      @Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
-    SecureDataRecord readMetadataByPathAndType(@Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
+  SecureDataRecord readMetadataByPathAndType(
+      @Param("sdbId") String sdbId, @Param("path") String path, @Param("type") SecureDataType type);
 
-    String[] getPathsByPartialPath(@Param("sdbId") String sdbId, @Param("partialPath") String partialPath);
+  String[] getPathsByPartialPath(
+      @Param("sdbId") String sdbId, @Param("partialPath") String partialPath);
 
-    String[] getPathsByPartialPathAndType(@Param("sdbId") String sdbId, @Param("partialPath") String partialPath, @Param("type") SecureDataType type);
+  String[] getPathsByPartialPathAndType(
+      @Param("sdbId") String sdbId,
+      @Param("partialPath") String partialPath,
+      @Param("type") SecureDataType type);
 
-    List<SecureDataRecord> listSecureDataByPartialPathAndType(
+  List<SecureDataRecord> listSecureDataByPartialPathAndType(
       @Param("sdbId") String sdbId,
       @Param("partialPath") String partialPath,
       @Param("type") SecureDataType type,
       @Param("limit") int limit,
       @Param("offset") int offset);
 
-    int countByPartialPathAndType(@Param("partialPath") String partialPath, @Param("type") SecureDataType type);
+  int countByPartialPathAndType(
+      @Param("partialPath") String partialPath, @Param("type") SecureDataType type);
 
-    int countByType(@Param("type") SecureDataType type);
+  int countByType(@Param("type") SecureDataType type);
 
-    Set<String> getPathsBySdbId(@Param("sdbId") String sdbId);
+  Set<String> getPathsBySdbId(@Param("sdbId") String sdbId);
 
-    int getTotalNumberOfDataNodes();
+  int getTotalNumberOfDataNodes();
 
-    int deleteAllSecretsThatStartWithGivenPartialPath(@Param("sdbId") String sdbId,
-                                                      @Param("partialPath") String partialPath);
+  int deleteAllSecretsThatStartWithGivenPartialPath(
+      @Param("sdbId") String sdbId, @Param("partialPath") String partialPath);
 
-    int deleteSecret(@Param("sdbId") String sdbId, @Param("path") String path);
+  int deleteSecret(@Param("sdbId") String sdbId, @Param("path") String path);
 
-    Integer getSumTopLevelKeyValuePairs();
+  Integer getSumTopLevelKeyValuePairs();
 
-    List<DataKeyInfo> getOldestDataKeyInfo(@Param("datetime") OffsetDateTime dateTime,
-                                           @Param("limit") int limit);
+  List<DataKeyInfo> getOldestDataKeyInfo(
+      @Param("datetime") OffsetDateTime dateTime, @Param("limit") int limit);
 }

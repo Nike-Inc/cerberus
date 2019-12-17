@@ -16,39 +16,42 @@
 
 package com.nike.cerberus;
 
-import com.google.common.collect.ImmutableSet;
+import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
+import static com.nike.cerberus.record.RoleRecord.ROLE_READ;
+import static com.nike.cerberus.record.RoleRecord.ROLE_WRITE;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.nike.cerberus.record.RoleRecord.ROLE_OWNER;
-import static com.nike.cerberus.record.RoleRecord.ROLE_WRITE;
-import static com.nike.cerberus.record.RoleRecord.ROLE_READ;
-
-/**
- * Maps an action against a path, to the role required for that action.
- */
+/** Maps an action against a path, to the role required for that action. */
 public enum SecureDataAction {
+  READ(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
+  WRITE(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
+  DELETE(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
 
-    READ(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE, ROLE_READ)),
-    WRITE(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE)),
-    DELETE(ImmutableSet.of(ROLE_OWNER, ROLE_WRITE));
+  private final ImmutableSet<String> allowedRoles;
 
-    private final ImmutableSet<String> allowedRoles;
+  public ImmutableSet<String> getAllowedRoles() {
+    return allowedRoles;
+  }
 
-    public ImmutableSet<String> getAllowedRoles() {
-        return allowedRoles;
-    }
+  SecureDataAction(ImmutableSet<String> allowedRoles) {
+    this.allowedRoles = allowedRoles;
+  }
 
-    SecureDataAction(ImmutableSet<String> allowedRoles) {
-        this.allowedRoles = allowedRoles;
-    }
-
-    public static SecureDataAction fromString(String actionAsString) {
-        return Arrays.stream(values())
-                .filter(e -> e.name().equals(actionAsString.toUpperCase()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException(String.format("The action: %s is not valid. Valid actions: %s",
-                  actionAsString, Arrays.stream(values()).map(Enum::name).collect(Collectors.joining(", ")))));
-    }
+  public static SecureDataAction fromString(String actionAsString) {
+    return Arrays.stream(values())
+        .filter(e -> e.name().equals(actionAsString.toUpperCase()))
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new RuntimeException(
+                    String.format(
+                        "The action: %s is not valid. Valid actions: %s",
+                        actionAsString,
+                        Arrays.stream(values())
+                            .map(Enum::name)
+                            .collect(Collectors.joining(", ")))));
+  }
 }

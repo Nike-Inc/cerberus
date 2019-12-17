@@ -17,40 +17,40 @@
 package com.nike.cerberus.error;
 
 import com.nike.backstopper.apierror.ApiError;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 public class InvalidIamRoleArnApiError implements ApiError {
 
-    private final String arn;
+  private final String arn;
 
-    public InvalidIamRoleArnApiError(String arn) {
-        this.arn = arn;
-    }
+  public InvalidIamRoleArnApiError(String arn) {
+    this.arn = arn;
+  }
 
-    @Override
-    public String getName() {
-        return "InvalidIamRoleArnApiError";
-    }
+  @Override
+  public String getName() {
+    return "InvalidIamRoleArnApiError";
+  }
 
-    @Override
-    public String getErrorCode() {
-        return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
-    }
+  @Override
+  public String getErrorCode() {
+    return DefaultApiError.ENTITY_NOT_FOUND.getErrorCode();
+  }
 
-    @Override
-    public String getMessage() {
-        return String.format("The arn %s was not a valid arn in 'arn:aws:iam::(.*?):role/(.*)' format", arn);
-    }
+  @Override
+  public String getMessage() {
+    return String.format(
+        "The arn %s was not a valid arn in 'arn:aws:iam::(.*?):role/(.*)' format", arn);
+  }
 
-    @Override
-    public Map<String, Object> getMetadata() {
-        return null;
-    }
+  @Override
+  public Map<String, Object> getMetadata() {
+    return null;
+  }
 
-    @Override
-    public int getHttpStatusCode() {
-        return HttpServletResponse.SC_BAD_REQUEST;
-    }
+  @Override
+  public int getHttpStatusCode() {
+    return HttpServletResponse.SC_BAD_REQUEST;
+  }
 }

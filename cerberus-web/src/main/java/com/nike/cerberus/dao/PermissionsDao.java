@@ -17,35 +17,52 @@
 package com.nike.cerberus.dao;
 
 import com.nike.cerberus.mapper.PermissionsMapper;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 public class PermissionsDao {
 
+  private final PermissionsMapper permissionsMapper;
 
-    private final PermissionsMapper permissionsMapper;
+  @Autowired
+  public PermissionsDao(PermissionsMapper permissionsMapper) {
+    this.permissionsMapper = permissionsMapper;
+  }
 
-    @Autowired
-    public PermissionsDao(PermissionsMapper permissionsMapper) {
-        this.permissionsMapper = permissionsMapper;
-    }
+  public Boolean doesIamPrincipalHaveRoleForSdb(
+      String sdbId,
+      String iamPrincipalArn,
+      String iamRootArn,
+      Set<String> rolesThatAllowPermission) {
+    return permissionsMapper.doesIamPrincipalHaveGivenRoleForSdb(
+        sdbId, iamPrincipalArn, iamRootArn, rolesThatAllowPermission);
+  }
 
-    public Boolean doesIamPrincipalHaveRoleForSdb(String sdbId, String iamPrincipalArn, String iamRootArn, Set<String> rolesThatAllowPermission) {
-        return permissionsMapper.doesIamPrincipalHaveGivenRoleForSdb(sdbId, iamPrincipalArn, iamRootArn, rolesThatAllowPermission);
-    }
+  public Boolean doesAssumedRoleHaveRoleForSdb(
+      String sdbId,
+      String assumedRoleArn,
+      String iamRoleArn,
+      String iamRootArn,
+      Set<String> rolesThatAllowPermission) {
+    return permissionsMapper.doesAssumedRoleHaveGivenRoleForSdb(
+        sdbId, assumedRoleArn, iamRoleArn, iamRootArn, rolesThatAllowPermission);
+  }
 
-    public Boolean doesAssumedRoleHaveRoleForSdb(String sdbId, String assumedRoleArn, String iamRoleArn, String iamRootArn, Set<String> rolesThatAllowPermission) {
-        return permissionsMapper.doesAssumedRoleHaveGivenRoleForSdb(sdbId, assumedRoleArn, iamRoleArn, iamRootArn, rolesThatAllowPermission);
-    }
+  public Boolean doesUserPrincipalHaveRoleForSdb(
+      String sdbId,
+      Set<String> rolesThatAllowPermission,
+      Set<String> userGroupsThatPrincipalBelongsTo) {
+    return permissionsMapper.doesUserPrincipalHaveGivenRoleForSdb(
+        sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
+  }
 
-    public Boolean doesUserPrincipalHaveRoleForSdb(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {
-        return permissionsMapper.doesUserPrincipalHaveGivenRoleForSdb(sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
-    }
-
-    public Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(String sdbId, Set<String> rolesThatAllowPermission, Set<String> userGroupsThatPrincipalBelongsTo) {
-        return permissionsMapper.doesUserHavePermsForRoleAndSdbCaseInsensitive(sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
-    }
+  public Boolean doesUserHavePermsForRoleAndSdbCaseInsensitive(
+      String sdbId,
+      Set<String> rolesThatAllowPermission,
+      Set<String> userGroupsThatPrincipalBelongsTo) {
+    return permissionsMapper.doesUserHavePermsForRoleAndSdbCaseInsensitive(
+        sdbId, rolesThatAllowPermission, userGroupsThatPrincipalBelongsTo);
+  }
 }

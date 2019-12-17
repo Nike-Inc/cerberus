@@ -18,38 +18,36 @@ package com.nike.cerberus.mapper;
 
 import com.nike.cerberus.record.UserGroupPermissionRecord;
 import com.nike.cerberus.record.UserGroupRecord;
+import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
-/**
- * MyBatis mapper for executing SQL queries related to user group and permissions.
- */
+/** MyBatis mapper for executing SQL queries related to user group and permissions. */
 public interface UserGroupMapper {
 
-    UserGroupRecord getUserGroup(@Param("id") String id);
+  UserGroupRecord getUserGroup(@Param("id") String id);
 
-    UserGroupRecord getUserGroupByName(@Param("name") String name);
+  UserGroupRecord getUserGroupByName(@Param("name") String name);
 
-    int getTotalNumUniqueUserGroupsByRole(String roleId);
+  int getTotalNumUniqueUserGroupsByRole(String roleId);
 
-    int getTotalNumUniqueNonOwnerGroups();
+  int getTotalNumUniqueNonOwnerGroups();
 
-    int getTotalNumUniqueUserGroups();
+  int getTotalNumUniqueUserGroups();
 
-    List<UserGroupRecord> getUserGroupsByRole(@Param("safeDepositBoxId") String safeDepositBoxId,
-                                              @Param("roleId") String roleId);
+  List<UserGroupRecord> getUserGroupsByRole(
+      @Param("safeDepositBoxId") String safeDepositBoxId, @Param("roleId") String roleId);
 
-    int createUserGroup(@Param("record") UserGroupRecord record);
+  int createUserGroup(@Param("record") UserGroupRecord record);
 
-    int createUserGroupPermission(@Param("record") UserGroupPermissionRecord record);
+  int createUserGroupPermission(@Param("record") UserGroupPermissionRecord record);
 
-    int updateUserGroupPermission(@Param("record") UserGroupPermissionRecord record);
+  int updateUserGroupPermission(@Param("record") UserGroupPermissionRecord record);
 
-    int deleteUserGroupPermission(@Param("safeDepositBoxId") String safeDepositBoxId,
-                                  @Param("userGroupId") String userGroupId);
+  int deleteUserGroupPermission(
+      @Param("safeDepositBoxId") String safeDepositBoxId, @Param("userGroupId") String userGroupId);
 
-    List<UserGroupPermissionRecord> getUserGroupPermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
+  List<UserGroupPermissionRecord> getUserGroupPermissions(
+      @Param("safeDepositBoxId") String safeDepositBoxId);
 
-    int deleteUserGroupPermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
+  int deleteUserGroupPermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
 }

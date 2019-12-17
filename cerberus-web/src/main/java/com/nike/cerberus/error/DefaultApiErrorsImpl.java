@@ -16,33 +16,30 @@
 
 package com.nike.cerberus.error;
 
+import static com.nike.backstopper.apierror.projectspecificinfo.ProjectSpecificErrorCodeRange.ALLOW_ALL_ERROR_CODES;
+
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectSpecificErrorCodeRange;
 import com.nike.backstopper.apierror.sample.SampleProjectApiErrorsBase;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.nike.backstopper.apierror.projectspecificinfo.ProjectSpecificErrorCodeRange.ALLOW_ALL_ERROR_CODES;
-
-/**
- * TODO remove dependency on SampleProjectApiErrors, have everything be in this project
- */
+/** TODO remove dependency on SampleProjectApiErrors, have everything be in this project */
 public class DefaultApiErrorsImpl extends SampleProjectApiErrorsBase {
 
-    @Override
-    protected List<ApiError> getProjectSpecificApiErrors() {
-        return new ArrayList<>(Arrays.asList(DefaultApiError.values()));
-    }
+  @Override
+  protected List<ApiError> getProjectSpecificApiErrors() {
+    return new ArrayList<>(Arrays.asList(DefaultApiError.values()));
+  }
 
-    @Override
-    protected ProjectSpecificErrorCodeRange getProjectSpecificErrorCodeRange() {
-        return ALLOW_ALL_ERROR_CODES;
-    }
+  @Override
+  protected ProjectSpecificErrorCodeRange getProjectSpecificErrorCodeRange() {
+    return ALLOW_ALL_ERROR_CODES;
+  }
 
-    @Override
-    public ApiError getForbiddenApiError() {
-        return DefaultApiError.ACCESS_DENIED;
-    }
+  @Override
+  public ApiError getForbiddenApiError() {
+    return DefaultApiError.ACCESS_DENIED;
+  }
 }

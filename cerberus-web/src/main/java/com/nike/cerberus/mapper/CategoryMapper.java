@@ -17,24 +17,21 @@
 package com.nike.cerberus.mapper;
 
 import com.nike.cerberus.record.CategoryRecord;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
-/**
- * MyBatis mapper for executing SQL queries related to categories.
- */
+/** MyBatis mapper for executing SQL queries related to categories. */
 @Mapper
 public interface CategoryMapper {
 
-    List<CategoryRecord> getAllCategories();
+  List<CategoryRecord> getAllCategories();
 
-    CategoryRecord getCategoryById(@Param("id") final String id);
+  CategoryRecord getCategoryById(@Param("id") final String id);
 
-    int createCategory(@Param("record") final CategoryRecord record);
+  int createCategory(@Param("record") final CategoryRecord record);
 
-    int deleteCategory(@Param("id") final String id);
+  int deleteCategory(@Param("id") final String id);
 
-    String getCategoryIdByName(@Param("categoryName") String categoryName);
+  String getCategoryIdByName(@Param("categoryName") String categoryName);
 }

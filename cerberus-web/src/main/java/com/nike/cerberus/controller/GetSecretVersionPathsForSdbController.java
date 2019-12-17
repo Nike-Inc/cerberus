@@ -1,16 +1,15 @@
 package com.nike.cerberus.controller;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
 import com.nike.cerberus.security.PrincipalHasReadPermsForSdb;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
-
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @Slf4j
 @RestController
@@ -27,6 +26,6 @@ public class GetSecretVersionPathsForSdbController {
   @PrincipalHasReadPermsForSdb
   @RequestMapping(value = "/{sdbId:.+}", method = GET)
   public Set<String> getVersionPathsForSdb(@PathVariable("sdbId") String sdbId) {
-      return safeDepositBoxService.getSecureDataVersionPathsForSdb(sdbId);
+    return safeDepositBoxService.getSecureDataVersionPathsForSdb(sdbId);
   }
 }

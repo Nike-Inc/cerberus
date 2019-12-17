@@ -17,76 +17,81 @@
 
 package com.nike.cerberus.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.google.common.collect.Lists;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.record.SecureDataVersionRecord;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 public class SecureDataVersionServiceTest {
 
-    @Mock SecureDataVersionDao secureDataVersionDao;
-    @Mock SecureDataService secureDataService;
-    @Mock EncryptionService encryptionService;
+  @Mock SecureDataVersionDao secureDataVersionDao;
+  @Mock SecureDataService secureDataService;
+  @Mock EncryptionService encryptionService;
 
-    private SecureDataVersionService secureDataVersionService;
+  private SecureDataVersionService secureDataVersionService;
 
-    @Before
-    public void before() {
-        initMocks(this);
+  @Before
+  public void before() {
+    initMocks(this);
 
-        secureDataVersionService = new SecureDataVersionService(secureDataVersionDao, secureDataService, encryptionService);
-    }
+    secureDataVersionService =
+        new SecureDataVersionService(secureDataVersionDao, secureDataService, encryptionService);
+  }
 
-    @Test
-    public void test_that_getSecureDataVersionsByPath_returns_versions() {
-        String pathToSecureData = "path to secure data";
-        String versionId = "version id";
-        String action = "action";
-        String sdbId = "sdb id";
-        String actionPrincipal = "action principal";
-        OffsetDateTime actionTs = OffsetDateTime.now();
-        String versionCreatedBy = "version created by";
-        OffsetDateTime versionCreatedTs = OffsetDateTime.now();
-        String sdbCategory = "sdb category";
-        String fullPath = String.format("%s/%s", sdbCategory, pathToSecureData);
+  @Test
+  public void test_that_getSecureDataVersionsByPath_returns_versions() {
+    String pathToSecureData = "path to secure data";
+    String versionId = "version id";
+    String action = "action";
+    String sdbId = "sdb id";
+    String actionPrincipal = "action principal";
+    OffsetDateTime actionTs = OffsetDateTime.now();
+    String versionCreatedBy = "version created by";
+    OffsetDateTime versionCreatedTs = OffsetDateTime.now();
+    String sdbCategory = "sdb category";
+    String fullPath = String.format("%s/%s", sdbCategory, pathToSecureData);
 
-        SecureDataVersionRecord record = new SecureDataVersionRecord()
-                .setId(versionId)
-                .setEncryptedBlob("encrypted blob".getBytes())
-                .setActionPrincipal(actionPrincipal)
-                .setSdboxId(sdbId)
-                .setActionTs(actionTs)
-                .setPath(pathToSecureData)
-                .setVersionCreatedBy(versionCreatedBy)
-                .setVersionCreatedTs(versionCreatedTs)
-                .setAction(action);
+    SecureDataVersionRecord record =
+        new SecureDataVersionRecord()
+            .setId(versionId)
+            .setEncryptedBlob("encrypted blob".getBytes())
+            .setActionPrincipal(actionPrincipal)
+            .setSdboxId(sdbId)
+            .setActionTs(actionTs)
+            .setPath(pathToSecureData)
+            .setVersionCreatedBy(versionCreatedBy)
+            .setVersionCreatedTs(versionCreatedTs)
+            .setAction(action);
 
-        List<SecureDataVersionRecord> versions = Lists.newArrayList(record);
+    List<SecureDataVersionRecord> versions = Lists.newArrayList(record);
 
-        when(secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData)).thenReturn(Optional.empty());
-        when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, 1, 0)).thenReturn(versions);
-        SecureDataVersionsResult summaries = secureDataVersionService.getSecureDataVersionSummariesByPath(sdbId, pathToSecureData, sdbCategory, 1, 0);
-        SecureDataVersionSummary result = summaries.getSecureDataVersionSummaries().get(0);
+    when(secureDataService.getSecureDataRecordForPath(sdbId, pathToSecureData))
+        .thenReturn(Optional.empty());
+    when(secureDataVersionDao.listSecureDataVersionByPath(pathToSecureData, 1, 0))
+        .thenReturn(versions);
+    SecureDataVersionsResult summaries =
+        secureDataVersionService.getSecureDataVersionSummariesByPath(
+            sdbId, pathToSecureData, sdbCategory, 1, 0);
+    SecureDataVersionSummary result = summaries.getSecureDataVersionSummaries().get(0);
 
-        assertEquals(record.getAction(), result.getAction());
-        assertEquals(record.getActionPrincipal(), result.getActionPrincipal());
-        assertEquals(record.getActionTs(), result.getActionTs());
-        assertEquals(record.getSdboxId(), result.getSdboxId());
-        assertEquals(record.getId(), result.getId());
-        assertEquals(fullPath, result.getPath());
-        assertEquals(record.getVersionCreatedBy(), result.getVersionCreatedBy());
-        assertEquals(record.getVersionCreatedTs(), result.getVersionCreatedTs());
-    }
+    assertEquals(record.getAction(), result.getAction());
+    assertEquals(record.getActionPrincipal(), result.getActionPrincipal());
+    assertEquals(record.getActionTs(), result.getActionTs());
+    assertEquals(record.getSdboxId(), result.getSdboxId());
+    assertEquals(record.getId(), result.getId());
+    assertEquals(fullPath, result.getPath());
+    assertEquals(record.getVersionCreatedBy(), result.getVersionCreatedBy());
+    assertEquals(record.getVersionCreatedTs(), result.getVersionCreatedTs());
+  }
 }

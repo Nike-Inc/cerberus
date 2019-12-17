@@ -9,5 +9,3 @@ allprojects {
     suppressionFile = "${rootProject.projectDir}/dependency-check-supressions.xml"
   }
 }
-
-

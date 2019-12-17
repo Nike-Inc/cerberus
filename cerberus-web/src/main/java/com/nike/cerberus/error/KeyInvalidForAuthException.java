@@ -18,9 +18,9 @@
 package com.nike.cerberus.error;
 
 public class KeyInvalidForAuthException extends RuntimeException {
-    private static final long serialVersionUID = 1923041357063892560L;
+  private static final long serialVersionUID = 1923041357063892560L;
 
-    public KeyInvalidForAuthException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public KeyInvalidForAuthException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

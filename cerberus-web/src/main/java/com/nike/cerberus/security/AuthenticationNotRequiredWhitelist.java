@@ -1,8 +1,7 @@
 package com.nike.cerberus.security;
 
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 public class AuthenticationNotRequiredWhitelist {
 

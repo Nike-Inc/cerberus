@@ -17,72 +17,69 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.google.common.collect.Lists;
-import com.nike.backstopper.exception.ApiException;
-import com.okta.sdk.clients.UserGroupApiClient;
-import com.okta.sdk.framework.PagedResults;
-import com.okta.sdk.models.usergroups.UserGroup;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-/**
- * Tests the OktaApiClientHelper class
- */
+import com.google.common.collect.Lists;
+import com.nike.backstopper.exception.ApiException;
+import com.okta.sdk.clients.UserGroupApiClient;
+import com.okta.sdk.framework.PagedResults;
+import com.okta.sdk.models.usergroups.UserGroup;
+import java.io.IOException;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+/** Tests the OktaApiClientHelper class */
 public class OktaApiClientHelperTest {
 
-    // class under test
-    private OktaApiClientHelper oktaApiClientHelper;
+  // class under test
+  private OktaApiClientHelper oktaApiClientHelper;
 
-    // dependencies
-    @Mock
-    private UserGroupApiClient userGroupApiClient;
+  // dependencies
+  @Mock private UserGroupApiClient userGroupApiClient;
 
-    @Before
-    public void setup() {
+  @Before
+  public void setup() {
 
-        initMocks(this);
+    initMocks(this);
 
-        // create test object
-        this.oktaApiClientHelper = new OktaApiClientHelper(userGroupApiClient, "");
-    }
+    // create test object
+    this.oktaApiClientHelper = new OktaApiClientHelper(userGroupApiClient, "");
+  }
 
-    /////////////////////////
-    // Test Methods
-    /////////////////////////
+  /////////////////////////
+  // Test Methods
+  /////////////////////////
 
-    @Test
-    public void getUserGroupsHappy() throws Exception {
+  @Test
+  public void getUserGroupsHappy() throws Exception {
 
-        String id = "id";
-        UserGroup group = mock(UserGroup.class);
-        PagedResults res = mock(PagedResults.class);
-        when(res.getResult()).thenReturn(Lists.newArrayList(group));
-        when(res.isLastPage()).thenReturn(true);
-        when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenReturn(res);
+    String id = "id";
+    UserGroup group = mock(UserGroup.class);
+    PagedResults res = mock(PagedResults.class);
+    when(res.getResult()).thenReturn(Lists.newArrayList(group));
+    when(res.isLastPage()).thenReturn(true);
+    when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenReturn(res);
 
-        // do the call
-        List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id);
+    // do the call
+    List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id);
 
-        // verify results
-        assertTrue(result.contains(group));
-    }
+    // verify results
+    assertTrue(result.contains(group));
+  }
 
-    @Test(expected = ApiException.class)
-    public void getUserGroupsFails() throws Exception {
+  @Test(expected = ApiException.class)
+  public void getUserGroupsFails() throws Exception {
 
-        when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenThrow(IOException.class);
+    when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString()))
+        .thenThrow(IOException.class);
 
-        // do the call
-        this.oktaApiClientHelper.getUserGroups("id");
-    }
+    // do the call
+    this.oktaApiClientHelper.getUserGroups("id");
+  }
 }

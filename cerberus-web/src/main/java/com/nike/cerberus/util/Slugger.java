@@ -16,31 +16,31 @@
 
 package com.nike.cerberus.util;
 
-import org.apache.commons.lang3.RegExUtils;
-import org.springframework.stereotype.Component;
-
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.RegExUtils;
+import org.springframework.stereotype.Component;
 
 /**
- * Naive utility for transforming strings into slugs (lower-case alphanumeric with dashes in place of whitespace.
+ * Naive utility for transforming strings into slugs (lower-case alphanumeric with dashes in place
+ * of whitespace.
  */
 @Component
 public class Slugger {
 
-    public static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+  public static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
 
-    public static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+  public static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
-    public static String toSlug(String input) {
-        final String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
-        final String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
-        final String slug = NONLATIN.matcher(normalized).replaceAll("");
-        return slug.toLowerCase(Locale.ENGLISH);
-    }
+  public static String toSlug(String input) {
+    final String nowhitespace = WHITESPACE.matcher(input).replaceAll("-");
+    final String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
+    final String slug = NONLATIN.matcher(normalized).replaceAll("");
+    return slug.toLowerCase(Locale.ENGLISH);
+  }
 
-    public String slugifyKmsAliases(String input) {
-        return RegExUtils.replacePattern(input, "[^a-zA-Z0-9:/_-]+", "-");
-    }
+  public String slugifyKmsAliases(String input) {
+    return RegExUtils.replacePattern(input, "[^a-zA-Z0-9:/_-]+", "-");
+  }
 }

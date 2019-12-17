@@ -18,18 +18,17 @@ package com.nike.cerberus.aws.sts;
 
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 
-/**
- * POJO representing a get-caller-identity response.
- */
+/** POJO representing a get-caller-identity response. */
 public class GetCallerIdentityResponse {
-    private GetCallerIdentityResult getCallerIdentityResult;
+  private GetCallerIdentityResult getCallerIdentityResult;
 
-    public GetCallerIdentityResult getGetCallerIdentityResult() {
-        return getCallerIdentityResult;
-    }
+  public GetCallerIdentityResult getGetCallerIdentityResult() {
+    return getCallerIdentityResult;
+  }
 
-    public GetCallerIdentityResponse setGetCallerIdentityResult(GetCallerIdentityResult getCallerIdentityResult) {
-        this.getCallerIdentityResult = getCallerIdentityResult;
-        return this;
-    }
+  public GetCallerIdentityResponse setGetCallerIdentityResult(
+      GetCallerIdentityResult getCallerIdentityResult) {
+    this.getCallerIdentityResult = getCallerIdentityResult;
+    return this;
+  }
 }

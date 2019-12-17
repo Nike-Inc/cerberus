@@ -18,31 +18,31 @@ package com.nike.cerberus.validation;
 
 import com.nike.cerberus.domain.SafeDepositBox;
 import com.nike.cerberus.domain.UserGroupPermission;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
 
-/**
- * Validator that checks if the owner field is included in the user group permissions.
- */
+/** Validator that checks if the owner field is included in the user group permissions. */
 public class UniqueOwnerValidator implements ConstraintValidator<UniqueOwner, SafeDepositBox> {
 
-    public void initialize(UniqueOwner constraint) {
-        // no-op
+  public void initialize(UniqueOwner constraint) {
+    // no-op
+  }
+
+  public boolean isValid(SafeDepositBox safeDepositBox, ConstraintValidatorContext context) {
+    if (StringUtils.isBlank(safeDepositBox.getOwner())
+        || safeDepositBox.getUserGroupPermissions() == null
+        || safeDepositBox.getUserGroupPermissions().isEmpty()) {
+      return true;
     }
 
-    public boolean isValid(SafeDepositBox safeDepositBox, ConstraintValidatorContext context) {
-        if (StringUtils.isBlank(safeDepositBox.getOwner())
-                || safeDepositBox.getUserGroupPermissions() == null
-                || safeDepositBox.getUserGroupPermissions().isEmpty()) {
-            return true;
-        }
+    final Set<String> userGroupNameSet =
+        safeDepositBox.getUserGroupPermissions().stream()
+            .map(UserGroupPermission::getName)
+            .collect(Collectors.toSet());
 
-        final Set<String> userGroupNameSet = safeDepositBox.getUserGroupPermissions().stream().map(UserGroupPermission::getName).collect(Collectors.toSet());
-
-        return !userGroupNameSet.contains(safeDepositBox.getOwner());
-    }
+    return !userGroupNameSet.contains(safeDepositBox.getOwner());
+  }
 }

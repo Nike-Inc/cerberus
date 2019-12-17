@@ -23,89 +23,87 @@ import com.okta.sdk.clients.UserGroupApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.framework.PagedResults;
 import com.okta.sdk.models.usergroups.UserGroup;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-/**
- * Helper methods to authenticate with Okta.
- */
+/** Helper methods to authenticate with Okta. */
 @Component
 public class OktaApiClientHelper {
 
-    private final UserGroupApiClient userGroupApiClient;
+  private final UserGroupApiClient userGroupApiClient;
 
-    private final String baseUrl;
+  private final String baseUrl;
 
-    protected OktaApiClientHelper(UserGroupApiClient userGroupApiClient,
-                                  String baseUrl) {
+  protected OktaApiClientHelper(UserGroupApiClient userGroupApiClient, String baseUrl) {
 
-        this.userGroupApiClient = userGroupApiClient;
-        this.baseUrl = baseUrl;
-    }
+    this.userGroupApiClient = userGroupApiClient;
+    this.baseUrl = baseUrl;
+  }
 
-    @Autowired
-    public OktaApiClientHelper(OktaConfigurationProperties oktaConfigurationProperties) {
-        this.baseUrl = oktaConfigurationProperties.getBaseUrl();
+  @Autowired
+  public OktaApiClientHelper(OktaConfigurationProperties oktaConfigurationProperties) {
+    this.baseUrl = oktaConfigurationProperties.getBaseUrl();
 
-        final ApiClientConfiguration clientConfiguration = new ApiClientConfiguration(baseUrl, oktaConfigurationProperties.getApiKey());
-        userGroupApiClient = new UserGroupApiClient(clientConfiguration);
-    }
+    final ApiClientConfiguration clientConfiguration =
+        new ApiClientConfiguration(baseUrl, oktaConfigurationProperties.getApiKey());
+    userGroupApiClient = new UserGroupApiClient(clientConfiguration);
+  }
 
-    /**
-     * Request to get user group data by the user's ID.
-     *
-     * @param userId User ID
-     * @return User groups
-     */
-    protected List<UserGroup> getUserGroups(final String userId) {
-        return getUserGroups(userId, null);
-    }
+  /**
+   * Request to get user group data by the user's ID.
+   *
+   * @param userId User ID
+   * @return User groups
+   */
+  protected List<UserGroup> getUserGroups(final String userId) {
+    return getUserGroups(userId, null);
+  }
 
-    /**
-     * Request to get user group data by the user's ID.
-     *
-     * @param userId User ID
-     * @param limit The page size limit, if null the default will be used
-     * @return User groups
-     */
-    protected List<UserGroup> getUserGroups(String userId, Integer limit) {
-        List<UserGroup> userGroups = new LinkedList<>();
-        try {
-            boolean hasNext;
-            StringBuilder urlBuilder = new StringBuilder(baseUrl)
-                    .append("/api/v1/users/").append(userId).append("/groups");
+  /**
+   * Request to get user group data by the user's ID.
+   *
+   * @param userId User ID
+   * @param limit The page size limit, if null the default will be used
+   * @return User groups
+   */
+  protected List<UserGroup> getUserGroups(String userId, Integer limit) {
+    List<UserGroup> userGroups = new LinkedList<>();
+    try {
+      boolean hasNext;
+      StringBuilder urlBuilder =
+          new StringBuilder(baseUrl).append("/api/v1/users/").append(userId).append("/groups");
 
-            if (limit != null) {
-                urlBuilder.append("?limit=").append(limit);
-            }
-            String url = urlBuilder.toString();
+      if (limit != null) {
+        urlBuilder.append("?limit=").append(limit);
+      }
+      String url = urlBuilder.toString();
 
-            do {
-                PagedResults<UserGroup> userGroupPagedResults = userGroupApiClient
-                        .getUserGroupsPagedResultsByUrl(url);
+      do {
+        PagedResults<UserGroup> userGroupPagedResults =
+            userGroupApiClient.getUserGroupsPagedResultsByUrl(url);
 
-                userGroups.addAll(userGroupPagedResults.getResult());
+        userGroups.addAll(userGroupPagedResults.getResult());
 
-                if (! userGroupPagedResults.isLastPage()) {
-                    hasNext = true;
-                    url = userGroupPagedResults.getNextUrl();
-                } else {
-                    hasNext = false;
-                }
-            } while (hasNext);
-        } catch (IOException ioe) {
-            final String msg = String.format("failed to get user groups for user (%s) for reason: %s", userId,
-                    ioe.getMessage());
-
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
-                    .withExceptionMessage(msg)
-                    .build();
+        if (!userGroupPagedResults.isLastPage()) {
+          hasNext = true;
+          url = userGroupPagedResults.getNextUrl();
+        } else {
+          hasNext = false;
         }
-        return userGroups;
+      } while (hasNext);
+    } catch (IOException ioe) {
+      final String msg =
+          String.format(
+              "failed to get user groups for user (%s) for reason: %s", userId, ioe.getMessage());
+
+      throw ApiException.newBuilder()
+          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+          .withExceptionMessage(msg)
+          .build();
     }
+    return userGroups;
+  }
 }

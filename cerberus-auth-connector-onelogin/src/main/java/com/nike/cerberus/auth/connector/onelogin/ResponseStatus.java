@@ -16,52 +16,50 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
-/**
- * POJO representing the response status for all API calls.
- */
+/** POJO representing the response status for all API calls. */
 class ResponseStatus {
 
-    private String type;
+  private String type;
 
-    private String message;
+  private String message;
 
-    private long code;
+  private long code;
 
-    private boolean error;
+  private boolean error;
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public ResponseStatus setType(String type) {
-        this.type = type;
-        return this;
-    }
+  public ResponseStatus setType(String type) {
+    this.type = type;
+    return this;
+  }
 
-    public String getMessage() {
-        return message;
-    }
+  public String getMessage() {
+    return message;
+  }
 
-    public ResponseStatus setMessage(String message) {
-        this.message = message;
-        return this;
-    }
+  public ResponseStatus setMessage(String message) {
+    this.message = message;
+    return this;
+  }
 
-    public long getCode() {
-        return code;
-    }
+  public long getCode() {
+    return code;
+  }
 
-    public ResponseStatus setCode(long code) {
-        this.code = code;
-        return this;
-    }
+  public ResponseStatus setCode(long code) {
+    this.code = code;
+    return this;
+  }
 
-    public boolean isError() {
-        return error;
-    }
+  public boolean isError() {
+    return error;
+  }
 
-    public ResponseStatus setError(boolean error) {
-        this.error = error;
-        return this;
-    }
+  public ResponseStatus setError(boolean error) {
+    this.error = error;
+    return this;
+  }
 }

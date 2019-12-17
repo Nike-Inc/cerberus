@@ -19,49 +19,49 @@ package com.nike.cerberus.mapper;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
-import org.apache.ibatis.annotations.Param;
-
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * MyBatis mapper for executing SQL queries related to IAM roles and permissions.
- */
+/** MyBatis mapper for executing SQL queries related to IAM roles and permissions. */
 public interface AwsIamRoleMapper {
 
-    AwsIamRoleRecord getIamRoleById(@Param("id") String id);
+  AwsIamRoleRecord getIamRoleById(@Param("id") String id);
 
-    AwsIamRoleRecord getIamRole(@Param("awsIamRoleArn") String awsIamRoleArn);
+  AwsIamRoleRecord getIamRole(@Param("awsIamRoleArn") String awsIamRoleArn);
 
-    AwsIamRoleKmsKeyRecord getKmsKey(@Param("awsIamRoleId") String awsIamRoleId,
-                                     @Param("awsRegion") String awsRegion);
+  AwsIamRoleKmsKeyRecord getKmsKey(
+      @Param("awsIamRoleId") String awsIamRoleId, @Param("awsRegion") String awsRegion);
 
-    int createIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
+  int createIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
 
-    int createIamRole(@Param("record") AwsIamRoleRecord record);
+  int createIamRole(@Param("record") AwsIamRoleRecord record);
 
-    int createIamRolePermission(@Param("record") AwsIamRolePermissionRecord record);
+  int createIamRolePermission(@Param("record") AwsIamRolePermissionRecord record);
 
-    int updateIamRolePermission(@Param("record") AwsIamRolePermissionRecord record);
+  int updateIamRolePermission(@Param("record") AwsIamRolePermissionRecord record);
 
-    int deleteIamRolePermission(@Param("safeDepositBoxId") String safeDepositBoxId,
-                                @Param("awsIamRoleId") String awsIamRoleId);
+  int deleteIamRolePermission(
+      @Param("safeDepositBoxId") String safeDepositBoxId,
+      @Param("awsIamRoleId") String awsIamRoleId);
 
-    List<AwsIamRolePermissionRecord> getIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
+  List<AwsIamRolePermissionRecord> getIamRolePermissions(
+      @Param("safeDepositBoxId") String safeDepositBoxId);
 
-    int deleteIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
+  int deleteIamRolePermissions(@Param("safeDepositBoxId") String safeDepositBoxId);
 
-    int updateIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
+  int updateIamRoleKmsKey(@Param("record") AwsIamRoleKmsKeyRecord record);
 
-    List<AwsIamRoleKmsKeyRecord> getInactiveOrOrphanedKmsKeys(@Param("keyInactiveDateTime") OffsetDateTime keyInactiveDateTime);
+  List<AwsIamRoleKmsKeyRecord> getInactiveOrOrphanedKmsKeys(
+      @Param("keyInactiveDateTime") OffsetDateTime keyInactiveDateTime);
 
-    List<AwsIamRoleRecord> getOrphanedIamRoles();
+  List<AwsIamRoleRecord> getOrphanedIamRoles();
 
-    int getTotalNumberOfUniqueIamRoles();
+  int getTotalNumberOfUniqueIamRoles();
 
-    int deleteIamRoleById(@Param("id") final String id);
+  int deleteIamRoleById(@Param("id") final String id);
 
-    int deleteKmsKeyById(@Param("id") final String id);
+  int deleteKmsKeyById(@Param("id") final String id);
 
-    List<AwsIamRoleKmsKeyRecord> getAllKmsKeys();
+  List<AwsIamRoleKmsKeyRecord> getAllKmsKeys();
 }

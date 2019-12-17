@@ -16,19 +16,17 @@
 
 package com.nike.cerberus.domain;
 
-/**
- * Clean up KMS key request.
- */
+/** Clean up KMS key request. */
 public class CleanUpRequest {
 
-    private Integer kmsExpirationPeriodInDays;
+  private Integer kmsExpirationPeriodInDays;
 
-    public Integer getKmsExpirationPeriodInDays() {
-        return kmsExpirationPeriodInDays;
-    }
+  public Integer getKmsExpirationPeriodInDays() {
+    return kmsExpirationPeriodInDays;
+  }
 
-    public CleanUpRequest setKmsExpirationPeriodInDays(Integer kmsExpirationPeriodInDays) {
-        this.kmsExpirationPeriodInDays = kmsExpirationPeriodInDays;
-        return this;
-    }
+  public CleanUpRequest setKmsExpirationPeriodInDays(Integer kmsExpirationPeriodInDays) {
+    this.kmsExpirationPeriodInDays = kmsExpirationPeriodInDays;
+    return this;
+  }
 }

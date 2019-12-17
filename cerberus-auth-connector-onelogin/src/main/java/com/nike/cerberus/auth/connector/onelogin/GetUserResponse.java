@@ -18,31 +18,28 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
 
-/**
- * POJO representing the get user response.
- */
+/** POJO representing the get user response. */
 class GetUserResponse {
 
-    private ResponseStatus status;
+  private ResponseStatus status;
 
-    private List<UserData> data;
+  private List<UserData> data;
 
-    public ResponseStatus getStatus() {
-        return status;
-    }
+  public ResponseStatus getStatus() {
+    return status;
+  }
 
-    public GetUserResponse setStatus(ResponseStatus status) {
-        this.status = status;
-        return this;
-    }
+  public GetUserResponse setStatus(ResponseStatus status) {
+    this.status = status;
+    return this;
+  }
 
-    public List<UserData> getData() {
-        return data;
-    }
+  public List<UserData> getData() {
+    return data;
+  }
 
-    public GetUserResponse setData(List<UserData> data) {
-        this.data = data;
-        return this;
-    }
-
+  public GetUserResponse setData(List<UserData> data) {
+    this.data = data;
+    return this;
+  }
 }

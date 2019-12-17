@@ -16,30 +16,28 @@
 
 package com.nike.cerberus.auth.connector;
 
-/**
- * Authentication response from the auth connector.
- */
+/** Authentication response from the auth connector. */
 public class AuthResponse {
 
-    private AuthStatus status;
+  private AuthStatus status;
 
-    private AuthData data;
+  private AuthData data;
 
-    public AuthStatus getStatus() {
-        return status;
-    }
+  public AuthStatus getStatus() {
+    return status;
+  }
 
-    public AuthResponse setStatus(AuthStatus status) {
-        this.status = status;
-        return this;
-    }
+  public AuthResponse setStatus(AuthStatus status) {
+    this.status = status;
+    return this;
+  }
 
-    public AuthData getData() {
-        return data;
-    }
+  public AuthData getData() {
+    return data;
+  }
 
-    public AuthResponse setData(AuthData data) {
-        this.data = data;
-        return this;
-    }
+  public AuthResponse setData(AuthData data) {
+    this.data = data;
+    return this;
+  }
 }

@@ -16,44 +16,40 @@
 
 package com.nike.cerberus.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import com.nike.cerberus.dao.RoleDao;
 import com.nike.cerberus.record.RoleRecord;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 public class RoleServiceTest {
 
-    @Mock
-    private RoleDao roleDao;
+  @Mock private RoleDao roleDao;
 
-    @InjectMocks
-    private RoleService roleService;
+  @InjectMocks private RoleService roleService;
 
-    @Before
-    public void before() {
-        initMocks(this);
-    }
+  @Before
+  public void before() {
+    initMocks(this);
+  }
 
-    @Test
-    public void test_that_getRoleIdToStringMap_returns_valid_map() {
-        Map<String, String> expected = new HashMap<>();
-        expected.put("abc", "foo");
+  @Test
+  public void test_that_getRoleIdToStringMap_returns_valid_map() {
+    Map<String, String> expected = new HashMap<>();
+    expected.put("abc", "foo");
 
-        when(roleDao.getAllRoles())
-                .thenReturn(Arrays.asList(new RoleRecord().setId("abc").setName("foo")));
+    when(roleDao.getAllRoles())
+        .thenReturn(Arrays.asList(new RoleRecord().setId("abc").setName("foo")));
 
-        Map<String, String> actual = roleService.getRoleIdToStringMap();
-        assertEquals(expected, actual);
-    }
-
+    Map<String, String> actual = roleService.getRoleIdToStringMap();
+    assertEquals(expected, actual);
+  }
 }

@@ -22,59 +22,71 @@ import com.amazonaws.services.athena.model.ResultConfiguration;
 import com.amazonaws.services.athena.model.StartQueryExecutionRequest;
 import com.amazonaws.services.athena.model.StartQueryExecutionResult;
 import com.nike.cerberus.aws.AthenaClientFactory;
+import java.util.HashSet;
+import java.util.Set;
+import javax.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
-
 @Component
 public class AthenaService {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @NotBlank
-    private static final String TABLE_TEMPLATE = "%s_audit_db.audit_data";
+  @NotBlank private static final String TABLE_TEMPLATE = "%s_audit_db.audit_data";
 
-    private final String environmentName;
-    private final AthenaClientFactory athenaClientFactory;
-    private Set<String> partitions = new HashSet<>();
+  private final String environmentName;
+  private final AthenaClientFactory athenaClientFactory;
+  private Set<String> partitions = new HashSet<>();
 
-    @Autowired
-    public AthenaService(@Value("${cerberus.environmentName}") String environmentName,
-                         AthenaClientFactory athenaClientFactory) {
+  @Autowired
+  public AthenaService(
+      @Value("${cerberus.environmentName}") String environmentName,
+      AthenaClientFactory athenaClientFactory) {
 
-        this.environmentName = environmentName;
-        this.athenaClientFactory = athenaClientFactory;
+    this.environmentName = environmentName;
+    this.athenaClientFactory = athenaClientFactory;
+  }
+
+  public void addPartitionIfMissing(
+      String region, String bucket, String year, String month, String day, String hour) {
+    String partition = String.format("year=%s/month=%s/day=%s/hour=%s", year, month, day, hour);
+    String table = String.format(TABLE_TEMPLATE, environmentName);
+    if (!partitions.contains(partition)) {
+      try {
+        String query =
+            String.format(
+                "ALTER TABLE %s ADD PARTITION (year='%s', month='%s', day='%s', hour='%s') "
+                    + "LOCATION 's3://%s/audit-logs/partitioned/year=%s/month=%s/day=%s/hour=%s'",
+                table, year, month, day, hour, bucket, year, month, day, hour);
+
+        AmazonAthena athena = athenaClientFactory.getClient(region);
+
+        StartQueryExecutionResult result =
+            athena.startQueryExecution(
+                new StartQueryExecutionRequest()
+                    .withQueryString(query)
+                    .withResultConfiguration(
+                        new ResultConfiguration()
+                            .withOutputLocation(String.format("s3://%s/results/", bucket))));
+        log.debug(
+            "Started query: '{}' to add partition: '{}' to table: '{}'",
+            result.getQueryExecutionId(),
+            partition,
+            table);
+        partitions.add(partition);
+      } catch (AmazonClientException e) {
+        log.error(
+            "Failed to start add partition query for year={}/month={}/day={}/hour={}",
+            year,
+            month,
+            day,
+            hour,
+            e);
+      }
     }
-
-    public void addPartitionIfMissing(String region, String bucket, String year, String month, String day, String hour) {
-        String partition = String.format("year=%s/month=%s/day=%s/hour=%s", year, month, day, hour);
-        String table = String.format(TABLE_TEMPLATE, environmentName);
-        if (! partitions.contains(partition)) {
-            try {
-                String query = String.format("ALTER TABLE %s ADD PARTITION (year='%s', month='%s', day='%s', hour='%s') " +
-                                "LOCATION 's3://%s/audit-logs/partitioned/year=%s/month=%s/day=%s/hour=%s'",
-                        table,
-                        year, month, day, hour,
-                        bucket,
-                        year, month, day, hour);
-
-                AmazonAthena athena = athenaClientFactory.getClient(region);
-
-                StartQueryExecutionResult result = athena.startQueryExecution(new StartQueryExecutionRequest()
-                        .withQueryString(query)
-                        .withResultConfiguration(new ResultConfiguration().withOutputLocation(String.format("s3://%s/results/", bucket)))
-                );
-                log.debug("Started query: '{}' to add partition: '{}' to table: '{}'", result.getQueryExecutionId(), partition, table);
-                partitions.add(partition);
-            } catch (AmazonClientException e) {
-                log.error("Failed to start add partition query for year={}/month={}/day={}/hour={}", year, month, day, hour, e);
-            }
-        }
-    }
+  }
 }

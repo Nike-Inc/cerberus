@@ -16,104 +16,104 @@
 
 package com.nike.cerberus.dao;
 
-import com.google.common.collect.Lists;
-import com.nike.cerberus.mapper.CategoryMapper;
-import com.nike.cerberus.record.CategoryRecord;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import com.nike.cerberus.mapper.CategoryMapper;
+import com.nike.cerberus.record.CategoryRecord;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import org.junit.Before;
+import org.junit.Test;
+
 public class CategoryDaoTest {
 
-    private final String categoryId = "CATEGORY_ID";
+  private final String categoryId = "CATEGORY_ID";
 
-    private final String displayName = "DISPLAY_NAME";
+  private final String displayName = "DISPLAY_NAME";
 
-    private final String path = "PATH";
+  private final String path = "PATH";
 
-    private final String createdBy = "system";
+  private final String createdBy = "system";
 
-    private final String lastUpdatedBy = "system";
+  private final String lastUpdatedBy = "system";
 
-    private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
+  private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
-    private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
+  private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
-    private final CategoryRecord categoryRecord = new CategoryRecord()
-            .setId(categoryId)
-            .setDisplayName(displayName)
-            .setPath(path)
-            .setCreatedBy(createdBy)
-            .setLastUpdatedBy(lastUpdatedBy)
-            .setCreatedTs(createdTs)
-            .setLastUpdatedTs(lastUpdatedTs);
+  private final CategoryRecord categoryRecord =
+      new CategoryRecord()
+          .setId(categoryId)
+          .setDisplayName(displayName)
+          .setPath(path)
+          .setCreatedBy(createdBy)
+          .setLastUpdatedBy(lastUpdatedBy)
+          .setCreatedTs(createdTs)
+          .setLastUpdatedTs(lastUpdatedTs);
 
-    private final List<CategoryRecord> categoryRecordList = Lists.newArrayList(categoryRecord);
+  private final List<CategoryRecord> categoryRecordList = Lists.newArrayList(categoryRecord);
 
-    private CategoryMapper categoryMapper;
+  private CategoryMapper categoryMapper;
 
-    private CategoryDao subject;
+  private CategoryDao subject;
 
-    @Before
-    public void setUp() throws Exception {
-        categoryMapper = mock(CategoryMapper.class);
-        subject = new CategoryDao(categoryMapper);
-    }
+  @Before
+  public void setUp() throws Exception {
+    categoryMapper = mock(CategoryMapper.class);
+    subject = new CategoryDao(categoryMapper);
+  }
 
-    @Test
-    public void getAllCategories_returns_list_of_records() {
-        when(categoryMapper.getAllCategories()).thenReturn(categoryRecordList);
+  @Test
+  public void getAllCategories_returns_list_of_records() {
+    when(categoryMapper.getAllCategories()).thenReturn(categoryRecordList);
 
-        List<CategoryRecord> actual = subject.getAllCategories();
+    List<CategoryRecord> actual = subject.getAllCategories();
 
-        assertThat(actual).isNotEmpty();
-        assertThat(actual).hasSameElementsAs(categoryRecordList);
-    }
+    assertThat(actual).isNotEmpty();
+    assertThat(actual).hasSameElementsAs(categoryRecordList);
+  }
 
-    @Test
-    public void getCategory_returns_record_when_found() {
-        when(categoryMapper.getCategoryById(categoryId)).thenReturn(categoryRecord);
+  @Test
+  public void getCategory_returns_record_when_found() {
+    when(categoryMapper.getCategoryById(categoryId)).thenReturn(categoryRecord);
 
-        final Optional<CategoryRecord> actual = subject.getCategory(categoryId);
+    final Optional<CategoryRecord> actual = subject.getCategory(categoryId);
 
-        assertThat(actual.isPresent()).isTrue();
-        assertThat(actual.get()).isEqualTo(categoryRecord);
-    }
+    assertThat(actual.isPresent()).isTrue();
+    assertThat(actual.get()).isEqualTo(categoryRecord);
+  }
 
-    @Test
-    public void getCategory_returns_empty_when_record_not_found() {
-        when(categoryMapper.getCategoryById(categoryId)).thenReturn(null);
+  @Test
+  public void getCategory_returns_empty_when_record_not_found() {
+    when(categoryMapper.getCategoryById(categoryId)).thenReturn(null);
 
-        final Optional<CategoryRecord> actual = subject.getCategory(categoryId);
+    final Optional<CategoryRecord> actual = subject.getCategory(categoryId);
 
-        assertThat(actual.isPresent()).isFalse();
-    }
+    assertThat(actual.isPresent()).isFalse();
+  }
 
-    @Test
-    public void createCategory_returns_record_count() {
-        final int recordCount = 1;
-        when(categoryMapper.createCategory(categoryRecord)).thenReturn(recordCount);
+  @Test
+  public void createCategory_returns_record_count() {
+    final int recordCount = 1;
+    when(categoryMapper.createCategory(categoryRecord)).thenReturn(recordCount);
 
-        final int actualCount = subject.createCategory(categoryRecord);
+    final int actualCount = subject.createCategory(categoryRecord);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 
-    @Test
-    public void deleteCategory_returns_record_count() {
-        final int recordCount = 1;
-        when(categoryMapper.deleteCategory(categoryId)).thenReturn(recordCount);
+  @Test
+  public void deleteCategory_returns_record_count() {
+    final int recordCount = 1;
+    when(categoryMapper.deleteCategory(categoryId)).thenReturn(recordCount);
 
-        final int actualCount = subject.deleteCategory(categoryId);
+    final int actualCount = subject.deleteCategory(categoryId);
 
-        assertThat(actualCount).isEqualTo(recordCount);
-    }
+    assertThat(actualCount).isEqualTo(recordCount);
+  }
 }

@@ -18,85 +18,83 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
 
-/**
- * POJO representing the payload of a create login session token response.
- */
+/** POJO representing the payload of a create login session token response. */
 class SessionLoginTokenData {
 
-    private String status;
+  private String status;
 
-    private SessionUser user;
+  private SessionUser user;
 
-    private String returnToUrl;
+  private String returnToUrl;
 
-    private String sessionToken;
+  private String sessionToken;
 
-    private String stateToken;
+  private String stateToken;
 
-    private String callBackUrl;
+  private String callBackUrl;
 
-    private List<MfaDevice> devices;
+  private List<MfaDevice> devices;
 
-    public String getStatus() {
-        return status;
-    }
+  public String getStatus() {
+    return status;
+  }
 
-    public SessionLoginTokenData setStatus(String status) {
-        this.status = status;
-        return this;
-    }
+  public SessionLoginTokenData setStatus(String status) {
+    this.status = status;
+    return this;
+  }
 
-    public SessionUser getUser() {
-        return user;
-    }
+  public SessionUser getUser() {
+    return user;
+  }
 
-    public SessionLoginTokenData setUser(SessionUser user) {
-        this.user = user;
-        return this;
-    }
+  public SessionLoginTokenData setUser(SessionUser user) {
+    this.user = user;
+    return this;
+  }
 
-    public String getReturnToUrl() {
-        return returnToUrl;
-    }
+  public String getReturnToUrl() {
+    return returnToUrl;
+  }
 
-    public SessionLoginTokenData setReturnToUrl(String returnToUrl) {
-        this.returnToUrl = returnToUrl;
-        return this;
-    }
+  public SessionLoginTokenData setReturnToUrl(String returnToUrl) {
+    this.returnToUrl = returnToUrl;
+    return this;
+  }
 
-    public String getSessionToken() {
-        return sessionToken;
-    }
+  public String getSessionToken() {
+    return sessionToken;
+  }
 
-    public SessionLoginTokenData setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-        return this;
-    }
+  public SessionLoginTokenData setSessionToken(String sessionToken) {
+    this.sessionToken = sessionToken;
+    return this;
+  }
 
-    public String getStateToken() {
-        return stateToken;
-    }
+  public String getStateToken() {
+    return stateToken;
+  }
 
-    public SessionLoginTokenData setStateToken(String stateToken) {
-        this.stateToken = stateToken;
-        return this;
-    }
+  public SessionLoginTokenData setStateToken(String stateToken) {
+    this.stateToken = stateToken;
+    return this;
+  }
 
-    public String getCallBackUrl() {
-        return callBackUrl;
-    }
+  public String getCallBackUrl() {
+    return callBackUrl;
+  }
 
-    public SessionLoginTokenData setCallBackUrl(String callBackUrl) {
-        this.callBackUrl = callBackUrl;
-        return this;
-    }
+  public SessionLoginTokenData setCallBackUrl(String callBackUrl) {
+    this.callBackUrl = callBackUrl;
+    return this;
+  }
 
-    public List<MfaDevice> getDevices() {
-        return devices;
-    }
+  public List<MfaDevice> getDevices() {
+    return devices;
+  }
 
-    public SessionLoginTokenData setDevices(List<MfaDevice> devices) {
-        this.devices = devices;
-        return this;
-    }
+  public SessionLoginTokenData setDevices(List<MfaDevice> devices) {
+    this.devices = devices;
+    return this;
+  }
 }

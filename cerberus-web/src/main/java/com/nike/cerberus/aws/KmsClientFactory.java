@@ -22,53 +22,50 @@ import com.amazonaws.services.kms.AWSKMSClient;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
-/**
- * Factory for AWS KMS clients.  Caches clients by region as they are requested.
- */
+/** Factory for AWS KMS clients. Caches clients by region as they are requested. */
 @Component
 public class KmsClientFactory {
 
-    private final Map<Region, AWSKMSClient> kmsClientMap = Maps.newConcurrentMap();
+  private final Map<Region, AWSKMSClient> kmsClientMap = Maps.newConcurrentMap();
 
-    /**
-     * Returns a KMS client for the given region.  Clients are cached by region.
-     *
-     * @param region Region to configure a client for
-     * @return AWS KMS client
-     */
-    public AWSKMSClient getClient(Region region) {
-        AWSKMSClient client = kmsClientMap.get(region);
+  /**
+   * Returns a KMS client for the given region. Clients are cached by region.
+   *
+   * @param region Region to configure a client for
+   * @return AWS KMS client
+   */
+  public AWSKMSClient getClient(Region region) {
+    AWSKMSClient client = kmsClientMap.get(region);
 
-        if (client == null) {
-            final AWSKMSClient newClient = new AWSKMSClient();
-            newClient.setRegion(region);
-            kmsClientMap.put(region, newClient);
-            client = newClient;
-        }
-
-        return client;
+    if (client == null) {
+      final AWSKMSClient newClient = new AWSKMSClient();
+      newClient.setRegion(region);
+      kmsClientMap.put(region, newClient);
+      client = newClient;
     }
 
-    /**
-     * Returns a KMS client for the given region name.  Clients are cached by region.
-     *
-     * @param regionName Region to configure a client for
-     * @return AWS KMS client
-     */
-    public AWSKMSClient getClient(String regionName) {
-        try {
-            final Region region = Region.getRegion(Regions.fromName(regionName));
-            return getClient(region);
-        } catch (IllegalArgumentException iae) {
-            throw ApiException.newBuilder()
-                    .withApiErrors(DefaultApiError.AUTHENTICATION_ERROR_INVALID_REGION)
-                    .withExceptionCause(iae.getCause())
-                    .withExceptionMessage("Specified region is not valid.")
-                    .build();
-        }
+    return client;
+  }
+
+  /**
+   * Returns a KMS client for the given region name. Clients are cached by region.
+   *
+   * @param regionName Region to configure a client for
+   * @return AWS KMS client
+   */
+  public AWSKMSClient getClient(String regionName) {
+    try {
+      final Region region = Region.getRegion(Regions.fromName(regionName));
+      return getClient(region);
+    } catch (IllegalArgumentException iae) {
+      throw ApiException.newBuilder()
+          .withApiErrors(DefaultApiError.AUTHENTICATION_ERROR_INVALID_REGION)
+          .withExceptionCause(iae.getCause())
+          .withExceptionMessage("Specified region is not valid.")
+          .build();
     }
+  }
 }

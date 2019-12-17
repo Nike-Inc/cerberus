@@ -17,61 +17,58 @@
 
 package com.nike.cerberus.validation;
 
+import static org.mockito.Mockito.mock;
+
 import com.nike.cerberus.domain.IamPrincipalPermission;
+import java.util.HashSet;
+import javax.validation.ConstraintValidatorContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.util.collections.Sets;
 
-import javax.validation.ConstraintValidatorContext;
-import java.util.HashSet;
-
-import static org.mockito.Mockito.mock;
-
-/**
- * Tests the IamRolePermissionsValidator class
- */
+/** Tests the IamRolePermissionsValidator class */
 public class IamPrincipalPermissionsValidatorTest {
 
-    private ConstraintValidatorContext mockConstraintValidatorContext;
+  private ConstraintValidatorContext mockConstraintValidatorContext;
 
-    private IamPrincipalPermissionsValidator subject;
+  private IamPrincipalPermissionsValidator subject;
 
-    @Before
-    public void setup() {
-        mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
-        subject = new IamPrincipalPermissionsValidator();
-    }
+  @Before
+  public void setup() {
+    mockConstraintValidatorContext = mock(ConstraintValidatorContext.class);
+    subject = new IamPrincipalPermissionsValidator();
+  }
 
-    @Test
-    public void null_set_is_valid() {
-        Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
-    }
+  @Test
+  public void null_set_is_valid() {
+    Assert.assertTrue(subject.isValid(null, mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void empty_set_is_valid() {
-        Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
-    }
+  @Test
+  public void empty_set_is_valid() {
+    Assert.assertTrue(subject.isValid(new HashSet<>(), mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void unique_set_is_valid() {
+  @Test
+  public void unique_set_is_valid() {
 
-        IamPrincipalPermission a = new IamPrincipalPermission();
-        a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
-        IamPrincipalPermission b = new IamPrincipalPermission();
-        b.withIamPrincipalArn("arn:aws:iam::123:role/def");
+    IamPrincipalPermission a = new IamPrincipalPermission();
+    a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
+    IamPrincipalPermission b = new IamPrincipalPermission();
+    b.withIamPrincipalArn("arn:aws:iam::123:role/def");
 
-        Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
-    }
+    Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
+  }
 
-    @Test
-    public void set_can_handle_case_sensitivity() {
+  @Test
+  public void set_can_handle_case_sensitivity() {
 
-        IamPrincipalPermission a = new IamPrincipalPermission();
-        a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
-        IamPrincipalPermission b = new IamPrincipalPermission();
-        b.withIamPrincipalArn("arn:aws:iam::123:role/ABC");
+    IamPrincipalPermission a = new IamPrincipalPermission();
+    a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
+    IamPrincipalPermission b = new IamPrincipalPermission();
+    b.withIamPrincipalArn("arn:aws:iam::123:role/ABC");
 
-        Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
-    }
+    Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
+  }
 }

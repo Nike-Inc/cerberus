@@ -1,43 +1,45 @@
 package com.nike.cerberus.config.database;
 
+import static java.util.Optional.ofNullable;
+
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.beans.PropertyVetoException;
+import java.util.Properties;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-
-import static java.util.Optional.ofNullable;
-
 /**
- * This is a port of the C3p0DataSourceProvider from the MyBaits Guice package.
- * There might be a better way to do this in Spring land with the Spring Mybatis package, however...
- * We are doing this to ensure matching behavior when porting CMS from Guice -> Spring Context, as we have battle tested that config.
+ * This is a port of the C3p0DataSourceProvider from the MyBaits Guice package. There might be a
+ * better way to do this in Spring land with the Spring Mybatis package, however... We are doing
+ * this to ensure matching behavior when porting CMS from Guice -> Spring Context, as we have battle
+ * tested that config.
  *
- * This creates the C3P0 DataSource bean.
+ * <p>This creates the C3P0 DataSource bean.
  */
 @Configuration
 public class C3p0DataSourceConfiguration {
 
-  /**
-   * The ComboPooledDataSource reference.
-   */
+  /** The ComboPooledDataSource reference. */
   private final ComboPooledDataSource dataSource = new ComboPooledDataSource();
+
   private String username;
   private String password;
 
   @Autowired
-  public C3p0DataSourceConfiguration(@Value("${jdbc.driver}") String driver,
-                                     @Value("${jdbc.url}") String url) {
+  public C3p0DataSourceConfiguration(
+      @Value("${jdbc.driver}") String driver, @Value("${jdbc.url}") String url) {
 
     try {
       dataSource.setDriverClass(driver);
     } catch (PropertyVetoException e) {
       throw new RuntimeException(
-        "Impossible to initialize C3P0 Data Source with driver class '" + driver + "', see nested exceptions", e);
+          "Impossible to initialize C3P0 Data Source with driver class '"
+              + driver
+              + "', see nested exceptions",
+          e);
     }
     dataSource.setJdbcUrl(url);
   }
@@ -68,7 +70,8 @@ public class C3p0DataSourceConfiguration {
    * @param acquireIncrement the new acquire increment
    */
   @Autowired
-  public void setAcquireIncrement(@Value("${c3p0.acquireIncrement:#{null}}") final Integer acquireIncrement) {
+  public void setAcquireIncrement(
+      @Value("${c3p0.acquireIncrement:#{null}}") final Integer acquireIncrement) {
     ofNullable(acquireIncrement).ifPresent(dataSource::setAcquireIncrement);
   }
 
@@ -78,7 +81,8 @@ public class C3p0DataSourceConfiguration {
    * @param acquireRetryAttempts the new acquire retry attempts
    */
   @Autowired
-  public void setAcquireRetryAttempts(@Value("${c3p0.acquireRetryAttempts:#{null}}") final Integer acquireRetryAttempts) {
+  public void setAcquireRetryAttempts(
+      @Value("${c3p0.acquireRetryAttempts:#{null}}") final Integer acquireRetryAttempts) {
     ofNullable(acquireRetryAttempts).ifPresent(dataSource::setAcquireRetryAttempts);
   }
 
@@ -88,7 +92,8 @@ public class C3p0DataSourceConfiguration {
    * @param acquireRetryDelay the new acquire retry delay
    */
   @Autowired
-  public void setAcquireRetryDelay(@Value("${c3p0.acquireRetryDelay:#{null}}") final Integer acquireRetryDelay) {
+  public void setAcquireRetryDelay(
+      @Value("${c3p0.acquireRetryDelay:#{null}}") final Integer acquireRetryDelay) {
     ofNullable(acquireRetryDelay).ifPresent(dataSource::setAcquireRetryDelay);
   }
 
@@ -108,7 +113,8 @@ public class C3p0DataSourceConfiguration {
    * @param driverProperties the new driver properties
    */
   @Autowired
-  public void setDriverProperties(@Value("${jdbc.driverProperties:#{null}}") final Properties driverProperties) {
+  public void setDriverProperties(
+      @Value("${jdbc.driverProperties:#{null}}") final Properties driverProperties) {
     ofNullable(driverProperties).ifPresent(dataSource::setProperties);
   }
 
@@ -118,7 +124,8 @@ public class C3p0DataSourceConfiguration {
    * @param automaticTestTable the new aautomatic test table
    */
   @Autowired
-  public void setAautomaticTestTable(@Value("${c3p0.automaticTestTable:#{null}}") final String automaticTestTable) {
+  public void setAautomaticTestTable(
+      @Value("${c3p0.automaticTestTable:#{null}}") final String automaticTestTable) {
     ofNullable(automaticTestTable).ifPresent(dataSource::setAutomaticTestTable);
   }
 
@@ -129,7 +136,7 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setBreakAfterAcquireFailure(
-    @Value("${c3p0.breakAfterAcquireFailure:#{null}}") final Boolean breakAfterAcquireFailure) {
+      @Value("${c3p0.breakAfterAcquireFailure:#{null}}") final Boolean breakAfterAcquireFailure) {
     ofNullable(breakAfterAcquireFailure).ifPresent(dataSource::setBreakAfterAcquireFailure);
   }
 
@@ -139,7 +146,8 @@ public class C3p0DataSourceConfiguration {
    * @param checkoutTimeout the new checkout timeout
    */
   @Autowired
-  public void setCheckoutTimeout(@Value("${c3p0.checkoutTimeout:#{null}}") final Integer checkoutTimeout) {
+  public void setCheckoutTimeout(
+      @Value("${c3p0.checkoutTimeout:#{null}}") final Integer checkoutTimeout) {
     ofNullable(checkoutTimeout).ifPresent(dataSource::setCheckoutTimeout);
   }
 
@@ -150,8 +158,10 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setConnectionCustomizerClassName(
-    @Value("${c3p0.connectionCustomizerClassName:#{null}}") final String connectionCustomizerClassName) {
-    ofNullable(connectionCustomizerClassName).ifPresent(dataSource::setConnectionCustomizerClassName);
+      @Value("${c3p0.connectionCustomizerClassName:#{null}}")
+          final String connectionCustomizerClassName) {
+    ofNullable(connectionCustomizerClassName)
+        .ifPresent(dataSource::setConnectionCustomizerClassName);
   }
 
   /**
@@ -161,15 +171,20 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setConnectionTesterClassName(
-    @Value("${c3p0.connectionTesterClassName:#{null}}") final String connectionTesterClassName) {
-      ofNullable(connectionTesterClassName).ifPresent(className -> {
-        try {
-          dataSource.setConnectionTesterClassName(className);
-        } catch (PropertyVetoException e) {
-          throw new RuntimeException("Impossible to set C3P0 Data Source connection tester class name '"
-            + connectionTesterClassName + "', see nested exceptions", e);
-        }
-      });
+      @Value("${c3p0.connectionTesterClassName:#{null}}") final String connectionTesterClassName) {
+    ofNullable(connectionTesterClassName)
+        .ifPresent(
+            className -> {
+              try {
+                dataSource.setConnectionTesterClassName(className);
+              } catch (PropertyVetoException e) {
+                throw new RuntimeException(
+                    "Impossible to set C3P0 Data Source connection tester class name '"
+                        + connectionTesterClassName
+                        + "', see nested exceptions",
+                    e);
+              }
+            });
   }
 
   /**
@@ -178,7 +193,8 @@ public class C3p0DataSourceConfiguration {
    * @param idleConnectionTestPeriod the new idle connection test period
    */
   @Autowired
-  public void setIdleConnectionTestPeriod(@Value("${c3p0.idleConnectionTestPeriod:#{null}}") final Integer idleConnectionTestPeriod) {
+  public void setIdleConnectionTestPeriod(
+      @Value("${c3p0.idleConnectionTestPeriod:#{null}}") final Integer idleConnectionTestPeriod) {
     ofNullable(idleConnectionTestPeriod).ifPresent(dataSource::setIdleConnectionTestPeriod);
   }
 
@@ -188,7 +204,8 @@ public class C3p0DataSourceConfiguration {
    * @param initialPoolSize the new initial pool size
    */
   @Autowired
-  public void setInitialPoolSize(@Value("${c3p0.initialPoolSize:#{null}}") final Integer initialPoolSize) {
+  public void setInitialPoolSize(
+      @Value("${c3p0.initialPoolSize:#{null}}") final Integer initialPoolSize) {
     ofNullable(initialPoolSize).ifPresent(dataSource::setInitialPoolSize);
   }
 
@@ -199,7 +216,7 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setMaxAdministrativeTaskTime(
-    @Value("${c3p0.maxAdministrativeTaskTime:#{null}}") final Integer maxAdministrativeTaskTime) {
+      @Value("${c3p0.maxAdministrativeTaskTime:#{null}}") final Integer maxAdministrativeTaskTime) {
     ofNullable(maxAdministrativeTaskTime).ifPresent(dataSource::setMaxAdministrativeTaskTime);
   }
 
@@ -209,7 +226,8 @@ public class C3p0DataSourceConfiguration {
    * @param maxConnectionAge the new max connection age
    */
   @Autowired
-  public void setMaxConnectionAge(@Value("${c3p0.maxConnectionAge:#{null}}") final Integer maxConnectionAge) {
+  public void setMaxConnectionAge(
+      @Value("${c3p0.maxConnectionAge:#{null}}") final Integer maxConnectionAge) {
     ofNullable(maxConnectionAge).ifPresent(dataSource::setMaxConnectionAge);
   }
 
@@ -230,7 +248,8 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setMaxIdleTimeExcessConnections(
-    @Value("${c3p0.maxIdleTimeExcessConnections:#{null}}") final Integer maxIdleTimeExcessConnections) {
+      @Value("${c3p0.maxIdleTimeExcessConnections:#{null}}")
+          final Integer maxIdleTimeExcessConnections) {
     ofNullable(maxIdleTimeExcessConnections).ifPresent(dataSource::setMaxIdleTimeExcessConnections);
   }
 
@@ -250,7 +269,8 @@ public class C3p0DataSourceConfiguration {
    * @param maxStatements the new max statements
    */
   @Autowired
-  public void setMaxStatements(@Value("${c3p0.maxStatements:#{null}}") final Integer maxStatements) {
+  public void setMaxStatements(
+      @Value("${c3p0.maxStatements:#{null}}") final Integer maxStatements) {
     ofNullable(maxStatements).ifPresent(dataSource::setMaxStatements);
   }
 
@@ -261,7 +281,8 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setMaxStatementsPerConnection(
-    @Value("${c3p0.maxStatementsPerConnection:#{null}}") final Integer maxStatementsPerConnection) {
+      @Value("${c3p0.maxStatementsPerConnection:#{null}}")
+          final Integer maxStatementsPerConnection) {
     ofNullable(maxStatementsPerConnection).ifPresent(dataSource::setMaxStatementsPerConnection);
   }
 
@@ -281,7 +302,8 @@ public class C3p0DataSourceConfiguration {
    * @param preferredTestQuery the new preferred test query
    */
   @Autowired
-  public void setPreferredTestQuery(@Value("${c3p0.preferredTestQuery:#{null}}") final String preferredTestQuery) {
+  public void setPreferredTestQuery(
+      @Value("${c3p0.preferredTestQuery:#{null}}") final String preferredTestQuery) {
     ofNullable(preferredTestQuery).ifPresent(dataSource::setPreferredTestQuery);
   }
 
@@ -291,7 +313,8 @@ public class C3p0DataSourceConfiguration {
    * @param propertyCycle the new property cycle
    */
   @Autowired
-  public void setPropertyCycle(@Value("${c3p0.propertyCycle:#{null}}") final Integer propertyCycle) {
+  public void setPropertyCycle(
+      @Value("${c3p0.propertyCycle:#{null}}") final Integer propertyCycle) {
     ofNullable(propertyCycle).ifPresent(dataSource::setPropertyCycle);
   }
 
@@ -301,7 +324,8 @@ public class C3p0DataSourceConfiguration {
    * @param testConnectionOnCheckin the new test connection on checkin
    */
   @Autowired
-  public void setTestConnectionOnCheckin(@Value("${c3p0.testConnectionOnCheckin:#{null}}") final Boolean testConnectionOnCheckin) {
+  public void setTestConnectionOnCheckin(
+      @Value("${c3p0.testConnectionOnCheckin:#{null}}") final Boolean testConnectionOnCheckin) {
     ofNullable(testConnectionOnCheckin).ifPresent(dataSource::setTestConnectionOnCheckin);
   }
 
@@ -312,7 +336,7 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setTestConnectionOnCheckout(
-    @Value("${c3p0.testConnectionOnCheckout:#{null}}") final Boolean testConnectionOnCheckout) {
+      @Value("${c3p0.testConnectionOnCheckout:#{null}}") final Boolean testConnectionOnCheckout) {
     ofNullable(testConnectionOnCheckout).ifPresent(dataSource::setTestConnectionOnCheckout);
   }
 
@@ -323,7 +347,8 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setUnreturnedConnectionTimeout(
-    @Value("${c3p0.unreturnedConnectionTimeout:#{null}}") final Integer unreturnedConnectionTimeout) {
+      @Value("${c3p0.unreturnedConnectionTimeout:#{null}}")
+          final Integer unreturnedConnectionTimeout) {
     ofNullable(unreturnedConnectionTimeout).ifPresent(dataSource::setUnreturnedConnectionTimeout);
   }
 
@@ -334,8 +359,10 @@ public class C3p0DataSourceConfiguration {
    */
   @Autowired
   public void setUsesTraditionalReflectiveProxies(
-    @Value("${c3p0.usesTraditionalReflectiveProxies:#{null}}") final Boolean usesTraditionalReflectiveProxies) {
-    ofNullable(usesTraditionalReflectiveProxies).ifPresent(dataSource::setUsesTraditionalReflectiveProxies);
+      @Value("${c3p0.usesTraditionalReflectiveProxies:#{null}}")
+          final Boolean usesTraditionalReflectiveProxies) {
+    ofNullable(usesTraditionalReflectiveProxies)
+        .ifPresent(dataSource::setUsesTraditionalReflectiveProxies);
   }
 
   @Bean

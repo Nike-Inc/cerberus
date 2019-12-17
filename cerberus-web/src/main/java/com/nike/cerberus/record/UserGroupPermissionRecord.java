@@ -18,96 +18,94 @@ package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
 
-/**
- * POJO for representing a USER_GROUP_PERMISSION record.
- */
+/** POJO for representing a USER_GROUP_PERMISSION record. */
 public class UserGroupPermissionRecord {
 
-    private String id;
+  private String id;
 
-    private String userGroupId;
+  private String userGroupId;
 
-    private String roleId;
+  private String roleId;
 
-    private String sdboxId;
+  private String sdboxId;
 
-    private String createdBy;
+  private String createdBy;
 
-    private String lastUpdatedBy;
+  private String lastUpdatedBy;
 
-    private OffsetDateTime createdTs;
+  private OffsetDateTime createdTs;
 
-    private OffsetDateTime lastUpdatedTs;
+  private OffsetDateTime lastUpdatedTs;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public UserGroupPermissionRecord setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public UserGroupPermissionRecord setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getUserGroupId() {
-        return userGroupId;
-    }
+  public String getUserGroupId() {
+    return userGroupId;
+  }
 
-    public UserGroupPermissionRecord setUserGroupId(String userGroupId) {
-        this.userGroupId = userGroupId;
-        return this;
-    }
+  public UserGroupPermissionRecord setUserGroupId(String userGroupId) {
+    this.userGroupId = userGroupId;
+    return this;
+  }
 
-    public String getRoleId() {
-        return roleId;
-    }
+  public String getRoleId() {
+    return roleId;
+  }
 
-    public UserGroupPermissionRecord setRoleId(String roleId) {
-        this.roleId = roleId;
-        return this;
-    }
+  public UserGroupPermissionRecord setRoleId(String roleId) {
+    this.roleId = roleId;
+    return this;
+  }
 
-    public String getSdboxId() {
-        return sdboxId;
-    }
+  public String getSdboxId() {
+    return sdboxId;
+  }
 
-    public UserGroupPermissionRecord setSdboxId(String sdboxId) {
-        this.sdboxId = sdboxId;
-        return this;
-    }
+  public UserGroupPermissionRecord setSdboxId(String sdboxId) {
+    this.sdboxId = sdboxId;
+    return this;
+  }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+  public String getCreatedBy() {
+    return createdBy;
+  }
 
-    public UserGroupPermissionRecord setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-        return this;
-    }
+  public UserGroupPermissionRecord setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+    return this;
+  }
 
-    public String getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
+  public String getLastUpdatedBy() {
+    return lastUpdatedBy;
+  }
 
-    public UserGroupPermissionRecord setLastUpdatedBy(String lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-        return this;
-    }
+  public UserGroupPermissionRecord setLastUpdatedBy(String lastUpdatedBy) {
+    this.lastUpdatedBy = lastUpdatedBy;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public UserGroupPermissionRecord setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-        return this;
-    }
+  public UserGroupPermissionRecord setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+    return this;
+  }
 
-    public OffsetDateTime getLastUpdatedTs() {
-        return lastUpdatedTs;
-    }
+  public OffsetDateTime getLastUpdatedTs() {
+    return lastUpdatedTs;
+  }
 
-    public UserGroupPermissionRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-        this.lastUpdatedTs = lastUpdatedTs;
-        return this;
-    }
+  public UserGroupPermissionRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+    this.lastUpdatedTs = lastUpdatedTs;
+    return this;
+  }
 }

@@ -4,13 +4,12 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LoggingMetricsService implements MetricsService {
@@ -21,13 +20,12 @@ public class LoggingMetricsService implements MetricsService {
 
     metricRegistry = new MetricRegistry();
 
-    Slf4jReporter
-      .forRegistry(metricRegistry)
-      .outputTo(log)
-      .withLoggingLevel(level)
-      .scheduleOn(Executors.newSingleThreadScheduledExecutor())
-      .build()
-      .start(period, timeUnit);
+    Slf4jReporter.forRegistry(metricRegistry)
+        .outputTo(log)
+        .withLoggingLevel(level)
+        .scheduleOn(Executors.newSingleThreadScheduledExecutor())
+        .build()
+        .start(period, timeUnit);
   }
 
   @Override
@@ -36,18 +34,29 @@ public class LoggingMetricsService implements MetricsService {
   }
 
   @Override
-  public Gauge getOrCreateCallbackGauge(String name, Supplier<Number> supplier, Map<String, String> dimensions) {
-    return metricRegistry.gauge(getMetricNameFromNameAndDimensions(name, dimensions), () -> supplier::get);
+  public Gauge getOrCreateCallbackGauge(
+      String name, Supplier<Number> supplier, Map<String, String> dimensions) {
+    return metricRegistry.gauge(
+        getMetricNameFromNameAndDimensions(name, dimensions), () -> supplier::get);
   }
 
-  private String getMetricNameFromNameAndDimensions(String name, Map<String, String> optionalDimensions) {
+  private String getMetricNameFromNameAndDimensions(
+      String name, Map<String, String> optionalDimensions) {
     var metricNameBuilder = new StringBuilder(name);
     Optional.ofNullable(optionalDimensions)
-      .ifPresent(dimensions -> {
-        metricNameBuilder.append('(');
-        dimensions.forEach((key, value) -> metricNameBuilder.append('[').append(key).append(":").append(value).append(']'));
-        metricNameBuilder.append(')');
-      });
+        .ifPresent(
+            dimensions -> {
+              metricNameBuilder.append('(');
+              dimensions.forEach(
+                  (key, value) ->
+                      metricNameBuilder
+                          .append('[')
+                          .append(key)
+                          .append(":")
+                          .append(value)
+                          .append(']'));
+              metricNameBuilder.append(')');
+            });
     return metricNameBuilder.toString();
   }
 }

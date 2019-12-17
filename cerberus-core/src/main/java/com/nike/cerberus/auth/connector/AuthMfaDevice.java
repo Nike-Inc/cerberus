@@ -16,42 +16,39 @@
 
 package com.nike.cerberus.auth.connector;
 
-/**
- * Represents a MFA device returned by the auth connector.
- */
+/** Represents a MFA device returned by the auth connector. */
 public class AuthMfaDevice {
 
-    private String id;
+  private String id;
 
-    private String name;
+  private String name;
 
-    private boolean requiresTrigger;
+  private boolean requiresTrigger;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public AuthMfaDevice setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public AuthMfaDevice setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public AuthMfaDevice setName(String name) {
-        this.name = name;
-        return this;
-    }
+  public AuthMfaDevice setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-    public boolean getRequiresTrigger() {
-        return requiresTrigger;
-    }
+  public boolean getRequiresTrigger() {
+    return requiresTrigger;
+  }
 
-    public AuthMfaDevice setRequiresTrigger(boolean requiresTrigger) {
-        this.requiresTrigger = requiresTrigger;
-        return this;
-    }
-
+  public AuthMfaDevice setRequiresTrigger(boolean requiresTrigger) {
+    this.requiresTrigger = requiresTrigger;
+    return this;
+  }
 }

@@ -16,24 +16,22 @@
 
 package com.nike.cerberus.domain;
 
-import org.junit.Test;
-
-import java.util.Set;
-
 import static groovy.util.GroovyTestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
+import java.util.Set;
+import org.junit.Test;
+
 public class VaultStyleErrorResponseTest {
 
-    @Test
-    public void test_that_the_builder_adds_all_the_errors() {
-        VaultStyleErrorResponse res = VaultStyleErrorResponse.Builder.create()
-                .withError("error1")
-                .withError("error2")
-                .build();
+  @Test
+  public void test_that_the_builder_adds_all_the_errors() {
+    VaultStyleErrorResponse res =
+        VaultStyleErrorResponse.Builder.create().withError("error1").withError("error2").build();
 
-        assertEquals("The response should have 2 errosr", 2, res.getErrors().size());
-        assertTrue("The response should have the exact 2 errors", res.getErrors().containsAll(Set.of("error1", "error2")));
-    }
-
+    assertEquals("The response should have 2 errosr", 2, res.getErrors().size());
+    assertTrue(
+        "The response should have the exact 2 errors",
+        res.getErrors().containsAll(Set.of("error1", "error2")));
+  }
 }
