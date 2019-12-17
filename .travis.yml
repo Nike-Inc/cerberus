@@ -1,0 +1,19 @@
+language: java
+
+jdk:
+  - openjdk8
+
+after_success:
+  - ./gradlew clean build cerberus-dashboard:builDashboard generateAggregatedReports coveralls
+
+deploy:
+  skip_cleanup: true
+  provider: releases
+  api_key:
+    secure: c4P+wrD6ABsSsl7sg7hW686igl5VXiJ6IMoHIh3BbpVA7BKnVlHCV4mHOSW0EZ7y2dOnNH+W8V6P3Yu39Pq3JybL3tZMc6KOZIxq2/7r47cHNakimhb2WhYPf8tly7xIYx31DlDc0OFJsasW9uB++utE72CYIGIMfFkkPw+glfufNkdaQX1Qg3rJ2yzqNPZt5l8cuzQkYfJKheddnN19DcxgQeci/jWYP2dLYfis8lowTNI1CjREf3iE87+ouTMpWjFAOoU9ojQSl6k2c3OKWN81cqPGqM/cgMyR0q/D/AnE1CcooMPqkxCPJP/WeB7NNUgajxWVdl5kdKKO1z86rA3fdFmHLdGxbcus1zZXrlJhRdkdI8TfLOEXXsleCHOpJlKn+ks9E/E8tPLL83AiClhMPtX8FWFzMpuMTSVMXWq3MmC7Uz6UbEa+94dv58abxskX83/k1z7/7y9vOTId9weEYJ+kacuFZDnnGFk7g62tT9lziWVZLSOUkLl2GGbH01g6xD1y5CVZRQZGSZVsChywGvCBJ/ntzngXjYnw1fh5b+789BoAiOC3nphLITZoXSNfBb8M/6ChjVIY1cjKqHyTzWIjB64vsPkMs3g2K9vPAWQGVma/dsNkNBZ6tBd4D5B8hrUsWifyaIjW0r0lEfSBfPKiy6xnwGivvHuqHSM=
+  file: build/libs/cms.jar
+  on:
+    repo: Nike-Inc/cerberus-management-service
+    tags: true
+
+#    uses: docker://cerberusoss/cerberus-build-image:latest

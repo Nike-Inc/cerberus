@@ -190,7 +190,7 @@ public class ApplicationConfiguration {
    * TODO, we can probably delete this, but the API tests from Highlander check for this.
    */
   @Bean
-  public OncePerRequestFilter AddXRefreshTokenHeaderFilter() {
+  public OncePerRequestFilter addXRefreshTokenHeaderFilter() {
     return new LambdaFilter((request, response) ->
       response.addHeader("X-Refresh-Token", Boolean.FALSE.toString()));
   }

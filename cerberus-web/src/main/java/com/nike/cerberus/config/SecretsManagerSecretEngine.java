@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class SecretsManagerSecretEngine implements SecretEngine {
             Gson gson = new Gson();
             Type type = new TypeToken<Map<String, String>>(){}.getType();
             Map<String, String> myMap = gson.fromJson(secret, type);
-            binarySecret = myMap.get(secretKey).getBytes();
+            binarySecret = myMap.get(secretKey).getBytes(StandardCharsets.UTF_8);
         } else {
             binarySecret = getSecretValueResult.getSecretBinary().array();
         }

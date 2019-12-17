@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+            file name: spring-security-config-5.2.1.RELEASE.jar
+            According to https://pivotal.io/security/cve-2018-1258
+            Users leveraging Spring Framework 5.x should avoid using Spring Framework 5.0.5.RELEASE.
+            Updating to Spring Security 5.0.5.RELEASE+ or Spring Boot 2.0.2.RELEASE+ brings in Spring Framework 5.0.6.RELEASE+ transitively.
+            However, users should be certain that other dependency management mechanisms are also updated to use Spring Framework 5.0.6.RELEASE or newer.
+        ]]></notes>
+        <sha1>8f49e12035d0357b5f35e254334ea06d4585cf01</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: spring-security-web-5.2.1.RELEASE.jar
+            According to https://pivotal.io/security/cve-2018-1258
+            Users leveraging Spring Framework 5.x should avoid using Spring Framework 5.0.5.RELEASE.
+            Updating to Spring Security 5.0.5.RELEASE+ or Spring Boot 2.0.2.RELEASE+ brings in Spring Framework 5.0.6.RELEASE+ transitively.
+            However, users should be certain that other dependency management mechanisms are also updated to use Spring Framework 5.0.6.RELEASE or newer.
+        ]]></notes>
+        <sha1>9e43c2d8d2dffc60bfba8ac95a106d30e9593106</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: spring-security-core-5.2.1.RELEASE.jar
+            According to https://pivotal.io/security/cve-2018-1258
+            Users leveraging Spring Framework 5.x should avoid using Spring Framework 5.0.5.RELEASE.
+            Updating to Spring Security 5.0.5.RELEASE+ or Spring Boot 2.0.2.RELEASE+ brings in Spring Framework 5.0.6.RELEASE+ transitively.
+            However, users should be certain that other dependency management mechanisms are also updated to use Spring Framework 5.0.6.RELEASE or newer.
+        ]]></notes>
+        <sha1>f1265ecdd4636a2038768c2ab9da4b79961a3465</sha1>
+        <cve>CVE-2018-1258</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            The Groovy LDAP API in Apache allows attackers to conduct LDAP entry poisoning attacks by leveraging setting returnObjFlag to true for all search methods.
+            We are NOT doing LDAP with groovy.
+         ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.groovy/groovy.*$</packageUrl>
+        <cve>CVE-2016-6497</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+           file name: org.apache.sling.javax.activation-0.1.0.jar
+           io.rest-assured:rest-assured:4.1.2 is bringing in some dep that is vulnerable to xss, this shouldn't be relevant to us.
+        ]]></notes>
+        <sha1>606ef790ce33d9cd6b892c47cc2a9508efc57698</sha1>
+        <cve>CVE-2016-5394</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+           file name: org.apache.sling.javax.activation-0.1.0.jar
+           io.rest-assured:rest-assured:4.1.2 is bringing in some dep that is vulnerable to xss, this shouldn't be relevant to us.
+        ]]></notes>
+        <sha1>606ef790ce33d9cd6b892c47cc2a9508efc57698</sha1>
+        <cve>CVE-2016-6798</cve>
+    </suppress>
+</suppressions>

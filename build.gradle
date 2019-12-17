@@ -1,3 +1,5 @@
+import com.github.spotbugs.SpotBugsTask
+
 buildscript {
   ext {
     versions = [
@@ -5,20 +7,54 @@ buildscript {
       resilience4j: '1.1.0',
       awsSdkVersion: '1.11.688',
       kork: '6.22.1',
+      guava: '28.1-jre',
       springBoot: springBootVersion
     ]
+  }
+
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+
+  dependencies {
+    classpath "org.owasp:dependency-check-gradle:5.2.4"
+    classpath "com.github.spotbugs:spotbugs-gradle-plugin:3.0.0"
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.26.1"
   }
 }
 
 plugins {
   id "io.spring.dependency-management" version "1.0.8.RELEASE"
+  id "com.github.kt3k.coveralls" version "2.9.0"
 }
+
+apply from: 'gradle/owasp-dependency-check.gradle'
 
 allprojects {
   apply plugin: 'java'
   apply plugin: 'groovy'
   apply plugin: 'java-library'
   apply plugin: 'jacoco'
+  apply plugin: "com.diffplug.gradle.spotless"
+
+  apply plugin: 'com.github.spotbugs'
+
+  dependencies {
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.7.1'
+  }
+
+  spotbugs {
+    toolVersion = '3.1.8'
+    sourceSets = [ sourceSets.main ]
+  }
+
+  // To generate an HTML report instead of XML
+  tasks.withType(SpotBugsTask) {
+    reports.xml.enabled = false
+    reports.html.enabled = true
+  }
 
   repositories {
     jcenter()
@@ -90,7 +126,7 @@ subprojects {
   }
 }
 
-task aggregatedjacocoReport(type: JacocoReport) {
+task aggregatedJacocoReport(type: JacocoReport) {
   dependsOn subprojects.test
 
   additionalSourceDirs.from files(subprojects.sourceSets.main.allSource.srcDirs)
@@ -140,6 +176,15 @@ task aggregatedJunitHtml(type: TestReport) {
   reportOn subprojects*.test
 }
 
-task generateAggregatedReports(dependsOn: [ aggregatedJunitXml, aggregatedJunitHtml, aggregatedjacocoReport ]) {}
+task generateAggregatedReports(dependsOn: [
+  aggregatedJunitXml,
+  aggregatedJunitHtml,
+  aggregatedJacocoReport,
+  dependencyCheckAggregate
+]) {
+  doLast {
+    println "Finished generating aggregated reports"
+  }
+}
 
 defaultTasks ':cerberus-web:bootRun'
