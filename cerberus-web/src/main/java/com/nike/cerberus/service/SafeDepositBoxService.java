@@ -591,7 +591,7 @@ public class SafeDepositBoxService {
         safeDepositBoxV2.setUserGroupPermissions(safeDepositBoxV1.getUserGroupPermissions());
         safeDepositBoxV2.setIamPrincipalPermissions(safeDepositBoxV1.getIamRolePermissions().stream()
                 .map(iamRolePermission -> new IamPrincipalPermission()
-                        .withIamPrincipalArn(String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+                        .withIamPrincipalArn(String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
                                 iamRolePermission.getAccountId(), iamRolePermission.getIamRoleName()))
                         .withRoleId(iamRolePermission.getRoleId()))
                 .collect(Collectors.toSet()));

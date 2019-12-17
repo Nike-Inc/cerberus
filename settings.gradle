@@ -10,7 +10,11 @@
 rootProject.name = 'cerberus'
 
 include 'cerberus-api-tests'
+include 'cerberus-auth-connector-okta'
+include 'cerberus-auth-connector-onelogin'
+include 'cerberus-core'
 include 'cerberus-dashboard'
+include 'cerberus-domain'
 include 'cerberus-web'
 
 def setBuildFile(project) {

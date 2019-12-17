@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +71,7 @@ public class KmsService {
     private final DateTimeSupplier dateTimeSupplier;
     private final AwsIamRoleArnParser awsIamRoleArnParser;
     private final Slugger slugger;
+    private final BuildProperties buildProperties;
 
     private final String environmentName;
     private final Integer kmsKeyPolicyValidationInterval;
@@ -83,7 +85,8 @@ public class KmsService {
                       AwsIamRoleArnParser awsIamRoleArnParser,
                       @Value("${cerberus.kms.policy.validation.interval.millis:300000}") int kmsKeyPolicyValidationInterval,
                       @Value("${cerberus.environmentName}") String environmentName,
-                      Slugger slugger) {
+                      Slugger slugger,
+                      BuildProperties buildProperties) {
 
         this.awsIamRoleDao = awsIamRoleDao;
         this.uuidSupplier = uuidSupplier;
@@ -94,6 +97,7 @@ public class KmsService {
         this.kmsKeyPolicyValidationInterval = kmsKeyPolicyValidationInterval;
         this.environmentName = environmentName;
         this.slugger = slugger;
+        this.buildProperties = buildProperties;
     }
 
     /**
@@ -157,6 +161,7 @@ public class KmsService {
                 .withDescription("Key used by Cerberus " + environmentName + " for IAM role authentication. " + iamPrincipalArn)
                 .withPolicy(policy)
                 .withTags(
+                    createTag("created_by", buildProperties.getArtifact() + "_" + buildProperties.getVersion()),
                     createTag("created_for", "cerberus_auth"),
                     createTag("auth_principal", iamPrincipalArn),
                     createTag("cerberus_env", environmentName)

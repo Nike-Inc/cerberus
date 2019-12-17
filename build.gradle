@@ -1,12 +1,145 @@
-allprojects {
-  apply plugin: 'java'
-  apply plugin: 'maven'
-}
-
-test {
-  testLogging {
-    events "passed", "skipped", "failed"
+buildscript {
+  ext {
+    versions = [
+      lombok: '1.18.10',
+      resilience4j: '1.1.0',
+      awsSdkVersion: '1.11.688',
+      kork: '6.22.1',
+      springBoot: springBootVersion
+    ]
   }
 }
+
+plugins {
+  id "io.spring.dependency-management" version "1.0.8.RELEASE"
+}
+
+allprojects {
+  apply plugin: 'java'
+  apply plugin: 'groovy'
+  apply plugin: 'java-library'
+  apply plugin: 'jacoco'
+
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+
+  jacoco {
+    toolVersion = "0.8.5"
+  }
+}
+
+subprojects {
+  apply plugin: 'io.spring.dependency-management'
+
+  sourceCompatibility = '11'
+
+  sourceSets {
+    integrationTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/integration-test/java')
+        srcDir file('src/integration-test/groovy')
+      }
+      resources.srcDir file('src/integration-test/resources')
+    }
+  }
+
+  configurations {
+    integrationTestCompile.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
+  }
+
+  //noinspection GroovyAssignabilityCheck
+  task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+  }
+
+  dependencyManagement {
+    imports {
+      mavenBom("org.springframework.boot:spring-boot-dependencies:${versions.springBoot}")
+    }
+  }
+
+  dependencies {
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${versions.lombok}"
+    annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+
+    // common test deps
+    testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
+    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testImplementation 'junit:junit:4.12'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testImplementation 'com.openpojo:openpojo:0.8.13'
+  }
+
+  test {
+    testLogging {
+      events "passed", "skipped", "failed"
+    }
+  }
+
+  integrationTest {
+    testLogging {
+      showStandardStreams = true
+    }
+  }
+}
+
+task aggregatedjacocoReport(type: JacocoReport) {
+  dependsOn subprojects.test
+
+  additionalSourceDirs.from files(subprojects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories.from files(subprojects.sourceSets.main.allSource.srcDirs)
+  classDirectories.from files(subprojects.sourceSets.main.output)
+  executionData.from project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+  reports {
+    xml.enabled true
+    csv.enabled false
+    html.enabled true
+  }
+
+  afterEvaluate {
+    classDirectories.setFrom(files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: 'com/nike/cerberus/api/**') // exclude the api test code
+    }))
+  }
+}
+
+configurations {
+  antJUnit
+}
+
+dependencies {
+  antJUnit 'org.apache.ant:ant-junit:1.9.7'
+}
+
+// Compile all the test results into a single one.
+task aggregatedJunitXml {
+  ant.taskdef(name: 'junitreport', classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator', classpath: configurations.antJUnit.asPath)
+  dependsOn subprojects*.test
+  doFirst {
+    mkdir "$buildDir/test-results"
+    ant.junitreport(todir: "$buildDir/test-results") {
+      subprojects.each {
+        if (it.testResultsDir.exists()) {
+          fileset(dir: it.testResultsDir)
+        }
+      }
+    }
+  }
+}
+
+task aggregatedJunitHtml(type: TestReport) {
+  destinationDir = file("$buildDir/reports/allTests")
+  // Include the results from the `test` task in all sub projects
+  reportOn subprojects*.test
+}
+
+task generateAggregatedReports(dependsOn: [ aggregatedJunitXml, aggregatedJunitHtml, aggregatedjacocoReport ]) {}
 
 defaultTasks ':cerberus-web:bootRun'

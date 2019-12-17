@@ -2,11 +2,11 @@ package com.nike.cerberus.controller.authentication;
 
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.domain.DomainConstants;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.service.AuthenticationService;
 import com.nike.cerberus.service.EventProcessorService;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -39,7 +39,7 @@ public class AwsIamKmsAuthV1Controller {
 
   @RequestMapping(method = POST, consumes = APPLICATION_JSON_VALUE)
   public EncryptedAuthDataWrapper authenticate(@RequestBody IamRoleCredentials request) {
-    String iamPrincipalArn = String.format(AwsIamRoleArnParser.AWS_IAM_ROLE_ARN_TEMPLATE,
+    String iamPrincipalArn = String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
       request.getAccountId(),
       request.getRoleName());
 

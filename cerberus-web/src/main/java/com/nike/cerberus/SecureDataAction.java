@@ -46,7 +46,7 @@ public enum SecureDataAction {
 
     public static SecureDataAction fromString(String actionAsString) {
         return Arrays.stream(values())
-                .filter(e -> e.name().equals(actionAsString))
+                .filter(e -> e.name().equals(actionAsString.toUpperCase()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException(String.format("The action: %s is not valid. Valid actions: %s",
                   actionAsString, Arrays.stream(values()).map(Enum::name).collect(Collectors.joining(", ")))));

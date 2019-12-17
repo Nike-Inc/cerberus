@@ -1,0 +1,19 @@
+dependencies {
+  api project(":cerberus-domain")
+  api 'org.springframework.boot:spring-boot-starter-web'
+
+  // Error management
+  api 'com.nike.backstopper:backstopper-spring-web-mvc:0.12.0'
+
+  // Metrics
+  api 'io.dropwizard.metrics:metrics-core:4.1.1'
+
+  // Misc
+  api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
+  api "com.squareup.okhttp3:okhttp:4.2.2"
+  api 'com.github.ben-manes.caffeine:caffeine:2.8.0'
+
+  // TODO jav 8 -> java 11 error, verify and document why this is required
+  api "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+  api "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+}

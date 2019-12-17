@@ -6,9 +6,7 @@ repositories {
 }
 
 dependencies {
-  testRuntime project(":cerberus-web")
-
-  testCompile group: 'org.testng', name: 'testng', version: '6.11'
+  integrationTestCompile group: 'org.testng', name: 'testng', version: '6.11'
 
   compile 'junit:junit:4.12'
   compile 'org.slf4j:slf4j-api:1.7.21'
@@ -29,7 +27,7 @@ dependencies {
   implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 }
 
-test {
+integrationTest {
   useTestNG()
   testLogging {
     showStandardStreams = true

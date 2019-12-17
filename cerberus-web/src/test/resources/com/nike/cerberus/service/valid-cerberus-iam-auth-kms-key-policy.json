@@ -1,0 +1,66 @@
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"Root User Has All Actions",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:root"
+      },
+      "Action":[
+        "kms:*"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"Admin Role Has All Actions",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:role/admin"
+      },
+      "Action":[
+        "kms:*"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"CMS Role Key Access",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1111111111:role/cms-iam-role"
+      },
+      "Action":[
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncryptFrom",
+        "kms:ReEncryptTo",
+        "kms:GenerateDataKey",
+        "kms:GenerateDataKeyWithoutPlaintext",
+        "kms:GenerateRandom",
+        "kms:DescribeKey",
+        "kms:ScheduleKeyDeletion",
+        "kms:CancelKeyDeletion"
+      ],
+      "Resource":[
+        "*"
+      ]
+    },
+    {
+      "Sid":"Target IAM Role Has Decrypt Action",
+      "Effect":"Allow",
+      "Principal":{
+        "AWS":"arn:aws:iam::1234567890:role/cerberus-consumer"
+      },
+      "Action":[
+        "kms:Decrypt"
+      ],
+      "Resource":[
+        "*"
+      ]
+    }
+  ]
+}
