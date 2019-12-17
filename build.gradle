@@ -14,19 +14,26 @@ plugins {
   id "io.spring.dependency-management" version "1.0.8.RELEASE"
 }
 
-subprojects {
+allprojects {
   apply plugin: 'java'
   apply plugin: 'groovy'
-  apply plugin: 'jacoco'
   apply plugin: 'java-library'
-  apply plugin: 'io.spring.dependency-management'
-
-  sourceCompatibility = '11'
+  apply plugin: 'jacoco'
 
   repositories {
     jcenter()
     mavenCentral()
   }
+
+  jacoco {
+    toolVersion = "0.8.5"
+  }
+}
+
+subprojects {
+  apply plugin: 'io.spring.dependency-management'
+
+  sourceCompatibility = '11'
 
   sourceSets {
     integrationTest {
@@ -70,27 +77,6 @@ subprojects {
     testImplementation 'com.openpojo:openpojo:0.8.13'
   }
 
-  jacoco {
-    toolVersion = "0.8.5"
-  }
-
-  jacocoTestReport {
-    reports {
-      xml.enabled false
-      csv.enabled false
-      html.destination file("${buildDir}/jacocoHtml")
-    }
-
-    // needed for report - if you use source sets it'll bring in all deps into the report
-    def classTree = fileTree(dir: 'build/classes/java/main', include: 'com/nike/cerberus/**')
-    // maybe omit classes from the report
-    classTree.exclude '**/*App.class'
-    classDirectories.from = classTree
-
-    // needed for source highlight
-    sourceDirectories.from = files(sourceSets.main.allSource.srcDirs)
-  }
-
   test {
     testLogging {
       events "passed", "skipped", "failed"
@@ -103,5 +89,57 @@ subprojects {
     }
   }
 }
+
+task aggregatedjacocoReport(type: JacocoReport) {
+  dependsOn subprojects.test
+
+  additionalSourceDirs.from files(subprojects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories.from files(subprojects.sourceSets.main.allSource.srcDirs)
+  classDirectories.from files(subprojects.sourceSets.main.output)
+  executionData.from project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+  reports {
+    xml.enabled true
+    csv.enabled false
+    html.enabled true
+  }
+
+  afterEvaluate {
+    classDirectories.setFrom(files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: 'com/nike/cerberus/api/**') // exclude the api test code
+    }))
+  }
+}
+
+configurations {
+  antJUnit
+}
+
+dependencies {
+  antJUnit 'org.apache.ant:ant-junit:1.9.7'
+}
+
+// Compile all the test results into a single one.
+task aggregatedJunitXml {
+  ant.taskdef(name: 'junitreport', classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator', classpath: configurations.antJUnit.asPath)
+  dependsOn subprojects*.test
+  doFirst {
+    mkdir "$buildDir/test-results"
+    ant.junitreport(todir: "$buildDir/test-results") {
+      subprojects.each {
+        if (it.testResultsDir.exists()) {
+          fileset(dir: it.testResultsDir)
+        }
+      }
+    }
+  }
+}
+
+task aggregatedJunitHtml(type: TestReport) {
+  destinationDir = file("$buildDir/reports/allTests")
+  // Include the results from the `test` task in all sub projects
+  reportOn subprojects*.test
+}
+
+task generateAggregatedReports(dependsOn: [ aggregatedJunitXml, aggregatedJunitHtml, aggregatedjacocoReport ]) {}
 
 defaultTasks ':cerberus-web:bootRun'

@@ -71,7 +71,7 @@ You can start it with a remote debugger
 
 You must build the dashboard once and after you make changes
 
-`./gradlew cerberus-web:bootRun cerberus-dashboard:buildDashboard`
+`./gradlew cerberus-dashboard:buildDashboard cerberus-web:bootRun`
 
 We have also including 2 convenience scripts that are nice because they give you pretty colors
 
