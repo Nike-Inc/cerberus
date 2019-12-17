@@ -57,7 +57,7 @@ public class AuditLogProcessor implements EventProcessor {
               ImmutableMap<String, String> flattenedAuditEvent =
                   ImmutableMap.<String, String>builder()
                       .put("event_timestamp", event.getTimestamp().format(ATHENA_DATE_FORMATTER))
-                      .put("principal_name", event.getPrincipalName())
+                      .put("principal_name", event.getPrincipal().toString())
                       .put(
                           "principal_type",
                           cerberusPrincipal
@@ -95,9 +95,9 @@ public class AuditLogProcessor implements EventProcessor {
                               .map(p -> String.valueOf(p.isAdmin()))
                               .orElseGet(() -> String.valueOf(false)))
                       .put("ip_address", event.getIpAddress())
-                      .put("x_forwarded_for", event.getxForwardedFor())
+                      .put("x_forwarded_for", event.getXForwardedFor())
                       .put("client_version", event.getClientVersion())
-                      .put("http_method", event.getMethodAsString())
+                      .put("http_method", event.getMethod())
                       .put("path", event.getPath())
                       .put("action", event.getAction())
                       .put("was_success", String.valueOf(event.isSuccess()))

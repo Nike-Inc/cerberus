@@ -2,9 +2,10 @@ package com.nike.cerberus.event;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
-import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.util.SdbAccessRequest;
+import com.nike.wingtips.Span;
+import com.nike.wingtips.Tracer;
 import java.io.IOException;
 import java.util.Optional;
 import javax.servlet.FilterChain;
@@ -12,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,16 +24,24 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
   private final EventProcessorService eventProcessorService;
   private final SdbAccessRequest sdbAccessRequest;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
+  private final BuildProperties buildProperties;
 
   @Autowired
   public AuditLoggingFilter(
       EventProcessorService eventProcessorService,
       SdbAccessRequest sdbAccessRequest,
-      AuditLoggingFilterDetails auditLoggingFilterDetails) {
+      AuditLoggingFilterDetails auditLoggingFilterDetails,
+      BuildProperties buildProperties) {
 
     this.eventProcessorService = eventProcessorService;
     this.sdbAccessRequest = sdbAccessRequest;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
+    this.buildProperties = buildProperties;
+  }
+
+  private String getTraceId() {
+    Span span = Tracer.getInstance().getCurrentSpan();
+    return span == null ? AuditableEvent.UNKNOWN : span.getTraceId();
   }
 
   @Override
@@ -40,20 +50,37 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     filterChain.doFilter(request, response);
 
-    var principal =
-        Optional.ofNullable(
-            (CerberusPrincipal) SecurityContextHolder.getContext().getAuthentication());
+    // TODO Handle if principal is null or empty
+    String principal;
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    principal = authentication.getName();
+
+    //    if (authentication instanceof CerberusPrincipal) {
+    //      principal = authentication.getName();
+    //    }
+    //    else {
+    //      principal = authentication.getName();
+    ////              auditLoggingFilterDetails.getClassName();
+    //    }
 
     var event =
-        AuditableEvent.Builder.create()
-            .withName("TODO")
-            .withPrincipal(SecurityContextHolder.getContext().getAuthentication())
-            .withMethod(request.getMethod())
-            .withPath(request.getServletPath())
-            .withIpAddress(getXForwardedClientIp(request))
-            .withXForwardedFor(getXForwardedCompleteHeader(request))
-            .withClientVersion(getClientVersion(request))
-            .withOriginatingClass(this.getClass().getSimpleName());
+        AuditableEvent.builder()
+            .metadata(auditLoggingFilterDetails.getMetadata())
+            .name(auditLoggingFilterDetails.getClassName() + " Endpoint Called")
+            .principal(principal)
+            .method(request.getMethod())
+            .statusCode(response.getStatus())
+            .success(auditLoggingFilterDetails.isSuccess())
+            .path(request.getServletPath())
+            .ipAddress(getXForwardedClientIp(request))
+            .xForwardedFor(getXForwardedCompleteHeader(request))
+            .clientVersion(getClientVersion(request))
+            .version(buildProperties.getVersion())
+            .originatingClass(auditLoggingFilterDetails.getClassName())
+            .traceId(getTraceId())
+            .action(auditLoggingFilterDetails.getAction());
+
+    Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(event::sdbNameSlug);
 
     eventProcessorService.ingestEvent(event.build());
   }

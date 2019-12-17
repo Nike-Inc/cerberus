@@ -17,17 +17,15 @@
 package com.nike.cerberus.event.processor;
 
 import com.nike.cerberus.event.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /** Event Processor implementation that logs each event. */
+@Slf4j
 @Component
 @ConditionalOnProperty("cerberus.events.loggingProcessor.enabled")
 public class LoggingEventProcessor implements EventProcessor {
-
-  protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
   @Override
   public void process(Event event) {

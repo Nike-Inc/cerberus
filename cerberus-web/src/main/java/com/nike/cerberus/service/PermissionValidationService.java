@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.service;
 
-import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
 import static com.nike.cerberus.record.RoleRecord.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -26,6 +25,7 @@ import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.dao.PermissionsDao;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.event.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.SdbAccessRequest;
@@ -53,8 +53,8 @@ public class PermissionValidationService {
   private final boolean userGroupsCaseSensitive;
   private final AwsIamRoleArnParser awsIamRoleArnParser;
   private final SafeDepositBoxService safeDepositBoxService;
-  private final EventProcessorService eventProcessorService;
   private final SdbAccessRequest sdbAccessRequest;
+  private final AuditLoggingFilterDetails auditLoggingFilterDetails;
 
   @Autowired
   public PermissionValidationService(
@@ -63,16 +63,16 @@ public class PermissionValidationService {
       @Value(USER_GROUPS_CASE_SENSITIVE) boolean userGroupsCaseSensitive,
       AwsIamRoleArnParser awsIamRoleArnParser,
       SafeDepositBoxService safeDepositBoxService,
-      EventProcessorService eventProcessorService,
-      SdbAccessRequest sdbAccessRequest) {
+      SdbAccessRequest sdbAccessRequest,
+      AuditLoggingFilterDetails auditLoggingFilterDetails) {
 
     this.userGroupPermissionService = userGroupPermissionService;
     this.permissionsDao = permissionsDao;
     this.userGroupsCaseSensitive = userGroupsCaseSensitive;
     this.awsIamRoleArnParser = awsIamRoleArnParser;
     this.safeDepositBoxService = safeDepositBoxService;
-    this.eventProcessorService = eventProcessorService;
     this.sdbAccessRequest = sdbAccessRequest;
+    this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
   /**
@@ -228,6 +228,7 @@ public class PermissionValidationService {
             .orElseThrow(() -> new RuntimeException("Failed to get request from context"));
 
     var requestPath = request.getServletPath();
+    auditLoggingFilterDetails.setClassName(getClass().getSimpleName());
 
     List.of("/v1/secret", "/v1/sdb-secret-version-paths", "/v1/secure-file").stream()
         .filter(requestPath::startsWith)
@@ -240,11 +241,10 @@ public class PermissionValidationService {
     parseRequestPathInfo(requestPath);
 
     if (isBlank(sdbAccessRequest.getCategory()) || isBlank(sdbAccessRequest.getSdbSlug())) {
-      eventProcessorService.ingestEvent(
-          createBaseAuditableEvent(getClass().getSimpleName())
-              .withAction("Required path params missing")
-              .withSuccess(false)
-              .build());
+
+      auditLoggingFilterDetails.setAction("Required path params missing");
+      auditLoggingFilterDetails.setSuccess(false);
+
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
           .withExceptionMessage("Request path is invalid.")
@@ -261,11 +261,10 @@ public class PermissionValidationService {
             .getSafeDepositBoxIdByPath(sdbBasePath)
             .orElseThrow(
                 () -> {
-                  eventProcessorService.ingestEvent(
-                      createBaseAuditableEvent(getClass().getSimpleName())
-                          .withAction("A requests was made for an SDB that did not exist")
-                          .withSuccess(false)
-                          .build());
+                  auditLoggingFilterDetails.setAction(
+                      "A request was made for an SDB that did not exist");
+                  auditLoggingFilterDetails.setSuccess(false);
+
                   return ApiException.newBuilder()
                       .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
                       .withExceptionMessage(
@@ -274,11 +273,10 @@ public class PermissionValidationService {
                 });
 
     if (!doesPrincipalHavePermissionForSdb(principal, sdbId, secureDataAction)) {
-      eventProcessorService.ingestEvent(
-          createBaseAuditableEvent(getClass().getSimpleName())
-              .withAction("Permission was not granted for principal")
-              .withSuccess(false)
-              .build());
+
+      auditLoggingFilterDetails.setAction("Permission was not granted for principal");
+      auditLoggingFilterDetails.setSuccess(false);
+
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.ACCESS_DENIED)
           .withExceptionMessage(
