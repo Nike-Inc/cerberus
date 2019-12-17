@@ -97,15 +97,15 @@ public class AuthTokenService {
 
   private CerberusAuthToken getCerberusAuthTokenFromRecord(
       String token, AuthTokenRecord tokenRecord) {
-    return CerberusAuthToken.Builder.create()
-        .withToken(token)
-        .withCreated(tokenRecord.getCreatedTs())
-        .withExpires(tokenRecord.getExpiresTs())
-        .withPrincipal(tokenRecord.getPrincipal())
-        .withPrincipalType(PrincipalType.fromName(tokenRecord.getPrincipalType()))
-        .withIsAdmin(tokenRecord.getIsAdmin())
-        .withGroups(tokenRecord.getGroups())
-        .withRefreshCount(tokenRecord.getRefreshCount())
+    return CerberusAuthToken.builder()
+        .token(token)
+        .created(tokenRecord.getCreatedTs())
+        .expires(tokenRecord.getExpiresTs())
+        .principal(tokenRecord.getPrincipal())
+        .principalType(PrincipalType.fromName(tokenRecord.getPrincipalType()))
+        .isAdmin(tokenRecord.getIsAdmin())
+        .groups(tokenRecord.getGroups())
+        .refreshCount(tokenRecord.getRefreshCount())
         .build();
   }
 

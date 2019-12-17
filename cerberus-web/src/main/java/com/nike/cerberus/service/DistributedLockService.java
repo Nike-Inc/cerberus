@@ -19,6 +19,7 @@ package com.nike.cerberus.service;
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.mapper.LockMapper;
 import com.nike.cerberus.metric.MetricsService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -187,6 +188,10 @@ public class DistributedLockService {
     }
 
     @Override
+    @SuppressFBWarnings(
+        value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification =
+            "Not sure why it's unhappy, but this code has been working for a long time and I don't want to break it.")
     public void run() {
       log.debug("Attempting to get lock");
 

@@ -406,12 +406,12 @@ public class AuthenticationServiceTest {
     Integer curCount = MAX_LIMIT - 1;
 
     CerberusAuthToken authToken =
-        CerberusAuthToken.Builder.create()
-            .withPrincipalType(PrincipalType.USER)
-            .withPrincipal("principal")
-            .withGroups("group1,group2")
-            .withRefreshCount(curCount)
-            .withToken(UUID.randomUUID().toString())
+        CerberusAuthToken.builder()
+            .principalType(PrincipalType.USER)
+            .principal("principal")
+            .groups("group1,group2")
+            .refreshCount(curCount)
+            .token(UUID.randomUUID().toString())
             .build();
 
     CerberusPrincipal principal = new CerberusPrincipal(authToken);
@@ -420,14 +420,14 @@ public class AuthenticationServiceTest {
     when(authTokenService.generateToken(
             anyString(), any(PrincipalType.class), anyBoolean(), anyString(), anyInt(), anyInt()))
         .thenReturn(
-            CerberusAuthToken.Builder.create()
-                .withPrincipalType(PrincipalType.USER)
-                .withPrincipal("principal")
-                .withGroups("group1,group2")
-                .withRefreshCount(curCount + 1)
-                .withToken(UUID.randomUUID().toString())
-                .withCreated(now)
-                .withExpires(now.plusHours(1))
+            CerberusAuthToken.builder()
+                .principalType(PrincipalType.USER)
+                .principal("principal")
+                .groups("group1,group2")
+                .refreshCount(curCount + 1)
+                .token(UUID.randomUUID().toString())
+                .created(now)
+                .expires(now.plusHours(1))
                 .build());
 
     AuthResponse response = authenticationService.refreshUserToken(principal);

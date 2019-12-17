@@ -2,11 +2,9 @@ package com.nike.cerberus.event;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
-import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.util.SdbAccessRequest;
 import java.io.IOException;
-import java.util.Optional;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -39,10 +37,6 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     filterChain.doFilter(request, response);
-
-    var principal =
-        Optional.ofNullable(
-            (CerberusPrincipal) SecurityContextHolder.getContext().getAuthentication());
 
     var event =
         AuditableEvent.Builder.create()

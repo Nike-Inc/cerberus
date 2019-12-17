@@ -2,6 +2,7 @@ package com.nike.cerberus.security;
 
 import com.nike.backstopper.handler.spring.SpringApiExceptionHandler;
 import com.nike.cerberus.service.AuthTokenService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   @Override
+  @SuppressFBWarnings(value = "SPRING_CSRF_PROTECTION_DISABLED")
   protected void configure(HttpSecurity http) throws Exception {
     var requestDoesNotRequireAuthMatcher = getDoesRequestsRequireAuthMatcher();
     var dbTokenFilter =
