@@ -16,24 +16,24 @@
 
 package com.nike.cerberus.event.processor;
 
-import com.nike.cerberus.event.Event;
+import com.nike.cerberus.event.AuditableEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-/** Event Processor implementation that logs each event. */
+/** Event listener implementation that logs each event. */
 @Slf4j
 @Component
 @ConditionalOnProperty("cerberus.events.loggingProcessor.enabled")
-public class LoggingEventProcessor implements EventProcessor {
+public class AuditLoggingEventListener implements ApplicationListener<AuditableEvent> {
 
-  @Override
-  public void process(Event event) {
-    log.info(event.getEventAsString());
+  public String getName() {
+    return "audit-logging-event-listener";
   }
 
   @Override
-  public String getName() {
-    return "logging-processor";
+  public void onApplicationEvent(AuditableEvent event) {
+    log.info(event.toString());
   }
 }

@@ -23,10 +23,8 @@ import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.metric.LoggingMetricsService;
 import com.nike.cerberus.metric.MetricsService;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -196,11 +194,6 @@ public class ApplicationConfiguration {
   @Bean
   public AwsCrypto awsCrypto() {
     return new AwsCrypto();
-  }
-
-  @Bean
-  public List<EventProcessor> eventProcessorList(List<EventProcessor> eventProcessors) {
-    return eventProcessors;
   }
 
   /** TODO, we can probably delete this, but the API tests from Highlander check for this. */

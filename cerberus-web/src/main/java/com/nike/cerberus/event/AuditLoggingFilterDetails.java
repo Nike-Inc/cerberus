@@ -11,14 +11,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class AuditLoggingFilterDetails {
 
-  // TODO remove once testing is complete
-  private String metadata = "Routed through AuditLoggingFilter";
-
   private String className;
-
-  private String principalName;
-
   private String action;
-
   private boolean success = true;
 }

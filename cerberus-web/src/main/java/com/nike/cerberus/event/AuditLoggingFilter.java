@@ -2,7 +2,6 @@ package com.nike.cerberus.event;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
-import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
 import com.nike.wingtips.Tracer;
@@ -14,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,27 +21,27 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class AuditLoggingFilter extends OncePerRequestFilter {
 
-  private final EventProcessorService eventProcessorService;
   private final SdbAccessRequest sdbAccessRequest;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
   private final BuildProperties buildProperties;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Autowired
   public AuditLoggingFilter(
-      EventProcessorService eventProcessorService,
       SdbAccessRequest sdbAccessRequest,
       AuditLoggingFilterDetails auditLoggingFilterDetails,
-      BuildProperties buildProperties) {
+      BuildProperties buildProperties,
+      ApplicationEventPublisher applicationEventPublisher) {
 
-    this.eventProcessorService = eventProcessorService;
     this.sdbAccessRequest = sdbAccessRequest;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
     this.buildProperties = buildProperties;
+    this.applicationEventPublisher = applicationEventPublisher;
   }
 
   private String getTraceId() {
     Span span = Tracer.getInstance().getCurrentSpan();
-    return span == null ? AuditableEvent.UNKNOWN : span.getTraceId();
+    return span == null ? AuditableEventContext.UNKNOWN : span.getTraceId();
   }
 
   @Override
@@ -55,17 +55,8 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     principal = authentication.getName();
 
-    //    if (authentication instanceof CerberusPrincipal) {
-    //      principal = authentication.getName();
-    //    }
-    //    else {
-    //      principal = authentication.getName();
-    ////              auditLoggingFilterDetails.getClassName();
-    //    }
-
-    var event =
-        AuditableEvent.builder()
-            .metadata(auditLoggingFilterDetails.getMetadata())
+    var eventContext =
+        AuditableEventContext.builder()
             .name(auditLoggingFilterDetails.getClassName() + " Endpoint Called")
             .principal(principal)
             .method(request.getMethod())
@@ -80,8 +71,10 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
             .traceId(getTraceId())
             .action(auditLoggingFilterDetails.getAction());
 
-    Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(event::sdbNameSlug);
+    Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(eventContext::sdbNameSlug);
 
-    eventProcessorService.ingestEvent(event.build());
+    AuditableEvent event = new AuditableEvent(this, eventContext.build());
+
+    applicationEventPublisher.publishEvent(event);
   }
 }

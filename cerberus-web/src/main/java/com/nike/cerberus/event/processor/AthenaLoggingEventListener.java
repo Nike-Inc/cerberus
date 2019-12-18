@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.event.AuditableEvent;
-import com.nike.cerberus.event.Event;
+import com.nike.cerberus.event.AuditableEventContext;
 import com.nike.cerberus.security.CerberusPrincipal;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,13 +30,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
 
 /**
- * Event Processor that only cares about auditable events and outputs to a special audit log
- * appender in a flat json format that is optimized for use with AWS Athena
+ * Event listener that only cares about auditable events and outputs to a special audit log appender
+ * in a flat json format that is optimized for use with AWS Athena
  */
 @ConditionalOnProperty("cerberus.events.auditLogProcessor.enabled")
-public class AuditLogProcessor implements EventProcessor {
+public class AthenaLoggingEventListener implements ApplicationListener<AuditableEvent> {
 
   protected final Logger auditLogger = LoggerFactory.getLogger(this.getClass());
 
@@ -46,23 +47,29 @@ public class AuditLogProcessor implements EventProcessor {
 
   private final ObjectMapper om = new ObjectMapper();
 
+  public String getName() {
+    return "athena-logging-event-listener";
+  }
+
   @Override
-  public void process(Event originalEvent) {
-    getAuditableEvent(originalEvent)
+  public void onApplicationEvent(AuditableEvent event) {
+    getAuditableEventContext(event)
         .ifPresent(
-            event -> {
+            eventContext -> {
               Optional<CerberusPrincipal> cerberusPrincipal =
-                  event.getPrincipalAsCerberusPrincipal();
+                  eventContext.getPrincipalAsCerberusPrincipal();
 
               ImmutableMap<String, String> flattenedAuditEvent =
                   ImmutableMap.<String, String>builder()
-                      .put("event_timestamp", event.getTimestamp().format(ATHENA_DATE_FORMATTER))
-                      .put("principal_name", event.getPrincipal().toString())
+                      .put(
+                          "event_timestamp",
+                          eventContext.getTimestamp().format(ATHENA_DATE_FORMATTER))
+                      .put("principal_name", eventContext.getPrincipal().toString())
                       .put(
                           "principal_type",
                           cerberusPrincipal
                               .map(p -> cerberusPrincipal.get().getPrincipalType().getName())
-                              .orElse(AuditableEvent.UNKNOWN))
+                              .orElse(AuditableEventContext.UNKNOWN))
                       .put(
                           "principal_token_created",
                           cerberusPrincipal
@@ -94,17 +101,17 @@ public class AuditLogProcessor implements EventProcessor {
                           cerberusPrincipal
                               .map(p -> String.valueOf(p.isAdmin()))
                               .orElseGet(() -> String.valueOf(false)))
-                      .put("ip_address", event.getIpAddress())
-                      .put("x_forwarded_for", event.getXForwardedFor())
-                      .put("client_version", event.getClientVersion())
-                      .put("http_method", event.getMethod())
-                      .put("path", event.getPath())
-                      .put("action", event.getAction())
-                      .put("was_success", String.valueOf(event.isSuccess()))
-                      .put("name", event.getName())
-                      .put("sdb_name_slug", event.getSdbNameSlug())
-                      .put("originating_class", event.getOriginatingClass())
-                      .put("trace_id", event.getTraceId())
+                      .put("ip_address", eventContext.getIpAddress())
+                      .put("x_forwarded_for", eventContext.getXForwardedFor())
+                      .put("client_version", eventContext.getClientVersion())
+                      .put("http_method", eventContext.getMethod())
+                      .put("path", eventContext.getPath())
+                      .put("action", eventContext.getAction())
+                      .put("was_success", String.valueOf(eventContext.isSuccess()))
+                      .put("name", eventContext.getName())
+                      .put("sdb_name_slug", eventContext.getSdbNameSlug())
+                      .put("originating_class", eventContext.getOriginatingClass())
+                      .put("trace_id", eventContext.getTraceId())
                       .build();
 
               try {
@@ -116,12 +123,9 @@ public class AuditLogProcessor implements EventProcessor {
             });
   }
 
-  private Optional<AuditableEvent> getAuditableEvent(Event event) {
-    return event instanceof AuditableEvent ? Optional.of((AuditableEvent) event) : Optional.empty();
-  }
-
-  @Override
-  public String getName() {
-    return "audit-log-processor";
+  private Optional<AuditableEventContext> getAuditableEventContext(AuditableEvent event) {
+    return event.getAuditableEventContext() != null
+        ? Optional.of(event.getAuditableEventContext())
+        : Optional.empty();
   }
 }
