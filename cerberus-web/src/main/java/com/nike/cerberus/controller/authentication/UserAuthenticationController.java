@@ -1,6 +1,5 @@
 package com.nike.cerberus.controller.authentication;
 
-import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -10,9 +9,9 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.event.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
-import com.nike.cerberus.service.EventProcessorService;
 import java.nio.charset.Charset;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -32,13 +31,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserAuthenticationController {
 
   private final AuthenticationService authenticationService;
-  private final EventProcessorService eventProcessorService;
+  private final AuditLoggingFilterDetails auditLoggingFilterDetails;
 
   @Autowired
   public UserAuthenticationController(
-      AuthenticationService authenticationService, EventProcessorService eventProcessorService) {
+      AuthenticationService authenticationService,
+      AuditLoggingFilterDetails auditLoggingFilterDetails) {
     this.authenticationService = authenticationService;
-    this.eventProcessorService = eventProcessorService;
+    this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
   @RequestMapping(value = "/user", method = GET)
@@ -50,16 +50,11 @@ public class UserAuthenticationController {
     try {
       authResponse = authenticationService.authenticate(credentials);
     } catch (ApiException e) {
-      eventProcessorService.ingestEvent(
-          createBaseAuditableEvent(credentials.getUsername())
-              .withAction("failed to authenticate")
-              .withSuccess(false)
-              .build());
+      auditLoggingFilterDetails.setAction("Failed to authenticate");
       throw e;
     }
 
-    eventProcessorService.ingestEvent(
-        createBaseAuditableEvent(credentials.getUsername()).withAction("authenticated").build());
+    auditLoggingFilterDetails.setAction("Authenticated");
 
     return authResponse;
   }

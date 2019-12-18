@@ -1,14 +1,12 @@
 package com.nike.cerberus.controller;
 
-import static com.nike.cerberus.event.AuditUtils.createBaseAuditableEvent;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.event.AuditableEvent;
+import com.nike.cerberus.event.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.PrincipalHasReadPermsForPath;
-import com.nike.cerberus.service.EventProcessorService;
 import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.cerberus.util.SdbAccessRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -23,18 +21,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class GetSecureDataVersionsController {
 
   private final SecureDataVersionService secureDataVersionService;
-  private final EventProcessorService eventProcessorService;
   private final SdbAccessRequest sdbAccessRequest; // Request scoped proxy bean
+  private final AuditLoggingFilterDetails auditLoggingFilterDetails;
 
   @Autowired
   public GetSecureDataVersionsController(
       SecureDataVersionService secureDataVersionService,
-      EventProcessorService eventProcessorService,
-      SdbAccessRequest sdbAccessRequest) {
+      SdbAccessRequest sdbAccessRequest,
+      AuditLoggingFilterDetails auditLoggingFilterDetails) {
 
     this.secureDataVersionService = secureDataVersionService;
-    this.eventProcessorService = eventProcessorService;
     this.sdbAccessRequest = sdbAccessRequest;
+    this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
   @PrincipalHasReadPermsForPath
@@ -52,13 +50,8 @@ public class GetSecureDataVersionsController {
             offset);
 
     if (result.getSecureDataVersionSummaries().isEmpty()) {
-      AuditableEvent auditableEvent =
-          createBaseAuditableEvent(getClass().getSimpleName())
-              .withSuccess(false)
-              .withAction(
-                  "Failed to find versions for secret with path: " + sdbAccessRequest.getPath())
-              .build();
-      eventProcessorService.ingestEvent(auditableEvent);
+      auditLoggingFilterDetails.setAction(
+          "Failed to find versions for secret with path: " + sdbAccessRequest.getPath());
 
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST).build();
     }

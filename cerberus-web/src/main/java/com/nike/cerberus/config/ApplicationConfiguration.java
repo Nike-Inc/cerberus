@@ -23,10 +23,8 @@ import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
-import com.nike.cerberus.event.processor.EventProcessor;
 import com.nike.cerberus.metric.LoggingMetricsService;
 import com.nike.cerberus.metric.MetricsService;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -48,19 +46,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @Configuration
 @ComponentScan({
-  "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config
-  // that is disabled by default and has to be explicitly enabled.
-  "com.nike.cerberus.config",
-  "com.nike.cerberus.jobs",
   "com.netflix.spinnaker.kork.secrets",
-  "com.nike.cerberus.security",
-  "com.nike.cerberus.util",
-  "com.nike.cerberus.service",
+  "com.nike.backstopper", // error management TODO explicitly import the config bean
   "com.nike.cerberus.auth.connector.config",
   "com.nike.cerberus.aws",
-  "com.nike.cerberus.dao",
+  "com.nike.cerberus.config",
   "com.nike.cerberus.controller",
-  "com.nike.backstopper", // error management TODO explicitly import the config bean
+  "com.nike.cerberus.dao",
+  "com.nike.cerberus.event",
+  "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config
+  // that is disabled by default and has to be explicitly enabled.
+  "com.nike.cerberus.jobs",
+  "com.nike.cerberus.security",
+  "com.nike.cerberus.service",
+  "com.nike.cerberus.util",
   "com.nike.wingtips.springboot" // dist tracing TODO explicitly import the config bean
 })
 @EnableAutoConfiguration(
@@ -195,12 +194,6 @@ public class ApplicationConfiguration {
   @Bean
   public AwsCrypto awsCrypto() {
     return new AwsCrypto();
-  }
-
-  @Bean
-  public List<EventProcessor> eventProcessorList(List<? extends EventProcessor> eventProcessors) {
-    // TODO
-    return (List<EventProcessor>) eventProcessors;
   }
 
   /** TODO, we can probably delete this, but the API tests from Highlander check for this. */
