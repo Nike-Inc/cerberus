@@ -6,7 +6,9 @@ import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
 import com.nike.wingtips.Tracer;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,6 +30,8 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
   private final BuildProperties buildProperties;
   private final ApplicationEventPublisher applicationEventPublisher;
+
+  private static final List<String> LOGGING_NOT_TRIGGERED_BLACKLIST = List.of("/dashboard/**");
 
   @Autowired
   public AuditLoggingFilter(
@@ -45,15 +52,24 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
   }
 
   @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    List<RequestMatcher> blackListMatchers =
+        LOGGING_NOT_TRIGGERED_BLACKLIST.stream()
+            .map(AntPathRequestMatcher::new)
+            .collect(Collectors.toList());
+    var blackListMatcher = new OrRequestMatcher(blackListMatchers);
+    return blackListMatcher.matches(request);
+  }
+
+  @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     filterChain.doFilter(request, response);
 
-    // TODO Handle if principal is null or empty
-    String principal;
     var authentication = SecurityContextHolder.getContext().getAuthentication();
-    principal = authentication.getName();
+    String principal =
+        Optional.ofNullable(authentication.getName()).orElse(request.getRemoteUser());
 
     var eventContext =
         AuditableEventContext.builder()
