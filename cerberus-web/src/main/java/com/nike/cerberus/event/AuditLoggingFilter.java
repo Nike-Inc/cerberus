@@ -1,6 +1,7 @@
 package com.nike.cerberus.event;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
+
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
