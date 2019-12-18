@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * This is a port of the C3p0DataSourceProvider from the MyBaits Guice package. There might be a
  * better way to do this in Spring land with the Spring Mybatis package, however... We are doing
- * this to ensure matching behavior when porting CMS from Guice -> Spring Context, as we have battle
+ * this to ensure matching behavior when porting CMS from Guice to Spring Context, as we have battle
  * tested that config.
  *
  * <p>This creates the C3P0 DataSource bean.
