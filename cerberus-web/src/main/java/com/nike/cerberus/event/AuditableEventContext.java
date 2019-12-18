@@ -39,7 +39,7 @@ public class AuditableEventContext {
   private String method;
   private String path;
   private String action;
-  private String name;
+  private String eventName;
   private String originatingClass;
   private String sdbNameSlug;
   @Builder.Default private OffsetDateTime timestamp = OffsetDateTime.now(ZoneId.of("UTC"));
@@ -54,11 +54,26 @@ public class AuditableEventContext {
   }
 
   public String getEventAsString() {
-    return "Event: "
-        + name
+    return eventName
         + ", "
         + "Principal: "
         + getPrincipal().toString()
+        + ", "
+        + "Action: "
+        + '\''
+        + action
+        + "\', "
+        + "Method: "
+        + method
+        + ", "
+        + "Status Code: "
+        + statusCode
+        + ", "
+        + "Was Success: "
+        + success
+        + ", "
+        + "Path: "
+        + path
         + ", "
         + "IP Address: "
         + ipAddress
@@ -72,27 +87,11 @@ public class AuditableEventContext {
         + "Cerberus Version: "
         + version
         + ", "
-        + "Method: "
-        + method
-        + ", "
-        + "Status Code: "
-        + statusCode
-        + ", "
-        + "Path: "
-        + path
-        + ", "
-        + "Action: "
-        + '\''
-        + action
-        + "\', "
         + "Originating Class: "
         + originatingClass
         + ", "
         + "SDB Name Slug: "
         + sdbNameSlug
-        + ", "
-        + "Was Success: "
-        + success
         + ", "
         + "Trace ID: "
         + traceId

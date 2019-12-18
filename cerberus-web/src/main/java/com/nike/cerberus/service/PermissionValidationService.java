@@ -228,7 +228,6 @@ public class PermissionValidationService {
             .orElseThrow(() -> new RuntimeException("Failed to get request from context"));
 
     var requestPath = request.getServletPath();
-    auditLoggingFilterDetails.setClassName(getClass().getSimpleName());
 
     List.of("/v1/secret", "/v1/sdb-secret-version-paths", "/v1/secure-file").stream()
         .filter(requestPath::startsWith)
@@ -241,10 +240,7 @@ public class PermissionValidationService {
     parseRequestPathInfo(requestPath);
 
     if (isBlank(sdbAccessRequest.getCategory()) || isBlank(sdbAccessRequest.getSdbSlug())) {
-
       auditLoggingFilterDetails.setAction("Required path params missing");
-      auditLoggingFilterDetails.setSuccess(false);
-
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
           .withExceptionMessage("Request path is invalid.")
@@ -263,7 +259,6 @@ public class PermissionValidationService {
                 () -> {
                   auditLoggingFilterDetails.setAction(
                       "A request was made for an SDB that did not exist");
-                  auditLoggingFilterDetails.setSuccess(false);
 
                   return ApiException.newBuilder()
                       .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
@@ -273,10 +268,7 @@ public class PermissionValidationService {
                 });
 
     if (!doesPrincipalHavePermissionForSdb(principal, sdbId, secureDataAction)) {
-
       auditLoggingFilterDetails.setAction("Permission was not granted for principal");
-      auditLoggingFilterDetails.setSuccess(false);
-
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.ACCESS_DENIED)
           .withExceptionMessage(

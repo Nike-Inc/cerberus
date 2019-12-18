@@ -43,7 +43,6 @@ public class AwsIamKmsAuthV1Controller {
             DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
             request.getAccountId(),
             request.getRoleName());
-    auditLoggingFilterDetails.setClassName(iamPrincipalArn);
 
     EncryptedAuthDataWrapper authResponse;
     try {
@@ -56,7 +55,6 @@ public class AwsIamKmsAuthV1Controller {
               e.getApiErrors().stream()
                   .map(ApiError::getMessage)
                   .collect(Collectors.joining(","))));
-      auditLoggingFilterDetails.setSuccess(false);
       throw e;
     }
 

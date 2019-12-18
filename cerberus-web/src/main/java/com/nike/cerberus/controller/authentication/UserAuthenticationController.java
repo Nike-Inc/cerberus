@@ -46,14 +46,11 @@ public class UserAuthenticationController {
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
     final UserCredentials credentials = extractCredentials(authHeader);
 
-    auditLoggingFilterDetails.setClassName(credentials.getUsername());
-
     AuthResponse authResponse;
     try {
       authResponse = authenticationService.authenticate(credentials);
     } catch (ApiException e) {
       auditLoggingFilterDetails.setAction("Failed to authenticate");
-      auditLoggingFilterDetails.setSuccess(false);
       throw e;
     }
 

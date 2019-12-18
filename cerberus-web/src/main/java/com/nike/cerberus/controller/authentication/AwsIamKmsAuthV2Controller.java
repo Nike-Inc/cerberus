@@ -37,7 +37,6 @@ public class AwsIamKmsAuthV2Controller {
   @RequestMapping(method = POST)
   public EncryptedAuthDataWrapper authenticate(@RequestBody AwsIamKmsAuthRequest request) {
     EncryptedAuthDataWrapper authResponse;
-    auditLoggingFilterDetails.setClassName(request.getIamPrincipalArn());
 
     try {
       authResponse = authenticationService.authenticate(request);
@@ -49,7 +48,6 @@ public class AwsIamKmsAuthV2Controller {
               e.getApiErrors().stream()
                   .map(ApiError::getMessage)
                   .collect(Collectors.joining(","))));
-      auditLoggingFilterDetails.setSuccess(false);
       throw e;
     }
     auditLoggingFilterDetails.setAction(

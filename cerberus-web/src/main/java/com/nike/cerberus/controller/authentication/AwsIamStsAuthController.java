@@ -50,10 +50,8 @@ public class AwsIamStsAuthController {
           String headerXAmzSecurityToken, // TODO should we make this required = true?
       @RequestHeader(value = HEADER_AUTHORIZATION, required = false) String headerAuthorization) {
 
-    String iamPrincipalArn = null;
+    String iamPrincipalArn;
     AuthTokenResponse authResponse;
-    // TODO this arn will always be null
-    auditLoggingFilterDetails.setClassName(iamPrincipalArn);
 
     try {
       if (headerAuthorization == null
@@ -70,7 +68,6 @@ public class AwsIamStsAuthController {
       authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
     } catch (Exception e) {
       auditLoggingFilterDetails.setAction("Failed to authenticate with AWS IAM STS Auth");
-      auditLoggingFilterDetails.setSuccess(false);
       throw e; // TODO, throw a Backstopper error here
     }
 

@@ -41,8 +41,6 @@ public class GetSecureDataVersionsController {
       @RequestParam(value = "limit", required = false, defaultValue = "100") int limit,
       @RequestParam(value = "offset", required = false, defaultValue = "0") int offset) {
 
-    auditLoggingFilterDetails.setClassName(getClass().getSimpleName());
-
     var result =
         secureDataVersionService.getSecureDataVersionSummariesByPath(
             sdbAccessRequest.getSdbId(),
@@ -54,7 +52,6 @@ public class GetSecureDataVersionsController {
     if (result.getSecureDataVersionSummaries().isEmpty()) {
       auditLoggingFilterDetails.setAction(
           "Failed to find versions for secret with path: " + sdbAccessRequest.getPath());
-      auditLoggingFilterDetails.setSuccess(false);
 
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST).build();
     }

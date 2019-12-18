@@ -2,11 +2,13 @@ package com.nike.cerberus.event;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
+import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
 import com.nike.wingtips.Tracer;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
@@ -33,6 +36,13 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
 
   private static final List<String> LOGGING_NOT_TRIGGERED_BLACKLIST = List.of("/dashboard/**");
 
+  private static final Map<String, String> READABLE_METHOD_ACTIONS =
+      ImmutableMap.of(
+          "GET", "read",
+          "PUT", "wrote",
+          "POST", "wrote",
+          "DELETE", "deleted");
+
   @Autowired
   public AuditLoggingFilter(
       SdbAccessRequest sdbAccessRequest,
@@ -49,6 +59,20 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
   private String getTraceId() {
     Span span = Tracer.getInstance().getCurrentSpan();
     return span == null ? AuditableEventContext.UNKNOWN : span.getTraceId();
+  }
+
+  private boolean isResponseSuccessful(int statusCode) {
+    HttpStatus status = HttpStatus.valueOf(statusCode);
+    return status.is2xxSuccessful();
+  }
+
+  private String getAction(String principal, String method, String path) {
+    if (auditLoggingFilterDetails.getAction() != null
+        && !auditLoggingFilterDetails.getAction().isEmpty()) {
+      return auditLoggingFilterDetails.getAction();
+    }
+    String readableAction = READABLE_METHOD_ACTIONS.getOrDefault(method, method);
+    return principal + " " + readableAction + " " + path;
   }
 
   @Override
@@ -73,19 +97,19 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
 
     var eventContext =
         AuditableEventContext.builder()
-            .name(auditLoggingFilterDetails.getClassName() + " Endpoint Called")
+            .eventName("Audit Logging Filter Event")
             .principal(principal)
+            .action(getAction(principal, request.getMethod(), request.getServletPath()))
             .method(request.getMethod())
             .statusCode(response.getStatus())
-            .success(auditLoggingFilterDetails.isSuccess())
+            .success(isResponseSuccessful(response.getStatus()))
             .path(request.getServletPath())
             .ipAddress(getXForwardedClientIp(request))
             .xForwardedFor(getXForwardedCompleteHeader(request))
             .clientVersion(getClientVersion(request))
             .version(buildProperties.getVersion())
-            .originatingClass(auditLoggingFilterDetails.getClassName())
-            .traceId(getTraceId())
-            .action(auditLoggingFilterDetails.getAction());
+            .originatingClass(this.getClass().getSimpleName())
+            .traceId(getTraceId());
 
     Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(eventContext::sdbNameSlug);
 

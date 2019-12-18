@@ -108,7 +108,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                       .put("path", eventContext.getPath())
                       .put("action", eventContext.getAction())
                       .put("was_success", String.valueOf(eventContext.isSuccess()))
-                      .put("name", eventContext.getName())
+                      .put("name", eventContext.getEventName())
                       .put("sdb_name_slug", eventContext.getSdbNameSlug())
                       .put("originating_class", eventContext.getOriginatingClass())
                       .put("trace_id", eventContext.getTraceId())
