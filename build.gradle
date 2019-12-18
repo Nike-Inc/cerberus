@@ -46,12 +46,13 @@ allprojects {
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.7.1'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
   }
 
   spotbugs {
-    toolVersion = '3.1.8'
+    toolVersion = '3.1.12'
     sourceSets = [ sourceSets.main ]
+    excludeFilter = file("${rootProject.projectDir}/findbugs-supressions.xml")
   }
 
   // To generate an HTML report instead of XML

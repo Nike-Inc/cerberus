@@ -44,12 +44,7 @@ public class DatabaseTokenAuthenticationProcessingFilter
     return Optional.ofNullable(request.getHeader(HEADER_X_CERBERUS_TOKEN))
         .or(() -> Optional.ofNullable(request.getHeader(LEGACY_AUTH_TOKN_HEADER)))
         .flatMap(token -> authTokenService.getCerberusAuthToken(token).map(CerberusPrincipal::new))
-        .orElseThrow(
-            () ->
-                new BadCredentialsException(
-                    AUTH_TOKEN_INVALID
-                        .getMessage())); // Return null because we did not successfully authenticate
-    // the principal.
+        .orElseThrow(() -> new BadCredentialsException(AUTH_TOKEN_INVALID.getMessage()));
   }
 
   @Override
@@ -73,14 +68,19 @@ public class DatabaseTokenAuthenticationProcessingFilter
 
     SecurityContextHolder.clearContext();
 
-    // TODO this seems messy, is there a better way to get the backstopper error?
-    try {
-      var res =
-          springApiExceptionHandler.resolveException(
-              request, response, null, new ApiException(AUTH_TOKEN_INVALID));
-      res.getView().render(res.getModel(), request, response);
-    } catch (Exception e) {
-      throw failed;
-    }
+    var nullableResponse =
+        springApiExceptionHandler.resolveException(
+            request, response, null, new ApiException(AUTH_TOKEN_INVALID));
+
+    Optional.ofNullable(nullableResponse)
+        .flatMap(res -> Optional.ofNullable(res.getView()))
+        .ifPresent(
+            view -> {
+              try {
+                view.render(nullableResponse.getModel(), request, response);
+              } catch (Exception e) {
+                throw new RuntimeException("Failed to render Backstopper error");
+              }
+            });
   }
 }

@@ -106,7 +106,8 @@ public class SecureDataController {
     secureDataService.writeSecret(
         sdbAccessRequest.getSdbId(),
         sdbAccessRequest.getPath(),
-        httpEntity.getBody(),
+        Optional.ofNullable(httpEntity.getBody())
+            .orElseThrow(() -> new RuntimeException("The body must not be null")),
         principal.getName());
   }
 
