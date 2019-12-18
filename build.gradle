@@ -167,6 +167,8 @@ task aggregatedJacocoReport(type: JacocoReport, group: 'Coverage reports') {
 coveralls {
   sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
   jacocoReportPath = "${buildDir}/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml"
+  saveAsFile = true
+  sendToCoveralls = false
 }
 
 configurations {

@@ -10,6 +10,7 @@ script:
 
 after_success:
   - ./gradlew coveralls
+  - curl -F 'json_file=@build/coveralls/report.json' 'https://coveralls.io/api/v1/jobs' # https://github.com/kt3k/coveralls-gradle-plugin/issues/85#issuecomment-475958699
   - test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew bintrayUpload
 
 before_cache:
