@@ -1,8 +1,7 @@
 package com.nike.cerberus.api.util
 
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
-import io.restassured.RestAssured
 import org.apache.commons.lang3.RandomStringUtils
 
 import java.security.NoSuchAlgorithmException

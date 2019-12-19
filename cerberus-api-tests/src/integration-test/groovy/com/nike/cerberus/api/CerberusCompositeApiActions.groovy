@@ -1,7 +1,7 @@
 package com.nike.cerberus.api
 
 import com.amazonaws.util.IOUtils
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
 import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils

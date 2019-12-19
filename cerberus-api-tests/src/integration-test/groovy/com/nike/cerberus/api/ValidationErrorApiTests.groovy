@@ -1,6 +1,6 @@
 package com.nike.cerberus.api
 
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpStatus

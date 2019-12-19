@@ -6,25 +6,21 @@ repositories {
 }
 
 dependencies {
-  integrationTestCompile group: 'org.testng', name: 'testng', version: '6.14.3'
-
-  compile 'junit:junit:4.12'
-  compile 'org.slf4j:slf4j-api:1.7.21'
-  compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.9'
-  compile 'io.rest-assured:rest-assured:4.1.2'
-  compile 'io.rest-assured:json-schema-validator:4.1.2'
-
-  compile "com.google.guava:guava:${versions.guava}"
-
-  compile group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: '1.11.76'
-  compile group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.76'
-  compile group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-  compile group: 'com.thedeanda', name: 'lorem', version: '1.2'
-  compile 'com.fieldju:commons:1.2.0'
-
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-  implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+  integrationTestImplementation project(':cerberus-core').sourceSets.test.output
+  integrationTestImplementation group: 'org.testng', name: 'testng', version: '6.14.3'
+  integrationTestImplementation 'junit:junit:4.12'
+  integrationTestImplementation 'org.slf4j:slf4j-api:1.7.21'
+  integrationTestImplementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.9'
+  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+  integrationTestImplementation 'io.rest-assured:json-schema-validator:4.1.2'
+  integrationTestImplementation "com.google.guava:guava:${versions.guava}"
+  integrationTestImplementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: '1.11.76'
+  integrationTestImplementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.76'
+  integrationTestImplementation group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
+  integrationTestImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+  integrationTestImplementation group: 'com.thedeanda', name: 'lorem', version: '1.2'
+  integrationTestImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+  integrationTestImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 }
 
 integrationTest {
