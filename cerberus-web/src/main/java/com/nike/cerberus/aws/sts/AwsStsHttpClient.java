@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.aws.sts;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -114,11 +113,7 @@ public class AwsStsHttpClient {
     }
   }
 
-  /**
-   * Build the request
-   *
-   * @throws JsonProcessingException
-   */
+  /** Build the request */
   protected Request buildRequest(String region, Map<String, String> headers) {
     Request.Builder requestBuilder =
         new Request.Builder()

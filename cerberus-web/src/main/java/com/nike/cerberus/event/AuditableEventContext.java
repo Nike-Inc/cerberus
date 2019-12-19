@@ -17,6 +17,7 @@
 package com.nike.cerberus.event;
 
 import com.nike.cerberus.security.CerberusPrincipal;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -27,8 +28,9 @@ import lombok.Data;
 /** An event that can be used to describe what a principal is doing with the API */
 @Data
 @Builder
-public class AuditableEventContext {
+public class AuditableEventContext implements Serializable {
 
+  private static final long serialVersionUID = 2906382176272161512L;
   public static final String UNKNOWN = "_unknown";
 
   private Object principal;

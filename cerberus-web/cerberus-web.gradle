@@ -75,6 +75,5 @@ jar {
 }
 
 bootJar {
-  archiveClassifier = ''
-  archiveVersion = ''
+  archiveName = 'cerberus.jar'
 }

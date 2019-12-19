@@ -26,6 +26,7 @@ buildscript {
     classpath "org.owasp:dependency-check-gradle:5.2.4"
     classpath "com.github.spotbugs:spotbugs-gradle-plugin:3.0.0"
     classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.1.2'
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
   }
 }
 
@@ -73,6 +74,8 @@ allprojects {
 
 subprojects {
   apply plugin: 'io.spring.dependency-management'
+
+  apply from: file("${rootProject.projectDir}/gradle/bintray.gradle")
 
   sourceCompatibility = '11'
 
@@ -131,24 +134,41 @@ subprojects {
   }
 }
 
-task aggregatedJacocoReport(type: JacocoReport) {
-  dependsOn subprojects.test
 
-  additionalSourceDirs.from files(subprojects.sourceSets.main.allSource.srcDirs)
-  sourceDirectories.from files(subprojects.sourceSets.main.allSource.srcDirs)
-  classDirectories.from files(subprojects.sourceSets.main.output)
-  executionData.from project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+List<String> blackList = [
+  'cerberus-api-tests'
+]
+def publishedProjects = subprojects.findAll { !blackList.contains(it.path) }
+
+task jacocoMerge(type: JacocoMerge) {
+  publishedProjects.each { subproject ->
+    executionData subproject.tasks.withType(Test)
+  }
+  doFirst {
+    executionData = files(executionData.findAll { it.exists() })
+  }
+}
+
+task aggregatedJacocoReport(type: JacocoReport, group: 'Coverage reports') {
+  description = 'Generates an aggregate report from all subprojects'
+  dependsOn publishedProjects.test, jacocoMerge
+
+  additionalSourceDirs.from = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories.from = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+  classDirectories.from = files(publishedProjects.sourceSets.main.output)
+  executionData jacocoMerge.destinationFile
+
   reports {
-    xml.enabled true
-    csv.enabled false
-    html.enabled true
+    html.enabled = true // human readable
+    xml.enabled = true // required by coveralls
   }
+}
 
-  afterEvaluate {
-    classDirectories.setFrom(files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: 'com/nike/cerberus/api/**') // exclude the api test code
-    }))
-  }
+coveralls {
+  sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
+  jacocoReportPath = "${buildDir}/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml"
+  saveAsFile = true
+  sendToCoveralls = false
 }
 
 configurations {
@@ -164,8 +184,9 @@ task aggregatedJunitXml {
   ant.taskdef(name: 'junitreport', classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator', classpath: configurations.antJUnit.asPath)
   dependsOn subprojects*.test
   doFirst {
-    mkdir "$buildDir/test-results"
-    ant.junitreport(todir: "$buildDir/test-results") {
+    ///reports/jacoco/test/jacocoTestReport.xml
+    mkdir "$buildDir/reports/jacoco/test"
+    ant.junitreport(todir: "$buildDir/reports/jacoco") {
       subprojects.each {
         if (it.testResultsDir.exists()) {
           fileset(dir: it.testResultsDir)
@@ -176,6 +197,7 @@ task aggregatedJunitXml {
 }
 
 task aggregatedJunitHtml(type: TestReport) {
+  dependsOn subprojects*.test
   destinationDir = file("$buildDir/reports/allTests")
   // Include the results from the `test` task in all sub projects
   reportOn subprojects*.test

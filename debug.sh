@@ -13,4 +13,4 @@ JAVA_OPT=""
 JVM_ARG="-Xdebug -Xrunjdwp:transport=dt_socket,address=5006,server=y,suspend=y"
 
 # Run
-java ${JVM_ARG} -jar ${JAVA_OPT} ./cerberus-web/build/libs/cerberus-web.jar "$@"
+java ${JVM_ARG} -jar ${JAVA_OPT} ./cerberus-web/build/libs/cerberus.jar "$@"

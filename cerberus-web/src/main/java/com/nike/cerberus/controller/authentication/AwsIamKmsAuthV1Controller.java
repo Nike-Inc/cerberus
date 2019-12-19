@@ -5,7 +5,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.domain.DomainConstants;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.event.AuditLoggingFilterDetails;
@@ -38,12 +37,6 @@ public class AwsIamKmsAuthV1Controller {
 
   @RequestMapping(method = POST, consumes = APPLICATION_JSON_VALUE)
   public EncryptedAuthDataWrapper authenticate(@RequestBody IamRoleCredentials request) {
-    String iamPrincipalArn =
-        String.format(
-            DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
-            request.getAccountId(),
-            request.getRoleName());
-
     EncryptedAuthDataWrapper authResponse;
     try {
       authResponse = authenticationService.authenticate(request);
