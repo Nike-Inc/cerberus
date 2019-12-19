@@ -214,4 +214,18 @@ task generateAggregatedReports(dependsOn: [
   }
 }
 
+task aggregatedTest {
+  dependsOn subprojects*.test
+}
+
+task aggregatedCheck {
+  dependsOn subprojects*.check
+}
+
+task aggregatedClean {
+  dependsOn subprojects*.clean
+}
+
+defaultTasks ':cerberus-web:bootRun'
+
 defaultTasks ':cerberus-web:bootRun'
