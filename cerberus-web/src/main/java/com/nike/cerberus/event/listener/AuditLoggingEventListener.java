@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.event.processor;
+package com.nike.cerberus.event.listener;
 
 import com.nike.cerberus.event.AuditableEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
 
 /** Event listener implementation that logs each event. */
 @Slf4j
+@ConditionalOnProperty("cerberus.events.auditLoggingEventListener.enabled")
 @Component
-@ConditionalOnProperty("cerberus.events.loggingProcessor.enabled")
 public class AuditLoggingEventListener implements ApplicationListener<AuditableEvent> {
 
   public String getName() {

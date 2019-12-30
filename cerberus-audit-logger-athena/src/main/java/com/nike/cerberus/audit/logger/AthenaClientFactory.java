@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.aws;
+package com.nike.cerberus.audit.logger;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.athena.AmazonAthena;
+import com.amazonaws.services.athena.AmazonAthenaClient;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
-public class S3ClientFactory {
+@Component
+public class AthenaClientFactory {
 
-  private final Map<String, AmazonS3> s3ClientMap = Maps.newConcurrentMap();
+  private final Map<String, AmazonAthena> athenaClientMap = Maps.newConcurrentMap();
 
-  public AmazonS3 getClient(String region) {
-    AmazonS3 client = s3ClientMap.get(region);
+  public AmazonAthena getClient(String region) {
+    AmazonAthena client = athenaClientMap.get(region);
 
     if (client == null) {
-      client = AmazonS3Client.builder().withRegion(region).build();
-      s3ClientMap.put(region, client);
+      client = AmazonAthenaClient.builder().withRegion(region).build();
+      athenaClientMap.put(region, client);
     }
 
     return client;

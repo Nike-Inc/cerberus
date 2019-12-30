@@ -88,8 +88,14 @@ cerberus:
       period: 1
       timeUnit: MINUTES
   events:
-    loggingProcessor.enabled: true
-    auditLogProcessor.enabled: false;
+    athenaLoggingEventListener.enabled: true
+    auditLoggingEventListener.enabled: true;
+
+  loggingService:
+    s3LogUploaderService:
+      bucket: test
+      bucketRegion: us-west-2
+
   jobs:
     initialDelay: 0
     initialDelayTimeUnits: minutes

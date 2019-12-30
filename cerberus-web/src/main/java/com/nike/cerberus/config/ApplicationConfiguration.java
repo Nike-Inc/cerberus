@@ -2,6 +2,7 @@ package com.nike.cerberus.config;
 
 import static com.nike.cerberus.service.EncryptionService.initializeKeyProvider;
 
+import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import com.amazonaws.encryptionsdk.AwsCrypto;
 import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
@@ -38,6 +39,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -48,6 +50,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ComponentScan({
   "com.netflix.spinnaker.kork.secrets",
   "com.nike.backstopper", // error management TODO explicitly import the config bean
+  "com.nike.cerberus.audit.logger",
   "com.nike.cerberus.auth.connector.config",
   "com.nike.cerberus.aws",
   "com.nike.cerberus.config",
@@ -62,6 +65,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
   "com.nike.cerberus.util",
   "com.nike.wingtips.springboot" // dist tracing TODO explicitly import the config bean
 })
+@Import({AuditLogsS3TimeBasedRollingPolicy.class})
 @EnableAutoConfiguration(
     exclude = { // TODO remove this, What does this auto load? Could this auto load bad stuff?
       FlywayAutoConfiguration
