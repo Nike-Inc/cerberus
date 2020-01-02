@@ -19,18 +19,27 @@ package ch.qos.logback.core.rolling;
 import com.nike.cerberus.audit.logger.service.S3LogUploaderService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /** Rolling policy that will copy audit logs to S3 if enabled when the logs roll. */
 @Component
 public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> {
 
+  private final String bucket;
+  private final String bucketRegion;
   private LinkedBlockingQueue<String> logChunkFileS3Queue = new LinkedBlockingQueue<>();
-
   private S3LogUploaderService s3LogUploaderService = null;
 
-  // TODO create constructor and clean this up
+  @Autowired
+  public AuditLogsS3TimeBasedRollingPolicy(
+      @Value("${cerberus.loggingService.s3LogUploaderService.bucket}") String bucket,
+      @Value("${cerberus.loggingService.s3LogUploaderService.bucketRegion}") String bucketRegion) {
+    this.bucket = bucket;
+    this.bucketRegion = bucketRegion;
+  }
 
   @Autowired
   public void setS3LogUploaderService(S3LogUploaderService s3LogUploaderService) {
@@ -40,13 +49,15 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
     }
   }
 
+  private boolean isS3AuditLogCopyingEnabled() {
+    return StringUtils.isNotBlank(bucket) && StringUtils.isNotBlank(bucketRegion);
+  }
+
   @Override
   public void rollover() throws RolloverFailure {
     super.rollover();
 
-    // TODO determine through configuration if s3 audit log copying is enabled
-    if (true) {
-      //        if (ConfigService.getInstance().isS3AuditLogCopyingEnabled()) {
+    if (isS3AuditLogCopyingEnabled()) {
       String filename = timeBasedFileNamingAndTriggeringPolicy.getElapsedPeriodsFileName() + ".gz";
       if (s3LogUploaderService != null) {
         s3LogUploaderService.ingestLog(filename);

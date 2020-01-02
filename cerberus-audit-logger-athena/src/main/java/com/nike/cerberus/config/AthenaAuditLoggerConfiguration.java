@@ -23,9 +23,12 @@ public class AthenaAuditLoggerConfiguration {
   private static final String MESSAGE_PATTERN = "%msg%n";
 
   private final Logger athenaAuditLogger;
+  private final AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent> auditLogsS3TimeBasedRollingPolicy;
 
   @Autowired
-  public AthenaAuditLoggerConfiguration() {
+  public AthenaAuditLoggerConfiguration(
+      AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent> auditLogsS3TimeBasedRollingPolicy) {
+    this.auditLogsS3TimeBasedRollingPolicy = auditLogsS3TimeBasedRollingPolicy;
     LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
     PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
     patternLayoutEncoder.setPattern(MESSAGE_PATTERN);
@@ -49,19 +52,17 @@ public class AthenaAuditLoggerConfiguration {
     fiveMinuteRollingFileAppender.setFile(hostname + "-audit.log");
     fiveMinuteRollingFileAppender.setEncoder(patternLayoutEncoder);
 
-    AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent> auditLogsS3TimeBasedRollingPolicy =
-        new AuditLogsS3TimeBasedRollingPolicy<>();
-    auditLogsS3TimeBasedRollingPolicy.setContext(loggerContext);
-    auditLogsS3TimeBasedRollingPolicy.setFileNamePattern(
+    this.auditLogsS3TimeBasedRollingPolicy.setContext(loggerContext);
+    this.auditLogsS3TimeBasedRollingPolicy.setFileNamePattern(
         hostname + "-audit.%d{yyyy-MM-dd-HH-mm, UTC}.log.gz");
-    auditLogsS3TimeBasedRollingPolicy.setMaxHistory(100);
-    auditLogsS3TimeBasedRollingPolicy.setParent(fiveMinuteRollingFileAppender);
-    auditLogsS3TimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("10gb"));
+    this.auditLogsS3TimeBasedRollingPolicy.setMaxHistory(100);
+    this.auditLogsS3TimeBasedRollingPolicy.setParent(fiveMinuteRollingFileAppender);
+    this.auditLogsS3TimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("10gb"));
 
-    fiveMinuteRollingFileAppender.setTriggeringPolicy(auditLogsS3TimeBasedRollingPolicy);
-    fiveMinuteRollingFileAppender.setRollingPolicy(auditLogsS3TimeBasedRollingPolicy);
+    fiveMinuteRollingFileAppender.setTriggeringPolicy(this.auditLogsS3TimeBasedRollingPolicy);
+    fiveMinuteRollingFileAppender.setRollingPolicy(this.auditLogsS3TimeBasedRollingPolicy);
 
-    auditLogsS3TimeBasedRollingPolicy.start();
+    this.auditLogsS3TimeBasedRollingPolicy.start();
     fiveMinuteRollingFileAppender.start();
 
     var logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ATHENA_AUDIT_LOGGER_NAME);

@@ -93,8 +93,8 @@ cerberus:
 
   loggingService:
     s3LogUploaderService:
-      bucket: test
-      bucketRegion: us-west-2
+      #  bucket: yourS3Bucket
+      #  bucketRegion: yourBucketRegion
 
   jobs:
     initialDelay: 0

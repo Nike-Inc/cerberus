@@ -108,20 +108,25 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                               .orElseGet(() -> String.valueOf(false)))
                       .put("ip_address", eventContext.getIpAddress())
                       .put("x_forwarded_for", eventContext.getXForwardedFor())
+                      .put("cerberus_version", eventContext.getVersion())
                       .put("client_version", eventContext.getClientVersion())
                       .put("http_method", eventContext.getMethod())
+                      .put("status_code", String.valueOf(eventContext.getStatusCode()))
                       .put("path", eventContext.getPath())
                       .put("action", eventContext.getAction())
                       .put("was_success", String.valueOf(eventContext.isSuccess()))
                       .put("name", eventContext.getEventName())
-                      //                      .put("sdb_name_slug", eventContext.getSdbNameSlug())
+                      .put(
+                          "sdb_name_slug",
+                          Optional.ofNullable(eventContext.getSdbNameSlug())
+                              .orElse(AuditableEventContext.UNKNOWN))
                       .put("originating_class", eventContext.getOriginatingClass())
                       .put("trace_id", eventContext.getTraceId())
                       .build();
 
               try {
                 auditLogger.info(om.writeValueAsString(flattenedAuditEvent));
-                log.info("TEST" + event.toString());
+                log.info(event.toString());
               } catch (JsonProcessingException e) {
                 log.error("failed to log audit event", e);
               }
