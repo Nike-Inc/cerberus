@@ -48,9 +48,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class S3LogUploaderService {
 
-  private static final String AUDIT_LOG_LOG_NAME =
-      "com.nike.cerberus.event.processor.AuditLogProcessor";
-  private static final String AUDIT_LOG_APPENDER = "audit-log-appender";
+  private static final String ATHENA_LOG_NAME = "athena-audit-logger";
+  private static final String ATHENA_LOG_APPENDER = "athena-log-appender";
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   private final AmazonS3 amazonS3;
@@ -61,8 +60,8 @@ public class S3LogUploaderService {
 
   @Autowired
   public S3LogUploaderService(
-      @Value("cerberus.loggingService.s3LogUploaderService.bucket") String bucket,
-      @Value("cerberus.loggingService.s3LogUploaderService.bucketRegion") String bucketRegion,
+      @Value("${cerberus.loggingService.s3LogUploaderService.bucket}") String bucket,
+      @Value("${cerberus.loggingService.s3LogUploaderService.bucketRegion}") String bucketRegion,
       @Value("${cerberus.events.athenaLoggingEventListener.enabled:false}")
           boolean athenaLoggingEventListenerEnabled,
       AthenaService athenaService,
@@ -194,14 +193,16 @@ public class S3LogUploaderService {
 
     if (athenaLoggingEventListenerEnabled) {
       ch.qos.logback.classic.Logger auditLogger =
-          (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AUDIT_LOG_LOG_NAME);
+          (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ATHENA_LOG_NAME);
 
       FiveMinuteRollingFileAppender<ILoggingEvent> appender =
           (FiveMinuteRollingFileAppender<ILoggingEvent>)
-              auditLogger.getAppender(AUDIT_LOG_APPENDER);
-
-      return Optional.ofNullable(
-          (AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent>) appender.getRollingPolicy());
+              auditLogger.getAppender(ATHENA_LOG_APPENDER);
+      // TODO figure out if appender is always null and when it should not be null
+      if (appender != null) {
+        return Optional.ofNullable(
+            (AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent>) appender.getRollingPolicy());
+      }
     }
     return Optional.empty();
   }

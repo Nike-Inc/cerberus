@@ -69,11 +69,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                       .put(
                           "event_timestamp",
                           eventContext.getTimestamp().format(ATHENA_DATE_FORMATTER))
-                      .put(
-                          "principal_name",
-                          cerberusPrincipal
-                              .map(p -> cerberusPrincipal.get().getPrincipal())
-                              .orElse(eventContext.getPrincipalName()))
+                      .put("principal_name", eventContext.getPrincipalName())
                       .put(
                           "principal_type",
                           cerberusPrincipal
