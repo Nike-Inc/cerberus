@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.event;
 
-import com.nike.cerberus.security.CerberusPrincipal;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -49,17 +49,25 @@ public class AuditableEventContext implements Serializable {
   private String version;
   private int statusCode;
 
-  public Optional<CerberusPrincipal> getPrincipalAsCerberusPrincipal() {
-    return principal instanceof CerberusPrincipal
-        ? Optional.of((CerberusPrincipal) principal)
+  public Optional<CerberusAuthToken> getPrincipalAsCerberusPrincipal() {
+    return principal instanceof CerberusAuthToken
+        ? Optional.of((CerberusAuthToken) principal)
         : Optional.empty();
+  }
+
+  public String getPrincipalName() {
+    return principal instanceof CerberusAuthToken
+        ? ((CerberusAuthToken) principal).getPrincipal()
+        : principal instanceof String
+            ? (String) principal
+            : principal != null ? principal.toString() : "Unknown";
   }
 
   public String getEventAsString() {
     return eventName
         + ", "
         + "Principal: "
-        + getPrincipal().toString()
+        + getPrincipalName()
         + ", "
         + "Action: "
         + '\''

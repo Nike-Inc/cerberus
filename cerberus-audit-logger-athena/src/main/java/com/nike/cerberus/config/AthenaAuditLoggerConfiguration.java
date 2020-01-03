@@ -28,7 +28,9 @@ public class AthenaAuditLoggerConfiguration {
   @Autowired
   public AthenaAuditLoggerConfiguration(
       AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent> auditLogsS3TimeBasedRollingPolicy) {
+
     this.auditLogsS3TimeBasedRollingPolicy = auditLogsS3TimeBasedRollingPolicy;
+
     LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
     PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
     patternLayoutEncoder.setPattern(MESSAGE_PATTERN);

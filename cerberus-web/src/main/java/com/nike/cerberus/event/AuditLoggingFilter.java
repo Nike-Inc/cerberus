@@ -3,6 +3,7 @@ package com.nike.cerberus.event;
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
 import com.google.common.collect.ImmutableMap;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
 import com.nike.wingtips.Tracer;
@@ -66,13 +67,19 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
     return status.is2xxSuccessful();
   }
 
-  private String getAction(String principal, String method, String path) {
+  private String getAction(Object principal, String method, String path) {
     if (auditLoggingFilterDetails.getAction() != null
         && !auditLoggingFilterDetails.getAction().isEmpty()) {
       return auditLoggingFilterDetails.getAction();
     }
     String readableAction = READABLE_METHOD_ACTIONS.getOrDefault(method, method);
-    return principal + " " + readableAction + " " + path;
+    String principalName =
+        principal instanceof CerberusAuthToken
+            ? ((CerberusAuthToken) principal).getPrincipal()
+            : principal instanceof String
+                ? (String) principal
+                : principal != null ? principal.toString() : "Unknown";
+    return principalName + " " + readableAction + " " + path;
   }
 
   @Override
@@ -92,8 +99,7 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
 
     var authentication = SecurityContextHolder.getContext().getAuthentication();
-    String principal =
-        Optional.ofNullable(authentication.getName()).orElse(request.getRemoteUser());
+    Object principal = Optional.ofNullable(authentication.getPrincipal()).orElse("Unknown");
 
     var eventContext =
         AuditableEventContext.builder()

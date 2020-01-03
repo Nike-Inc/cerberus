@@ -21,9 +21,9 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.event.AuditableEvent;
 import com.nike.cerberus.event.AuditableEventContext;
-import com.nike.cerberus.security.CerberusPrincipal;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -61,7 +61,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
     getAuditableEventContext(event)
         .ifPresent(
             eventContext -> {
-              Optional<CerberusPrincipal> cerberusPrincipal =
+              Optional<CerberusAuthToken> cerberusPrincipal =
                   eventContext.getPrincipalAsCerberusPrincipal();
 
               ImmutableMap<String, String> flattenedAuditEvent =
@@ -69,7 +69,11 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                       .put(
                           "event_timestamp",
                           eventContext.getTimestamp().format(ATHENA_DATE_FORMATTER))
-                      .put("principal_name", eventContext.getPrincipal().toString())
+                      .put(
+                          "principal_name",
+                          cerberusPrincipal
+                              .map(p -> cerberusPrincipal.get().getPrincipal())
+                              .orElse(eventContext.getPrincipalName()))
                       .put(
                           "principal_type",
                           cerberusPrincipal
@@ -82,7 +86,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                                   p ->
                                       cerberusPrincipal
                                           .get()
-                                          .getTokenCreated()
+                                          .getCreated()
                                           .format(ATHENA_DATE_FORMATTER))
                               .orElseGet(
                                   () ->
@@ -95,7 +99,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                                   p ->
                                       cerberusPrincipal
                                           .get()
-                                          .getTokenExpires()
+                                          .getExpires()
                                           .format(ATHENA_DATE_FORMATTER))
                               .orElseGet(
                                   () ->
