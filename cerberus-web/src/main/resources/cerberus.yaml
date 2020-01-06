@@ -89,12 +89,11 @@ cerberus:
       timeUnit: MINUTES
   events:
     athenaLoggingEventListener.enabled: true
-    auditLoggingEventListener.enabled: true;
+    auditLoggingEventListener.enabled: true
 
-  loggingService:
-    s3LogUploaderService:
-      #  bucket: yourS3Bucket
-      #  bucketRegion: yourBucketRegion
+  audit:
+    #  bucket: yourS3Bucket
+    #  bucketRegion: yourBucketRegion
 
   jobs:
     initialDelay: 0

@@ -60,8 +60,8 @@ public class S3LogUploaderService {
 
   @Autowired
   public S3LogUploaderService(
-      @Value("${cerberus.loggingService.s3LogUploaderService.bucket}") String bucket,
-      @Value("${cerberus.loggingService.s3LogUploaderService.bucketRegion}") String bucketRegion,
+      @Value("${cerberus.audit.bucket}") String bucket,
+      @Value("${cerberus.audit.bucketRegion}") String bucketRegion,
       @Value("${cerberus.events.athenaLoggingEventListener.enabled:false}")
           boolean athenaLoggingEventListenerEnabled,
       AthenaService athenaService,

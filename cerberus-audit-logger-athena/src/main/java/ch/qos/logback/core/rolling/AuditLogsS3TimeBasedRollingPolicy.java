@@ -17,9 +17,9 @@
 package ch.qos.logback.core.rolling;
 
 import com.nike.cerberus.audit.logger.service.S3LogUploaderService;
+import com.nike.internal.util.StringUtils;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,8 +35,8 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
 
   @Autowired
   public AuditLogsS3TimeBasedRollingPolicy(
-      @Value("${cerberus.loggingService.s3LogUploaderService.bucket}") String bucket,
-      @Value("${cerberus.loggingService.s3LogUploaderService.bucketRegion}") String bucketRegion) {
+      @Value("${cerberus.audit.bucket}") String bucket,
+      @Value("${cerberus.audit.bucketRegion}") String bucketRegion) {
     this.bucket = bucket;
     this.bucketRegion = bucketRegion;
   }
