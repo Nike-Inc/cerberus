@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -124,15 +125,17 @@ public class S3LogUploaderService {
    * @param retryCount The retry count
    */
   private void processLogFile(String filename, int retryCount) {
-    log.info("process log file called with filename: {}, retry count: {}", filename, retryCount);
-    final File rolledLogFile = new File(filename);
+    String filteredFilename = FilenameUtils.getName(filename);
+    log.info(
+        "process log file called with filename: {}, retry count: {}", filteredFilename, retryCount);
+    final File rolledLogFile = new File(filteredFilename);
     // poll for 30 seconds waiting for file to exist or bail
     int i = 0;
     do {
       sleep(1, TimeUnit.SECONDS);
       log.info(
           "Does '{}' exist: {}, length: {}, can read: {}, poll count: {}",
-          filename,
+          filteredFilename,
           rolledLogFile.exists(),
           rolledLogFile.length(),
           rolledLogFile.canRead(),
@@ -142,7 +145,7 @@ public class S3LogUploaderService {
 
     // if file does not exist or empty, do nothing
     if (!rolledLogFile.exists() || rolledLogFile.length() == 0) {
-      log.error("File '{}' does not exist or is empty returning", filename);
+      log.error("File '{}' does not exist or is empty returning", filteredFilename);
       return;
     }
 
@@ -163,7 +166,7 @@ public class S3LogUploaderService {
           e);
       if (retryCount < 10) {
         sleep(1, TimeUnit.SECONDS);
-        processLogFile(filename, retryCount + 1);
+        processLogFile(filteredFilename, retryCount + 1);
       }
       throw e;
     }
