@@ -51,6 +51,18 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
 
+  // Tomcat: added only until these versions are included in spring-boot-starter-web
+  implementation('org.apache.tomcat.embed:tomcat-embed-websocket') {
+    version {
+      strictly '9.0.30'
+    }
+  }
+  implementation('org.apache.tomcat.embed:tomcat-embed-core') {
+    version {
+      strictly '9.0.30'
+    }
+  }
+
   //dist tracing
   implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
 
