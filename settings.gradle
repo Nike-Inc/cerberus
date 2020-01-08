@@ -28,4 +28,3 @@ def setBuildFile(project) {
 rootProject.children.each {
   setBuildFile(it)
 }
-include 'cerberus-audit-logger-athena'
