@@ -35,8 +35,8 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
 
   @Autowired
   public AuditLogsS3TimeBasedRollingPolicy(
-      @Value("${cerberus.audit.bucket}") String bucket,
-      @Value("${cerberus.audit.bucketRegion}") String bucketRegion) {
+      @Value("${cerberus.audit.athena.bucket}") String bucket,
+      @Value("${cerberus.audit.athena.bucketRegion}") String bucketRegion) {
     this.bucket = bucket;
     this.bucketRegion = bucketRegion;
   }

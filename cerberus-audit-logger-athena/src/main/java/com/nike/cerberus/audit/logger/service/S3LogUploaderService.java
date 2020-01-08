@@ -61,10 +61,9 @@ public class S3LogUploaderService {
 
   @Autowired
   public S3LogUploaderService(
-      @Value("${cerberus.audit.bucket}") String bucket,
-      @Value("${cerberus.audit.bucketRegion}") String bucketRegion,
-      @Value("${cerberus.events.athenaLoggingEventListener.enabled:false}")
-          boolean athenaLoggingEventListenerEnabled,
+      @Value("${cerberus.audit.athena.bucket}") String bucket,
+      @Value("${cerberus.audit.athena.bucketRegion}") String bucketRegion,
+      @Value("${cerberus.audit.athena.enabled:false}") boolean athenaLoggingEventListenerEnabled,
       AthenaService athenaService,
       S3ClientFactory s3ClientFactory) {
     this.bucket = bucket;

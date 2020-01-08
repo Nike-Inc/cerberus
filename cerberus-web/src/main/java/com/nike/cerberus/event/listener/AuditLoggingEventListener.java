@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 /** Event listener implementation that logs each event. */
 @Slf4j
-@ConditionalOnProperty("cerberus.events.auditLoggingEventListener.enabled")
+@ConditionalOnProperty("cerberus.audit.logger.enabled")
 @Component
 public class AuditLoggingEventListener implements ApplicationListener<AuditableEvent> {
 

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
  * in a flat json format that is optimized for use with AWS Athena
  */
 @Slf4j
-@ConditionalOnProperty("cerberus.events.athenaLoggingEventListener.enabled")
+@ConditionalOnProperty("cerberus.audit.athena.enabled")
 @Component
 public class AthenaLoggingEventListener implements ApplicationListener<AuditableEvent> {
 

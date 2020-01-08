@@ -87,13 +87,14 @@ cerberus:
       level: INFO
       period: 1
       timeUnit: MINUTES
-  events:
-    athenaLoggingEventListener.enabled: true
-    auditLoggingEventListener.enabled: true
 
   audit:
-    #  bucket: yourS3Bucket
-    #  bucketRegion: yourBucketRegion
+    athena:
+      enabled: true
+      #  bucket: yourS3Bucket
+      #  bucketRegion: yourBucketRegion
+    logger:
+      enabled: true
 
   jobs:
     initialDelay: 0
