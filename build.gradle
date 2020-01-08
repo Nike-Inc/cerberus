@@ -9,7 +9,8 @@ buildscript {
       awsSdkVersion: '1.11.688',
       kork: '6.22.1',
       guava: '28.1-jre',
-      springBoot: springBootVersion
+      springBoot: springBootVersion,
+      tomcat: '9.0.30'
     ]
   }
 
@@ -69,6 +70,12 @@ allprojects {
 
   jacoco {
     toolVersion = "0.8.5"
+  }
+
+  // Tomcat: configured here until these versions are included in spring-boot-starter-web
+  configurations.all {
+    resolutionStrategy.force "org.apache.tomcat.embed:tomcat-embed-core:${versions.tomcat}"
+    resolutionStrategy.force "org.apache.tomcat.embed:tomcat-embed-websocket:${versions.tomcat}"
   }
 }
 
