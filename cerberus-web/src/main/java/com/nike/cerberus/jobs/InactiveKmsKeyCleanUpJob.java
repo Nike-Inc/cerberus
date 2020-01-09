@@ -21,11 +21,13 @@ import com.nike.cerberus.service.CleanUpService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Scans through the data store and deletes in-active KMS CMKs */
 @Slf4j
+@ConditionalOnProperty("cerberus.jobs.inactiveKmsKeyCleanUpJob.enabled")
 @Component
 public class InactiveKmsKeyCleanUpJob extends LockingJob {
 

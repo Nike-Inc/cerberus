@@ -25,11 +25,13 @@ import com.nike.cerberus.service.UserGroupPermissionService;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Periodically send KPI metrics to the enabled metrics services. */
 @Slf4j
+@ConditionalOnProperty("cerberus.jobs.kpiMetricsProcessingJob.enabled")
 @Component
 public class KpiMetricsProcessingJob {
 

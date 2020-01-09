@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-@ConditionalOnProperty("cerberus.userAuth.connector.oneLogin.enabled")
+@ConditionalOnProperty("cerberus.auth.user.connector.oneLogin.enabled")
 @ComponentScan({"com.nike.cerberus.auth.connector.onelogin"})
 public class OneLoginConfiguration {
 
   @Bean
-  @ConfigurationProperties("cerberus.user-auth.connector.one-login")
+  @ConfigurationProperties("cerberus.auth.user.connector.one-login")
   public OneLoginConfigurationProperties oneLoginConfigurationProperties() {
     return new OneLoginConfigurationProperties();
   }

@@ -46,7 +46,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component("permissionValidationService")
 public class PermissionValidationService {
 
-  public static final String USER_GROUPS_CASE_SENSITIVE = "${cerberus.user.groups.caseSensitive}";
+  public static final String USER_GROUPS_CASE_SENSITIVE =
+      "${cerberus.auth.user.groups.caseSensitive}";
 
   private final UserGroupPermissionService userGroupPermissionService;
   private final PermissionsDao permissionsDao;

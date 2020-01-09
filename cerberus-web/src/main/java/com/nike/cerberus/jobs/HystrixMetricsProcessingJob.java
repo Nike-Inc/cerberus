@@ -24,11 +24,13 @@ import com.nike.cerberus.metric.MetricsService;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /** Periodically print Hystrix metrics to the log. */
 @Slf4j
+@ConditionalOnProperty("cerberus.jobs.hystrixMetricsProcessingJob.enabled")
 @Component
 public class HystrixMetricsProcessingJob {
   private final MetricsService metricsService;

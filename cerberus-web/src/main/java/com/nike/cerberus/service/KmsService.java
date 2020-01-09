@@ -80,7 +80,7 @@ public class KmsService {
       KmsPolicyService kmsPolicyService,
       DateTimeSupplier dateTimeSupplier,
       AwsIamRoleArnParser awsIamRoleArnParser,
-      @Value("${cerberus.kms.policy.validation.interval.millis:300000}")
+      @Value("${cerberus.auth.kms.policy.validation.interval.millis:300000}")
           int kmsKeyPolicyValidationInterval,
       @Value("${cerberus.environmentName}") String environmentName,
       Slugger slugger,

@@ -107,7 +107,7 @@ public class ApplicationConfiguration {
   @Bean
   public Cache<AwsIamKmsAuthRequest, EncryptedAuthDataWrapper> kmsAuthCache(
       MetricsService metricsService,
-      @Value("${cms.iam.token.cache.maxAgeInSeconds:10}") int maxAge) {
+      @Value("${cerberus.auth.iam.kms.cache.maxAgeInSeconds:10}") int maxAge) {
 
     return new MetricReportingCache<>("auth.kms", maxAge, metricsService, null);
   }
