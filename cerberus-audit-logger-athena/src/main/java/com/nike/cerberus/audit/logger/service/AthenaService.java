@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.service;
+package com.nike.cerberus.audit.logger.service;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.athena.AmazonAthena;
 import com.amazonaws.services.athena.model.ResultConfiguration;
 import com.amazonaws.services.athena.model.StartQueryExecutionRequest;
 import com.amazonaws.services.athena.model.StartQueryExecutionResult;
-import com.nike.cerberus.aws.AthenaClientFactory;
+import com.nike.cerberus.audit.logger.AthenaClientFactory;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.constraints.NotBlank;

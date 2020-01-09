@@ -9,7 +9,7 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.event.AuditLoggingFilterDetails;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import java.nio.charset.Charset;

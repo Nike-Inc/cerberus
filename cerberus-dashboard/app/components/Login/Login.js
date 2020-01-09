@@ -39,7 +39,7 @@ export default class LoginForm extends Component {
                         <div id='logo-container'>
                             <div className='cerberus-logo'></div>
                         </div>
-                        <h1 className='ncss-brand'>CERBERUS MANAGEMENT DASHBOARD TEST</h1>
+                        <h1 className='ncss-brand'>CERBERUS MANAGEMENT DASHBOARD</h1>
 
                     </header>
                     { isSessionExpired &&
