@@ -1,6 +1,7 @@
 dependencies {
   api project(":cerberus-domain")
   api 'org.springframework.boot:spring-boot-starter-web'
+  api 'org.springframework.boot:spring-boot-starter-security'
 
   // Error management
   api 'com.nike.backstopper:backstopper-spring-web-mvc:0.12.0'
@@ -19,4 +20,6 @@ dependencies {
 
   // Find bugs annotations
   api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
+
+  api group: 'com.google.guava', name: 'guava', version: '28.1-jre'
 }

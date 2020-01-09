@@ -13,6 +13,7 @@ springBoot {
 }
 
 dependencies {
+  implementation project(":cerberus-audit-logger-athena")
   implementation project(":cerberus-auth-connector-okta")
   implementation project(":cerberus-auth-connector-onelogin")
   implementation project(":cerberus-core")
@@ -46,9 +47,7 @@ dependencies {
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-kms:${versions.awsSdkVersion}"
-  implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
-  implementation "com.amazonaws:aws-java-sdk-athena:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
 
