@@ -1,7 +1,7 @@
 package com.nike.cerberus.api
 
-import com.fieldju.commons.PropUtils
 import com.nike.cerberus.api.util.TestUtils
+import com.nike.cerberus.util.PropUtils
 import org.testng.annotations.AfterTest
 import org.testng.annotations.BeforeTest
 import org.testng.annotations.Test

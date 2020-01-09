@@ -1,6 +1,6 @@
 package com.nike.cerberus.api
 
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
 import com.thedeanda.lorem.Lorem
 import io.restassured.path.json.JsonPath

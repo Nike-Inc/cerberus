@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.api
 
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.conn.ssl.X509HostnameVerifier
 import org.apache.http.params.HttpParams

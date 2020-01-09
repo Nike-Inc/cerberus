@@ -6,7 +6,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.kms.AWSKMSClient
 import com.amazonaws.services.kms.model.DecryptRequest
 import com.amazonaws.services.kms.model.DecryptResult
-import com.fieldju.commons.PropUtils
+import com.nike.cerberus.util.PropUtils
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import groovy.json.JsonSlurper
