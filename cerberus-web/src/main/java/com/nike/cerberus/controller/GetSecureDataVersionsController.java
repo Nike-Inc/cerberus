@@ -5,7 +5,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.event.AuditLoggingFilterDetails;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.PrincipalHasReadPermsForPath;
 import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.cerberus.util.SdbAccessRequest;

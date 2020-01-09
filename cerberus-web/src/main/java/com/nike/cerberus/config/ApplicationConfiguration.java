@@ -53,7 +53,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
   "com.nike.cerberus.config",
   "com.nike.cerberus.controller",
   "com.nike.cerberus.dao",
-  "com.nike.cerberus.event",
+  "com.nike.cerberus.event.filter",
   "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config
   // that is disabled by default and has to be explicitly enabled.
   "com.nike.cerberus.jobs",

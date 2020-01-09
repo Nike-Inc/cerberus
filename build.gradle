@@ -9,7 +9,7 @@ buildscript {
       awsSdkVersion: '1.11.688',
       kork: '6.22.1',
       guava: '28.1-jre',
-      springBoot: springBootVersion
+      springBoot: springBootVersion,
     ]
   }
 

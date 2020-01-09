@@ -25,7 +25,7 @@ import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.dao.PermissionsDao;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.event.AuditLoggingFilterDetails;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.SdbAccessRequest;
