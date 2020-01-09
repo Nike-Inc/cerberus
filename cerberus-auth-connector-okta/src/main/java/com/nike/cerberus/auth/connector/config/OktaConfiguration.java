@@ -14,12 +14,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-@ConditionalOnProperty("cerberus.userAuth.connector.okta.enabled")
+@ConditionalOnProperty("cerberus.auth.user.connector.okta.enabled")
 @ComponentScan({"com.nike.cerberus.auth.connector.okta"})
 public class OktaConfiguration {
 
   @Bean
-  @ConfigurationProperties("cerberus.user-auth.connector.okta")
+  @ConfigurationProperties("cerberus.auth.user.connector.okta")
   public OktaConfigurationProperties oktaConfigurationProperties() {
     return new OktaConfigurationProperties();
   }

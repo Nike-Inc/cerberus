@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
  * <p>Orphaned keys can be created due to a race condition from lazily creating KMS CMKs for auth.
  */
 @Slf4j
+@ConditionalOnProperty("cerberus.jobs.orphanedKmsKeyCleanUpJob.enabled")
 @Component
 public class OrphanedKmsKeyCleanUpJob extends LockingJob {
 
