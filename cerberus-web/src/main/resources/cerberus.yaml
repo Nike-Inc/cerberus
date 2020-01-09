@@ -88,7 +88,7 @@ cerberus:
     # Toggles whether or not user groups are case sensitive in your Auth Connector impl.
     groups.caseSensitive: true
     token:
-      maxRefreshCount: 0 # How often User Principals are allowed to refresh there auth token
+      maxRefreshCount: 0 # How often User Principals are allowed to refresh their auth token
       ttl: 1h # How long user tokens are valid for.
     # You can configure which User Authentication Connector to use here, you must enable one and only one.
     connector:
@@ -106,15 +106,15 @@ cerberus:
   auth.iam.kms:
     # This should be the root user for the account that this service will be ran in, so that KMS keys can be managed by that user
     rootUserArn: ~
-    # This should be some sort of roll that your team can assume, its ok to re-use the cms role arn here. This will be used when created the kms keys for auth to allow your team to manage them
+    # This should be some sort of role that your team can assume, its ok to re-use the cms role arn here. This will be used when creating the kms keys for kms auth to allow your team to manage them
     adminRoleArn: ~
-    # This should be the role that this service will have as its instance profile when running, this will be used when created the kms keys for auth to allow cerberus to manage them
+    # This should be the role that this service will have as its instance profile when running, this will be used when creating the kms keys for kms auth to allow cerberus to manage them
     cmsRoleArn: ~
     # When an IAM Principal is deleted externally this makes the KMS key policy invalid, this controls how often Cerberus should check that a policy is valid and attempt to fix it.
     policy.validation.interval.millis: 300000
 
     # Enable caching the generated encrypted AWS IAM KMS Auth object, so that burst authentication of the same
-    # principal do not result in repeat KMS encrypt calls
+    # principal does not result in repeat KMS encrypt calls
     # Why you would want to enable this:
     # KMS has an account wide API limit for KMS of 1200 RPS.
     # Cerberus uses KMS to encrypt the auth payload, and by default will make an API call to KMS at least 1 per request.
@@ -189,7 +189,7 @@ cerberus:
       cronExpression: "0 0 * ? * *"
 
     # Deletes orphaned KMS keys, when an principal that has authenticated with Cerberus has been deleted and is
-    # no longer associated with andy SDB any keys that were created for it become orphaned.
+    # no longer associated with any SDB any keys that were created for it become orphaned.
     # This job will clean those up
     orphanedKmsKeyCleanUpJob:
       enabled: true
