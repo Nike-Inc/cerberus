@@ -30,7 +30,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +38,6 @@ import org.springframework.stereotype.Component;
  * in a flat json format that is optimized for use with AWS Athena
  */
 @Slf4j
-@ConditionalOnProperty("cerberus.audit.athena.enabled")
 @Component
 public class AthenaLoggingEventListener implements ApplicationListener<AuditableEvent> {
 

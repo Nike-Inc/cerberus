@@ -6,7 +6,7 @@ import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
-import com.nike.cerberus.event.AuditLoggingFilterDetails;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;

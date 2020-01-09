@@ -8,7 +8,7 @@ import com.nike.cerberus.aws.sts.AwsStsHttpHeader;
 import com.nike.cerberus.aws.sts.GetCallerIdentityResponse;
 import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.error.DefaultApiError;
-import com.nike.cerberus.event.AuditLoggingFilterDetails;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

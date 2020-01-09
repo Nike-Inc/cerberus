@@ -18,13 +18,11 @@ package com.nike.cerberus.event.listener;
 
 import com.nike.cerberus.event.AuditableEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 /** Event listener implementation that logs each event. */
 @Slf4j
-@ConditionalOnProperty("cerberus.audit.logger.enabled")
 @Component
 public class AuditLoggingEventListener implements ApplicationListener<AuditableEvent> {
 

@@ -1,4 +1,4 @@
-package com.nike.cerberus.event;
+package com.nike.cerberus.event.filter;
 
 import lombok.Data;
 import org.springframework.context.annotation.Scope;

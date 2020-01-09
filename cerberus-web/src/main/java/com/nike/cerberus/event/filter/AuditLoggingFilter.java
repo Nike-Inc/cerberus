@@ -1,9 +1,11 @@
-package com.nike.cerberus.event;
+package com.nike.cerberus.event.filter;
 
 import static com.nike.cerberus.CerberusHttpHeaders.*;
 
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.event.AuditableEvent;
+import com.nike.cerberus.event.AuditableEventContext;
 import com.nike.cerberus.util.SdbAccessRequest;
 import com.nike.wingtips.Span;
 import com.nike.wingtips.Tracer;
