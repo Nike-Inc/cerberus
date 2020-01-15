@@ -219,3 +219,5 @@ package-lock.json
 # embedded mysql stuff
 /target/
 /.proxy-dash.pid.lock
+
+.vscode
