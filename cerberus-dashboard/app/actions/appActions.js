@@ -175,7 +175,7 @@ export function storeDashboardMetadata(data) {
     return {
         type: constants.STORE_DASHBOARD_METADATA,
         payload: {
-            version: data.version
+            version: data.build.version
         }
     }
 }
