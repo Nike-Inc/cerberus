@@ -2,7 +2,6 @@ package com.nike.cerberus.api
 
 import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
-import com.thedeanda.lorem.Lorem
 import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.StringUtils
@@ -13,9 +12,7 @@ import org.testng.annotations.Test
 import org.testng.collections.Maps
 
 import static com.nike.cerberus.api.CerberusApiActions.*
-import static com.nike.cerberus.api.CerberusApiActions.getCategoryMap
-import static com.nike.cerberus.api.CerberusApiActions.getRoleMap
-import static com.nike.cerberus.api.CerberusCompositeApiActions.getNEGATIVE_JSON_SCHEMA_ROOT_PATH
+import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
 

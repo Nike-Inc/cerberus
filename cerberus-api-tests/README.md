@@ -67,7 +67,7 @@ You can run this only these tests with the following command
     TEST_ACCOUNT_ID=11111111 \
     TEST_ROLE_NAME=cerberus-api-tester \
     TEST_REGION=us-west-2 \
-    gradlew clean -Dtest.single=CerberusIamApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=CerberusIamApiTests cerberus-api-tests:integrationTest
 
 ### IAM Principal API V2 Tests
 
@@ -87,7 +87,7 @@ You can run this only these tests with the following command
     TEST_ACCOUNT_ID=11111111 \
     TEST_ROLE_NAME=cerberus-api-tester \
     TEST_REGION=us-west-2 \
-    gradlew clean -Dtest.single=CerberusIamApiV2Tests cerberus-api-tests:test
+    gradlew clean -Dtest.single=CerberusIamApiV2Tests cerberus-api-tests:integrationTest
 
 ### User Principal API Tests
 
@@ -110,7 +110,7 @@ You can run this only these tests with the following command
     TEST_USER_PASSWORD=${PASSWORD} \
     TEST_USER_OTP_SECRET=${OTP_SECRET} \
     TEST_USER_OTP_DEVICE_ID=111111 \
-    gradlew clean -Dtest.single=CerberusUserApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=CerberusUserApiTests cerberus-api-tests:integrationTest
 
 ### Admin API Tests
 
@@ -127,7 +127,7 @@ You can run this only these tests with the following command
 
     CERBERUS_API_URL=http://127.0.0.1:9000 \
     TEST_ADMIN_CERBERUS_TOKEN=0000-0000-0000-0000
-    gradlew clean -Dtest.single=AdminApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=AdminApiTests cerberus-api-tests:integrationTest
 
 ### Invalid Auth API Tests
 
@@ -136,7 +136,7 @@ This is a series of tests that neither users nor IAM roles can make calls withou
 You can run this only these tests with the following command
 
     CERBERUS_API_URL=http://127.0.0.1:9000 \
-    gradlew clean -Dtest.single=FailedAuthenticationApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=FailedAuthenticationApiTests cerberus-api-tests:integrationTest
 
 ### Negative User Permissions API Tests
 
@@ -169,7 +169,7 @@ You can run this only these tests with the following command
     TEST_USER_PASSWORD=${PASSWORD} \
     TEST_USER_OTP_SECRET=${OTP_SECRET} \
     TEST_USER_OTP_DEVICE_ID=111111 \
-    gradlew clean -Dtest.single=NegativeUserPermissionsApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=NegativeUserPermissionsApiTests cerberus-api-tests:integrationTest
 
 ### Negative IAM Permissions API Tests
 
@@ -202,4 +202,4 @@ You can run this only these tests with the following command
     TEST_USER_PASSWORD=${PASSWORD} \
     TEST_USER_OTP_SECRET=${OTP_SECRET} \
     TEST_USER_OTP_DEVICE_ID=111111 \
-    gradlew clean -Dtest.single=NegativeIamPermissionsApiTests cerberus-api-tests:test
+    gradlew clean -Dtest.single=NegativeIamPermissionsApiTests cerberus-api-tests:integrationTest

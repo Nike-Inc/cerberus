@@ -43,7 +43,6 @@ allprojects {
   apply plugin: 'java-library'
   apply plugin: 'jacoco'
   apply plugin: SpinnakerCodeStylePlugin
-
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
@@ -85,6 +84,10 @@ subprojects {
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
         srcDir file('src/integration-test/java')
+      }
+      groovy {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
         srcDir file('src/integration-test/groovy')
       }
       resources.srcDir file('src/integration-test/resources')
@@ -98,6 +101,8 @@ subprojects {
 
   //noinspection GroovyAssignabilityCheck
   task integrationTest(type: Test) {
+    description = 'Runs the integration tests.'
+    group = 'Verification'
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
   }
@@ -225,7 +230,5 @@ task aggregatedCheck {
 task aggregatedClean {
   dependsOn subprojects*.clean
 }
-
-defaultTasks ':cerberus-web:bootRun'
 
 defaultTasks ':cerberus-web:bootRun'
