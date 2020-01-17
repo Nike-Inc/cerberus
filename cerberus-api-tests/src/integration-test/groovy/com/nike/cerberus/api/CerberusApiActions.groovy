@@ -557,13 +557,6 @@ class CerberusApiActions {
             .body(stringContainsInOrder(["<html>", "Cerberus", "</html>"]))
     }
 
-    static void loadDashboardVersion() {
-        given().when()
-            .get("/dashboard/version")
-        .then()
-            .statusCode(HttpStatus.SC_OK)
-            .assertThat().body(matchesJsonSchemaInClasspath("json-schema/dashboard_version_success.json"))
-    }
 
     static refreshUserAuthToken(String cerberusAuthToken) {
         given()

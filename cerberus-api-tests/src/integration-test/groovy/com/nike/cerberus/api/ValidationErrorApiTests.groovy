@@ -10,7 +10,7 @@ import org.testng.annotations.BeforeTest
 import org.testng.annotations.Test
 
 import static com.nike.cerberus.api.CerberusApiActions.*
-import static com.nike.cerberus.api.CerberusCompositeApiActions.getNEGATIVE_JSON_SCHEMA_ROOT_PATH
+import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static io.restassured.RestAssured.given
 
