@@ -11,10 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -48,6 +50,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Autowired private SpringApiExceptionHandler springApiExceptionHandler;
 
+  @Autowired HttpFirewall allowUrlEncodedSlashHttpFirewall;
+
   RequestMatcher getDoesRequestsRequireAuthMatcher() {
 
     List<RequestMatcher> whiteListMatchers =
@@ -56,6 +60,14 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .collect(Collectors.toList());
     var whiteListMatcher = new OrRequestMatcher(whiteListMatchers);
     return request -> !whiteListMatcher.matches(request);
+  }
+
+  @Override
+  public void configure(WebSecurity web) throws Exception {
+    super.configure(web);
+
+    // Allow double / in URIs to support buggy Cerberus clients that worked with Highland arch.
+    web.httpFirewall(allowUrlEncodedSlashHttpFirewall);
   }
 
   @Override
