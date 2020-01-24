@@ -41,12 +41,19 @@ import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.metric.LoggingMetricsService;
 import com.nike.cerberus.metric.MetricsService;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -57,6 +64,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
@@ -234,6 +243,47 @@ public class ApplicationConfiguration {
             response.setStatus(HttpStatus.NO_CONTENT.value());
           }
         });
+  }
+
+  /**
+   * We need to accept double slashes to maintain backwards compatibility with the Highlander API
+   * behavior.
+   */
+  @Bean
+  public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+    StrictHttpFirewall firewall = new StrictHttpFirewall();
+    firewall.setAllowUrlEncodedDoubleSlash(true);
+    return firewall;
+  }
+
+  /**
+   * This filter is to duplicate what could be considered buggy behavior, but Highlander Cerberus
+   * supports requests with repeating slashes such as `//v2/sts-auth` So we will just trim extra
+   * slashes and do the chain with the sanitized uri.
+   */
+  @Bean
+  public OncePerRequestFilter trimExtraSlashesFilter() {
+    return new OncePerRequestFilter() {
+      @Override
+      protected void doFilterInternal(
+          HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+          throws ServletException, IOException {
+        var req = request.getRequestURI();
+        if (req.contains("//")) {
+          var sanitizedUri = StringUtils.replace(req, "//", "/");
+          filterChain.doFilter(
+              new HttpServletRequestWrapper(request) {
+                @Override
+                public String getRequestURI() {
+                  return sanitizedUri;
+                }
+              },
+              response);
+        } else {
+          filterChain.doFilter(request, response);
+        }
+      }
+    };
   }
 
   @Bean
