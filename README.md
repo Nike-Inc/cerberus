@@ -114,6 +114,35 @@ java -jar \
 
 In the above when the app starts it will look in the classpath and `/opt/cerberus/` for `cerberus.yml|yaml`, `cerberus-prod.yml|yaml`
 
+### First Secrets
+
+You need to configure the first secrets, AKA the secrets that Cerberus needs to run.
+When Cerberus was first released AWS Secrets Manager didn't exist, so we rolled out a solution based on encrypting props 
+files with KMS and storing them in S3 and downloading and decrypting them at runtime and merging the props in Guice.
+
+With the new Springboot based Cerberus (Phoenix) you can use Kork-Secrets and AWS Secrets Manager.
+
+You can upload a binary file such as a cert via the following:
+
+```bash
+aws secretsmanager create-secret --name ${ENV}-cms-ssl-cert --secret-binary fileb://path/to/your/ssl/cert.pfx
+```
+
+Update the cert in the future via the following:
+
+```bash
+aws secretsmanager update-secret --secret-id arn:aws:secretsmanager:us-west-2:111111:secret:${ENV}-cms-ssl-cert-xxxxx --secret-binary fileb://path/to/your/ssl/cert.pfx
+```
+
+Once uploaded you can reference the first secrets in the config yaml like this
+
+```yaml
+security.requireSsl: true
+server.ssl:
+  keyStore: encryptedFile:secrets-manager!r:some-region!s:${ENV}-cms-ssl-cert
+  keyStorePassword: encrypted:secrets-manager!r:some-region!s:some-secret!k:some-key
+```
+
 ## License
 
 Cerberus Management Service is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
