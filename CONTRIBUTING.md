@@ -33,7 +33,7 @@ There are a few guidelines that we need contributors to follow so that we are ab
 # Additional Resources
 
 * [General GitHub documentation](https://help.github.com/)
-* [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
+* [GitHub pull request documentation](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
 * [Nike's Code of Conduct](https://github.com/Nike-Inc/nike-inc.github.io/blob/master/CONDUCT.md)
 * [Nike's Individual Contributor License Agreement](https://www.clahub.com/agreements/Nike-Inc/fastbreak)
 * [Nike OSS](https://nike-inc.github.io/)
