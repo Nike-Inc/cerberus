@@ -20,7 +20,9 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.nike.cerberus.mapper.UserGroupMapper">
 
-<select id="getUserGroup" resultType="UserGroupRecord">
+  <cache-ref namespace="userGroupMapper" />
+
+  <select id="getUserGroup" resultType="UserGroupRecord">
     SELECT
       ID,
       NAME,

@@ -70,6 +70,38 @@ cerberus:
         maxSize: 1000
         maxAgeInSecods: 60
 
+
+  # MyBaits Caching
+  # CMS uses mybatis as its ORM for the mysql data store.
+  # Enabling this cache will cause CMS to cache certain repeat reads that exceed a configurable threshold from various mappers (Some mappers excluded, Lock mapper for example) for some TTL.
+  # This will protect the DB from high bursts of repeat reads at the cost of potentially making some of its data eventually consistent.
+  # Ex: if a secret / property has been cached it will remain there for upto the whole TTL after a new value has been written.
+  # This cache is not distributed and will be in mem on each instance of CMS.
+  #
+  # The way the repeat read threshold works is as follows
+  #
+  # Assume the default settings of dataTtlInSeconds=10, repeatReadCounterResetInSeconds=2, repeatReadThreshold=2
+  # Every time a read occurs on a individual instance of CMS a counter is incremented.
+  # Every time a fetch from the DB occurs MyBatis calls put on the cache object.
+  # When the put call happens we check to see if the count has exceeded the repeatReadThreshold threshold, if so cache it for the dataTtlInSeconds ttl, if not don't cache.
+  # If there hasn't been any reads in repeatReadCounterResetInSeconds seconds the counter is reset.
+  mybatis.cache:
+    enabled: false
+    global:
+      # Override the global TTL for items after write here, defaults to 10.
+      dataTtlInSeconds: 10
+      # Override the the global Repeat Read counter reset interval here
+      repeatReadCounterResetInSeconds: 2
+      # Override the global repeat read count threshold here
+      repeatReadThreshold: 2
+    # All of the global settings can be overridden for any mapper in resources/com/nike/cerberus/mapper.
+    # EX: src/main/resources/com/nike/cerberus/mapper/CategoryMapper.xml -> categoryMapper
+    # Use camelCase for the mapper name
+#    categoryMapper:
+#      dataTtlInSeconds: 10
+#      repeatReadCounterResetInSeconds: 2
+#      repeatReadThreshold: 2
+
   # Settings for the generation of auth tokens, these are the tokens that are issued to
   # principals and are used to interact with the API
   auth.token:
