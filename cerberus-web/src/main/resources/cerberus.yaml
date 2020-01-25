@@ -64,11 +64,11 @@ cerberus:
       enabled: false
       encrypt:
         maxSize: 1000
-        maxAgeInSecods: 60
+        maxAgeInSeconds: 60
         messageUseLimit: 100
       decrypt:
         maxSize: 1000
-        maxAgeInSecods: 60
+        maxAgeInSeconds: 60
 
 
   # MyBaits Caching
