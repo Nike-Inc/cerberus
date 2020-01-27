@@ -118,7 +118,6 @@ subprojects {
   //noinspection GroovyAssignabilityCheck
   task integrationTest(type: Test) {
     description = 'Runs the integration tests.'
-    group = 'Verification'
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
   }
