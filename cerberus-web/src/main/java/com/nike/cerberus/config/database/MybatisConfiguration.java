@@ -108,34 +108,32 @@ public class MybatisConfiguration {
           .getTypeHandlerRegistry()
           .register(OffsetDateTime.class, new OffsetDateTimeTypeHandler());
 
-      if (isCacheEnabled) {
-        // TODO, Im sure there is a dynamic way to create this list.
-        List.of(
-                "awsIamRoleMapper",
-                "categoryMapper",
-                "permissionsMapper",
-                "roleMapper",
-                "safeDepositBoxMapper",
-                "secureDataMapper",
-                "secureDataVersionMapper",
-                "userGroupMapper")
-            .stream()
-            .forEach(
-                id -> {
-                  var expireTimeInSeconds = getExpireTimeInSeconds(environment, id);
-                  var counterExpireTimeInSeconds =
-                      getRepeatReadCounterExpireTimeInSeconds(environment, id);
-                  var repeatReadThreshold = getRepeatReadThreshold(environment, id);
-                  var cache =
-                      new DatabaseCache(
-                          id,
-                          metricsService,
-                          expireTimeInSeconds,
-                          counterExpireTimeInSeconds,
-                          repeatReadThreshold);
-                  configuration.addCache(cache);
-                });
-      }
+      // TODO, Im sure there is a dynamic way to create this list.
+      List.of(
+              "awsIamRoleMapper",
+              "categoryMapper",
+              "permissionsMapper",
+              "roleMapper",
+              "safeDepositBoxMapper",
+              "secureDataMapper",
+              "secureDataVersionMapper",
+              "userGroupMapper")
+          .stream()
+          .forEach(
+              id -> {
+                var expireTimeInSeconds = getExpireTimeInSeconds(environment, id);
+                var counterExpireTimeInSeconds =
+                    getRepeatReadCounterExpireTimeInSeconds(environment, id);
+                var repeatReadThreshold = getRepeatReadThreshold(environment, id);
+                var cache =
+                    new DatabaseCache(
+                        id,
+                        metricsService,
+                        expireTimeInSeconds,
+                        counterExpireTimeInSeconds,
+                        repeatReadThreshold);
+                configuration.addCache(cache);
+              });
     };
   }
 }

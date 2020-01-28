@@ -19,17 +19,22 @@ package com.nike.cerberus.controller.authentication;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.domain.IamRoleCredentials;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
+import javax.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,18 +46,38 @@ public class AwsIamKmsAuthV1Controller {
 
   private final AuthenticationService authenticationService;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
+  private final ObjectMapper objectMapper;
+  private final Validator validator;
 
   @Autowired
   public AwsIamKmsAuthV1Controller(
       AuthenticationService authenticationService,
-      AuditLoggingFilterDetails auditLoggingFilterDetails) {
+      AuditLoggingFilterDetails auditLoggingFilterDetails,
+      ObjectMapper objectMapper,
+      Validator validator) {
 
     this.authenticationService = authenticationService;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
+    this.objectMapper = objectMapper;
+    this.validator = validator;
   }
 
   @RequestMapping(method = POST, consumes = APPLICATION_JSON_VALUE)
-  public EncryptedAuthDataWrapper authenticate(@RequestBody IamRoleCredentials request) {
+  public EncryptedAuthDataWrapper authenticate(HttpEntity<String> httpEntity)
+      throws JsonProcessingException {
+    var content = httpEntity.getBody();
+    if (content == null) {
+      throw new RuntimeException("There was an error deserializing the request, the body was null");
+    }
+
+    var type = httpEntity.getHeaders().getContentType();
+    if (type == null || !type.toString().contains("json")) {
+      content = URLDecoder.decode(content, StandardCharsets.UTF_8);
+    }
+
+    var request = objectMapper.readValue(content, IamRoleCredentials.class);
+    validator.validate(request);
+
     EncryptedAuthDataWrapper authResponse;
     try {
       authResponse = authenticationService.authenticate(request);
