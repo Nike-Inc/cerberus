@@ -56,7 +56,7 @@ public class AdminActionsController {
     return new AuthKmsKeyMetadataResult(kmsService.getAuthenticationKmsMetadata());
   }
 
-  @RequestMapping(value = "/override-owner", method = POST, consumes = APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/override-owner", method = PUT, consumes = APPLICATION_JSON_VALUE)
   public void overrideSdbOwner(@RequestBody SDBMetadata request, Authentication authentication) {
     safeDepositBoxService.overrideOwner(
         request.getName(), request.getOwner(), authentication.getName());
