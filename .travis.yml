@@ -6,7 +6,7 @@ dist: bionic
 jdk: openjdk11
 
 script:
-  - "./gradlew check build buildDashboard generateAggregatedReports --continue"
+  - "./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue"
 
 after_success:
   - ./gradlew coveralls

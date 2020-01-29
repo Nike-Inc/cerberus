@@ -156,9 +156,9 @@ public class ApplicationConfiguration {
   public CryptoMaterialsManager encryptCryptoMaterialsManager(
       @Value("${cerberus.encryption.cmk.arns}") String cmkArns,
       @Value("${cerberus.encryption.cache.enabled:false}") boolean cacheEnabled,
-      @Value("${cerberus.encryption.cache.encrypt.maxSize:0}") int encryptMaxSize,
-      @Value("${cerberus.encryption.cache.encrypt.maxAgeInSeconds:0}") int encryptMaxAge,
-      @Value("${cerberus.encryption.cache.encrypt.messageUseLimit:0}") int encryptMessageUseLimit,
+      @Value("${cerberus.encryption.cache.encrypt.maxSize:100}") int encryptMaxSize,
+      @Value("${cerberus.encryption.cache.encrypt.maxAgeInSeconds:60}") int encryptMaxAge,
+      @Value("${cerberus.encryption.cache.encrypt.messageUseLimit:100}") int encryptMessageUseLimit,
       Region currentRegion,
       MetricsService metricsService) {
     MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
@@ -190,8 +190,8 @@ public class ApplicationConfiguration {
   public CryptoMaterialsManager decryptCryptoMaterialsManager(
       @Value("${cerberus.encryption.cmk.arns}") String cmkArns,
       @Value("${cerberus.encryption.cache.enabled:#{false}}") boolean cacheEnabled,
-      @Value("${cerberus.encryption.cache.decrypt.maxSize:0}") int decryptMaxSize,
-      @Value("${cerberus.encryption.cache.decrypt.maxAgeInSeconds:0}") int decryptMaxAge,
+      @Value("${cerberus.encryption.cache.decrypt.maxSize:1000}") int decryptMaxSize,
+      @Value("${cerberus.encryption.cache.decrypt.maxAgeInSeconds:60}") int decryptMaxAge,
       Region currentRegion,
       MetricsService metricsService) {
     MasterKeyProvider<KmsMasterKey> keyProvider = initializeKeyProvider(cmkArns, currentRegion);
