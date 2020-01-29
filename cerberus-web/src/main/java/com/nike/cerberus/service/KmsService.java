@@ -170,9 +170,6 @@ public class KmsService {
                     + iamPrincipalArn)
             .withPolicy(policy)
             .withTags(
-                createTag(
-                    "created_by",
-                    buildProperties.getArtifact() + "_" + buildProperties.getVersion()),
                 createTag("created_for", "cerberus_auth"),
                 createTag("auth_principal", iamPrincipalArn),
                 createTag("cerberus_env", environmentName));
