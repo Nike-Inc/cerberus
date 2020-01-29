@@ -74,6 +74,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ComponentScan({
   "com.netflix.spinnaker.kork.secrets",
   "com.nike.backstopper", // error management
+  "com.nike.cerberus.error",
   "com.nike.cerberus.auth.connector.config",
   "com.nike.cerberus.aws",
   "com.nike.cerberus.config",

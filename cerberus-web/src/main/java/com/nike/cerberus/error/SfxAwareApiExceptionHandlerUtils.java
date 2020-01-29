@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
  * with the following dimensions (based on the error info that gets logged): response_code,
  * contributing_errors, and exception_class.
  */
+@Primary
 @Component
 public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
 
@@ -65,8 +67,6 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
       return super.buildErrorMessageForLogs(
           sb, request, contributingErrors, httpStatusCode, cause, extraDetailsForLogging);
     } finally {
-      // TODO(Sean) These metrics are not showing up.
-      // TODO verify that this is called
       // Update SignalFx metrics around API Errors.
       String contributingErrorsString =
           contributingErrors == null ? "[NONE]" : concatenateErrorCollection(contributingErrors);
