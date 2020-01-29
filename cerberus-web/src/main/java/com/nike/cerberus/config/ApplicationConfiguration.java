@@ -68,27 +68,27 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@SuppressWarnings("SpringComponentScan")
 @Slf4j
 @Configuration
 @ComponentScan({
   "com.netflix.spinnaker.kork.secrets",
-  "com.nike.backstopper", // error management TODO explicitly import the config bean
+  "com.nike.backstopper", // error management
   "com.nike.cerberus.auth.connector.config",
   "com.nike.cerberus.aws",
   "com.nike.cerberus.config",
   "com.nike.cerberus.controller",
   "com.nike.cerberus.dao",
   "com.nike.cerberus.event.filter",
-  "com.nike.cerberus.external", // Hook for external stuff (plugins) // TODO move this into a config
-  // that is disabled by default and has to be explicitly enabled.
+  "com.nike.cerberus.external", // Hook for external stuff (plugins)
   "com.nike.cerberus.jobs",
   "com.nike.cerberus.security",
   "com.nike.cerberus.service",
   "com.nike.cerberus.util",
-  "com.nike.wingtips.springboot" // dist tracing TODO explicitly import the config bean
+  "com.nike.wingtips.springboot"
 })
 @EnableAutoConfiguration(
-    exclude = { // TODO remove this, What does this auto load? Could this auto load bad stuff?
+    exclude = {
       FlywayAutoConfiguration
           .class // Have no idea how this magic works, but we will manually configure this ourselves
       // so that it works the way it works in the old guice config
@@ -97,7 +97,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableScheduling
 public class ApplicationConfiguration {
 
-  // TODO temp hack for unit tests, will need to revist this.
+  // TODO temp hack for unit tests, will need to re-visit this.
   public static ObjectMapper getObjectMapper() {
     ObjectMapper om = new ObjectMapper();
     om.findAndRegisterModules();
@@ -139,12 +139,10 @@ public class ApplicationConfiguration {
 
   @Bean
   public Region currentRegion() {
-    return Region.getRegion(
-        Regions
-            .DEFAULT_REGION); // TODO, this adds a long wait to app boot when local, spring way to
-    // avoid this when env = local?
-    //    return Optional.ofNullable(Regions.getCurrentRegion())
-    //      .orElse(Region.getRegion(Regions.DEFAULT_REGION ));
+    // TODO, this adds a long wait to app boot when local, spring way to avoid this when env =
+    // local?
+    return Optional.ofNullable(Regions.getCurrentRegion())
+        .orElse(Region.getRegion(Regions.DEFAULT_REGION));
   }
 
   @Bean("region")

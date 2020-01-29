@@ -26,8 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 /**
  * We create this proxy bean and set request state to it during the authentication / authorization
- * checks. So that we don't have to make duplicated db calls in the controllers. // TODO I think
- * spring can cache things
+ * checks. So that we don't have to make duplicated db calls in the controllers.
  */
 @Data
 @Component

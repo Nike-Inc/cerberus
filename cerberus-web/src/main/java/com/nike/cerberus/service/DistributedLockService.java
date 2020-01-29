@@ -140,7 +140,6 @@ public class DistributedLockService {
    */
   @PreDestroy
   public void executeServerShutdownHook() {
-    // TODO verify that this is called
     log.info("Received shutdown hook, attempting to shutdown gracefully");
     locks.forEach(
         (name, lock) -> {

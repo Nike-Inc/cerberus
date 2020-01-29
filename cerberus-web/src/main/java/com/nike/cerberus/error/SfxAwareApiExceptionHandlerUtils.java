@@ -65,6 +65,7 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
       return super.buildErrorMessageForLogs(
           sb, request, contributingErrors, httpStatusCode, cause, extraDetailsForLogging);
     } finally {
+      // TODO(Sean) These metrics are not showing up.
       // TODO verify that this is called
       // Update SignalFx metrics around API Errors.
       String contributingErrorsString =
