@@ -24,17 +24,16 @@ import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.service.MetadataService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Validated
 @RestController
 @RolesAllowed(ROLE_ADMIN)
 @RequestMapping("/v1/metadata")
@@ -62,7 +61,7 @@ public class SdbMetadataController {
 
   @RequestMapping(method = PUT)
   public void restoreSdbIncludingDataInRequest(
-      @RequestBody SDBMetadata sdbObject, Authentication authentication) {
+      @Valid @RequestBody SDBMetadata sdbObject, Authentication authentication) {
     safeDepositBoxService
         .getSafeDepositBoxIdByPath(sdbObject.getPath())
         .ifPresent(safeDepositBoxService::deleteSafeDepositBox);

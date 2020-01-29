@@ -25,16 +25,15 @@ import com.nike.cerberus.domain.SDBMetadata;
 import com.nike.cerberus.service.KmsService;
 import com.nike.cerberus.service.SafeDepositBoxService;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Validated
 @RestController
 @RolesAllowed(ROLE_ADMIN)
 @RequestMapping("/v1/admin")
@@ -57,7 +56,8 @@ public class AdminActionsController {
   }
 
   @RequestMapping(value = "/override-owner", method = PUT, consumes = APPLICATION_JSON_VALUE)
-  public void overrideSdbOwner(@RequestBody SDBMetadata request, Authentication authentication) {
+  public void overrideSdbOwner(
+      @Valid @RequestBody SDBMetadata request, Authentication authentication) {
     safeDepositBoxService.overrideOwner(
         request.getName(), request.getOwner(), authentication.getName());
   }

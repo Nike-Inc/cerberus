@@ -28,13 +28,11 @@ import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/v2/auth/sts-identity")
 public class AwsIamStsAuthController {

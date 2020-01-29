@@ -29,6 +29,7 @@ import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import java.nio.charset.Charset;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
@@ -76,7 +77,7 @@ public class UserAuthenticationController {
   }
 
   @RequestMapping(value = "/mfa_check", method = POST, consumes = APPLICATION_JSON_VALUE)
-  public AuthResponse handleMfaCheck(@RequestBody MfaCheckRequest request) {
+  public AuthResponse handleMfaCheck(@Valid @RequestBody MfaCheckRequest request) {
     if (StringUtils.isBlank(request.getOtpToken())) {
       return authenticationService.triggerChallenge(request);
     } else {
