@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.security;
 
-import com.nike.backstopper.handler.spring.SpringApiExceptionHandler;
 import com.nike.cerberus.service.AuthTokenService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
@@ -64,7 +63,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Autowired
   private CerberusPrincipalAuthenticationProvider cerberusPrincipalAuthenticationProvider;
 
-  @Autowired private SpringApiExceptionHandler springApiExceptionHandler;
+  @Autowired private RequestWasNotAuthenticatedEntryPoint requestWasNotAuthenticatedEntryPoint;
 
   @Autowired HttpFirewall allowUrlEncodedSlashHttpFirewall;
 
@@ -97,7 +96,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     var requestDoesNotRequireAuthMatcher = getDoesRequestsRequireAuthMatcher();
     var dbTokenFilter =
         new DatabaseTokenAuthenticationProcessingFilter(
-            requestDoesNotRequireAuthMatcher, authTokenService, springApiExceptionHandler);
+            authTokenService, requestDoesNotRequireAuthMatcher);
 
     // Disable CSRF (cross site request forgery)
     http.csrf().disable();
@@ -105,21 +104,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     // No session will be created or used by spring security
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-    // Entry points
+    // Allow requests from the white list to be unauthenticated
     http.authorizeRequests()
         .antMatchers(AUTHENTICATION_NOT_REQUIRED_WHITELIST.toArray(new String[0]))
-        .permitAll()
-        .and()
-        .authorizeRequests()
-        .anyRequest()
-        .authenticated()
-        .and()
-        .addFilterBefore(dbTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        .permitAll();
 
-    http.exceptionHandling()
-        .accessDeniedHandler(
-            (request, response, accessDeniedException) -> {
-              log.info("I am here");
-            });
+    // Force all other requests to be authenticated
+    http.authorizeRequests().anyRequest().authenticated();
+
+    // Add our authentication entry point
+    http.exceptionHandling().authenticationEntryPoint(requestWasNotAuthenticatedEntryPoint);
+
+    // Add the auth filters
+    http.addFilterBefore(dbTokenFilter, UsernamePasswordAuthenticationFilter.class);
   }
 }

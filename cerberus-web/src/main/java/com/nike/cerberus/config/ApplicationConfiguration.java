@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.nike.backstopper.apierror.projectspecificinfo.ProjectApiErrors;
+import com.nike.backstopper.handler.spring.SpringApiExceptionHandler;
 import com.nike.cerberus.cache.MetricReportingCache;
 import com.nike.cerberus.cache.MetricReportingCryptoMaterialsCache;
 import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
@@ -41,6 +42,7 @@ import com.nike.cerberus.domain.EncryptedAuthDataWrapper;
 import com.nike.cerberus.error.DefaultApiErrorsImpl;
 import com.nike.cerberus.metric.LoggingMetricsService;
 import com.nike.cerberus.metric.MetricsService;
+import com.nike.cerberus.security.RequestWasNotAuthenticatedEntryPoint;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -297,4 +299,11 @@ public class ApplicationConfiguration {
     var timeUnit = TimeUnit.valueOf(timeUnitString.toUpperCase());
     return new LoggingMetricsService(level, period, timeUnit);
   }
+
+  @Bean
+  @ConditionalOnMissingBean(RequestWasNotAuthenticatedEntryPoint.class)
+  public RequestWasNotAuthenticatedEntryPoint requestWasNotAuthenticatedEntryPoint(
+      SpringApiExceptionHandler springApiExceptionHandler) {
+    return new RequestWasNotAuthenticatedEntryPoint(springApiExceptionHandler);
+  };
 }

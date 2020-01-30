@@ -16,87 +16,40 @@
 
 package com.nike.cerberus.security;
 
-import static com.nike.cerberus.error.DefaultApiError.AUTH_TOKEN_INVALID;
-import static com.nike.cerberus.security.WebSecurityConfiguration.*;
+import static com.nike.cerberus.security.WebSecurityConfiguration.HEADER_X_CERBERUS_TOKEN;
+import static com.nike.cerberus.security.WebSecurityConfiguration.LEGACY_AUTH_TOKN_HEADER;
 
-import com.nike.backstopper.exception.ApiException;
-import com.nike.backstopper.handler.spring.SpringApiExceptionHandler;
 import com.nike.cerberus.service.AuthTokenService;
-import java.io.IOException;
 import java.util.Optional;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Slf4j
-public class DatabaseTokenAuthenticationProcessingFilter
-    extends AbstractAuthenticationProcessingFilter {
+public class DatabaseTokenAuthenticationProcessingFilter extends CerberusAuthenticationFilter {
 
   private final AuthTokenService authTokenService;
-  private final SpringApiExceptionHandler springApiExceptionHandler;
 
   public DatabaseTokenAuthenticationProcessingFilter(
-      RequestMatcher matcher,
-      AuthTokenService authTokenService,
-      SpringApiExceptionHandler springApiExceptionHandler) {
-
-    super(matcher);
+      AuthTokenService authTokenService, RequestMatcher requiresAuthenticationRequestMatcher) {
+    super(requiresAuthenticationRequestMatcher);
     this.authTokenService = authTokenService;
-    this.springApiExceptionHandler = springApiExceptionHandler;
   }
 
+  /**
+   * If the token header is present and valid, this filter extracts it and retrieves its data from
+   * the db and converts it into a Cerberus Principal.
+   *
+   * @param request The request that might have the token headers.
+   * @return If the principal is present that means we where able to turn the X-Cerberus-Token
+   *     header token value into a * valid cerberus principal by retrieving the token from the data
+   *     store
+   */
   @Override
-  public Authentication attemptAuthentication(
-      HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+  Optional<CerberusPrincipal> extractCerberusPrincipalFromRequest(HttpServletRequest request) {
     return Optional.ofNullable(request.getHeader(HEADER_X_CERBERUS_TOKEN))
         .or(() -> Optional.ofNullable(request.getHeader(LEGACY_AUTH_TOKN_HEADER)))
-        .flatMap(token -> authTokenService.getCerberusAuthToken(token).map(CerberusPrincipal::new))
-        .orElseThrow(() -> new BadCredentialsException(AUTH_TOKEN_INVALID.getMessage()));
-  }
-
-  @Override
-  protected void successfulAuthentication(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain chain,
-      Authentication authResult)
-      throws IOException, ServletException {
-
-    SecurityContext context = SecurityContextHolder.createEmptyContext();
-    authResult.setAuthenticated(true);
-    context.setAuthentication(authResult);
-    SecurityContextHolder.setContext(context);
-    chain.doFilter(request, response);
-  }
-
-  @Override
-  protected void unsuccessfulAuthentication(
-      HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-
-    SecurityContextHolder.clearContext();
-
-    var nullableResponse =
-        springApiExceptionHandler.resolveException(
-            request, response, null, new ApiException(AUTH_TOKEN_INVALID));
-
-    Optional.ofNullable(nullableResponse)
-        .flatMap(res -> Optional.ofNullable(res.getView()))
-        .ifPresent(
-            view -> {
-              try {
-                view.render(nullableResponse.getModel(), request, response);
-              } catch (Exception e) {
-                throw new RuntimeException("Failed to render Backstopper error");
-              }
-            });
+        // If the token is present then use the auth service to map it to a Cerberus Principal
+        .flatMap(token -> authTokenService.getCerberusAuthToken(token).map(CerberusPrincipal::new));
   }
 }
