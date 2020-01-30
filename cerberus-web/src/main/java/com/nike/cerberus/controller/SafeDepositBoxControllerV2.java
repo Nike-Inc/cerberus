@@ -26,6 +26,7 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.security.PrincipalHasOwnerPermsForSdb;
 import com.nike.cerberus.security.PrincipalHasReadPermsForSdb;
 import com.nike.cerberus.service.SafeDepositBoxService;
+import com.nike.cerberus.validation.group.Updatable;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,7 +75,7 @@ public class SafeDepositBoxControllerV2 {
   @RequestMapping(value = "/{sdbId:.+}", method = PUT)
   public SafeDepositBoxV2 updateSafeDepositBox(
       @PathVariable("sdbId") String sdbId,
-      @Valid @RequestBody SafeDepositBoxV2 request,
+      @Validated(Updatable.class) @RequestBody SafeDepositBoxV2 request,
       Authentication authentication) {
     return safeDepositBoxService.updateSafeDepositBoxV2(
         request, (CerberusPrincipal) authentication, sdbId);

@@ -24,9 +24,9 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.groups.Default;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
 
 /** Represents a logical grouping of secrets. */
 @UniqueOwner(groups = {Default.class, Updatable.class})
