@@ -42,6 +42,7 @@ import org.springframework.stereotype.Component;
  * <p>Orphaned keys can be created due to a race condition from lazily creating KMS CMKs for auth.
  */
 @Slf4j
+@Deprecated
 @ConditionalOnProperty("cerberus.jobs.orphanedKmsKeyCleanUpJob.enabled")
 @Component
 public class OrphanedKmsKeyCleanUpJob extends LockingJob {

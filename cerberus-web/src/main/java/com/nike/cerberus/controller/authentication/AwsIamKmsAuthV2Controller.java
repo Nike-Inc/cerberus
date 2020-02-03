@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @Deprecated
-@ConditionalOnProperty("cerberus.deprecatedEndpoints.iamKmsAuth.v2.enabled")
+@ConditionalOnProperty("cerberus.auth.iam.kms.enabled")
 @RestController
 @RequestMapping("/v2/auth/iam-principal")
 public class AwsIamKmsAuthV2Controller {

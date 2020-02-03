@@ -50,6 +50,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Abstracts interactions with the AWS KMS service. */
+@Deprecated
 @Component
 public class KmsService {
 

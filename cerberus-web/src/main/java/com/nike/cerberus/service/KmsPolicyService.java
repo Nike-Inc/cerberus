@@ -20,6 +20,7 @@ import com.amazonaws.auth.policy.*;
 import com.amazonaws.auth.policy.actions.KMSActions;
 import com.amazonaws.auth.policy.internal.JsonPolicyReader;
 import com.amazonaws.services.kms.model.PutKeyPolicyRequest;
+import com.google.common.base.Preconditions;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component;
  * Helpful service for putting together the KMS policy documents to be associated with provisioned
  * KMS keys.
  */
+@Deprecated
 @Component
 public class KmsPolicyService {
 
@@ -58,10 +60,23 @@ public class KmsPolicyService {
 
   @Autowired
   public KmsPolicyService(
-      @Value("${cerberus.auth.iam.kms.rootUserArn}") String rootUserArn,
-      @Value("${cerberus.auth.iam.kms.adminRoleArn}") String adminRoleArn,
-      @Value("${cerberus.auth.iam.kms.cmsRoleArn}") String cmsRoleArn,
+      @Value("${cerberus.auth.iam.kms.enabled}") boolean isKmsAuthEnabled,
+      @Value("${cerberus.auth.iam.kms.rootUserArn:#{null}}") String rootUserArn,
+      @Value("${cerberus.auth.iam.kms.adminRoleArn:#{null}}") String adminRoleArn,
+      @Value("${cerberus.auth.iam.kms.cmsRoleArn:#{null}}") String cmsRoleArn,
       AwsIamRoleArnParser awsIamRoleArnParser) {
+
+    if (isKmsAuthEnabled) {
+      Preconditions.checkNotNull(
+          StringUtils.trimToNull(rootUserArn),
+          "cerberus.auth.iam.kms.rootUserArn must be defined when auth.iam.kms.enabled = true");
+      Preconditions.checkNotNull(
+          StringUtils.trimToNull(adminRoleArn),
+          "cerberus.auth.iam.kms.adminRoleArn must be defined when auth.iam.kms.enabled = true");
+      Preconditions.checkNotNull(
+          StringUtils.trimToNull(cmsRoleArn),
+          "cerberus.auth.iam.kms.cmsRoleArn must be defined when auth.iam.kms.enabled = true");
+    }
 
     this.rootUserArn = rootUserArn;
     this.adminRoleArn = adminRoleArn;

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 /** Scans through the data store and deletes in-active KMS CMKs */
 @Slf4j
+@Deprecated
 @ConditionalOnProperty("cerberus.jobs.inactiveKmsKeyCleanUpJob.enabled")
 @Component
 public class InactiveKmsKeyCleanUpJob extends LockingJob {
