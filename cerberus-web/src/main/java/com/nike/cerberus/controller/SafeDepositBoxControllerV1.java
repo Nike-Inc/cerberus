@@ -34,6 +34,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -45,7 +46,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
-@Deprecated // TODO can we delete v1 sdb endpoints now
+@Deprecated
+@ConditionalOnProperty("cerberus.deprecatedEndpoints.safeDepositBox.v1.enabled")
 @RestController
 @RequestMapping("/v1/safe-deposit-box")
 public class SafeDepositBoxControllerV1 {

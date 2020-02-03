@@ -174,6 +174,25 @@ cerberus:
   audit.logger:
       enabled: true
 
+  # With Cerberus 4.+ (Phoenix) We now have officially deprecated and turned off by default some endpoints we plan on deleting.
+  deprecatedEndpoints:
+    # This was the original way of doing IAM authentication, its complicated, requires Cerberus to run in it's own account
+    # or in an account were you trust everyone who can create IAM roles and kms key policies.
+    # It also requires Cerberus users to have a special IAM policy in order to auth.
+    # STS Auth, is much better and has been made possible by new AWS APIs that have been released since Cerberus was created.
+    # See: https://engineering.nike.com/cerberus/docs/authentication/aws-iam-sts-authentication#why
+    # Also See
+    # https://engineering.nike.com/cerberus/docs/authentication/aws-iam-kms-authentication
+    # https://engineering.nike.com/cerberus/docs/authentication/aws-iam-sts-authentication
+    iamKmsAuth:
+      # /v1/auth/iam-role
+      v1.enabled: false
+      # /v2/auth/iam-principal
+      v2.enabled: false
+    # This has been deprecated for a long time, and we are now turning it off by default so we can delete it soon.
+    # /v1/safe-deposit-box
+    safeDepositBox.v1.enabled: false
+
   jobs:
     initialDelay: 0
     initialDelayTimeUnits: minutes

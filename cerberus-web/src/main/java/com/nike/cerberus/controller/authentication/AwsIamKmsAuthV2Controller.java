@@ -33,11 +33,14 @@ import java.util.stream.Collectors;
 import javax.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
+@Deprecated
+@ConditionalOnProperty("cerberus.deprecatedEndpoints.iamKmsAuth.v2.enabled")
 @RestController
 @RequestMapping("/v2/auth/iam-principal")
 public class AwsIamKmsAuthV2Controller {
