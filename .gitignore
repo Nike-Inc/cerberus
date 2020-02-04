@@ -1,3 +1,21 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+.DS_Store
+
+# Ignore Gradle build output directory
+build
+out
+
+.idea
+
+# node plugin stuffs
+node_modules
+
+.enable-composite-build
+snapshot-tester.sh
+
+
 # Created by .ignore support plugin (hsz.mobi)
 ### Gradle template
 .gradle
@@ -201,3 +219,5 @@ package-lock.json
 # embedded mysql stuff
 /target/
 /.proxy-dash.pid.lock
+
+.vscode

@@ -1,0 +1,99 @@
+/*!
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import '../../assets/styles/common';
+
+.safe-deposit-box-content-wrapper {
+  width: 100%;
+
+  .safe-deposit-box-content-section {
+    padding-bottom: 10px;
+  }
+
+  .safe-deposit-box-header {
+    padding-left: 25px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: -1px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    .safe-deposit-box-header-name {
+      font-size: 27px;
+    }
+
+    .safe-deposit-box-header-description {
+      max-height: 100px;
+      display: inline-block;
+      overflow: scroll;
+      white-space:pre-wrap;
+      font-size: 16px;
+    }
+
+  }
+
+  .safe-deposit-box-nav {
+    padding-top: 5px;
+    padding-bottom: 0px;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid $snkrs_medium_grey;
+
+    .nav-item {
+      margin-left: -1px;
+      padding-right: 25px;
+      padding-left: 25px;
+      padding-top: 5px;
+
+      height: 35px;
+
+      display: inline-block;
+      border-bottom: 1px solid transparent;
+      border-bottom: none;
+      bottom: -1px;
+      position: relative;
+      list-style: none;
+      cursor: pointer;
+
+    }
+
+    .nav-item:hover {
+      border-bottom: 2px solid $snkrs_accent;
+    }
+
+    .nav-item-selected {
+      border-top: 1px solid $snkrs_medium_grey;
+      border-right: 1px solid $snkrs_medium_grey;
+      border-left: 1px solid $snkrs_medium_grey;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+
+      background: $snkrs_white;
+
+      cursor: default;
+    }
+
+    .nav-item-selected:hover {
+      border-bottom: 1px solid transparent;
+      border-bottom: none;
+    }
+  }
+
+  .safe-deposit-box-sub-component {
+    padding: 15px 20px;
+  }
+}

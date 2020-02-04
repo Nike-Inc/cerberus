@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+def bintrayUser = project.hasProperty('bintrayUser') ? project.bintrayUser : System.getenv('BINTRAY_USER') ?: ''
+def bintrayKey = project.hasProperty('bintrayKey') ? project.bintrayKey : System.getenv('BINTRAY_KEY') ?: ''
+def bintrayVersion = "$version"
+
+bintray {
+  user = bintrayUser
+  key = bintrayKey
+  dryRun = false
+  publish = true
+  publications = ['jar']
+
+  pkg {
+    repo = 'maven'
+    name = project.name
+    userOrg = 'nike'
+    licenses = ['Apache-2.0']
+    websiteUrl = 'https://github.com/Nike-Inc/cerberus'
+    issueTrackerUrl = 'https://github.com/Nike-Inc/cerberus/issues'
+    vcsUrl = 'https://github.com/Nike-Inc/cerberus.git'
+    githubRepo = 'Nike-Inc/cerberus'
+
+    version {
+      name = bintrayVersion
+
+      gpg {
+        sign = true
+      }
+    }
+  }
+}
+
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  archiveClassifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+tasks.withType(Zip) { task ->
+  task.doLast {
+    ant.checksum file: it.archivePath
+  }
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+publishing {
+  publications {
+    jar(MavenPublication) {
+      from components.java
+
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
+}

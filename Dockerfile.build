@@ -1,0 +1,7 @@
+# This docker image is for building the Cerberus artifacts, NOT for running the artifacts.
+
+FROM ubuntu:bionic
+
+RUN apt -y update
+RUN apt -y upgrade
+RUN apt install -y curl jq git openssh-client bash openjdk-11-jdk python make gcc build-essential g++

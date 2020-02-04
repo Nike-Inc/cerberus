@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2020 Nike, inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License")
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nike.cerberus.mapper.PermissionsMapper">
+
+  <cache-ref namespace="permissionsMapper" />
+
+  <select id="doesIamPrincipalHaveGivenRoleForSdb" resultType="Boolean">
+        SELECT NOT 0 >= (
+          SELECT
+            COUNT(*)
+          FROM SAFE_DEPOSIT_BOX
+          LEFT JOIN AWS_IAM_ROLE_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+          LEFT JOIN ROLE ON AWS_IAM_ROLE_PERMISSIONS.ROLE_ID = ROLE.ID
+          LEFT JOIN AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+          WHERE
+            SAFE_DEPOSIT_BOX.ID = #{sdbId}
+          AND
+            (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamPrincipalArn}
+              OR
+            AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+          AND
+            ROLE.NAME IN
+            <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+                #{role}
+            </foreach>
+        ) as HAS_PERM;
+    </select>
+
+    <select id="doesAssumedRoleHaveGivenRoleForSdb" resultType="Boolean">
+        SELECT NOT 0 >= (
+        SELECT
+        COUNT(*)
+        FROM SAFE_DEPOSIT_BOX
+        LEFT JOIN AWS_IAM_ROLE_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = AWS_IAM_ROLE_PERMISSIONS.SDBOX_ID
+        LEFT JOIN ROLE ON AWS_IAM_ROLE_PERMISSIONS.ROLE_ID = ROLE.ID
+        LEFT JOIN AWS_IAM_ROLE ON AWS_IAM_ROLE_PERMISSIONS.AWS_IAM_ROLE_ID = AWS_IAM_ROLE.ID
+        WHERE
+        SAFE_DEPOSIT_BOX.ID = #{sdbId}
+        AND
+        (AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{assumedRoleArn}
+        OR
+        AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRoleArn}
+        OR
+        AWS_IAM_ROLE.AWS_IAM_ROLE_ARN = #{iamRootArn})
+        AND
+        ROLE.NAME IN
+        <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+            #{role}
+        </foreach>
+        ) as HAS_PERM;
+    </select>
+
+    <select id="doesUserPrincipalHaveGivenRoleForSdb" resultType="Boolean">
+       SELECT NOT 0 >= (
+          SELECT
+            COUNT(*)
+          FROM SAFE_DEPOSIT_BOX
+            LEFT JOIN USER_GROUP_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = USER_GROUP_PERMISSIONS.SDBOX_ID
+            LEFT JOIN USER_GROUP ON USER_GROUP_PERMISSIONS.USER_GROUP_ID = USER_GROUP.ID
+            LEFT JOIN ROLE ON USER_GROUP_PERMISSIONS.ROLE_ID = ROLE.ID
+          WHERE
+            SAFE_DEPOSIT_BOX.ID = #{sdbId}
+          AND
+            USER_GROUP.NAME IN
+            <foreach item="userGroup" collection="userGroupsThatPrincipalBelongsTo" separator="," open="(" close=")">
+                #{userGroup}
+            </foreach>
+          AND
+            ROLE.NAME IN
+            <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+                #{role}
+            </foreach>
+        ) as HAS_PERMS
+    </select>
+
+    <select id="doesUserHavePermsForRoleAndSdbCaseInsensitive" resultType="Boolean">
+        SELECT NOT 0 >= (
+            SELECT
+              COUNT(*)
+            FROM SAFE_DEPOSIT_BOX
+              LEFT JOIN USER_GROUP_PERMISSIONS ON SAFE_DEPOSIT_BOX.ID = USER_GROUP_PERMISSIONS.SDBOX_ID
+              LEFT JOIN USER_GROUP ON USER_GROUP_PERMISSIONS.USER_GROUP_ID = USER_GROUP.ID
+              LEFT JOIN ROLE ON USER_GROUP_PERMISSIONS.ROLE_ID = ROLE.ID
+            WHERE
+              SAFE_DEPOSIT_BOX.ID = #{sdbId}
+            AND
+              UPPER(USER_GROUP.NAME) IN
+              <foreach item="userGroup" collection="userGroupsThatPrincipalBelongsTo" separator="," open="(" close=")">
+                  UPPER(#{userGroup})
+              </foreach>
+            AND
+              ROLE.NAME IN
+              <foreach item="role" collection="rolesThatAllowPermission" separator="," open="(" close=")">
+                  #{role}
+              </foreach>
+        ) as HAS_PERMS
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {},
+  "id": "http://example.com/example.json",
+  "items": {
+    "id": "/items",
+    "properties": {
+      "created_by": {
+        "id": "/items/properties/created_by",
+        "type": "string"
+      },
+      "created_ts": {
+        "id": "/items/properties/created_ts",
+        "type": "string"
+      },
+      "id": {
+        "id": "/items/properties/id",
+        "type": "string"
+      },
+      "last_updated_by": {
+        "id": "/items/properties/last_updated_by",
+        "type": "string"
+      },
+      "last_updated_ts": {
+        "id": "/items/properties/last_updated_ts",
+        "type": "string"
+      },
+      "name": {
+        "id": "/items/properties/name",
+        "type": "string"
+      }
+    },
+    "required": [
+      "created_ts",
+      "name",
+      "created_by",
+      "last_updated_by",
+      "id",
+      "last_updated_ts"
+    ],
+    "type": "object"
+  },
+  "type": "array"
+}

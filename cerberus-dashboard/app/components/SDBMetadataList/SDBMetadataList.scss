@@ -1,0 +1,80 @@
+/*!
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import '../../assets/styles/common';
+
+.metadata-list-container {
+
+  padding: 20px;
+
+  .metadata-pagination-menu {
+
+    margin-top: 15px;
+
+    display: flex;
+
+    .metadata-pagination {
+      padding-left: 0px!important;
+
+      .metadata-previous-btn {
+        margin-right: 5px;
+        :focus {
+          outline:none;
+        }
+      }
+
+      .metadata-next-btn {
+        margin-left: 4px;
+        :focus {
+          outline:none;
+        }
+      }
+
+      .metadata-active {
+        border: solid;
+        border-color: black;
+        border-width: 1px;
+        border-radius: 2px;
+      }
+
+      .page-btn {
+
+        :focus {
+          outline:none;
+        }
+
+        margin-right: 1px;
+      }
+
+      display: flex;
+      align-items: center;
+    }
+
+    .metadata-pagination-per-page-selector {
+      margin-left: 10px;
+      min-width: 75px;
+
+      :focus {
+        outline: none;
+      }
+    }
+  }
+
+  .metadata-listings {
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+}

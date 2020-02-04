@@ -1,16 +1,39 @@
 language: java
-jdk:
-- openjdk8
-before_install:
-  - nvm install 8.12.0
+install: true
+
+os: linux
+dist: bionic
+jdk: openjdk11
+
+script:
+  - "./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue"
+
 after_success:
-- ./gradlew jacocoTestReport coveralls
+  - ./gradlew coveralls
+  - curl -F 'json_file=@build/coveralls/report.json' 'https://coveralls.io/api/v1/jobs' # https://github.com/kt3k/coveralls-gradle-plugin/issues/85#issuecomment-475958699
+  - test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew bintrayUpload
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+
 deploy:
-  skip_cleanup: true
   provider: releases
   api_key:
-    secure: c4P+wrD6ABsSsl7sg7hW686igl5VXiJ6IMoHIh3BbpVA7BKnVlHCV4mHOSW0EZ7y2dOnNH+W8V6P3Yu39Pq3JybL3tZMc6KOZIxq2/7r47cHNakimhb2WhYPf8tly7xIYx31DlDc0OFJsasW9uB++utE72CYIGIMfFkkPw+glfufNkdaQX1Qg3rJ2yzqNPZt5l8cuzQkYfJKheddnN19DcxgQeci/jWYP2dLYfis8lowTNI1CjREf3iE87+ouTMpWjFAOoU9ojQSl6k2c3OKWN81cqPGqM/cgMyR0q/D/AnE1CcooMPqkxCPJP/WeB7NNUgajxWVdl5kdKKO1z86rA3fdFmHLdGxbcus1zZXrlJhRdkdI8TfLOEXXsleCHOpJlKn+ks9E/E8tPLL83AiClhMPtX8FWFzMpuMTSVMXWq3MmC7Uz6UbEa+94dv58abxskX83/k1z7/7y9vOTId9weEYJ+kacuFZDnnGFk7g62tT9lziWVZLSOUkLl2GGbH01g6xD1y5CVZRQZGSZVsChywGvCBJ/ntzngXjYnw1fh5b+789BoAiOC3nphLITZoXSNfBb8M/6ChjVIY1cjKqHyTzWIjB64vsPkMs3g2K9vPAWQGVma/dsNkNBZ6tBd4D5B8hrUsWifyaIjW0r0lEfSBfPKiy6xnwGivvHuqHSM=
-  file: build/libs/cms.jar
+    secure: rxii3NSGNU9OR0k8Udt5LqDV+yjPy5wq2gCLWE29c9IpUoT11B3QQq7CmkyPZKavjGZl+bhpHVTfDY6Hhy57saI+s7MsYHYA9foFv6843pYqA8FmeGL4LVMJDIxdFAgt0cG/a4zQIBMWGbgMqo36tjdNA2qkcBuVTP5Ve/9nigS0BVWZeBOtK0oFZoQ/M7d2hbOvVGIrnqQmWcYR9lNVP844YaF3YB20DinYPjmo/PtT+wMiRR7KdUTHmYi4pK6mIqBTUr+f9gkL2+cQWvNJg/6+gpC5QoCGVHmijrGfBODxnh9Ei5TjsPYp4iRAGvA8ljPOGxJwoGQW/Xyh3ADfBRhUPpe6tR3NENo4GVrOldYyhv59HEcKb/dyeHKXkcGaeocAikeBE5AkOOH0OAjsTyCVcm0kOOjkRHGngBAnuuTxv65hHOYdk7a//pZ6YKm/yTGJxf1X7Y1aNoAV7j3oyheqZW8Ht9AnPW5fBlsJbCAXlf0+u9sgbDTT0e4YCPinqBKIwG6qDhws0lQQTKDoahzS6NLDOBSlI3xZ+jtPYxmnJlMzzViQTxeyQR1h358diEUH+GUnlCXoCzDpt9OgbsxeJyxjPwzkzoVgGjLhbswaxjK9ab5LhrYDxv68ZiUxAU0mu0eYEwht6vstK0Br/EdnzdYZehydsd2Eaz0GQ5k=
+  file:
+    - cerberus-web/build/libs/cerberus.jar
+    - cerberus-web/build/libs/cerberus.jar.MD5
   on:
     repo: Nike-Inc/cerberus
     tags: true
+
+env:
+  global:
+  - secure: R8NA4hNA8SmxP7J0x3Nidv0GDnBctrTp0Wrd5s4VFP9+9SQdAgoulSoUgz69CuAJwmB/p0JtMFtd4LQfDeyL97u1SxfCDQFbuJf93Oj341ADOyK0p7dLBa3tmvquaCtWJqfx6GiR0Rp3WipGeyae/1nloMXltvA/gEKFQlingjXfwBERJ7aVWx2LBnuhU7QayhqEHb6AP/BSUtHBYBww7UG2xfpR1goFWp2XCCXElCot2efAxSh/mCiN3ZCn+kn3qs14lb/IM379U8In9XwAJuEdBV50Woawi+9j5cWdPo/+nCGlBM4csrR7rkz9MtGDUTTLN30xq9NkKsPeN5dYkuly/2JNSLyFIfGhsjSAeHqxB7Zw49o99pypERItmHKNzcE3WPzJrPhvHhm6T5Tf+4Rc7rUg3b5cZ6sl+/qonL19U30gF/dDJ/gdSFBULbYwh582Z0+0MrkCDkWBau/KPgt/zsDtWe8xqtKIQYPexlSCjyRujDDZCgwxx6k3AgS5mjjU/qqj6xjBLERy9IEwwe2J9mVfTfrYg5UXDxa2H+MSev1ZFDxWswhTfV/YmEk9biOADNcZI3VBnR2fUekklcPuEuI3qtxbY21iCN2Kwu38+vX+90NfS9jCfPnrY+OHtF9duSpOojPDQs+V/hcZ8wrbYAbf96itS3WZSbDSjZ8=
+  - secure: YYl4kXd0TKA11aEY8HDbtZmo1g6V2a/qQFUD96/2U+5LaYTyDtFqRL/My9PJqHGh7xmD5TvWhW2ZYRc3Uoh6+Zq4ekNjkk6hKWv01hHCcQo4DDaBNbqTi05+zjmMuA1X8wPS6RGd7rnOhmdpSWX5S66oQc1UjvNa6SJd1txxKHUqfu5g4V0XbKSC+ypHj54cvaOLUY+goQ4MJiZP29iAAzy1AH6gPONwxwi5i/++NNvvLesq0TgObQUUXh5j/nEw7WbjiYUCMmBbssqqUq9koZNyC/DDJbEvcHzpc8oCSzWLrGXVanhoD3Vu5DBUE/JEP18mjCGjkzSSF56nysYNm4QNtwXpx313D3f120GERjA2x81LcAcJc4UaUPNKLUxxRfbjILezJX0nmzK7UMmgegy81iGj7DrChw1BTjanVIXrXNRzZjjVcOgVxTw+Vdi+vpB+BGiEsB4RJKL5I2XGFVwvP8KVOek+OKyrrHP2MdalXteld2ShTwe8jsYbcojdAJ5eLqqYbq9cdCiYO2+wpzK1bB1Cz4FPXrxrBGL2a3bSASsh2h3bV13eOi6J7igeY4BMYqcfFJnxC9ZSBllqoei7f3eiNpDSJQZ3FI5JPTE5b1Hoc9QiaaP5x9cuSI9zbXajGSYd0ym5tAPei3R7NTBCwsesE/vELdTPSwkrR5I=

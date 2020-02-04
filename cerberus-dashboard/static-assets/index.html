@@ -1,0 +1,49 @@
+<!--
+  ~ Copyright (c) 2020 Nike, inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License")
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<html>
+  <head>
+    <title>Cerberus Management Dashboard</title>
+    <link rel="stylesheet" href="https://web.nike.com/ncss/0.12/snkrs/desktop/css/ncss.en-us.min.css">
+    <link rel="icon" href=favicon.ico?v1" />
+    <style>
+      #loading-container {
+        background-color: #222222;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #loading {
+        color: #F7F7F7;
+        font-size: 40px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="loading-container">
+        <div id="loading">
+          <!--Loading ...-->
+        </div>
+      </div>
+    </div>
+    <script src="browser-bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+/*
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+  id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+sourceCompatibility = '11'
+
+springBoot {
+  buildInfo {
+    properties {
+      name = 'Cerberus'
+    }
+  }
+}
+
+dependencies {
+  implementation project(":cerberus-audit-logger-athena")
+  implementation project(":cerberus-auth-connector-okta")
+  implementation project(":cerberus-auth-connector-onelogin")
+  implementation project(":cerberus-core")
+  implementation project(":cerberus-dashboard")
+  implementation project(":cerberus-domain")
+
+  // Spring
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+
+  // DB: Mybatis, Flyway, C3p0
+  implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
+  implementation 'org.mybatis:mybatis-spring:2.0.3'
+  implementation 'org.mybatis:mybatis:3.5.3'
+  implementation 'com.mchange:c3p0:0.9.5.4'
+  implementation 'mysql:mysql-connector-java:8.0.18'
+  implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
+
+  // First secrets
+  implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
+
+  // Misc
+  implementation "com.netflix.hystrix:hystrix-core:1.5.12" // TODO remove hystrix and use resilience4j
+  implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
+  implementation 'com.google.code.gson:gson:2.8.1' // todo delete, should use jackson. see cipher text utils
+
+  // Secure File Mime Type
+  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.22'
+
+  // AWS
+  implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-kms:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
+  implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
+
+  //dist tracing
+  implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
+
+  // test deps
+  testImplementation('org.springframework.boot:spring-boot-starter-test')
+  testImplementation "commons-io:commons-io:2.5"
+  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.12.0"
+
+  // Integration Test Deps
+  integrationTestCompile sourceSets.main.output
+  integrationTestCompile configurations.testImplementation
+  integrationTestCompile sourceSets.test.output
+  integrationTestRuntime configurations.testRuntime
+  integrationTestCompileOnly 'org.projectlombok:lombok'
+  integrationTestAnnotationProcessor 'org.projectlombok:lombok'
+  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+}
+
+jar {
+  enabled = true
+}
+
+bootJar {
+  archiveName = 'cerberus.jar'
+}

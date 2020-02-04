@@ -1,0 +1,49 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id",
+      "type": "string",
+      "title": "The Error_id Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "1721d051-917c-4811-b0d7-86b5861125b3"
+      ]
+    },
+    "errors": {
+      "$id": "/properties/errors",
+      "type": "array",
+      "items": {
+        "$id": "/properties/errors/items",
+        "type": "object",
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code",
+            "type": "integer",
+            "title": "The Code Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+              99231
+            ]
+          },
+          "message": {
+            "$id": "/properties/errors/items/properties/message",
+            "type": "string",
+            "title": "The Message Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+              "The requested resource is for User Principals only."
+            ],
+            "pattern": "The requested resource is for User Principals only."
+          }
+        }
+      }
+    }
+  }
+}

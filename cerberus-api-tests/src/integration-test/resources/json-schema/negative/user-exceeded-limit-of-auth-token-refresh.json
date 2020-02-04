@@ -1,0 +1,49 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id",
+      "type": "string",
+      "title": "The Error_id Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "70b4c2e4-c3ae-4097-9208-fca1f41c3fd0"
+      ]
+    },
+    "errors": {
+      "$id": "/properties/errors",
+      "type": "array",
+      "items": {
+        "$id": "/properties/errors/items",
+        "type": "object",
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code",
+            "type": "integer",
+            "title": "The Code Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+              99230
+            ]
+          },
+          "message": {
+            "$id": "/properties/errors/items/properties/message",
+            "type": "string",
+            "title": "The Message Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+              "Maximum token refresh count reached, re-authentication required."
+            ],
+            "pattern": "Maximum token refresh count reached, re-authentication required."
+          }
+        }
+      }
+    }
+  }
+}

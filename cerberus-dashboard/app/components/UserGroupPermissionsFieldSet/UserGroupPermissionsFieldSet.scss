@@ -1,0 +1,58 @@
+/*!
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import '../../assets/styles/common';
+
+.user-group-permissions {
+  margin-top: 15px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: $snkrs_medium_grey;
+  border-width: 1px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-bottom: 7px;
+
+  .user-group-permissions-label {
+    padding-top: 5px;
+  }
+
+  .user-group-permissions-perms-container {
+    margin-top: -7px;
+  }
+
+  .user-group-permissions-permission {
+    padding-top: 10px;
+    display: flex;
+
+    .group-select {
+      flex: .75;
+
+      .simple-select {
+        width: 100%;
+      }
+    }
+
+    .role-select {
+      padding-left: $sectionPadding;
+      flex: .25;
+    }
+
+    .Select-menu-outer {
+      margin-top: -1px;
+    }
+  }
+}

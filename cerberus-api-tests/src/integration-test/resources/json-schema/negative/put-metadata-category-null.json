@@ -1,0 +1,49 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "properties": {
+    "error_id": {
+      "$id": "/properties/error_id",
+      "type": "string",
+      "title": "The Error_id Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "38296e6b-e3c9-4d74-b3e8-92ca6a1e70ee"
+      ]
+    },
+    "errors": {
+      "$id": "/properties/errors",
+      "type": "array",
+      "items": {
+        "$id": "/properties/errors/items",
+        "type": "object",
+        "properties": {
+          "code": {
+            "$id": "/properties/errors/items/properties/code",
+            "type": "integer",
+            "title": "The Code Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": 0,
+            "examples": [
+              99996
+            ]
+          },
+          "message": {
+            "$id": "/properties/errors/items/properties/message",
+            "type": "string",
+            "title": "The Message Schema.",
+            "description": "An explanation about the purpose of this instance.",
+            "default": "",
+            "examples": [
+              "The category null could not be mapped to a valid category id"
+            ],
+            "pattern": "The category null could not be mapped to a valid category id"
+          }
+        }
+      }
+    }
+  }
+}

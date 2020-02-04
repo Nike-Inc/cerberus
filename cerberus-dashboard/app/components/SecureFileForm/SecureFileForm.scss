@@ -1,0 +1,253 @@
+/*!
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import '../../assets/styles/common';
+
+#add-new-secure-file-form {
+  width: 700px;
+
+  .secure-file-operation-buttons-container {
+    display: flex;
+    background-color: $snkrs_off_white;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    .secure-file-name-label {
+      margin-top: 12px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      width: 87%;
+      display: flex;
+      color: $snkrs_dark_grey;
+
+      .secure-file-name {
+        font-weight: normal;
+        width: 75%;
+        margin-left: 27px;
+      }
+
+      .secure-file-size {
+        font-weight: normal;
+        margin-left: 10px;
+      }
+
+      .no-file-selected {
+        font-weight: bold;
+        width: 38%;
+        margin-left: 34%;
+      }
+    }
+
+    .ncss-btn-dark-grey, .ncss-btn-light-grey, .ncss-btn-accent {
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+    }
+
+  }
+
+  #new-secure-file-path {
+    display: flex;
+    font-size: 16px;
+    font-weight: bold;
+
+    // TODO these need media queries to scale up and down with the ncss inputs
+    #new-secure-file-path-label {
+      margin-top: 5px;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    #new-secure-file-path-full {
+      margin-top: 5px;
+      padding-left: 8px;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    #new-secure-file-path-user-value {
+      padding-left: 5px;
+      flex: 1;
+    }
+
+    .new-secure-file-path-user-value-read-only {
+      margin-top: 5px;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+  }
+
+  #new-secure-file-kv-map {
+    padding-top: 10px;
+    padding-left: 25px;
+  }
+  .new-secure-file-kv-entry {
+    padding-bottom: 8px;
+    display: flex;
+
+    .ncss-btn-dark-grey {
+      padding-left: 15px;
+      padding-right: 15px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    .secure-file-key {
+      flex: .4;
+    }
+
+    .secure-file-value {
+      flex: .6;
+      padding-left: 10px;
+    }
+  }
+
+  .secure-file-button-container {
+    display: flex;
+
+    #submit-btn-container {
+      margin-left: auto;
+
+      display: flex;
+      justify-content: flex-end;
+
+      .btn-wrapper {
+        padding-right: 10px;
+        padding-top: 2px;
+
+        .ncss-btn-dark-grey {
+          padding-left: 15px;
+          padding-right: 15px;
+          padding-top: 5px;
+          padding-bottom: 5px;
+        }
+
+        .ncss-btn-accent {
+          padding-left: 15px;
+          padding-right: 15px;
+          padding-top: 5px;
+          padding-bottom: 5px;
+        }
+      }
+    }
+  }
+}
+
+.row-buttons {
+  display: flex;
+  margin-left: 6px;
+  height: 40px;
+
+  .btn-wrapper {
+    @extend .clickable;
+    box-shadow: inset 0 1px 0 0 $snkrs_medium_grey,inset -1px 0 0 0 $snkrs_medium_grey,inset 0 -1px 0 0 $snkrs_medium_grey,inset 1px 0 0 0 $snkrs_medium_grey;
+    padding: 3px;
+    width: 40px;
+    height: 35px;
+    margin-right: -1px;
+
+    &:hover {
+      background-color: $snkrs_off_white;
+    }
+
+    &:active {
+      background-color: $snkrs_grey;
+    }
+  }
+
+  .btn-wrapper-left {
+    border-top-left-radius: 2px!important;
+    border-bottom-left-radius: 2px!important;
+  }
+
+  .btn-wrapper-right {
+    border-top-right-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
+  }
+
+  .row-btn {
+    @extend .clickable;
+  }
+
+  .row-btn-copy {
+    background: url(../../assets/images/copy.svg);
+    background-repeat: no-repeat;
+    padding: 11px;
+
+    margin-top: 3px!important;
+    margin-left: 7px;
+  }
+
+  .row-btn-reveal {
+    background: url(../../assets/images/eye.svg);
+    background-repeat: no-repeat;
+    padding: 12px;
+    margin-top: 6px!important;
+    margin-left: 5px;
+  }
+
+  .row-btn-revealed {
+    background: url(../../assets/images/eye_closed.svg);
+    background-repeat: no-repeat;
+    padding: 12px;
+
+    margin-top: 3px!important;
+    margin-left: 5px;
+  }
+
+  .row-btn-remove {
+    background: url(../../assets/images/remove-red.svg);
+    background-repeat: no-repeat;
+    padding: 9px;
+
+    margin-top: 5px;
+    margin-left: 8px;
+  }
+}
+
+.secret-value-placeholder {
+  text-align: center;
+  font-size: 14px;
+  font-weight: normal;
+  border-radius: 2px;
+  background-color: $snkrs_medium_grey;
+}
+
+.secure-file-delete-btn {
+  cursor: pointer;
+  display: flex;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  cursor: pointer;
+
+  .secure-file-delete-btn-label {
+    @extend .clickable;
+    font-size: 16px;
+  }
+}

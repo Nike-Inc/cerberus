@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (c) 2020 Nike, inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License")
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nike.cerberus.mapper.UserGroupMapper">
+
+  <cache-ref namespace="userGroupMapper" />
+
+  <select id="getUserGroup" resultType="UserGroupRecord">
+    SELECT
+      ID,
+      NAME,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      USER_GROUP
+    WHERE
+      ID = #{id}
+  </select>
+
+  <select id="getUserGroupByName" resultType="UserGroupRecord">
+    SELECT
+      ID,
+      NAME,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      USER_GROUP
+    WHERE
+      NAME = #{name}
+  </select>
+
+  <select id="getUserGroupsByRole" resultType="UserGroupRecord">
+    SELECT
+      UG.ID,
+      UG.NAME,
+      UG.CREATED_BY,
+      UG.LAST_UPDATED_BY,
+      UG.CREATED_TS,
+      UG.LAST_UPDATED_TS
+    FROM
+        USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+    WHERE
+        SDB.ID = #{safeDepositBoxId}
+      AND
+        UGP.ROLE_ID = #{roleId}
+  </select>
+
+  <select id="getTotalNumUniqueUserGroupsByRole" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+        USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+    WHERE
+        UGP.ROLE_ID = #{roleId}
+  </select>
+
+  <select id="getTotalNumUniqueNonOwnerGroups" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+          USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+    WHERE
+      UGP.ROLE_ID IN (SELECT ID FROM ROLE WHERE NOT (NAME = 'owner'))
+  </select>
+
+  <select id="getTotalNumUniqueUserGroups" resultType="java.lang.Integer">
+    SELECT
+      COUNT(DISTINCT UG.ID)
+    FROM
+        USER_GROUP UG
+      INNER JOIN
+        USER_GROUP_PERMISSIONS UGP ON UG.ID = UGP.USER_GROUP_ID
+      INNER JOIN
+        SAFE_DEPOSIT_BOX SDB ON UGP.SDBOX_ID = SDB.ID
+  </select>
+
+  <insert id="createUserGroup" parameterType="UserGroupRecord">
+    INSERT INTO USER_GROUP (
+      ID,
+      NAME,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    )
+    VALUES (
+      #{record.id},
+      #{record.name},
+      #{record.createdBy},
+      #{record.lastUpdatedBy},
+      #{record.createdTs},
+      #{record.lastUpdatedTs}
+    )
+  </insert>
+
+  <select id="getUserGroupPermissions" resultType="UserGroupPermissionRecord">
+    SELECT
+      ID,
+      USER_GROUP_ID,
+      ROLE_ID,
+      SDBOX_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    FROM
+      USER_GROUP_PERMISSIONS
+    WHERE
+      SDBOX_ID = #{safeDepositBoxId}
+  </select>
+
+  <insert id="createUserGroupPermission" parameterType="UserGroupPermissionRecord">
+    INSERT INTO USER_GROUP_PERMISSIONS (
+      ID,
+      USER_GROUP_ID,
+      ROLE_ID,
+      SDBOX_ID,
+      CREATED_BY,
+      LAST_UPDATED_BY,
+      CREATED_TS,
+      LAST_UPDATED_TS
+    )
+    VALUES (
+      #{record.id},
+      #{record.userGroupId},
+      #{record.roleId},
+      #{record.sdboxId},
+      #{record.createdBy},
+      #{record.lastUpdatedBy},
+      #{record.createdTs},
+      #{record.lastUpdatedTs}
+    )
+  </insert>
+
+  <update id="updateUserGroupPermission" parameterType="UserGroupPermissionRecord">
+    UPDATE
+      USER_GROUP_PERMISSIONS
+    SET
+      ROLE_ID = #{record.roleId},
+      LAST_UPDATED_BY = #{record.lastUpdatedBy},
+      LAST_UPDATED_TS = #{record.lastUpdatedTs}
+    WHERE
+        SDBOX_ID = #{record.sdboxId}
+      AND
+        USER_GROUP_ID = #{record.userGroupId}
+  </update>
+
+  <delete id="deleteUserGroupPermission">
+    DELETE FROM
+      USER_GROUP_PERMISSIONS
+    WHERE
+        SDBOX_ID = #{safeDepositBoxId}
+      AND
+        USER_GROUP_ID = #{userGroupId}
+  </delete>
+
+  <delete id="deleteUserGroupPermissions">
+    DELETE FROM
+      USER_GROUP_PERMISSIONS
+    WHERE
+      SDBOX_ID = #{safeDepositBoxId}
+  </delete>
+
+</mapper>

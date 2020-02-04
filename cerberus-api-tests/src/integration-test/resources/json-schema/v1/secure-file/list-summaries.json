@@ -1,0 +1,144 @@
+{
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "has_next": {
+      "$id": "/properties/has_next",
+      "type": "boolean",
+      "title": "The Has_next Schema ",
+      "default": false,
+      "examples": [
+        false
+      ]
+    },
+    "next_offset": {
+      "$id": "/properties/next_offset",
+      "type": "null",
+      "title": "The Next_offset Schema ",
+      "default": null,
+      "examples": [
+        null
+      ]
+    },
+    "limit": {
+      "$id": "/properties/limit",
+      "type": "integer",
+      "title": "The Limit Schema ",
+      "default": 0,
+      "examples": [
+        100
+      ]
+    },
+    "offset": {
+      "$id": "/properties/offset",
+      "type": "integer",
+      "title": "The Offset Schema ",
+      "default": 0,
+      "examples": [
+        0
+      ]
+    },
+    "file_count_in_result": {
+      "$id": "/properties/file_count_in_result",
+      "type": "integer",
+      "title": "The File_count_in_result Schema ",
+      "default": 0,
+      "examples": [
+        0
+      ]
+    },
+    "total_file_count": {
+      "$id": "/properties/total_file_count",
+      "type": "integer",
+      "title": "The Total_file_count Schema ",
+      "default": 0,
+      "examples": [
+        0
+      ]
+    },
+    "secure_file_summaries": {
+      "$id": "/properties/secure_file_summaries",
+      "type": "array",
+      "items": {
+        "$id": "/properties/secure_file_summaries/items",
+        "type": "object",
+        "properties": {
+          "sdbox_id": {
+            "$id": "/properties/secure_file_summaries/items/properties/sdbox_id",
+            "type": "string",
+            "title": "The Sdbox_id Schema ",
+            "default": "",
+            "examples": [
+              "abcde5-8903-2098-2893-f8937e0938a"
+            ]
+          },
+          "path": {
+            "$id": "/properties/secure_file_summaries/items/properties/path",
+            "type": "string",
+            "title": "The Path Schema ",
+            "default": "",
+            "examples": [
+              "test-sdb/example.der"
+            ]
+          },
+          "size_in_bytes": {
+            "$id": "/properties/secure_file_summaries/items/properties/size_in_bytes",
+            "type": "integer",
+            "title": "The Size_in_bytes Schema ",
+            "default": 0,
+            "examples": [
+              1562
+            ]
+          },
+          "name": {
+            "$id": "/properties/secure_file_summaries/items/properties/name",
+            "type": "string",
+            "title": "The Name Schema ",
+            "default": "",
+            "examples": [
+              "example.der"
+            ]
+          },
+          "created_by": {
+            "$id": "/properties/secure_file_summaries/items/properties/created_by",
+            "type": "string",
+            "title": "The Created_by Schema ",
+            "default": "",
+            "examples": [
+              "arn:aws:iam::000000000000:role/example"
+            ]
+          },
+          "created_ts": {
+            "$id": "/properties/secure_file_summaries/items/properties/created_ts",
+            "type": "string",
+            "title": "The Created_ts Schema ",
+            "default": "",
+            "examples": [
+              "2018-04-22T20:14:27Z"
+            ]
+          },
+          "last_updated_by": {
+            "$id": "/properties/secure_file_summaries/items/properties/last_updated_by",
+            "type": "string",
+            "title": "The Last_updated_by Schema ",
+            "default": "",
+            "examples": [
+              "arn:aws:iam::000000000000:role/example"
+            ]
+          },
+          "last_updated_ts": {
+            "$id": "/properties/secure_file_summaries/items/properties/last_updated_ts",
+            "type": "string",
+            "title": "The Last_updated_ts Schema ",
+            "default": "",
+            "examples": [
+              "2018-04-22T19:14:27Z"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

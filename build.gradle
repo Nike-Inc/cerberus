@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2020 Nike, inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,146 +14,235 @@
  * limitations under the License.
  */
 
-import com.typesafe.config.ConfigFactory
+import com.github.spotbugs.SpotBugsTask
+import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 
 buildscript {
-    apply from: file('gradle/buildscript.gradle'), to: buildscript
+  ext {
+    versions = [
+      lombok: '1.18.10',
+      resilience4j: '1.1.0',
+      awsSdkVersion: '1.11.688',
+      kork: '6.22.1',
+      guava: '28.1-jre',
+      springBoot: springBootVersion,
+    ]
+  }
+
+  repositories {
+    maven {
+      url "https://dl.bintray.com/spinnaker/gradle"
+    }
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+
+  dependencies {
+    classpath "org.owasp:dependency-check-gradle:5.2.4"
+    classpath "com.github.spotbugs:spotbugs-gradle-plugin:3.0.0"
+    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.1.2'
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+  }
 }
 
 plugins {
-    id "org.flywaydb.flyway" version "4.0.3"
-    id "com.moowork.node" version "1.2.0"
+  id "io.spring.dependency-management" version "1.0.8.RELEASE"
+  id "com.github.kt3k.coveralls" version "2.9.0"
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'embedded-mysql'
-apply plugin: 'com.wiredforcode.spawn'
+apply from: 'gradle/owasp-dependency-check.gradle'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+allprojects {
+  apply plugin: 'java'
+  apply plugin: 'groovy'
+  apply plugin: 'java-library'
+  apply plugin: 'jacoco'
+  apply plugin: SpinnakerCodeStylePlugin
+  apply plugin: 'com.github.spotbugs'
 
-ext {
-    SpotBugsTask = com.github.spotbugs.SpotBugsTask
+  dependencies {
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+  }
+
+  spotbugs {
+    toolVersion = '3.1.12'
+    sourceSets = [ sourceSets.main ]
+    excludeFilter = file("${rootProject.projectDir}/findbugs-supressions.xml")
+  }
+
+  // To generate an HTML report instead of XML
+  tasks.withType(SpotBugsTask) {
+    reports.xml.enabled = false
+    reports.html.enabled = true
+  }
+
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+
+  jacoco {
+    toolVersion = "0.8.5"
+  }
 }
 
-apply from: file('gradle/dependencies.gradle')
-apply from: file('gradle/check.gradle')
-apply from: file('gradle/integration.gradle')
+subprojects {
+  apply plugin: 'io.spring.dependency-management'
 
-group = groupId // Necessary for the maven install task to function correctly
+  apply from: file("${rootProject.projectDir}/gradle/bintray.gradle")
 
-shadowJar {
-    classifier = ''
-    version = ''
+  sourceCompatibility = '11'
+
+  sourceSets {
+    integrationTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/integration-test/java')
+      }
+      groovy {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/integration-test/groovy')
+      }
+      resources.srcDir file('src/integration-test/resources')
+    }
+  }
+
+  configurations {
+    integrationTestCompile.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
+  }
+
+  //noinspection GroovyAssignabilityCheck
+  task integrationTest(type: Test) {
+    description = 'Runs the integration tests.'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+  }
+
+  dependencyManagement {
+    imports {
+      mavenBom("org.springframework.boot:spring-boot-dependencies:${versions.springBoot}")
+    }
+  }
+
+  dependencies {
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${versions.lombok}"
+    annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
+
+    // common test deps
+    testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
+    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testImplementation 'junit:junit:4.12'
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testImplementation 'com.openpojo:openpojo:0.8.13'
+  }
+
+  test {
+    testLogging {
+      events "passed", "skipped", "failed"
+    }
+  }
+
+  integrationTest {
+    testLogging {
+      showStandardStreams = true
+    }
+  }
 }
 
-build {
-    try {
-        // Create a *-local-overrides.conf properties file if it doesn't already exist.
-        def filePath = project.getRootDir().getAbsolutePath()
-        filePath += "/src/main/resources"
-        String filename = "$rootProject.name-local-overrides.conf"
-        File localPropertiesOverrideFile = new File("$filePath/$filename")
-        if (!localPropertiesOverrideFile.exists()) {
-            println("The $filename file does not exist. Creating an empty file for it at location: " + localPropertiesOverrideFile.getAbsolutePath())
-            boolean success = localPropertiesOverrideFile.createNewFile()
-            if (success)
-                localPropertiesOverrideFile << "# Add local environment overrides for your machine here - this is not checked into git, so you can set any properties you want without affecting other people\n\n"
-            else
-                println("Unable to create the $filename file at location " + localPropertiesOverrideFile.getAbsolutePath() + ". Please create it manually")
+List<String> blackList = [
+  'cerberus-api-tests'
+]
+def publishedProjects = subprojects.findAll { !blackList.contains(it.path) }
+
+task jacocoMerge(type: JacocoMerge) {
+  publishedProjects.each { subproject ->
+    executionData subproject.tasks.withType(Test)
+  }
+  doFirst {
+    executionData = files(executionData.findAll { it.exists() })
+  }
+}
+
+task aggregatedJacocoReport(type: JacocoReport, group: 'Coverage reports') {
+  description = 'Generates an aggregate report from all subprojects'
+  dependsOn publishedProjects.test, jacocoMerge
+
+  additionalSourceDirs.from = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+  sourceDirectories.from = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+  classDirectories.from = files(publishedProjects.sourceSets.main.output)
+  executionData jacocoMerge.destinationFile
+
+  reports {
+    html.enabled = true // human readable
+    xml.enabled = true // required by coveralls
+  }
+}
+
+coveralls {
+  sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
+  jacocoReportPath = "${buildDir}/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml"
+  saveAsFile = true
+  sendToCoveralls = false
+}
+
+configurations {
+  antJUnit
+}
+
+dependencies {
+  antJUnit 'org.apache.ant:ant-junit:1.9.7'
+}
+
+// Compile all the test results into a single one.
+task aggregatedJunitXml {
+  ant.taskdef(name: 'junitreport', classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator', classpath: configurations.antJUnit.asPath)
+  dependsOn subprojects*.test
+  doFirst {
+    ///reports/jacoco/test/jacocoTestReport.xml
+    mkdir "$buildDir/reports/jacoco/test"
+    ant.junitreport(todir: "$buildDir/reports/jacoco") {
+      subprojects.each {
+        if (it.testResultsDir.exists()) {
+          fileset(dir: it.testResultsDir)
         }
-    } catch (Throwable t) {
-        logger.lifecycle("Failed to create local conf", t)
+      }
     }
+  }
 }
 
-processResources{
-    dependsOn 'copyDashboardResources'
-
-    doFirst {
-        project.ext.puppetRepository="maven"
-        project.ext.packaging="jar"
-        logger.lifecycle("The Executable jar will be created with name ${rootProject.name}.jar")
-    }
-
-    // Copy all the files under ami. The default is resources
-    from "src/main/ami"
+task aggregatedJunitHtml(type: TestReport) {
+  dependsOn subprojects*.test
+  destinationDir = file("$buildDir/reports/allTests")
+  // Include the results from the `test` task in all sub projects
+  reportOn subprojects*.test
 }
 
-test {
-    systemProperty '@appId' , rootProject.name
-    systemProperty '@environment' , 'local'
+task generateAggregatedReports(dependsOn: [
+  aggregatedJunitXml,
+  aggregatedJunitHtml,
+  aggregatedJacocoReport,
+  dependencyCheckAggregate
+]) {
+  doLast {
+    println "Finished generating aggregated reports"
+  }
 }
 
-artifacts {
-    archives shadowJar
+task aggregatedTest {
+  dependsOn subprojects*.test
 }
 
-jar {
-    dependsOn 'antReplace', 'copyDashboardResources'
-    doFirst {
-        archiveName 'cms.jar'
-    }
-
-    manifest {
-        attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-                'Main-Class': 'com.nike.cerberus.Main'
-        )
-    }
+task aggregatedCheck {
+  dependsOn subprojects*.check
 }
 
-def config = ConfigFactory.parseFile(new File("${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}cms-local-overrides.conf"))
-
-project.ext {
-    flyway.user = config.hasPath('JDBC.username') ? config.getString('JDBC.username') : 'NOT_SET'
-    flyway.password = config.hasPath('JDBC.password') ? config.getString('JDBC.password') : 'NOT_SET'
-    flyway.url = config.hasPath('JDBC.url') ? config.getString('JDBC.url') : 'NOT_SET'
+task aggregatedClean {
+  dependsOn subprojects*.clean
 }
 
-flyway {
-    schemas = ["cms"]
-    locations = ["classpath:com/nike/cerberus/migration"]
-}
-
-task antReplace() {
-    dependsOn 'processResources'
-    doLast {
-        def releaseVersion = version
-        // Add version information to the app's main properties file
-        ant.replace(file: "$buildDir/resources/main/" + rootProject.name + ".conf", token: "@@RELEASE@@", value: releaseVersion)
-
-        // Replace version and appname info in logback.groovy so that log messages will be tagged with the correct values.
-        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@RELEASE@@", value: releaseVersion)
-        ant.replace(file: "$buildDir/resources/main/logback.groovy", token: "@@APPNAME@@", value: artifactId)
-
-        // Placeholder substitution in packer and puppet files.
-        def packerFilesForAntReplace = [
-                "$buildDir/resources/main/packer/app-specific-jvm-args.sh"
-        ]
-        for (String fileName : packerFilesForAntReplace) {
-            ant.replace(file: fileName, token: "@@SERVICE_NAME@@", value: rootProject.name)
-            ant.replace(file: fileName, token: "@@ARCHIVE_NAME@@", value: "${rootProject.name}.jar")
-        }
-    }
-}
-
-task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
-    doFirst {
-        project.buildDir.mkdirs()
-    }
-    group 'build'
-    args = ['run', 'build']
-}
-
-task copyDashboardResources(type: Copy, dependsOn: buildDashboard) {
-    def dashboardBuildDirectory = "${project.getRootDir().absolutePath}${File.separator}dashboard${File.separator}build"
-    def dashboardResourceFolder = "${project.getRootDir().absolutePath}${File.separator}src${File.separator}main${File.separator}resources${File.separator}dashboard"
-
-    from dashboardBuildDirectory
-    into dashboardResourceFolder
-}
-
-apply from: file('gradle/develop.gradle')
+defaultTasks ':cerberus-web:bootRun'
