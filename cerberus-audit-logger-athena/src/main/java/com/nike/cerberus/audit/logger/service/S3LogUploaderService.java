@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.audit.logger.service;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
@@ -32,7 +33,6 @@ import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,6 +58,7 @@ public class S3LogUploaderService {
   private final String bucketRegion;
   private final boolean athenaLoggingEventListenerEnabled;
   private final AthenaService athenaService;
+  private Logger logger;
 
   @Autowired
   public S3LogUploaderService(
@@ -65,11 +66,13 @@ public class S3LogUploaderService {
       @Value("${cerberus.audit.athena.bucketRegion}") String bucketRegion,
       @Value("${cerberus.audit.athena.enabled:false}") boolean athenaLoggingEventListenerEnabled,
       AthenaService athenaService,
-      S3ClientFactory s3ClientFactory) {
+      S3ClientFactory s3ClientFactory,
+      ch.qos.logback.classic.Logger logger) {
     this.bucket = bucket;
     this.bucketRegion = bucketRegion;
     this.athenaLoggingEventListenerEnabled = athenaLoggingEventListenerEnabled;
     this.athenaService = athenaService;
+    this.logger = logger;
 
     amazonS3 = s3ClientFactory.getClient(bucketRegion);
 
@@ -194,8 +197,7 @@ public class S3LogUploaderService {
   private Optional<AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent>> getRollingPolicy() {
 
     if (athenaLoggingEventListenerEnabled) {
-      ch.qos.logback.classic.Logger auditLogger =
-          (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ATHENA_LOG_NAME);
+      ch.qos.logback.classic.Logger auditLogger = this.logger;
 
       FiveMinuteRollingFileAppender<ILoggingEvent> appender =
           (FiveMinuteRollingFileAppender<ILoggingEvent>)

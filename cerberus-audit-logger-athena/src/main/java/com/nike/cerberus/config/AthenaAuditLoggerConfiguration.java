@@ -97,7 +97,7 @@ public class AthenaAuditLoggerConfiguration {
   }
 
   @Bean
-  public Logger getAthenaAuditLogger() {
-    return athenaAuditLogger;
+  public ch.qos.logback.classic.Logger getAthenaAuditLogger() {
+    return (ch.qos.logback.classic.Logger) athenaAuditLogger;
   }
 }

@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 /** Rolling policy that will copy audit logs to S3 if enabled when the logs roll. */
@@ -42,7 +43,7 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
   }
 
   @Autowired
-  public void setS3LogUploaderService(S3LogUploaderService s3LogUploaderService) {
+  public void setS3LogUploaderService(@Lazy S3LogUploaderService s3LogUploaderService) {
     this.s3LogUploaderService = s3LogUploaderService;
     if (logChunkFileS3Queue.size() > 0) {
       Stream.generate(() -> logChunkFileS3Queue.poll()).forEach(s3LogUploaderService::ingestLog);
