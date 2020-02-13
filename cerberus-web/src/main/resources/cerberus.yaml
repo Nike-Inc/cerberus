@@ -22,7 +22,7 @@ mybatis:
 
 flyway:
   schemas: cms
-  locations: classpath:com/nike/cerberus/migration/*.sql
+  locations: classpath:com/nike/cerberus/migration
 
 # Configure the mysql settings here
 jdbc:
