@@ -54,9 +54,9 @@ public class SdbMetadataController {
   public SDBMetadataResult getMetadata(
       @RequestParam(value = "limit", required = false, defaultValue = "100") int limit,
       @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
-      @RequestParam(value = "sdbNameFilter", required = false) String sdbNameFilter) {
+      @RequestParam(value = "sdbName", required = false) String sdbName) {
 
-    return metadataService.getSDBMetadata(limit, offset, sdbNameFilter);
+    return metadataService.getSDBMetadata(limit, offset, sdbName);
   }
 
   @RequestMapping(method = PUT)
