@@ -134,12 +134,12 @@ class CerberusCompositeApiActions {
         assertTrue(list.contains(path.toString()))
     }
 
-    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData) {
+    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
         String groups = cerberusAuthPayloadData.metadata.groups
-        def group = groups.split(/,/)[0]
+//        def group = groups.split(/,/)[0]
 
         // Create a map of category ids to names'
         JsonPath getCategoriesResponse = getCategories(cerberusAuthToken)
@@ -227,12 +227,12 @@ class CerberusCompositeApiActions {
         assertFalse("The created sdb should not be in the sdb listing call after deleting it", isSdbPresentInUpdatedList)
     }
 
-    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData) {
+    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
-        String groups = cerberusAuthPayloadData.metadata.groups
-        def group = groups.split(/,/)[0]
+//        String groups = cerberusAuthPayloadData.metadata.groups
+//        def group = groups.split(/,/)[0]
 
         // Create a map of category ids to names'
         JsonPath getCategoriesResponse = getCategories(cerberusAuthToken)

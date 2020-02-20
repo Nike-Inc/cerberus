@@ -46,6 +46,7 @@ class NegativeIamPermissionsApiTests {
     private String otpDeviceId
     private String otpSecret
     private String[] userGroups
+    private String ownerGroup
     private String userAuthToken
     private Map userAuthData
 
@@ -70,6 +71,9 @@ class NegativeIamPermissionsApiTests {
         password = PropUtils.getRequiredProperty("TEST_USER_PASSWORD",
                 "The password for a test user for testing user based endpoints")
 
+        ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+                "The owner group to use when creating a test SDB")
+
         // todo: make this optional
         otpSecret = PropUtils.getRequiredProperty("TEST_USER_OTP_SECRET",
                 "The secret for the test users OTP MFA (OTP == Google auth)")
@@ -84,8 +88,8 @@ class NegativeIamPermissionsApiTests {
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
         userAuthToken = userAuthData."client_token"
-        userGroups = userAuthData.metadata.groups.split(/,/)
-        String userGroupOfTestUser = userGroups[0]
+//        userGroups = userAuthData.metadata.groups.split(/,/)
+        String userGroupOfTestUser = ownerGroup
 
         String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
         def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
@@ -261,7 +265,7 @@ class NegativeIamPermissionsApiTests {
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         String accountRootArn = "arn:aws:iam::00000000:root"
-        String automationUserGroup = userGroups[0]
+        String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
@@ -296,7 +300,7 @@ class NegativeIamPermissionsApiTests {
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         String accountRootWithNoAccess = "arn:aws:iam::00000000:root"
         String accountRootWithAccess = "arn:aws:iam::$accountId:root"
-        String automationUserGroup = userGroups[0]
+        String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPermsWithNoAccess = [
                 ["iam_principal_arn": accountRootWithNoAccess, "role_id": ownerRoleId],

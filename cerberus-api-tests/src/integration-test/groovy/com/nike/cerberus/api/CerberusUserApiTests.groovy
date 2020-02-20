@@ -31,6 +31,7 @@ class CerberusUserApiTests {
     private String password
     private String otpDeviceId
     private String otpSecret
+    private String ownerGroup
     private String cerberusAuthToken
     private Map cerberusAuthData
 
@@ -63,12 +64,12 @@ class CerberusUserApiTests {
 
     @Test
     void "test that an authenticated user can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData)
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
     @Test
     void "test that an authenticated user can create, read, update then delete a safe deposit box v2"() {
-        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData)
+        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
     @Test
@@ -99,5 +100,8 @@ class CerberusUserApiTests {
 
         otpDeviceId = PropUtils.getRequiredProperty("TEST_USER_OTP_DEVICE_ID",
                 "The device id for the test users OTP MFA (OTP == Google auth)")
+
+        ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+                "The owner group to use when creating an SDB")
     }
 }

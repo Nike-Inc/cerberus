@@ -33,6 +33,7 @@ class CerberusIamApiTests {
     private String accountId
     private String roleName
     private String region
+    private String ownerGroup
     private String cerberusAuthToken
     private def cerberusAuthData
 
@@ -61,6 +62,8 @@ class CerberusIamApiTests {
 
         region = PropUtils.getRequiredProperty("TEST_REGION",
                 "The region to use when authenticating with Cerberus using the IAM Auth endpoint")
+        ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+                "The owner group to use when creating an SDB")
     }
 
     @Test
@@ -80,12 +83,12 @@ class CerberusIamApiTests {
 
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData)
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
-        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData)
+        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
     @Test
