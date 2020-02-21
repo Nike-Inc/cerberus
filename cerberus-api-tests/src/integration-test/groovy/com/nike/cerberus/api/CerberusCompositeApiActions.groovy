@@ -173,6 +173,7 @@ class CerberusCompositeApiActions {
         ]
 
         def sdbId = createSdbV1(cerberusAuthToken, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
+        println(iamRolePermissions.toString())
         JsonPath sdb = readSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
 
         // verify that the sdb we created contains the data we expect
