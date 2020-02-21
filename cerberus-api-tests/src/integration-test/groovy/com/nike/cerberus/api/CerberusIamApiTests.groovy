@@ -62,6 +62,7 @@ class CerberusIamApiTests {
 
         region = PropUtils.getRequiredProperty("TEST_REGION",
                 "The region to use when authenticating with Cerberus using the IAM Auth endpoint")
+
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
     }
