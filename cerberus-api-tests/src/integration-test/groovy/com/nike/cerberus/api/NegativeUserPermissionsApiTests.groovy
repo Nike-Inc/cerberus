@@ -45,6 +45,7 @@ class NegativeUserPermissionsApiTests {
     private String password
     private String otpDeviceId
     private String otpSecret
+    private String userGroup
     private String[] userGroups
     private String userAuthToken
     private Map userAuthData
@@ -70,6 +71,9 @@ class NegativeUserPermissionsApiTests {
         password = PropUtils.getRequiredProperty("TEST_USER_PASSWORD",
                 "The password for a test user for testing user based endpoints")
 
+        userGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+                "The owner group to use when creating an SDB")
+
         // todo: make this optional
         otpSecret = PropUtils.getRequiredProperty("TEST_USER_OTP_SECRET",
                 "The secret for the test users OTP MFA (OTP == Google auth)")
@@ -87,8 +91,9 @@ class NegativeUserPermissionsApiTests {
         def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
-        userGroups = userAuthData.metadata.groups.split(/,/)
-        String userGroupOfTestUser = userGroups[0]
+//        userGroups = userAuthData.metadata.groups.split(/,/)
+//        String userGroupOfTestUser = userGroups[0]
+        String userGroupOfTestUser = userGroup
 
         String sdbCategoryId = getCategoryMap(userAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
