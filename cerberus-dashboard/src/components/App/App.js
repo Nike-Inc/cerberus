@@ -30,20 +30,6 @@ import './App.scss';
 /**
  * This is the main Component that loads the header, content div and footer
  */
-export default 
-@connect((state) => {
-    return {
-        isAuthenticated: state.auth.isAuthenticated,
-        isAdmin: state.auth.isAdmin,
-        isSessionExpired: state.auth.isSessionExpired,
-        userName: state.auth.userName,
-        displayUserContextMenu: state.header.displayUserContextMenu,
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-        modalStack: state.modal.modalStack,
-        hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
-        dashboardVersion: state.app.metadata.version
-    };
-})
 class App extends Component {
 
     componentDidMount() {
@@ -89,3 +75,17 @@ class App extends Component {
         );
     }
 }
+
+const mapStateToProps = state => ({
+    isAuthenticated: state.auth.isAuthenticated,
+    isAdmin: state.auth.isAdmin,
+    isSessionExpired: state.auth.isSessionExpired,
+    userName: state.auth.userName,
+    displayUserContextMenu: state.header.displayUserContextMenu,
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+    modalStack: state.modal.modalStack,
+    hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
+    dashboardVersion: state.app.metadata.version
+});
+
+export default connect(mapStateToProps)(App);

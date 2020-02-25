@@ -14,56 +14,37 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import { reduxForm } from 'redux-form'
-import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions'
-import * as modalActions from '../../actions/modalActions'
-import * as messengerActions from '../../actions/messengerActions'
-import './SecureFileForm.scss'
-import { getLogger } from 'logger'
+import React from 'react';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { reduxForm } from 'redux-form';
+import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions';
+import * as modalActions from '../../actions/modalActions';
+import * as messengerActions from '../../actions/messengerActions';
+import './SecureFileForm.scss';
 import FileInput from 'react-simple-file-input';
 import ConfirmationBox from '../ConfirmationBox/ConfirmationBox';
-
-var log = getLogger('add-new-secure-file');
 
 const MAX_FILE_SIZE = 250000;
 
 const fields = [
     'path',
     'uploadedFile'
-]
+];
 
 // define our client side form validation rules
 const validate = values => {
-    const errors = {}
-    errors.kvMap = {}
+    const errors = {};
+    errors.kvMap = {};
 
     if (!values.path) {
-        errors.path = 'Required'
+        errors.path = 'Required';
     }
 
-    return errors
-}
-@connect((state) => {
-    return {
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-        navigatedPath: state.manageSafetyDepositBox.navigatedPath,
-        isFileSelected: state.manageSafetyDepositBox.isFileSelected,
-        secureFileData: state.manageSafetyDepositBox.secureFileData,
-        secureDataKeys: state.manageSafetyDepositBox.keysForSecureDataPath
-    }
-})
-@reduxForm(
-    {
-        form: 'add-new-secure-file',
-        fields: fields,
-        validate
-    }
-)
+    return errors;
+};
 
-export default class SecureFileForm extends Component {
+class SecureFileForm extends Component {
     render() {
         const {
             fields: {
@@ -80,19 +61,19 @@ export default class SecureFileForm extends Component {
             secureDataKeys,
             isActive,
             formKey
-        } = this.props
+        } = this.props;
 
-        return(
+        return (
             <div id="add-new-secure-file-container">
-                <form id="add-new-secure-file-form" onSubmit={handleSubmit( data => {
+                <form id="add-new-secure-file-form" onSubmit={handleSubmit(data => {
                     let isNewSecureFilePath = formKey === 'add-new-secure-file';
                     if (data.path in secureDataKeys) {
-                        this.confirmFileOverwrite(dispatch, cerberusAuthToken, navigatedPath, data.path, data.uploadedFile, isNewSecureFilePath)
+                        this.confirmFileOverwrite(dispatch, cerberusAuthToken, navigatedPath, data.path, data.uploadedFile, isNewSecureFilePath);
                     } else {
-                        dispatch(mSDBActions.uploadFile(cerberusAuthToken, navigatedPath, data.path, data.uploadedFile, isNewSecureFilePath))
+                        dispatch(mSDBActions.uploadFile(cerberusAuthToken, navigatedPath, data.path, data.uploadedFile, isNewSecureFilePath));
                     }
                 })}>
-                    { pathReadOnly &&
+                    {pathReadOnly &&
                         <div id="new-secure-file-path">
                             <div id="new-secure-file-path-label">Path:</div>
                             <div id="new-secure-file-path-full">
@@ -101,7 +82,7 @@ export default class SecureFileForm extends Component {
                             </div>
                         </div>
                     }
-                    { !pathReadOnly && isFileSelected &&
+                    {!pathReadOnly && isFileSelected &&
                         <div id="new-secure-file-path">
                             <div id="new-secure-file-path-label">Path:</div>
                             <div id="new-secure-file-path-full">
@@ -111,19 +92,19 @@ export default class SecureFileForm extends Component {
                         </div>
                     }
                     <div className="secure-file-operation-buttons-container">
-                        { isFileSelected && !isActive &&
+                        {isFileSelected && !isActive &&
                             <div className="secure-file-name-label">
                                 <div className="secure-file-name">Filename: {uploadedFile.value.name}</div>
                                 <div className="secure-file-size">{this.convertBytesToKilobytes(uploadedFile.value.sizeInBytes, 2, false)} KB</div>
                             </div>
                         }
-                        { !isFileSelected && !isActive &&
+                        {!isFileSelected && !isActive &&
                             <div className="secure-file-name-label">
                                 <div className="no-file-selected">No File Selected</div>
                                 <div className="max-file-size-label">Maximum Size: {this.convertBytesToKilobytes(MAX_FILE_SIZE, 0, false)} KB</div>
                             </div>
                         }
-                        { isActive &&
+                        {isActive &&
                             <div className="secure-file-name-label">
                                 <div className="secure-file-name">Filename: {path.value}</div>
                                 <div className="secure-file-size">
@@ -135,33 +116,33 @@ export default class SecureFileForm extends Component {
                             /* this div/label structure is required by the react-simple-file-input plugin */
                             <div><label>
                                 <FileInput readAs='buffer'
-                                           style={{display: 'none'}}
-                                           onLoad={(event, file) => {
-                                               let fileContents = event.target.result;
-                                               let fileData = {
-                                                   name: file.name,
-                                                   sizeInBytes: file.size,
-                                                   type: file.type,
-                                                   contents: fileContents
-                                               };
-                                               uploadedFile.onChange(fileData);
-                                               path.onChange(file.name);
-                                               dispatch(mSDBActions.secureFileSelected());
-                                           }}
-                                           cancelIf={ (file) => this.fileIsTooLarge(dispatch, file) }/>
+                                    style={{ display: 'none' }}
+                                    onLoad={(event, file) => {
+                                        let fileContents = event.target.result;
+                                        let fileData = {
+                                            name: file.name,
+                                            sizeInBytes: file.size,
+                                            type: file.type,
+                                            contents: fileContents
+                                        };
+                                        uploadedFile.onChange(fileData);
+                                        path.onChange(file.name);
+                                        dispatch(mSDBActions.secureFileSelected());
+                                    }}
+                                    cancelIf={(file) => this.fileIsTooLarge(dispatch, file)} />
                                 <div className="ncss-btn-dark-grey btn ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt3-lg pb3-lg u-uppercase un-selectable"
-                                     id="new-file-form-browse-btn">
+                                    id="new-file-form-browse-btn">
                                     Browse
                                 </div>
                             </label></div>
                         }
                         {isActive &&
                             <div className="ncss-btn-dark-grey btn ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt3-lg pb3-lg u-uppercase un-selectable"
-                                 onClick={() => {mSDBActions.downloadFile(cerberusAuthToken, `${navigatedPath}${path.value}`, `${path.value}`)}}>
+                                onClick={() => { mSDBActions.downloadFile(cerberusAuthToken, `${navigatedPath}${path.value}`, `${path.value}`); }}>
                                 Download
                             </div>
                         }
-                        { isActive &&
+                        {isActive &&
                             deleteButton(dispatch, navigatedPath, path.value, cerberusAuthToken)
                         }
                     </div>
@@ -170,14 +151,14 @@ export default class SecureFileForm extends Component {
                             <div id="submit-btn-container">
                                 <div className="btn-wrapper">
                                     <button className="ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt3-lg pb3-lg u-uppercase un-selectable"
-                                            disabled={secureFileData[navigatedPath + path.value] ? secureFileData[navigatedPath + path.value].isUpdating : false}>
+                                        disabled={secureFileData[navigatedPath + path.value] ? secureFileData[navigatedPath + path.value].isUpdating : false}>
                                         Submit
                                     </button>
                                 </div>
                                 <div className="btn-wrapper">
                                     <div id='cancel-btn'
-                                         className="ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase un-selectable"
-                                         onClick={() => {dispatch(mSDBActions.hideAddNewSecureFile())}}>
+                                        className="ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase un-selectable"
+                                        onClick={() => { dispatch(mSDBActions.hideAddNewSecureFile()); }}>
                                         Cancel
                                     </div>
                                 </div>
@@ -186,7 +167,7 @@ export default class SecureFileForm extends Component {
                     }
                 </form>
             </div>
-        )
+        );
     }
 
     convertBytesToKilobytes(sizeInBytes, numDecimalPlaces, divideByPowerOfTwo) {
@@ -221,8 +202,8 @@ export default class SecureFileForm extends Component {
         };
 
         let comp = <ConfirmationBox handleYes={yes}
-                                    handleNo={no}
-                                    message={`Are you sure you want to overwrite file: "${secureFileName}"?`}/>
+            handleNo={no}
+            message={`Are you sure you want to overwrite file: "${secureFileName}"?`} />;
         dispatch(modalActions.pushModal(comp));
     }
 }
@@ -230,9 +211,26 @@ export default class SecureFileForm extends Component {
 const deleteButton = (dispatch, navigatedPath, label, cerberusAuthToken) => {
     return (
         <div className="secure-file-delete-btn btn ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt3-lg pb3-lg u-uppercase un-selectable" onClick={() => {
-            dispatch(mSDBActions.deleteSecureFilePathConfirm(`${navigatedPath}`,`${label}`, cerberusAuthToken));
+            dispatch(mSDBActions.deleteSecureFilePathConfirm(`${navigatedPath}`, `${label}`, cerberusAuthToken));
         }}>
             <div className="secure-file-delete-btn-label">Delete</div>
         </div>
-    )
-}
+    );
+};
+
+const mapStateToProps = state => ({
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+    navigatedPath: state.manageSafetyDepositBox.navigatedPath,
+    isFileSelected: state.manageSafetyDepositBox.isFileSelected,
+    secureFileData: state.manageSafetyDepositBox.secureFileData,
+    secureDataKeys: state.manageSafetyDepositBox.keysForSecureDataPath
+});
+
+
+export default reduxForm(
+    {
+        form: 'add-new-secure-file',
+        fields: fields,
+        validate
+    }
+)(connect(mapStateToProps)(SecureFileForm));

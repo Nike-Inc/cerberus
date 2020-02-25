@@ -16,7 +16,7 @@
 
 import React from 'react';
 import axios from 'axios';
-import environmentService from 'EnvironmentService';
+import environmentService from '../service/EnvironmentService';
 import * as humps from 'humps';
 import * as actions from '../constants/actions';
 import * as cms from '../constants/cms';
@@ -28,7 +28,7 @@ import ApiError from '../components/ApiError/ApiError';
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
 import downloadjs from 'downloadjs';
 
-import { getLogger } from 'logger';
+import { getLogger } from "../utils/logger";
 var log = getLogger('manage-sdb-actions');
 
 export function storeSDBData(data) {
@@ -75,7 +75,7 @@ export function fetchSecureDataPathKeys(path, token) {
             })
             .catch((response) => {
                 // no keys for the SDB Yet
-                if (response.status == 404) {
+                if (response.status === 404) {
                     dispatch(updateSecureDataPathKeys([]));
                 } else {
                     log.error("Failed to fetch keys for secure data path", response);
@@ -104,7 +104,7 @@ export function fetchSecureFilePathKeys(path, token) {
             })
             .catch((response) => {
                 // no keys for the SDB Yet
-                if (response.status == 404) {
+                if (response.status === 404) {
                     dispatch(updateSecureFilePathKeys([]));
                 } else {
                     log.error("Failed to fetch keys for secure file path", response);
@@ -285,9 +285,7 @@ export function commitSecret(navigatedPath, data, token, isNewSecureDataPath) {
     let key = data.path;
     let fullPath = `${navigatedPath}${key}`;
 
-    data.kvMap.map((entry) => {
-        secureData[entry.key] = entry.value;
-    });
+    data.kvMap.map((entry) => secureData[entry.key] = entry.value);
 
     return function (dispatch) {
         let nestedFolder = key.split('/').length > 1;

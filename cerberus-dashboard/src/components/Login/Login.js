@@ -14,39 +14,27 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import * as messengerActions from '../../actions/messengerActions'
-import Messenger from '../Messenger/Messenger'
-import './Login.scss'
-import LoginUserForm from '../LoginUserForm/LoginUserForm'
-import LoginMfaForm from '../LoginMfaForm/LoginMfaForm'
+import React from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import * as messengerActions from '../../actions/messengerActions';
+import Messenger from '../Messenger/Messenger';
+import './Login.scss';
+import LoginUserForm from '../LoginUserForm/LoginUserForm';
+import LoginMfaForm from '../LoginMfaForm/LoginMfaForm';
 
-// connect to the store for the pieces we care about
-@connect((state) => {
-    return {
-        isSessionExpired: state.auth.isSessionExpired,
-        isMfaRequired: state.auth.isMfaRequired,
-        statusText: state.auth.statusText,
-        initialValues: {
-            redirectTo: state.routing.locationBeforeTransitions.query.next || '/'
-        }
-    }
-})
-
-export default class LoginForm extends Component {
+class LoginForm extends Component {
     static propTypes = {
         dispatch: PropTypes.func.isRequired,
         isMfaRequired: PropTypes.bool.isRequired,
-    }
+    };
 
     componentDidMount() {
-        this.props.dispatch(messengerActions.clearAllMessages())
+        this.props.dispatch(messengerActions.clearAllMessages());
     }
     render() {
-        const {isSessionExpired, isMfaRequired} = this.props
+        const { isSessionExpired, isMfaRequired } = this.props;
 
         return (
             <div id='login-container' className=''>
@@ -58,16 +46,30 @@ export default class LoginForm extends Component {
                         <h1 className='ncss-brand'>CERBERUS MANAGEMENT DASHBOARD</h1>
 
                     </header>
-                    { isSessionExpired &&
+                    {isSessionExpired &&
                         <div id="session-expired-message">
                             Your session has expired and you are required to re-authenticate
                         </div>
                     }
                     <Messenger />
-                    { !isMfaRequired && <LoginUserForm /> }
-                    { isMfaRequired && <LoginMfaForm /> }
+                    {!isMfaRequired && <LoginUserForm />}
+                    {isMfaRequired && <LoginMfaForm />}
                 </div>
             </div>
-        )
+        );
     }
 }
+
+
+
+
+const mapStateToProps = state => ({
+    isSessionExpired: state.auth.isSessionExpired,
+    isMfaRequired: state.auth.isMfaRequired,
+    statusText: state.auth.statusText,
+    initialValues: {
+        redirectTo: state.routing.locationBeforeTransitions.query.next || '/'
+    }
+});
+
+export default connect(mapStateToProps)(LoginForm);

@@ -14,40 +14,41 @@
  * limitations under the License.
  */
 
-import * as actions from '../constants/actions'
-import axios from 'axios'
-import ApiError from '../components/ApiError/ApiError'
-import environmentService from 'EnvironmentService'
-import * as cms from '../constants/cms'
-import * as messengerActions from './messengerActions'
-import { getLogger } from 'logger'
-var log = getLogger('metadata')
+import React from 'react';
+import * as actions from '../constants/actions';
+import axios from 'axios';
+import ApiError from '../components/ApiError/ApiError';
+import environmentService from '../service/EnvironmentService';
+import * as cms from '../constants/cms';
+import * as messengerActions from './messengerActions';
+import { getLogger } from "../utils/logger";
+var log = getLogger('metadata');
 
 export function fetchMetadata(token, pageNumber, perPage) {
-    return function(dispatch) {
+    return function (dispatch) {
         return axios({
             url: environmentService.getDomain() + cms.RETRIEVE_METADATA,
             params: {
                 limit: perPage,
                 offset: Math.ceil(pageNumber * perPage)
             },
-            headers: {'X-Cerberus-Token': token},
+            headers: { 'X-Cerberus-Token': token },
             timeout: 10000
         })
-        .then(function (response) {
-            let metadata = response.data
-            if (metadata) {
-                dispatch(storeMetadata(metadata))
-                window.scrollTo(0, 0)
-            } else {
-                log.warn("Metadata was null or undefined")
-            }
-        })
-        .catch(function (response) {
-            log.error('Failed to get metadata', response)
-            dispatch(messengerActions.addNewMessage(<ApiError message="Failed to retrieve metadata" response={response} />))
-        })
-    }
+            .then(function (response) {
+                let metadata = response.data;
+                if (metadata) {
+                    dispatch(storeMetadata(metadata));
+                    window.scrollTo(0, 0);
+                } else {
+                    log.warn("Metadata was null or undefined");
+                }
+            })
+            .catch(function (response) {
+                log.error('Failed to get metadata', response);
+                dispatch(messengerActions.addNewMessage(<ApiError message="Failed to retrieve metadata" response={response} />));
+            });
+    };
 }
 
 function storeMetadata(metadata) {
@@ -56,7 +57,7 @@ function storeMetadata(metadata) {
         payload: {
             metadata: metadata
         }
-    }
+    };
 }
 
 export function updatePerPage(perPage) {
@@ -65,7 +66,7 @@ export function updatePerPage(perPage) {
         payload: {
             perPage: perPage
         }
-    }
+    };
 }
 
 export function updatePageNumber(pageNumber) {
@@ -74,5 +75,5 @@ export function updatePageNumber(pageNumber) {
         payload: {
             pageNumber: pageNumber
         }
-    }
+    };
 }

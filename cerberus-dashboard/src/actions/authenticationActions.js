@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import environmentService from 'EnvironmentService'
-import { hashHistory } from 'react-router'
-import axios from 'axios'
-import * as constants from '../constants/actions'
-import * as appActions from './appActions'
-import * as messengerActions from './messengerActions'
-import * as cms from '../constants/cms'
-import * as headerActions from './headerActions'
-import * as cmsUtils from '../utils/cmsUtils'
-import ApiError from '../components/ApiError/ApiError'
-import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox'
-import * as modalActions from './modalActions'
-import * as manageSDBActions from './manageSafetyDepositBoxActions'
-import * as workerTimers from 'worker-timers'
-import { getLogger } from 'logger'
+import React from 'react';
+import environmentService from '../service/EnvironmentService';
+import { hashHistory } from 'react-router';
+import axios from 'axios';
+import * as constants from '../constants/actions';
+import * as appActions from './appActions';
+import * as messengerActions from './messengerActions';
+import * as cms from '../constants/cms';
+import * as headerActions from './headerActions';
+import * as cmsUtils from '../utils/cmsUtils';
+import ApiError from '../components/ApiError/ApiError';
+import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
+import * as modalActions from './modalActions';
+import * as manageSDBActions from './manageSafetyDepositBoxActions';
+import * as workerTimers from 'worker-timers';
+import { getLogger } from "../utils/logger";
 
-var log = getLogger('authentication-actions')
+var log = getLogger('authentication-actions');
 
-const AUTH_ACTION_TIMEOUT = 60000 // 60 seconds in milliseconds
+const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
 
 /**
  * These are the actions for authentication events that will trigger the related reducers to change application state
@@ -52,7 +52,7 @@ export function loginUserSuccess(response, sessionExpirationCheckIntervalId) {
             tokenData: response.data.client_token,
             sessionExpirationCheckIntervalId: sessionExpirationCheckIntervalId
         }
-    }
+    };
 }
 /**
  * This action is dispatched to let the app state know that the auth request is in progress.
@@ -61,7 +61,7 @@ export function loginUserSuccess(response, sessionExpirationCheckIntervalId) {
 export function loginUserRequest() {
     return {
         type: constants.LOGIN_USER_REQUEST
-    }
+    };
 }
 
 /**
@@ -71,7 +71,7 @@ export function loginUserRequest() {
 export function loginMfaChallenge() {
     return {
         type: constants.LOGIN_MFA_CHALLENGE,
-    }
+    };
 }
 
 /**
@@ -85,51 +85,51 @@ export function loginMfaRequired(response) {
             stateToken: response.data.data.state_token,
             mfaDevices: response.data.data.devices,
         }
-    }
+    };
 }
 
 /**
  * Updates the state to indicate that the user is successfully authenticated.
  */
-function handleUserLogin(response, dispatch, redirectToWelcome=true) {
-    let leaseDurationInSeconds = response.data.data.client_token.lease_duration
-    const millisecondsPerSecond = 1000
-    const bestGuessOfRequestLatencyInMilliseconds = 120 * millisecondsPerSecond // take 2 minutes off of duration to account for latency
+function handleUserLogin(response, dispatch, redirectToWelcome = true) {
+    let leaseDurationInSeconds = response.data.data.client_token.lease_duration;
+    const millisecondsPerSecond = 1000;
+    const bestGuessOfRequestLatencyInMilliseconds = 120 * millisecondsPerSecond; // take 2 minutes off of duration to account for latency
 
-    let now = new Date()
-    let cerberusAuthTokenExpiresDateInMilliseconds = (now.getTime() + ((leaseDurationInSeconds * millisecondsPerSecond) - bestGuessOfRequestLatencyInMilliseconds))
+    let now = new Date();
+    let cerberusAuthTokenExpiresDateInMilliseconds = (now.getTime() + ((leaseDurationInSeconds * millisecondsPerSecond) - bestGuessOfRequestLatencyInMilliseconds));
 
-    let tokenExpiresDate = new Date()
-    let token = response.data.data.client_token.client_token
-    tokenExpiresDate.setTime(cerberusAuthTokenExpiresDateInMilliseconds)
+    let tokenExpiresDate = new Date();
+    let token = response.data.data.client_token.client_token;
+    tokenExpiresDate.setTime(cerberusAuthTokenExpiresDateInMilliseconds);
 
-    log.debug(`Setting session timeout to ${tokenExpiresDate}`)
+    log.debug(`Setting session timeout to ${tokenExpiresDate}`);
 
-    let timeToExpireTokenInMillis = tokenExpiresDate.getTime() - now.getTime()
+    let timeToExpireTokenInMillis = tokenExpiresDate.getTime() - now.getTime();
 
-    let sessionExpirationCheckIntervalInMillis = 2000
+    let sessionExpirationCheckIntervalInMillis = 2000;
     let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
-        let currentTimeInMillis = new Date().getTime()
-        let sessionExpirationTimeInMillis = tokenExpiresDate.getTime()
+        let currentTimeInMillis = new Date().getTime();
+        let sessionExpirationTimeInMillis = tokenExpiresDate.getTime();
         if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
-            dispatch(handleSessionExpiration())
+            dispatch(handleSessionExpiration());
         }
-    }, sessionExpirationCheckIntervalInMillis)
+    }, sessionExpirationCheckIntervalInMillis);
 
     let sessionWarningTimeoutId = workerTimers.setTimeout(() => {
-        dispatch(warnSessionExpiresSoon(token))
-    }, timeToExpireTokenInMillis - 120000)  // warn two minutes before expiration
+        dispatch(warnSessionExpiresSoon(token));
+    }, timeToExpireTokenInMillis - 120000);  // warn two minutes before expiration
 
-    dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId))
+    dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId));
 
-    sessionStorage.setItem('token', JSON.stringify(response.data))
-    sessionStorage.setItem('tokenExpiresDate', tokenExpiresDate)
-    sessionStorage.setItem('userRespondedToSessionWarning', false)
-    dispatch(messengerActions.clearAllMessages())
-    dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId))
-    dispatch(appActions.fetchSideBarData(token))
+    sessionStorage.setItem('token', JSON.stringify(response.data));
+    sessionStorage.setItem('tokenExpiresDate', tokenExpiresDate);
+    sessionStorage.setItem('userRespondedToSessionWarning', false);
+    dispatch(messengerActions.clearAllMessages());
+    dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId));
+    dispatch(appActions.fetchSideBarData(token));
     if (redirectToWelcome) {
-        hashHistory.push("/")
+        hashHistory.push("/");
     }
 }
 
@@ -141,8 +141,8 @@ function handleUserLogin(response, dispatch, redirectToWelcome=true) {
  * @returns {Function} The object to dispatch
  */
 export function loginUser(username, password) {
-    return function(dispatch) {
-        dispatch(loginUserRequest())
+    return function (dispatch) {
+        dispatch(loginUserRequest());
         return axios({
             url: environmentService.getDomain() + cms.USER_AUTH_PATH,
             auth: {
@@ -151,29 +151,29 @@ export function loginUser(username, password) {
             },
             timeout: AUTH_ACTION_TIMEOUT
         })
-        .then(function (response) {
-            if (response.data.status === cms.MFA_REQUIRED_STATUS) {
-                dispatch(loginMfaRequired(response))
-            } else {
-                handleUserLogin(response, dispatch)
-            }
-        })
-        .catch(function (response) {
-            log.error('Failed to login user', response)
+            .then(function (response) {
+                if (response.data.status === cms.MFA_REQUIRED_STATUS) {
+                    dispatch(loginMfaRequired(response));
+                } else {
+                    handleUserLogin(response, dispatch);
+                }
+            })
+            .catch(function (response) {
+                log.error('Failed to login user', response);
 
-            dispatch(messengerActions.addNewMessage(
-                <div className="login-error-msg-container">
-                    <div className="login-error-msg-header">Failed to Login</div>
-                    <div className="login-error-msg-content-wrapper">
-                        <div className="login-error-msg-label">Server Message:</div>
-                        <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                dispatch(messengerActions.addNewMessage(
+                    <div className="login-error-msg-container">
+                        <div className="login-error-msg-header">Failed to Login</div>
+                        <div className="login-error-msg-content-wrapper">
+                            <div className="login-error-msg-label">Server Message:</div>
+                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                        </div>
                     </div>
-                </div>
-            ))
+                ));
 
-            dispatch(resetAuthState())
-        })
-    }
+                dispatch(resetAuthState());
+            });
+    };
 }
 
 /**
@@ -183,8 +183,8 @@ export function loginUser(username, password) {
  * @param stateToken Identifying token for the authentication request
  */
 export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
-    return function(dispatch) {
-        dispatch(loginUserRequest())
+    return function (dispatch) {
+        dispatch(loginUserRequest());
         return axios({
             method: 'post',
             url: environmentService.getDomain() + cms.USER_AUTH_MFA_PATH,
@@ -195,25 +195,25 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
             },
             timeout: AUTH_ACTION_TIMEOUT
         })
-        .then(function (response) {
-            handleUserLogin(response, dispatch)
-        })
-        .catch(function (response) {
-            log.error('Failed to finalize MFA login', response)
+            .then(function (response) {
+                handleUserLogin(response, dispatch);
+            })
+            .catch(function (response) {
+                log.error('Failed to finalize MFA login', response);
 
-            dispatch(messengerActions.addNewMessage(
-                <div className="login-error-msg-container">
-                    <div className="login-error-msg-header">Failed to Login</div>
-                    <div className="login-error-msg-content-wrapper">
-                        <div className="login-error-msg-label">Server Message:</div>
-                        <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                dispatch(messengerActions.addNewMessage(
+                    <div className="login-error-msg-container">
+                        <div className="login-error-msg-header">Failed to Login</div>
+                        <div className="login-error-msg-content-wrapper">
+                            <div className="login-error-msg-label">Server Message:</div>
+                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                        </div>
                     </div>
-                </div>
-            ))
+                ));
 
-            dispatch(resetAuthState())
-        })
-    }
+                dispatch(resetAuthState());
+            });
+    };
 }
 
 /**
@@ -222,8 +222,8 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
  * @param stateToken Identifying token for the authentication request
  */
 export function triggerCodeChallenge(mfaDeviceId, stateToken) {
-    return function(dispatch) {
-        dispatch(loginMfaChallenge())
+    return function (dispatch) {
+        dispatch(loginMfaChallenge());
         return axios({
             method: 'post',
             url: environmentService.getDomain() + cms.USER_AUTH_MFA_PATH,
@@ -234,7 +234,7 @@ export function triggerCodeChallenge(mfaDeviceId, stateToken) {
             timeout: AUTH_ACTION_TIMEOUT
         })
             .catch(function (response) {
-                log.error('Failed to trigger challenge', response)
+                log.error('Failed to trigger challenge', response);
 
                 dispatch(messengerActions.addNewMessage(
                     <div className="login-error-msg-container">
@@ -244,113 +244,113 @@ export function triggerCodeChallenge(mfaDeviceId, stateToken) {
                             <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
                         </div>
                     </div>
-                ))
+                ));
 
-                dispatch(resetAuthState())
-            })
-    }
+                dispatch(resetAuthState());
+            });
+    };
 }
 
 /**
  * This action is dispatched to renew a users session token
  */
-export function refreshAuth(token, redirectPath='/', redirect=true) {
-    return function(dispatch) {
-        dispatch(loginUserRequest())
+export function refreshAuth(token, redirectPath = '/', redirect = true) {
+    return function (dispatch) {
+        dispatch(loginUserRequest());
         return axios({
             url: environmentService.getDomain() + cms.USER_AUTH_PATH_REFRESH,
-            headers: {'X-Cerberus-Token': token},
+            headers: { 'X-Cerberus-Token': token },
             timeout: AUTH_ACTION_TIMEOUT
         })
-        .then(function (response) {
-            dispatch(handleRemoveSessionExpirationCheck())
-            dispatch(removeSessionWarningTimeout())
-            workerTimers.setTimeout(function(){
-                handleUserLogin(response, dispatch, false)
-                if (redirect) {
-                    hashHistory.push(redirectPath)
-                }
-            }, 2000);
+            .then(function (response) {
+                dispatch(handleRemoveSessionExpirationCheck());
+                dispatch(removeSessionWarningTimeout());
+                workerTimers.setTimeout(function () {
+                    handleUserLogin(response, dispatch, false);
+                    if (redirect) {
+                        hashHistory.push(redirectPath);
+                    }
+                }, 2000);
 
-        })
-        .catch(function (response) {
-            // Clears View Token Modal upon max refresh token limit to prevent errors
-            dispatch(modalActions.clearAllModals())
-            log.error('Failed to login user', response)
-            dispatch(resetAuthState())
-            hashHistory.push('dashboard/#/login')
-            dispatch(messengerActions.addNewMessage(<ApiError message="Failed to refresh user token" response={response} />))
-        })
-    }
+            })
+            .catch(function (response) {
+                // Clears View Token Modal upon max refresh token limit to prevent errors
+                dispatch(modalActions.clearAllModals());
+                log.error('Failed to login user', response);
+                dispatch(resetAuthState());
+                hashHistory.push('dashboard/#/login');
+                dispatch(messengerActions.addNewMessage(<ApiError message="Failed to refresh user token" response={response} />));
+            });
+    };
 }
 
 /**
  * This action is dispatched to log a user out
  */
 export function logoutUser(token) {
-    return function(dispatch) {
+    return function (dispatch) {
         return axios({
             method: 'delete',
             url: environmentService.getDomain() + cms.TOKEN_DELETE_PATH,
-            headers: {'X-Cerberus-Token': token},
+            headers: { 'X-Cerberus-Token': token },
             timeout: AUTH_ACTION_TIMEOUT
         })
-        .then(function () {
-            sessionStorage.removeItem('token')
-            sessionStorage.removeItem('tokenExpiresDate')
-            sessionStorage.removeItem('userRespondedToSessionWarning')
-            dispatch(handleRemoveSessionExpirationCheck())
-            dispatch(removeSessionWarningTimeout())
-            dispatch(resetAuthState())
-            dispatch(headerActions.mouseOutUsername())
-            hashHistory.push('/login')
-        })
-        .catch(function (response) {
-            log.error('Failed to logout user', response)
-            dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Logout User" response={response} />))
-        })
-    }
+            .then(function () {
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('tokenExpiresDate');
+                sessionStorage.removeItem('userRespondedToSessionWarning');
+                dispatch(handleRemoveSessionExpirationCheck());
+                dispatch(removeSessionWarningTimeout());
+                dispatch(resetAuthState());
+                dispatch(headerActions.mouseOutUsername());
+                hashHistory.push('/login');
+            })
+            .catch(function (response) {
+                log.error('Failed to logout user', response);
+                dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Logout User" response={response} />));
+            });
+    };
 }
 
 /**
  * This action is dispatched to log a user out
  */
 export function handleSessionExpiration() {
-    return function(dispatch) {
-        sessionStorage.removeItem('token')
-        sessionStorage.removeItem('tokenExpiresDate')
-        sessionStorage.removeItem('userRespondedToSessionWarning')
-        dispatch(handleRemoveSessionExpirationCheck())
-        dispatch(removeSessionWarningTimeout())
-        dispatch(expireSession())
-        dispatch(modalActions.clearAllModals())
-        dispatch(manageSDBActions.resetToInitialState())
-        dispatch(appActions.resetToInitialState())
-    }
+    return function (dispatch) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('tokenExpiresDate');
+        sessionStorage.removeItem('userRespondedToSessionWarning');
+        dispatch(handleRemoveSessionExpirationCheck());
+        dispatch(removeSessionWarningTimeout());
+        dispatch(expireSession());
+        dispatch(modalActions.clearAllModals());
+        dispatch(manageSDBActions.resetToInitialState());
+        dispatch(appActions.resetToInitialState());
+    };
 }
 
 export function resetAuthState() {
     return {
         type: constants.RESET_USER_AUTH_STATE
-    }
+    };
 }
 
 export function expireSession() {
     return {
         type: constants.SESSION_EXPIRED
-    }
+    };
 }
 
 export function removeSessionExpirationCheck() {
     return {
         type: constants.REMOVE_SESSION_EXPIRATION_CHECK_INTERVAL
-    }
+    };
 }
 
 export function removeSessionWarningTimeoutId() {
     return {
         type: constants.REMOVE_SESSION_WARNING_TIMEOUT
-    }
+    };
 }
 
 export function setSessionWarningTimeoutId(id) {
@@ -359,41 +359,41 @@ export function setSessionWarningTimeoutId(id) {
         payload: {
             sessionWarningTimeoutId: id
         }
-    }
+    };
 }
 
 export function handleRemoveSessionExpirationCheck() {
-    return function(dispatch, getState) {
-        let sessionExpirationCheckIntervalId = getState().auth.sessionExpirationCheckIntervalId
-        log.debug(`Removing session expiration check interval, id: ${sessionExpirationCheckIntervalId}`)
+    return function (dispatch, getState) {
+        let sessionExpirationCheckIntervalId = getState().auth.sessionExpirationCheckIntervalId;
+        log.debug(`Removing session expiration check interval, id: ${sessionExpirationCheckIntervalId}`);
         try {
-            workerTimers.clearInterval(sessionExpirationCheckIntervalId)
-        } catch(err) {
-            console.log(`Failed to clear auth token timeout, id=${sessionExpirationCheckIntervalId}`)
-            console.log(err)
+            workerTimers.clearInterval(sessionExpirationCheckIntervalId);
+        } catch (err) {
+            console.log(`Failed to clear auth token timeout, id=${sessionExpirationCheckIntervalId}`);
+            console.log(err);
         }
-        dispatch(removeSessionExpirationCheck())
-    }
+        dispatch(removeSessionExpirationCheck());
+    };
 }
 
 export function removeSessionWarningTimeout() {
-    return function(dispatch, getState) {
-        let sessionWarningTimeoutId = getState().auth.sessionWarningTimeoutId
-        log.debug(`Removing warning timeout, id: ${sessionWarningTimeoutId}`)
+    return function (dispatch, getState) {
+        let sessionWarningTimeoutId = getState().auth.sessionWarningTimeoutId;
+        log.debug(`Removing warning timeout, id: ${sessionWarningTimeoutId}`);
         try {
-            workerTimers.clearTimeout(getState().auth.sessionWarningTimeoutId)
-        } catch(err) {
-            console.log(`Failed to clear session warning timeout, id=${sessionWarningTimeoutId}`)
-            console.log(err)
+            workerTimers.clearTimeout(getState().auth.sessionWarningTimeoutId);
+        } catch (err) {
+            console.log(`Failed to clear session warning timeout, id=${sessionWarningTimeoutId}`);
+            console.log(err);
         }
-        dispatch(removeSessionWarningTimeoutId())
-    }
+        dispatch(removeSessionWarningTimeoutId());
+    };
 }
 
 export function handleUserRespondedToSessionWarning() {
-    return function() {
-        sessionStorage.setItem('userRespondedToSessionWarning', true)
-    }
+    return function () {
+        sessionStorage.setItem('userRespondedToSessionWarning', true);
+    };
 }
 
 /**
@@ -402,17 +402,17 @@ export function handleUserRespondedToSessionWarning() {
  * @param tokenStr - Token string
  */
 export function setSessionWarningTimeout(timeToWarnInMillis, tokenStr) {
-    return function(dispatch) {
+    return function (dispatch) {
         let userHasRespondedToSessionWarning = sessionStorage.getItem('userRespondedToSessionWarning') === "true";
 
-        if (! userHasRespondedToSessionWarning) {
+        if (!userHasRespondedToSessionWarning) {
             let sessionWarningTimeoutId = workerTimers.setTimeout(() => {
-                dispatch(warnSessionExpiresSoon(tokenStr))
-            }, timeToWarnInMillis)
+                dispatch(warnSessionExpiresSoon(tokenStr));
+            }, timeToWarnInMillis);
 
-            dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId))
+            dispatch(setSessionWarningTimeoutId(sessionWarningTimeoutId));
         }
-    }
+    };
 }
 
 /**
@@ -425,7 +425,7 @@ export function setSelectedDeviceId(selectedDeviceId) {
         payload: {
             selectedDeviceId: selectedDeviceId
         }
-    }
+    };
 }
 
 /**
@@ -434,22 +434,22 @@ export function setSelectedDeviceId(selectedDeviceId) {
  */
 export function warnSessionExpiresSoon(tokenStr) {
 
-    return function(dispatch) {
+    return function (dispatch) {
         let yes = () => {
-            dispatch(refreshAuth(tokenStr, "/", false))
-            dispatch(handleUserRespondedToSessionWarning())
-            dispatch(modalActions.popModal())
-        }
+            dispatch(refreshAuth(tokenStr, "/", false));
+            dispatch(handleUserRespondedToSessionWarning());
+            dispatch(modalActions.popModal());
+        };
 
         let no = () => {
-            dispatch(handleUserRespondedToSessionWarning())
-            dispatch(modalActions.popModal())
-        }
+            dispatch(handleUserRespondedToSessionWarning());
+            dispatch(modalActions.popModal());
+        };
 
         let conf = <ConfirmationBox handleYes={yes}
-                                    handleNo={no}
-                                    message="Your session is about to expire. Would you like to stay logged in?"/>
+            handleNo={no}
+            message="Your session is about to expire. Would you like to stay logged in?" />;
 
-        dispatch(modalActions.pushModal(conf))
-    }
+        dispatch(modalActions.pushModal(conf));
+    };
 }

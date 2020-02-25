@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import { reduxForm, touch } from 'redux-form'
+import React from 'react';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { reduxForm, touch } from 'redux-form';
 
-import GroupsSelect from '../GroupSelect/GroupsSelect'
-import UserGroupPermissionsFieldSet from '../UserGroupPermissionsFieldSet/UserGroupPermissionsFieldSet'
-import IamPrincipalPermissionsFieldSet from '../IamPrincipalPermissionsFieldSet/IamPrincipalPermissionsFieldSet'
-import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField'
+import GroupsSelect from '../GroupSelect/GroupsSelect';
+import UserGroupPermissionsFieldSet from '../UserGroupPermissionsFieldSet/UserGroupPermissionsFieldSet';
+import IamPrincipalPermissionsFieldSet from '../IamPrincipalPermissionsFieldSet/IamPrincipalPermissionsFieldSet';
+import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField';
 
-import * as modalActions from '../../actions/modalActions'
-import * as manageSafetyDepositBoxActions from '../../actions/manageSafetyDepositBoxActions'
+import * as modalActions from '../../actions/modalActions';
+import * as manageSafetyDepositBoxActions from '../../actions/manageSafetyDepositBoxActions';
 
-import './EditSDBoxForm.scss'
+import './EditSDBoxForm.scss';
 
-import { getLogger } from 'logger'
-var log = getLogger('edit-sdb')
-
-const formName = 'edit-sdb'
+const formName = 'edit-sdb';
 
 //state.manageSafetyDepositBox.data
 export const fields = [
@@ -42,23 +39,23 @@ export const fields = [
     'userGroupPermissions[].roleId',
     'iamPrincipalPermissions[].iamPrincipalArn',
     'iamPrincipalPermissions[].roleId'
-]
+];
 
 class EditSDBoxForm extends Component {
 
 
     render() {
         const { fields: { description, owner, userGroupPermissions, iamPrincipalPermissions },
-            cerberusAuthToken, sdbId, roles, userGroups, hasDomainDataLoaded, dispatch, handleSubmit, isEditSubmitting } = this.props
+            cerberusAuthToken, sdbId, roles, userGroups, hasDomainDataLoaded, dispatch, handleSubmit, isEditSubmitting } = this.props;
 
         // Lets not attempt to render everything until we have the data we need, when the domain data has loaded we can pass this
-        if (! hasDomainDataLoaded) {
-            return(<div></div>)
+        if (!hasDomainDataLoaded) {
+            return (<div></div>);
         }
 
         return (
-            <form id="edit-sdb-form" onSubmit={ handleSubmit( data => {
-                dispatch(manageSafetyDepositBoxActions.submitEditSDBRequest(sdbId, data, cerberusAuthToken))
+            <form id="edit-sdb-form" onSubmit={handleSubmit(data => {
+                dispatch(manageSafetyDepositBoxActions.submitEditSDBRequest(sdbId, data, cerberusAuthToken));
             })}>
 
                 <div id="form-description" className="ncss-brand">
@@ -72,39 +69,39 @@ class EditSDBoxForm extends Component {
                         userGroups={userGroups}
                         allowCustomValues={false}
                         handleBeingTouched={() => {
-                                  dispatch(touch(formName, owner.name))
-                              }} />
+                            dispatch(touch(formName, owner.name));
+                        }} />
                 </div>
 
                 <SDBDescriptionField description={description} />
 
                 <UserGroupPermissionsFieldSet userGroupPermissions={userGroupPermissions}
-                                              dispatch={dispatch}
-                                              formName={formName}
-                                              userGroups={userGroups}
-                                              roles={roles} />
+                    dispatch={dispatch}
+                    formName={formName}
+                    userGroups={userGroups}
+                    roles={roles} />
 
                 <IamPrincipalPermissionsFieldSet iamPrincipalPermissions={iamPrincipalPermissions}
-                                                 dispatch={dispatch}
-                                                 formName={formName}
-                                                 roles={roles} />
+                    dispatch={dispatch}
+                    formName={formName}
+                    roles={roles} />
 
                 <div id="submit-btn-container">
                     <div id='cancel-btn'
-                         className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                         onClick={ () => {
-                                dispatch(modalActions.popModal())
+                        className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                        onClick={() => {
+                            dispatch(modalActions.popModal());
 
-                            }}>Cancel
+                        }}>Cancel
                     </div>
                     <button id='submit-btn'
-                            className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                            disabled={isEditSubmitting}>Submit
+                        className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                        disabled={isEditSubmitting}>Submit
                     </button>
                 </div>
 
             </form>
-        )
+        );
     }
 
 
@@ -113,10 +110,10 @@ class EditSDBoxForm extends Component {
 let form = reduxForm({
     form: formName,
     fields
-})(EditSDBoxForm)
+})(EditSDBoxForm);
 
 export default connect((state) => {
-    const { id, description, owner, userGroupPermissions, iamPrincipalPermissions } = state.manageSafetyDepositBox.data
+    const { id, description, owner, userGroupPermissions, iamPrincipalPermissions } = state.manageSafetyDepositBox.data;
 
     return {
         cerberusAuthToken: state.auth.cerberusAuthToken,
@@ -132,5 +129,5 @@ export default connect((state) => {
             userGroupPermissions: userGroupPermissions,
             iamPrincipalPermissions: iamPrincipalPermissions
         }
-    }
-})(form)
+    };
+})(form);

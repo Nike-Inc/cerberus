@@ -32,7 +32,7 @@ import {
   setSessionWarningTimeout
 } from "./actions/authenticationActions";
 import * as workerTimers from "worker-timers";
-import { getLogger } from "logger";
+import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
 
 var log = getLogger("main");
@@ -49,7 +49,7 @@ const store = configureStore(window.__INITIAL_STATE__);
 let token = JSON.parse(sessionStorage.getItem("token"));
 
 // use session token to register user as logged in
-if (token != null && token != "") {
+if (token !== null && token !== "") {
   let dateString = sessionStorage.getItem("tokenExpiresDate");
   let tokenExpiresDate = new Date(dateString);
   let now = new Date();

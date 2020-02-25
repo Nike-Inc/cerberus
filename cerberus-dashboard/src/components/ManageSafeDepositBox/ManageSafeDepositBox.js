@@ -27,33 +27,6 @@ import SafeDepositBoxSettings from '../SafeDepositBoxSettings/SafeDepositBoxSett
 
 import './ManageSafeDepositBox.scss';
 
-// connect to the store for the pieces we care about
-export default 
-@connect((state) => {
-    return {
-        // user info
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-
-        // Domain data
-        hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
-        categories: state.app.cmsDomainData.categories,
-        roles: state.app.cmsDomainData.roles,
-
-        // SDB Data
-        hasFetchedSDBData: state.manageSafetyDepositBox.hasFetchedSDBData,
-        sdbData: state.manageSafetyDepositBox.data,
-        navigatedPath: state.manageSafetyDepositBox.navigatedPath,
-        keysForSecureDataPath: state.manageSafetyDepositBox.keysForSecureDataPath,
-        secureObjectData: state.manageSafetyDepositBox.secureData,
-        secureFileData: state.manageSafetyDepositBox.secureFileData,
-        hasFetchedObjectKeys: state.manageSafetyDepositBox.hasFetchedObjectKeys,
-        hasFetchedFileKeys: state.manageSafetyDepositBox.hasFetchedFileKeys,
-        showAddSecretForm: state.manageSafetyDepositBox.showAddSecretForm,
-        showAddFileForm: state.manageSafetyDepositBox.showAddFileForm,
-        showDeleteDialog: state.manageSafetyDepositBox.showDeleteDialog,
-        nav: state.manageSafetyDepositBox.nav
-    };
-})
 class ManageSafeDepositBox extends Component {
 
     componentWillReceiveProps(nextProps) {
@@ -163,3 +136,29 @@ class ManageSafeDepositBox extends Component {
     }
 
 }
+
+const mapStateToProps = state => ({
+    // user info
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+
+    // Domain data
+    hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
+    categories: state.app.cmsDomainData.categories,
+    roles: state.app.cmsDomainData.roles,
+
+    // SDB Data
+    hasFetchedSDBData: state.manageSafetyDepositBox.hasFetchedSDBData,
+    sdbData: state.manageSafetyDepositBox.data,
+    navigatedPath: state.manageSafetyDepositBox.navigatedPath,
+    keysForSecureDataPath: state.manageSafetyDepositBox.keysForSecureDataPath,
+    secureObjectData: state.manageSafetyDepositBox.secureData,
+    secureFileData: state.manageSafetyDepositBox.secureFileData,
+    hasFetchedObjectKeys: state.manageSafetyDepositBox.hasFetchedObjectKeys,
+    hasFetchedFileKeys: state.manageSafetyDepositBox.hasFetchedFileKeys,
+    showAddSecretForm: state.manageSafetyDepositBox.showAddSecretForm,
+    showAddFileForm: state.manageSafetyDepositBox.showAddFileForm,
+    showDeleteDialog: state.manageSafetyDepositBox.showDeleteDialog,
+    nav: state.manageSafetyDepositBox.nav
+});
+
+export default connect(mapStateToProps)(ManageSafeDepositBox);

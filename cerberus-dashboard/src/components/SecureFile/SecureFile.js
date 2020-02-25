@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import axios from 'axios'
-import { Component } from 'react'
-import PropTypes from 'prop-types'
-import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions'
-import './SecureFile.scss'
-import log from 'logger'
+import React from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
+import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions';
+import './SecureFile.scss';
+import log from '../../utils/logger';
 
 import SecureFileForm from '../SecureFileForm/SecureFileForm';
 
@@ -33,49 +32,50 @@ export default class SecureFile extends Component {
         cerberusAuthToken: PropTypes.string.isRequired,
         isFetching: PropTypes.bool.isRequired,
         secureFileData: PropTypes.object.isRequired,
-    }
+    };
 
     handleLabelClicked(key) {
         if (this.isFolder()) {
-            this.props.dispatch(mSDBActions.updateNavigatedPath(`${this.props.navigatedPath}${key}`, this.props.cerberusAuthToken))
+            this.props.dispatch(mSDBActions.updateNavigatedPath(`${this.props.navigatedPath}${key}`, this.props.cerberusAuthToken));
         } else {
-            let fullKey = `${this.props.navigatedPath}${key}`
+            let fullKey = `${this.props.navigatedPath}${key}`;
             if (fullKey in this.props.secureFileData) {
-                log.debug(`deleting from local cache Key: ${fullKey}`)
-                this.props.dispatch(mSDBActions.removeSecureFileFromLocalStore(fullKey))
+                log.debug(`deleting from local cache Key: ${fullKey}`);
+                this.props.dispatch(mSDBActions.removeSecureFileFromLocalStore(fullKey));
             } else {
-                log.debug(`fetching Key: ${fullKey}`)
-                this.props.dispatch(mSDBActions.getSecureFileMetadata(fullKey, this.props.cerberusAuthToken))
+                log.debug(`fetching Key: ${fullKey}`);
+                this.props.dispatch(mSDBActions.getSecureFileMetadata(fullKey, this.props.cerberusAuthToken));
             }
         }
     }
 
     isFolder() {
-        return this.props.label.endsWith('/')
+        return this.props.label.endsWith('/');
     }
 
     render() {
-        const {label, isActive, isFetching, navigatedPath, secureFileData} = this.props
+        const { label, isActive, isFetching, navigatedPath, secureFileData } = this.props;
 
         return (
             <div className="secure-file-container">
                 <div className="secure-file-collapsed-container" id={`secure-file-container-${label}`} onClick={() => {
-                    this.handleLabelClicked(label)
+                    this.handleLabelClicked(label);
                 }}>
                     <div className={`secure-file-collapsed-icon ${this.isFolder() ? 'folder' : (isActive ? 'key-active' : 'key')}`}></div>
                     <div className={`secure-file-collapsed-label ${this.isFolder() ? 'folder' : `key${isActive ? '-active' : ''}`}-label`}>{label}</div>
                 </div>
                 {isActive && !isFetching &&
-                    <SecureFileForm initialValues={{    path: label,
-                                                        fileContents: {}
-                                                  }}
-                                    secureFileData={secureFileData}
-                                    pathReadOnly={true}
-                                    isActive={isActive}
-                                    formKey={`${navigatedPath}${label}`} />
+                    <SecureFileForm initialValues={{
+                        path: label,
+                        fileContents: {}
+                    }}
+                        secureFileData={secureFileData}
+                        pathReadOnly={true}
+                        isActive={isActive}
+                        formKey={`${navigatedPath}${label}`} />
                 }
             </div>
-        )
+        );
     }
 
 }

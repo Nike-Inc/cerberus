@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import PropTypes from 'prop-types'
-import GroupsSelect from '../GroupSelect/GroupsSelect'
-import RoleSelect from '../RoleSelect/RoleSelect'
-import Buttons from '../Buttons/Buttons'
-import AddButton from '../AddButton/AddButton'
-import { touch } from 'redux-form'
-import './UserGroupPermissionsFieldSet.scss'
+import React from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
+import GroupsSelect from '../GroupSelect/GroupsSelect';
+import RoleSelect from '../RoleSelect/RoleSelect';
+import Buttons from '../Buttons/Buttons';
+import AddButton from '../AddButton/AddButton';
+import { touch } from 'redux-form';
+import './UserGroupPermissionsFieldSet.scss';
 
 /**
  * Component for displaying User Group Permissions form field set
@@ -39,10 +39,10 @@ export default class UserGroupPermissionsFieldSet extends Component {
         formName: PropTypes.string.isRequired,
         userGroups: PropTypes.array.isRequired,
         roles: PropTypes.array.isRequired
-    }
+    };
 
     render() {
-        const {userGroupPermissions, dispatch, formName, userGroups, roles} = this.props
+        const { userGroupPermissions, dispatch, formName, userGroups, roles } = this.props;
 
         return (
             <div className='user-group-permissions'>
@@ -56,24 +56,24 @@ export default class UserGroupPermissionsFieldSet extends Component {
                                     userGroups={userGroups}
                                     allowCustomValues={true}
                                     handleBeingTouched={() => {
-                                                          dispatch(touch(formName, permission.name.name))
-                                                      }} />
+                                        dispatch(touch(formName, permission.name.name));
+                                    }} />
 
                                 <RoleSelect {...permission.roleId}
-                                    roles={roles.filter((role => role.name.toLowerCase() != 'owner'))}
+                                    roles={roles.filter((role => role.name.toLowerCase() !== 'owner'))}
                                     handleBeingTouched={() => {
-                                                        dispatch(touch(formName, permission.roleId.name))
-                                                    }} />
+                                        dispatch(touch(formName, permission.roleId.name));
+                                    }} />
 
                                 <Buttons handleRemoveClicked={() => {
-                                                     userGroupPermissions.removeField(index)
-                                                 }} />
+                                    userGroupPermissions.removeField(index);
+                                }} />
                             </div>
                         </div>
                     )}
                 </div>
                 <AddButton handleClick={userGroupPermissions.addField} message="Add new permission" />
             </div>
-        )
+        );
     }
 }

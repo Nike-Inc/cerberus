@@ -21,6 +21,7 @@
     "downloadjs": "1.4.7",
     "humps": "1.1.0",
     "loglevel": "1.4.1",
+    "node-sass": "^4.13.1",
     "prop-types": "15.5.9",
     "react": "15.6.2",
     "react-addons-create-fragment": "15.6.2",

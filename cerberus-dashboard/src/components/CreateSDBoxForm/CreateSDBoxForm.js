@@ -31,7 +31,7 @@ import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField';
 
 import './CreateSDBoxForm.scss';
 
-import { getLogger } from 'logger';
+import { getLogger } from '../../utils/logger';
 var log = getLogger('create-new-sdb');
 
 const formName = 'create-new-sdb-form';
@@ -51,34 +51,6 @@ export const fields = [
     'iamPrincipalPermissions[].roleId'
 ];
 
-// connect to the store for the pieces we care about
-export default 
-@connect((state) => {
-    return {
-        // user info
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-        userGroups: state.auth.groups,
-
-        // domain data for the drop downs
-        hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
-        categories: state.app.cmsDomainData.categories,
-        roles: state.app.cmsDomainData.roles,
-
-        // data for the form
-        isSubmitting: state.nSDB.isSubmitting,
-        initialValues: {
-            categoryId: state.nSDB.selectedCategoryId
-        }
-    };
-})
-// wire up the redux form
-@reduxForm(
-    {
-        form: formName,
-        fields: fields,
-        validate
-    }
-)
 class CreateSDBoxForm extends Component {
 
     /**
@@ -182,10 +154,26 @@ class CreateSDBoxForm extends Component {
 }
 
 
+const mapStateToProps = state => ({
 
+    // user info
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+    userGroups: state.auth.groups,
 
+    // domain data for the drop downs
+    hasDomainDataLoaded: state.app.cmsDomainData.hasLoaded,
+    categories: state.app.cmsDomainData.categories,
+    roles: state.app.cmsDomainData.roles,
 
+    // data for the form
+    isSubmitting: state.nSDB.isSubmitting,
+    initialValues: {
+        categoryId: state.nSDB.selectedCategoryId
+    }
+});
 
-
-
-
+export default reduxForm({
+    form: formName,
+    fields: fields,
+    validate
+})(connect(mapStateToProps)(CreateSDBoxForm));

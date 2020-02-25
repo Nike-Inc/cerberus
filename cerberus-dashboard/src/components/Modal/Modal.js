@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import PropTypes from 'prop-types'
+import React from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
+import './Modal.scss';
 
-import './Modal.scss'
-
-import { getLogger } from 'logger'
-var log = getLogger('modal')
 
 export default class Modal extends Component {
 
     static propTypes = {
         modalStack: PropTypes.array.isRequired
-    }
+    };
 
     render() {
-        const {modalStack} = this.props
+        const { modalStack } = this.props;
 
         if (modalStack.length < 1) {
-            return(<div></div>)
+            return (<div></div>);
         }
 
-        let modal = modalStack[modalStack.length - 1]
+        let modal = modalStack[modalStack.length - 1];
 
         return (
             <div className="modal-container">
@@ -44,6 +41,6 @@ export default class Modal extends Component {
                     {modal}
                 </div>
             </div>
-        )
+        );
     }
 }

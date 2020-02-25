@@ -21,13 +21,7 @@ import * as appActions from '../../actions/appActions';
 import EnvironmentService from '../../service/EnvironmentService';
 import './LandingView.scss';
 
-export default 
-@connect((state) => {
-    return {
-        hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
-        dashboardVersion: state.app.metadata.version
-    };
-})
+
 class LandingView extends Component {
 
     componentDidMount() {
@@ -63,3 +57,10 @@ class LandingView extends Component {
         );
     }
 }
+
+const mapStateToProps = state => ({
+    hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
+    dashboardVersion: state.app.metadata.version
+});
+
+export default connect(mapStateToProps)(LandingView);

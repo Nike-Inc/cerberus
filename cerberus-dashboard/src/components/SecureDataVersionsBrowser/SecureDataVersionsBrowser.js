@@ -14,48 +14,24 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import Loader from '../Loader/Loader'
-import ReactPaginate from 'react-paginate'
-import Select from 'react-select'
-import * as vActions from '../../actions/versionHistoryBrowserActions.js'
+import React from 'react';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import Loader from '../Loader/Loader';
+import ReactPaginate from 'react-paginate';
+import Select from 'react-select';
+import * as vActions from '../../actions/versionHistoryBrowserActions.js';
 import JSONPretty from 'react-json-pretty';
+import './SecureDataVersionsBrowser.scss';
 
-import log from 'logger'
+class SecureDataVersionsBrowser extends Component {
 
-import './SecureDataVersionsBrowser.scss'
+    dispatch = this.props.dispatch;
 
-// connect to the store for the pieces we care about
-@connect((state) => {
-    return {
-        // current sdb
-        safeDepositBoxId: state.manageSafetyDepositBox.data.id,
-
-        // user info
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-
-        // version state
-        hasFetchedPathsWithHistory: state.versionHistoryBrowser.hasFetchedPathsWithHistory,
-        pathsWithHistory: state.versionHistoryBrowser.pathsWithHistory,
-
-        hasFetchedVersionPathData: state.versionHistoryBrowser.hasFetchedVersionPathData,
-        versionPathSelected: state.versionHistoryBrowser.versionPathSelected,
-        versionPathData: state.versionHistoryBrowser.versionPathData,
-        versionPathPerPage: state.versionHistoryBrowser.versionPathPerPage,
-        versionPathPageNumber: state.versionHistoryBrowser.versionPathPageNumber,
-        versionPathSecureDataMap: state.versionHistoryBrowser.versionPathSecureDataMap
-    }
-})
-export default class SecureDataVersionsBrowser extends Component {
-
-    dispatch = this.props.dispatch
-    
     // When the component mounts fetch the initial history data for the Safe Deposit Box
     componentDidMount() {
-        if (! this.props.hasFetchedPathsWithHistory) {
-            this.dispatch(vActions.fetchVersionDataForSdb(this.props.safeDepositBoxId, this.props.cerberusAuthToken))
+        if (!this.props.hasFetchedPathsWithHistory) {
+            this.dispatch(vActions.fetchVersionDataForSdb(this.props.safeDepositBoxId, this.props.cerberusAuthToken));
         }
     }
 
@@ -64,32 +40,32 @@ export default class SecureDataVersionsBrowser extends Component {
 
         this.dispatch(vActions.updatePageNumber(pageNumber));
         this.dispatch(vActions.fetchPathVersionData(this.props.versionPathSelected, this.props.cerberusAuthToken, pageNumber, this.props.versionPathPerPage));
-    }
+    };
 
     handlePerPageSelect = (selected) => {
         let perPage = selected.value;
         let pageNumber = 0; // default back to the first page
 
         this.dispatch(vActions.updatePerPage(perPage));
-        this.dispatch(vActions.updatePageNumber(pageNumber))
+        this.dispatch(vActions.updatePageNumber(pageNumber));
         this.dispatch(vActions.fetchPathVersionData(this.props.versionPathSelected, this.props.cerberusAuthToken, pageNumber, perPage));
-    }
+    };
 
     handleBreadCrumbHomeClick = () => {
-        this.dispatch(vActions.handleBreadCrumbHomeClick())
-    }
+        this.dispatch(vActions.handleBreadCrumbHomeClick());
+    };
 
     handleFetchVersion = (versionId) => {
-        this.dispatch(vActions.fetchVersionedSecureDataForPath(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken))
-    }
+        this.dispatch(vActions.fetchVersionedSecureDataForPath(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken));
+    };
 
     handleDownloadVersion = (versionId) => {
-        this.dispatch(vActions.downloadSecureFileVersion(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken))
-    }
+        this.dispatch(vActions.downloadSecureFileVersion(this.props.versionPathSelected, versionId, this.props.cerberusAuthToken));
+    };
 
     handlePathWithHistoryClick = (path) => {
-        this.dispatch(vActions.fetchPathVersionData(path, this.props.cerberusAuthToken, this.props.versionPathPageNumber, this.props.versionPathPerPage))
-    }
+        this.dispatch(vActions.fetchPathVersionData(path, this.props.cerberusAuthToken, this.props.versionPathPageNumber, this.props.versionPathPerPage));
+    };
 
     render() {
         const {
@@ -102,7 +78,7 @@ export default class SecureDataVersionsBrowser extends Component {
             versionPathPerPage,
             versionPathPageNumber,
             versionPathSecureDataMap
-        } = this.props
+        } = this.props;
 
         const {
             handlePerPageSelect,
@@ -111,28 +87,28 @@ export default class SecureDataVersionsBrowser extends Component {
             handleFetchVersion,
             handleDownloadVersion,
             handlePathWithHistoryClick
-        } = this
+        } = this;
 
-        if (! hasFetchedPathsWithHistory) {
+        if (!hasFetchedPathsWithHistory) {
             return (
                 <div className="secure-data-versions-browser">
-                    <Loader/>
+                    <Loader />
                 </div>
-            )
+            );
         }
 
-        return(
+        return (
             <div className="secure-data-versions-browser">
-                {! versionPathSelected &&
+                {!versionPathSelected &&
                     pathsWithHistoryList(pathsWithHistory, cerberusAuthToken, versionPathPageNumber, versionPathPerPage, handlePathWithHistoryClick)
                 }
-                
-                { versionPathSelected && 
+
+                {versionPathSelected &&
                     pathVersionsBrowser(versionPathSelected, hasFetchedVersionPathData, versionPathData, versionPathPerPage,
                         versionPathPageNumber, versionPathSecureDataMap, handlePerPageSelect, handlePageClick, handleBreadCrumbHomeClick, handleFetchVersion, handleDownloadVersion)
                 }
             </div>
-        )
+        );
     }
 }
 
@@ -141,42 +117,42 @@ const pathsWithHistoryList = (pathsWithHistory, cerberusAuthToken, versionPathPa
         <div>
             <h3 className="ncss-brand">Paths with version history</h3>
             <div className="paths-with-history">
-            { pathsWithHistory && pathsWithHistory.map((path) =>
-                <div key={path}
-                     className="path clickable ncss-brand"
-                     onClick={() => { handlePathWithHistoryClick(path)} }>{path}</div>
-            )}
+                {pathsWithHistory && pathsWithHistory.map((path) =>
+                    <div key={path}
+                        className="path clickable ncss-brand"
+                        onClick={() => { handlePathWithHistoryClick(path); }}>{path}</div>
+                )}
             </div>
         </div>
-    )
-}
+    );
+};
 
-const pathVersionsBrowser = ( versionPathSelected,
-                              hasFetchedVersionPathData,
-                              data,
-                              perPage,
-                              pageNumber,
-                              versionPathSecureDataMap,
-                              handlePerPageSelect,
-                              handlePageClick,
-                              handleBreadCrumbHomeClick,
-                              handleFetchVersion,
-                              handleDownloadVersion) => {
+const pathVersionsBrowser = (versionPathSelected,
+    hasFetchedVersionPathData,
+    data,
+    perPage,
+    pageNumber,
+    versionPathSecureDataMap,
+    handlePerPageSelect,
+    handlePageClick,
+    handleBreadCrumbHomeClick,
+    handleFetchVersion,
+    handleDownloadVersion) => {
 
-    if (! hasFetchedVersionPathData) {
-        return (<Loader/>)
+    if (!hasFetchedVersionPathData) {
+        return (<Loader />);
     }
 
     return (
         <div className="version-list-container">
             <h3 className="ncss-brand">Version Summaries for Path: {versionPathSelected}</h3>
-            <div onClick={() => {handleBreadCrumbHomeClick()}} className="breadcrumb clickable">Back to path list</div>
-            { pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick) }
-            { summaries(data['secure_data_version_summaries'], handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)}
-            { pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick) }
+            <div onClick={() => { handleBreadCrumbHomeClick(); }} className="breadcrumb clickable">Back to path list</div>
+            {pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick)}
+            {summaries(data['secure_data_version_summaries'], handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)}
+            {pathVersionsBrowserPaginationMenu(data, perPage, pageNumber, handlePerPageSelect, handlePageClick)}
         </div>
-    )
-}
+    );
+};
 
 const summaries = (summaries, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
     return (
@@ -185,8 +161,8 @@ const summaries = (summaries, handleFetchVersion, handleDownloadVersion, version
                 generateVersionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap).map(it => it)
             )}
         </div>
-    )
-}
+    );
+};
 
 const generateVersionSummary = (summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
     if (summary.action === 'DELETE') {
@@ -199,32 +175,32 @@ const generateVersionSummary = (summary, index, handleFetchVersion, handleDownlo
                 </div>
             </div>,
             versionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)
-        ]
+        ];
     }
-    return [ versionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) ]
-}
+    return [versionSummary(summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap)];
+};
 
 const versionSummary = (summary, index, handleFetchVersion, handleDownloadVersion, versionPathSecureDataMap) => {
-    let versionId = summary.id
-    let dataForVersion = versionPathSecureDataMap.hasOwnProperty(versionId) ? versionPathSecureDataMap[versionId] : false
+    let versionId = summary.id;
+    let dataForVersion = versionPathSecureDataMap.hasOwnProperty(versionId) ? versionPathSecureDataMap[versionId] : false;
     return (
         <div className="version-summary" key={index}>
             <div className="id">Version: <span className={versionId === 'CURRENT' ? 'current' : ''}>{summary.id}</span></div>
             <div className="type">Type: {summary['type']}</div>
             {summary.type === 'FILE' &&
-                <div className="size-in-bytes">Size: {(summary['size_in_bytes']/1024).toFixed(2)} KB</div>
+                <div className="size-in-bytes">Size: {(summary['size_in_bytes'] / 1024).toFixed(2)} KB</div>
             }
             <div className="principal-wrapper">
                 Created by <span className="principal">{summary['version_created_by']}</span> on <span className="date">{new Date(summary['version_created_ts']).toLocaleString()}</span>
             </div>
-            { summary.type === 'FILE' ?
+            {summary.type === 'FILE' ?
                 (versionDownloadButton(handleDownloadVersion, versionId))
-                    :
+                :
                 (dataForVersion ? secureDataForVersion(dataForVersion) : fetchVersionButton(handleFetchVersion, versionId))
             }
         </div>
-    )
-}
+    );
+};
 
 const secureDataForVersion = (dataForVersion) => {
     return (
@@ -233,26 +209,26 @@ const secureDataForVersion = (dataForVersion) => {
                 <JSONPretty json={dataForVersion} space="4"></JSONPretty>
             </div>
         </div>
-    )
-}
+    );
+};
 
 const fetchVersionButton = (handleFetchVersion, versionId) => {
     return (
         <div
             className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-            onClick={() => { handleFetchVersion(versionId) }}
+            onClick={() => { handleFetchVersion(versionId); }}
         >Show this version</div>
-    )
-}
+    );
+};
 
 const versionDownloadButton = (handleDownloadVersion, versionId) => {
     return (
         <div
             className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-            onClick={() => { handleDownloadVersion(versionId) }}
+            onClick={() => { handleDownloadVersion(versionId); }}
         >Download</div>
-    )
-}
+    );
+};
 
 const pathVersionsBrowserPaginationMenu = (pathData, perPage, pageNumber, handlePerPageSelect, handlePageClick) => {
 
@@ -262,39 +238,60 @@ const pathVersionsBrowserPaginationMenu = (pathData, perPage, pageNumber, handle
         { value: 25, label: '25' },
         { value: 50, label: '50' },
         { value: 100, label: '100' }
-    ]
+    ];
 
     if (pageNumber === 0 && pathData.has_next === false) {
-        return(<div></div>)
+        return (<div></div>);
     }
 
     return (
         <div className="version-pagination-menu paths-with-history-pagination-menu ncss-brand">
             <ReactPaginate pageCount={Math.ceil(pathData.total_version_count / perPage)}
-                           pageRangeDisplayed={3}
-                           marginPagesDisplayed={1}
-                           previousLabel={"Prev"}
-                           nextLabel={"Next"}
-                           onPageChange={handlePageClick}
-                           forcePage={pageNumber}
-                           containerClassName={"version-pagination"}
-                           previousClassName={"version-previous-btn"}
-                           nextClassName={"version-next-btn"}
-                           previousLinkClassName={"ncss-btn-black ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
-                           nextLinkClassName={"ncss-btn-black ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm "}
-                           pageClassName={"page-btn"}
-                           breakClassName={"page-btn ncss-btn-light-grey disabled ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
-                           pageLinkClassName={"ncss-btn-light-grey ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
-                           activeClassName={"version-active"}
+                pageRangeDisplayed={3}
+                marginPagesDisplayed={1}
+                previousLabel={"Prev"}
+                nextLabel={"Next"}
+                onPageChange={handlePageClick}
+                forcePage={pageNumber}
+                containerClassName={"version-pagination"}
+                previousClassName={"version-previous-btn"}
+                nextClassName={"version-next-btn"}
+                previousLinkClassName={"ncss-btn-black ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
+                nextLinkClassName={"ncss-btn-black ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm "}
+                pageClassName={"page-btn"}
+                breakClassName={"page-btn ncss-btn-light-grey disabled ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
+                pageLinkClassName={"ncss-btn-light-grey ncss-brand pt2-sm pr5-sm pb2-sm pl5-sm"}
+                activeClassName={"version-active"}
             />
             <Select
                 className={'version-pagination-per-page-selector'}
-                onChange = { handlePerPageSelect }
-                value={ perPage }
+                onChange={handlePerPageSelect}
+                value={perPage}
                 placeholder="Show Per Page"
                 options={options}
                 searchable={false}
                 clearable={false} />
         </div>
-    )
-}
+    );
+};
+
+const mapStateToProps = state => ({
+    // current sdb
+    safeDepositBoxId: state.manageSafetyDepositBox.data.id,
+
+    // user info
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+
+    // version state
+    hasFetchedPathsWithHistory: state.versionHistoryBrowser.hasFetchedPathsWithHistory,
+    pathsWithHistory: state.versionHistoryBrowser.pathsWithHistory,
+
+    hasFetchedVersionPathData: state.versionHistoryBrowser.hasFetchedVersionPathData,
+    versionPathSelected: state.versionHistoryBrowser.versionPathSelected,
+    versionPathData: state.versionHistoryBrowser.versionPathData,
+    versionPathPerPage: state.versionHistoryBrowser.versionPathPerPage,
+    versionPathPageNumber: state.versionHistoryBrowser.versionPathPageNumber,
+    versionPathSecureDataMap: state.versionHistoryBrowser.versionPathSecureDataMap
+});
+
+export default connect(mapStateToProps)(SecureDataVersionsBrowser);

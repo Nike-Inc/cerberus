@@ -24,15 +24,6 @@ import SDBMetadata from '../SDBMetadata/SDBMetadata';
 
 import './SDBMetadataList.scss';
 
-export default
-@connect((state) => {
-    return {
-        cerberusAuthToken: state.auth.cerberusAuthToken,
-        metadata: state.metadata.metadata,
-        perPage: state.metadata.perPage,
-        pageNumber: state.metadata.pageNumber
-    };
-})
 class SDBMetadataList extends Component {
 
     options = [
@@ -65,7 +56,7 @@ class SDBMetadataList extends Component {
     render() {
         const { metadata, perPage } = this.props;
 
-        if (metadata['safe_deposit_box_metadata'] == undefined) {
+        if (metadata['safe_deposit_box_metadata'] === undefined) {
             return (
                 <div>
                     NO METADATA
@@ -122,3 +113,11 @@ const paginationMenu = (metadata, options, perPage, pageNumber, handlePerPageSel
     );
 };
 
+const mapStateToProps = state => ({
+    cerberusAuthToken: state.auth.cerberusAuthToken,
+    metadata: state.metadata.metadata,
+    perPage: state.metadata.perPage,
+    pageNumber: state.metadata.pageNumber
+});
+
+export default connect(mapStateToProps)(SDBMetadataList);

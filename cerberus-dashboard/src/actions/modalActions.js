@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import * as actions from '../constants/actions'
-import { getLogger } from 'logger'
-var log = getLogger('modal')
+import * as actions from '../constants/actions';
 
 
 export function pushModal(modalComponent) {
@@ -25,17 +23,17 @@ export function pushModal(modalComponent) {
         payload: {
             modalComponent: modalComponent
         }
-    }
+    };
 }
 
 export function popModal() {
     return {
         type: actions.POP_MODAL
-    }
+    };
 }
 
 export function clearAllModals() {
     return {
         type: actions.CLEAR_ALL_MODALS
-    }
+    };
 }
