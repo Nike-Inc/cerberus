@@ -19,8 +19,9 @@ import { Component } from "react";
 import { hashHistory } from "react-router";
 import { connect } from "react-redux";
 
+export default
 @connect()
-export default class NotFound extends Component {
+class NotFound extends Component {
   componentDidMount() {
     hashHistory.push("/");
   }

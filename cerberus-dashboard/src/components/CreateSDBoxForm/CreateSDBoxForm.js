@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import { reduxForm, touch } from 'redux-form'
-import * as modalActions from '../../actions/modalActions'
-import * as appActions from '../../actions/appActions'
-import * as cNSDBActions from '../../actions/createSDBoxActions'
-import CategorySelect from '../CategorySelect/CategorySelect'
-import GroupsSelect from '../GroupSelect/GroupsSelect'
-import validate from './validator'
-import * as cms from '../../constants/cms'
-import UserGroupPermissionsFieldSet from '../UserGroupPermissionsFieldSet/UserGroupPermissionsFieldSet'
-import IamPrincipalPermissionsFieldSet from '../IamPrincipalPermissionsFieldSet/IamPrincipalPermissionsFieldSet'
-import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField'
+import React from 'react';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { reduxForm, touch } from 'redux-form';
+import * as modalActions from '../../actions/modalActions';
+import * as appActions from '../../actions/appActions';
+import * as cNSDBActions from '../../actions/createSDBoxActions';
+import CategorySelect from '../CategorySelect/CategorySelect';
+import GroupsSelect from '../GroupSelect/GroupsSelect';
+import validate from './validator';
+import * as cms from '../../constants/cms';
+import UserGroupPermissionsFieldSet from '../UserGroupPermissionsFieldSet/UserGroupPermissionsFieldSet';
+import IamPrincipalPermissionsFieldSet from '../IamPrincipalPermissionsFieldSet/IamPrincipalPermissionsFieldSet';
+import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField';
 
-import './CreateSDBoxForm.scss'
+import './CreateSDBoxForm.scss';
 
-import { getLogger } from 'logger'
-var log = getLogger('create-new-sdb')
+import { getLogger } from 'logger';
+var log = getLogger('create-new-sdb');
 
-const formName = 'create-new-sdb-form'
+const formName = 'create-new-sdb-form';
 
 /**
  * This is the smart component for the create new bucket page,
@@ -49,9 +49,10 @@ export const fields = [
     'userGroupPermissions[].roleId',
     'iamPrincipalPermissions[].iamPrincipalArn',
     'iamPrincipalPermissions[].roleId'
-]
+];
 
 // connect to the store for the pieces we care about
+export default 
 @connect((state) => {
     return {
         // user info
@@ -68,7 +69,7 @@ export const fields = [
         initialValues: {
             categoryId: state.nSDB.selectedCategoryId
         }
-    }
+    };
 })
 // wire up the redux form
 @reduxForm(
@@ -78,14 +79,14 @@ export const fields = [
         validate
     }
 )
-export default class CreateSDBoxForm extends Component {
+class CreateSDBoxForm extends Component {
 
     /**
      * Force the domain data to load if it hasn't
      */
     componentDidMount() {
-        if (! this.props.hasDomainDataLoaded) {
-            this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken))
+        if (!this.props.hasDomainDataLoaded) {
+            this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken));
         }
     }
 
@@ -98,7 +99,7 @@ export default class CreateSDBoxForm extends Component {
                 owner,
                 userGroupPermissions,
                 iamPrincipalPermissions
-                },
+            },
             categories,
             handleSubmit,
             isSubmitting,
@@ -107,18 +108,18 @@ export default class CreateSDBoxForm extends Component {
             roles,
             userGroups,
             cerberusAuthToken
-        } = this.props
+        } = this.props;
 
         // Lets not attempt to render everything until we have the data we need, when the domain data has loaded we can pass this
-        if (! hasDomainDataLoaded) {
-            return(<div></div>)
+        if (!hasDomainDataLoaded) {
+            return (<div></div>);
         }
 
-        log.debug('Form props:\n' + JSON.stringify(this.props.fields, null, 2))
+        log.debug('Form props:\n' + JSON.stringify(this.props.fields, null, 2));
 
         return (
-            <form id='new-sdbox-form' onSubmit={handleSubmit( data => {
-                dispatch(cNSDBActions.submitCreateNewSDB(data, cerberusAuthToken))
+            <form id='new-sdbox-form' onSubmit={handleSubmit(data => {
+                dispatch(cNSDBActions.submitCreateNewSDB(data, cerberusAuthToken));
             })}>
                 <div id="form-description" className="ncss-brand">
                     <h1>Create a New Safe Deposit Box</h1>
@@ -129,54 +130,54 @@ export default class CreateSDBoxForm extends Component {
                     <div className={((name.touched && name.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
                         <label className='ncss-label'>Name</label>
                         <input type='text'
-                               className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm'
-                               placeholder='Enter an immutable name for your new Safe Deposit Box'
-                               maxLength={`${cms.SDB_NAME_MAX_LENGTH}`}
-                            {...name}/>
+                            className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm'
+                            placeholder='Enter an immutable name for your new Safe Deposit Box'
+                            maxLength={`${cms.SDB_NAME_MAX_LENGTH}`}
+                            {...name} />
                         {name.touched && name.error && <div className='ncss-error-msg'>{name.error}</div>}
                     </div>
                 </div>
 
                 <div id='top-section'>
-                    <CategorySelect {...categoryId} categories={categories} handleBeingTouched={() => {dispatch(touch(formName, 'categoryId'))}} />
+                    <CategorySelect {...categoryId} categories={categories} handleBeingTouched={() => { dispatch(touch(formName, 'categoryId')); }} />
                     <div id="owner">
                         <label id="category-select-label" className='ncss-label'>Owner</label>
                         <GroupsSelect {...owner}
                             userGroups={userGroups}
                             allowCustomValues={false}
                             handleBeingTouched={() => {
-                                      dispatch(touch(formName, owner.name))
-                                  }} />
+                                dispatch(touch(formName, owner.name));
+                            }} />
                     </div>
                 </div>
 
                 <SDBDescriptionField description={description} />
 
                 <UserGroupPermissionsFieldSet userGroupPermissions={userGroupPermissions}
-                                              dispatch={dispatch}
-                                              formName={formName}
-                                              userGroups={userGroups}
-                                              roles={roles} />
+                    dispatch={dispatch}
+                    formName={formName}
+                    userGroups={userGroups}
+                    roles={roles} />
 
                 <IamPrincipalPermissionsFieldSet iamPrincipalPermissions={iamPrincipalPermissions}
-                                                 dispatch={dispatch}
-                                                 formName={formName}
-                                                 roles={roles} />
-                
+                    dispatch={dispatch}
+                    formName={formName}
+                    roles={roles} />
+
                 <div id="submit-btn-container">
                     <div id='cancel-btn'
-                         className='btn ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                         onClick={ () => {
-                                dispatch(modalActions.popModal())
-                            }}>Cancel
+                        className='btn ncss-btn-accent ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                        onClick={() => {
+                            dispatch(modalActions.popModal());
+                        }}>Cancel
                     </div>
                     <button id='submit-btn'
-                            className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                            disabled={isSubmitting}>Submit
+                        className='btn ncss-btn-dark-grey ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                        disabled={isSubmitting}>Submit
                     </button>
                 </div>
             </form>
-        )
+        );
     }
 }
 

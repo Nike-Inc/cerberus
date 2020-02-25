@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-import React from 'react'
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import * as appActions from '../../actions/appActions'
-import EnvironmentService from '../../service/EnvironmentService'
-import './LandingView.scss'
+import React from 'react';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import * as appActions from '../../actions/appActions';
+import EnvironmentService from '../../service/EnvironmentService';
+import './LandingView.scss';
 
+export default 
 @connect((state) => {
     return {
         hasDashboardMetadataLoaded: state.app.metadata.hasLoaded,
         dashboardVersion: state.app.metadata.version
-    }
+    };
 })
-export default class LandingView extends Component {
+class LandingView extends Component {
 
     componentDidMount() {
-        if (! this.props.hasDashboardMetadataLoaded) {
-            this.props.dispatch(appActions.loadDashboardMetadata())
+        if (!this.props.hasDashboardMetadataLoaded) {
+            this.props.dispatch(appActions.loadDashboardMetadata());
         }
     }
 
     render() {
-        const {dashboardVersion, hasDashboardMetadataLoaded} = this.props
+        const { dashboardVersion, hasDashboardMetadataLoaded } = this.props;
 
         return (
             <div id='landing-view' className='ncss-brand'>
@@ -59,6 +60,6 @@ export default class LandingView extends Component {
                 <h3 className={hasDashboardMetadataLoaded ? '' : 'hide-me'}>Version: {dashboardVersion}</h3>
                 <h4>For help please visit the <a target="_blank" href="/dashboard/help/index.html">help page</a></h4>
             </div>
-        )
+        );
     }
 }
