@@ -33,7 +33,6 @@ deploy:
   on:
     repo: Nike-Inc/cerberus
     tags: true
-  draft: true
 
 env:
   global:
