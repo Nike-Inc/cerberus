@@ -22,6 +22,7 @@ import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import com.amazonaws.services.s3.AmazonS3;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -125,6 +126,7 @@ public class S3LogUploaderService {
    * @param filename The file to upload to s3
    * @param retryCount The retry count
    */
+  @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
   private void processLogFile(String filename, int retryCount) {
     log.info("process log file called with filename: {}, retry count: {}", filename, retryCount);
     final File rolledLogFile = new File(filename);

@@ -25,6 +25,7 @@ import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import ch.qos.logback.core.util.FileSize;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class AthenaAuditLoggerConfiguration {
       logPath = "";
     } else if (!logPath.endsWith("/")) {
       logPath += "/";
+      FilenameUtils.getPath(logPath); // this shouldn't be necessary but I'm germaphobic
     }
     this.auditLogsS3TimeBasedRollingPolicy = auditLogsS3TimeBasedRollingPolicy;
 
