@@ -2,13 +2,15 @@
   "name": "cerberus-management-dashboard",
   "description": "A management dashboard for Cerberus.",
   "main": "index.js",
+  "homepage": "./",
+  "proxy": "http://localhost:8080",
   "repository": {
     "type": "git",
     "url": "git@github.com:Nike-Inc/cerberus-management-dashboard.git"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && rm -rf dist && mv build dist",
     "test": "react-scripts test --env=jsdom",
     "logs": "multitail logs/*"
   },

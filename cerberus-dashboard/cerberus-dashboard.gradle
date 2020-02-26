@@ -32,10 +32,7 @@ tasks.buildDashboard.finalizedBy 'build'
 jar {
   dependsOn 'buildDashboard'
   processResources {
-    from ("${project.projectDir.absolutePath}/static-assets/") {
-      into 'static/dashboard'
-    }
-    from ("${project.buildDir.absolutePath}/dist/") {
+    from ("${project.projectDir.absolutePath}/dist/") {
       into 'static/dashboard'
     }
   }
