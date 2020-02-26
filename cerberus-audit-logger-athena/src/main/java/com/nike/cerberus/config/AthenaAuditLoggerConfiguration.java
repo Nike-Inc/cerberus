@@ -86,7 +86,7 @@ public class AthenaAuditLoggerConfiguration {
 
     this.auditLogsS3TimeBasedRollingPolicy.setContext(loggerContext);
     this.auditLogsS3TimeBasedRollingPolicy.setFileNamePattern(
-        hostname + "-audit.%d{yyyy-MM-dd_HH-mm, UTC}.log.gz");
+        logPath + hostname + "-audit.%d{yyyy-MM-dd_HH-mm, UTC}.log.gz");
     this.auditLogsS3TimeBasedRollingPolicy.setMaxHistory(100);
     this.auditLogsS3TimeBasedRollingPolicy.setParent(fiveMinuteRollingFileAppender);
     this.auditLogsS3TimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("10gb"));
