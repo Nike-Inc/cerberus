@@ -19,6 +19,8 @@ package com.nike.cerberus.audit.logger.service;
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,11 +34,14 @@ public class S3LogUploaderServiceTest {
 
   private S3LogUploaderService s3LogUploader;
 
+  private Logger logger = new LoggerContext().getLogger("test-logger");
+
   @Before
   public void before() {
     initMocks(this);
     s3LogUploader =
-        new S3LogUploaderService("fake-bucket", "us-west-2", true, athenaService, s3ClientFactory);
+        new S3LogUploaderService(
+            "fake-bucket", "us-west-2", true, athenaService, s3ClientFactory, logger);
   }
 
   @Test
