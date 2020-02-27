@@ -33,7 +33,7 @@ export default function configureStore() {
             rootReducer,
             compose(
                 applyMiddleware(middleware, thunk, logger),
-                window.devToolsExtension ? window.devToolsExtension() : f => f
+                window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
             )
         );
     } else {
@@ -41,7 +41,7 @@ export default function configureStore() {
             rootReducer,
             compose(
                 applyMiddleware(middleware, thunk),
-                window.devToolsExtension ? window.devToolsExtension() : f => f
+                window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
             )
         );
     }
