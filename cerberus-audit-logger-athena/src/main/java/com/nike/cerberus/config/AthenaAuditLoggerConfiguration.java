@@ -59,7 +59,9 @@ public class AthenaAuditLoggerConfiguration {
       logPath = "";
     } else if (!logPath.endsWith("/")) {
       logPath += "/";
-      FilenameUtils.getPath(logPath); // this shouldn't be necessary but I'm germaphobic
+      FilenameUtils.getPath(
+          logPath); // this shouldn't be necessary because the path is provided by Spring config,
+      // but extra safety
     }
     this.auditLogsS3TimeBasedRollingPolicy = auditLogsS3TimeBasedRollingPolicy;
 
