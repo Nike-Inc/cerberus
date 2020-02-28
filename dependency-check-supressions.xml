@@ -73,9 +73,9 @@
         <sha1>606ef790ce33d9cd6b892c47cc2a9508efc57698</sha1>
         <cve>CVE-2016-6798</cve>
     </suppress>
-    <suppress until="2020-02-01Z">
+    <suppress until="2020-04-01Z">
         <notes><![CDATA[
-           file name: tomcat-embed-websocket-9.0.29.jar
+           file name: tomcat-embed-websocket-9.0.30.jar
            When using FORM authentication with Apache Tomcat 9.0.0.M1 to 9.0.29, 8.5.0 to 8.5.49 and 7.0.0 to 7.0.98
            there was a narrow window where an attacker could perform a session fixation attack. The window was
            considered too narrow for an exploit to be practical but, erring on the side of caution, this issue has
@@ -86,9 +86,9 @@
         <sha1>57a550a531648dd665444f11d45c352a6978c7b6</sha1>
         <cve>CVE-2019-17563</cve>
     </suppress>
-    <suppress until="2020-02-01Z">
+    <suppress until="2020-04-01Z">
         <notes><![CDATA[
-           file name: tomcat-embed-core-9.0.29.jar
+           file name: tomcat-embed-core-9.0.30.jar
            When using FORM authentication with Apache Tomcat 9.0.0.M1 to 9.0.29, 8.5.0 to 8.5.49 and 7.0.0 to 7.0.98
            there was a narrow window where an attacker could perform a session fixation attack. The window was
            considered too narrow for an exploit to be practical but, erring on the side of caution, this issue has
