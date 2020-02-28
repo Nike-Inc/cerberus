@@ -46,7 +46,6 @@ class NegativeUserPermissionsApiTests {
     private String otpDeviceId
     private String otpSecret
     private String userGroup
-    private String[] userGroups
     private String userAuthToken
     private Map userAuthData
 
@@ -91,8 +90,6 @@ class NegativeUserPermissionsApiTests {
         def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
-//        userGroups = userAuthData.metadata.groups.split(/,/)
-//        String userGroupOfTestUser = userGroups[0]
         String userGroupOfTestUser = userGroup
 
         String sdbCategoryId = getCategoryMap(userAuthToken).Applications

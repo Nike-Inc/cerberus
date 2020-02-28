@@ -45,7 +45,6 @@ class NegativeIamPermissionsApiTests {
     private String password
     private String otpDeviceId
     private String otpSecret
-    private String[] userGroups
     private String ownerGroup
     private String userAuthToken
     private Map userAuthData
@@ -72,7 +71,7 @@ class NegativeIamPermissionsApiTests {
                 "The password for a test user for testing user based endpoints")
 
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
-                "The owner group to use when creating a test SDB")
+                "The owner group to use when creating an SDB")
 
         // todo: make this optional
         otpSecret = PropUtils.getRequiredProperty("TEST_USER_OTP_SECRET",
@@ -88,7 +87,6 @@ class NegativeIamPermissionsApiTests {
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
         userAuthToken = userAuthData."client_token"
-//        userGroups = userAuthData.metadata.groups.split(/,/)
         String userGroupOfTestUser = ownerGroup
 
         String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
