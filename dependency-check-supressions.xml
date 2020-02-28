@@ -73,30 +73,18 @@
         <sha1>606ef790ce33d9cd6b892c47cc2a9508efc57698</sha1>
         <cve>CVE-2016-6798</cve>
     </suppress>
-    <suppress until="2020-02-01Z">
+    <suppress until="2020-04-01Z">
         <notes><![CDATA[
-           file name: tomcat-embed-websocket-9.0.29.jar
-           When using FORM authentication with Apache Tomcat 9.0.0.M1 to 9.0.29, 8.5.0 to 8.5.49 and 7.0.0 to 7.0.98
-           there was a narrow window where an attacker could perform a session fixation attack. The window was
-           considered too narrow for an exploit to be practical but, erring on the side of caution, this issue has
-           been treated as a security vulnerability.
-
-           Suppressing temporally until: https://github.com/spring-projects/spring-boot/issues/19473 is released.
+            file name: tomcat-embed-websocket-9.0.30.jar
         ]]></notes>
-        <sha1>57a550a531648dd665444f11d45c352a6978c7b6</sha1>
-        <cve>CVE-2019-17563</cve>
+        <sha1>33157f6bc5bfd03380ebb5ac476db0600a04168d</sha1>
+        <cve>CVE-2020-1938</cve>
     </suppress>
-    <suppress until="2020-02-01Z">
+    <suppress until="2020-04-01Z">
         <notes><![CDATA[
-           file name: tomcat-embed-core-9.0.29.jar
-           When using FORM authentication with Apache Tomcat 9.0.0.M1 to 9.0.29, 8.5.0 to 8.5.49 and 7.0.0 to 7.0.98
-           there was a narrow window where an attacker could perform a session fixation attack. The window was
-           considered too narrow for an exploit to be practical but, erring on the side of caution, this issue has
-           been treated as a security vulnerability.
-
-           Suppressing temporally until: https://github.com/spring-projects/spring-boot/issues/19473 is released.
+        file name: tomcat-embed-core-9.0.30.jar
         ]]></notes>
-        <sha1>207dc9ca4215853d96ed695862f9873001f02a4b</sha1>
-        <cve>CVE-2019-17563</cve>
+        <sha1>ad32909314fe2ba02cec036434c0addd19bcc580</sha1>
+        <cve>CVE-2020-1938</cve>
     </suppress>
 </suppressions>
