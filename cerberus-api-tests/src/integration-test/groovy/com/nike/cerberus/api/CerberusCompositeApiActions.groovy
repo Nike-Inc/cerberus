@@ -134,12 +134,10 @@ class CerberusCompositeApiActions {
         assertTrue(list.contains(path.toString()))
     }
 
-    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData) {
+    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
-        String groups = cerberusAuthPayloadData.metadata.groups
-        def group = groups.split(/,/)[0]
 
         // Create a map of category ids to names'
         JsonPath getCategoriesResponse = getCategories(cerberusAuthToken)
@@ -154,85 +152,85 @@ class CerberusCompositeApiActions {
             roleMap.put role.name, role.id
         }
 
-        String name = "${RandomStringUtils.randomAlphabetic(5,10)} ${RandomStringUtils.randomAlphabetic(5,10)}"
+        String name = "${RandomStringUtils.randomAlphabetic(5, 10)} ${RandomStringUtils.randomAlphabetic(5, 10)}"
         String description = "${Lorem.getWords(50)}"
         String categoryId = catMap.Applications
         String owner = group
         def userGroupPermissions = [
-            [
-                "name": 'foo',
-                "role_id": roleMap.read
-            ]
+                [
+                        "name"   : 'foo',
+                        "role_id": roleMap.read
+                ]
         ]
         def iamRolePermissions = [
-            [
-                "account_id": accountId,
-                "iam_role_name": roleName,
-                "role_id": roleMap.owner
-            ]
+                [
+                        "account_id"   : accountId,
+                        "iam_role_name": roleName,
+                        "role_id"      : roleMap.owner
+                ]
         ]
 
         def sdbId = createSdbV1(cerberusAuthToken, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
-        JsonPath sdb = readSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
+        try {
+            JsonPath sdb = readSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
 
-        // verify that the sdb we created contains the data we expect
-        assertSafeDepositBoxV1HasFields(sdb, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
+            // verify that the sdb we created contains the data we expect
+            assertSafeDepositBoxV1HasFields(sdb, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
 
-        // verify that the listing call contains our new SDB
-        def sdbList = listSdbs(cerberusAuthToken, V1_SAFE_DEPOSIT_BOX_PATH)
-        def foundNewSdb = false
-        def listSdb
+            // verify that the listing call contains our new SDB
+            def sdbList = listSdbs(cerberusAuthToken, V1_SAFE_DEPOSIT_BOX_PATH)
+            def foundNewSdb = false
+            def listSdb
 
-        sdbList.getList("").each { sdbMeta ->
-            if (sdbMeta.id == sdbId) {
-                foundNewSdb = true
-                listSdb = sdbMeta
+            sdbList.getList("").each { sdbMeta ->
+                if (sdbMeta.id == sdbId) {
+                    foundNewSdb = true
+                    listSdb = sdbMeta
+                }
             }
-        }
-        assertTrue("Failed to find the newly created SDB in the list results", foundNewSdb)
-        assertEquals(listSdb.name, sdb.get('name'))
-        assertEquals(listSdb.id, sdb.get('id'))
-        assertEquals(listSdb.path, sdb.get('path'))
-        assertEquals(listSdb.'category_id', sdb.get('category_id'))
+            assertTrue("Failed to find the newly created SDB in the list results", foundNewSdb)
+            assertEquals(listSdb.name, sdb.get('name'))
+            assertEquals(listSdb.id, sdb.get('id'))
+            assertEquals(listSdb.path, sdb.get('path'))
+            assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
-        // update the sdb
-        description = "${Lorem.getWords(60)}"
-        userGroupPermissions.add([
-            "name": 'bar',
-            "role_id": roleMap.write
-        ])
-        iamRolePermissions.add([
-            "account_id": "1111111111",
-            "iam_role_name": "fake_role2",
-            "role_id": roleMap.read
-        ])
-        updateSdbV1(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamRolePermissions)
-        JsonPath sdbUpdated = readSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
+            // update the sdb
+            description = "${Lorem.getWords(60)}"
+            userGroupPermissions.add([
+                    "name"   : 'bar',
+                    "role_id": roleMap.write
+            ])
+            iamRolePermissions.add([
+                    "account_id"   : "1111111111",
+                    "iam_role_name": "fake_role2",
+                    "role_id"      : roleMap.read
+            ])
+            updateSdbV1(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamRolePermissions)
+            JsonPath sdbUpdated = readSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
 
-        // verify that the sdbUpdated we created contains the data we expect
-        assertSafeDepositBoxV1HasFields(sdbUpdated, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
+            // verify that the sdbUpdated we created contains the data we expect
+            assertSafeDepositBoxV1HasFields(sdbUpdated, name, description, categoryId, owner, userGroupPermissions, iamRolePermissions)
+        } finally {
+            // delete the SDB
+            deleteSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
 
-        // delete the SDB
-        deleteSdb(cerberusAuthToken, sdbId, V1_SAFE_DEPOSIT_BOX_PATH)
+            // verify that the sdb is not longer in the list
+            def updatedSdbList = listSdbs(cerberusAuthToken, V1_SAFE_DEPOSIT_BOX_PATH)
+            def isSdbPresentInUpdatedList = false
 
-        // verify that the sdb is not longer in the list
-        def updatedSdbList = listSdbs(cerberusAuthToken, V1_SAFE_DEPOSIT_BOX_PATH)
-        def isSdbPresentInUpdatedList = false
-
-        updatedSdbList.getList("").each { sdbMeta ->
-            if (sdbMeta.id == sdbId) {
-                isSdbPresentInUpdatedList = true
+            updatedSdbList.getList("").each { sdbMeta ->
+                if (sdbMeta.id == sdbId) {
+                    isSdbPresentInUpdatedList = true
+                }
             }
+            assertFalse("The created sdb should not be in the sdb listing call after deleting it", isSdbPresentInUpdatedList)
         }
-        assertFalse("The created sdb should not be in the sdb listing call after deleting it", isSdbPresentInUpdatedList)
     }
 
-    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData) {
+    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
-        String groups = cerberusAuthPayloadData.metadata.groups
-        def group = groups.split(/,/)[0]
 
         // Create a map of category ids to names'
         JsonPath getCategoriesResponse = getCategories(cerberusAuthToken)
@@ -265,64 +263,68 @@ class CerberusCompositeApiActions {
                 "role_id": roleMap.owner
             ]
         ]
-
         // verify that the sdb we created contains the data we expect
         def createdSdb = createSdbV2(cerberusAuthToken, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
-        assertSafeDepositBoxV2HasFields(createdSdb, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
-
         // test read sdb returns returns expected data
         def sdbId = createdSdb.getString("id")
-        JsonPath sdb = readSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
-        assertSafeDepositBoxV2HasFields(sdb, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
 
-        // verify that the listing call contains our new SDB
-        def sdbList = listSdbs(cerberusAuthToken, V2_SAFE_DEPOSIT_BOX_PATH)
-        def foundNewSdb = false
-        def listSdb
+        try {
+            // verify that the sdb we created contains the data we expect
+            assertSafeDepositBoxV2HasFields(createdSdb, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
 
-        sdbList.getList("").each { sdbMeta ->
-            if (sdbMeta.id == sdbId) {
-                foundNewSdb = true
-                listSdb = sdbMeta
+            // test read sdb returns returns expected data
+            JsonPath sdb = readSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+            assertSafeDepositBoxV2HasFields(sdb, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
+
+            // verify that the listing call contains our new SDB
+            def sdbList = listSdbs(cerberusAuthToken, V2_SAFE_DEPOSIT_BOX_PATH)
+            def foundNewSdb = false
+            def listSdb
+
+            sdbList.getList("").each { sdbMeta ->
+                if (sdbMeta.id == sdbId) {
+                    foundNewSdb = true
+                    listSdb = sdbMeta
+                }
             }
-        }
-        assertTrue("Failed to find the newly created SDB in the list results", foundNewSdb)
-        assertEquals(listSdb.name, sdb.get('name'))
-        assertEquals(listSdb.id, sdb.get('id'))
-        assertEquals(listSdb.path, sdb.get('path'))
-        assertEquals(listSdb.'category_id', sdb.get('category_id'))
+            assertTrue("Failed to find the newly created SDB in the list results", foundNewSdb)
+            assertEquals(listSdb.name, sdb.get('name'))
+            assertEquals(listSdb.id, sdb.get('id'))
+            assertEquals(listSdb.path, sdb.get('path'))
+            assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
-        // update the sdb
-        description = "${Lorem.getWords(60)}"
-        userGroupPermissions.add([
-            "name": 'bar',
-            "role_id": roleMap.write
-        ])
-        iamPrincipalPermissions.add([
-            "iam_principal_arn": "arn:aws:iam::1111111111:role/fake_role2",
-            "role_id": roleMap.read
-        ])
-        JsonPath sdbUpdatedUpdate = updateSdbV2(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamPrincipalPermissions)
+            // update the sdb
+            description = "${Lorem.getWords(60)}"
+            userGroupPermissions.add([
+                    "name"   : 'bar',
+                    "role_id": roleMap.write
+            ])
+            iamPrincipalPermissions.add([
+                    "iam_principal_arn": "arn:aws:iam::1111111111:role/fake_role2",
+                    "role_id"          : roleMap.read
+            ])
+            JsonPath sdbUpdatedUpdate = updateSdbV2(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamPrincipalPermissions)
 
-        // verify that the sdbUpdated we created contains the data we expect
-        assertSafeDepositBoxV2HasFields(sdbUpdatedUpdate, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
+            // verify that the sdbUpdated we created contains the data we expect
+            assertSafeDepositBoxV2HasFields(sdbUpdatedUpdate, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
 
-        JsonPath sdbUpdatedRead = readSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
-        assertSafeDepositBoxV2HasFields(sdbUpdatedRead, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
+            JsonPath sdbUpdatedRead = readSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+            assertSafeDepositBoxV2HasFields(sdbUpdatedRead, name, description, categoryId, owner, userGroupPermissions, iamPrincipalPermissions)
+        } finally {
+            // delete the SDB
+            deleteSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
 
-        // delete the SDB
-        deleteSdb(cerberusAuthToken, sdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+            // verify that the sdb is not longer in the list
+            def updatedSdbList = listSdbs(cerberusAuthToken, V2_SAFE_DEPOSIT_BOX_PATH)
+            def isSdbPresentInUpdatedList = false
 
-        // verify that the sdb is not longer in the list
-        def updatedSdbList = listSdbs(cerberusAuthToken, V2_SAFE_DEPOSIT_BOX_PATH)
-        def isSdbPresentInUpdatedList = false
-
-        updatedSdbList.getList("").each { sdbMeta ->
-            if (sdbMeta.id == sdbId) {
-                isSdbPresentInUpdatedList = true
+            updatedSdbList.getList("").each { sdbMeta ->
+                if (sdbMeta.id == sdbId) {
+                    isSdbPresentInUpdatedList = true
+                }
             }
+            assertFalse("The created sdb should not be in the sdb listing call after deleting it", isSdbPresentInUpdatedList)
         }
-        assertFalse("The created sdb should not be in the sdb listing call after deleting it", isSdbPresentInUpdatedList)
     }
 
     static Map "login user with multi factor authentication (or skip mfa if not required) and return auth data"(
