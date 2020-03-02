@@ -19,7 +19,6 @@
   "dependencies": {
     "axios": "^0.19.2",
     "cookie": "0.3.1",
-    "create-react-class": "^15.5.3",
     "downloadjs": "1.4.7",
     "humps": "1.1.0",
     "loglevel": "1.4.1",
@@ -46,19 +45,12 @@
   },
   "devDependencies": {
     "babel-core": "6.10.4",
-    "babel-plugin-syntax-decorators": "6.8.0",
-    "babel-plugin-transform-decorators-legacy": "1.3.4",
-    "babel-preset-es2015": "6.9.0",
-    "babel-preset-react": "6.11.1",
     "babel-preset-stage-1": "6.5.0",
     "eslint-html-reporter": "^0.7.4",
     "eslint-loader": "1.3.0",
     "eslint-plugin-react": "5.2.2",
     "estraverse-fb": "1.3.1",
-    "lolex": "1.5.0",
-    "react-addons-test-utils": "15.6.2",
     "react-scripts": "^3.4.0",
-    "redbird": "^0.10.0",
     "redux-devtools": "3.3.1"
   },
   "browserslist": {
