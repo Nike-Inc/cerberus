@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-plugins {
-  id "com.github.node-gradle.node" version "2.2.0"
+import * as actions from '../constants/actions';
+
+
+export function pushModal(modalComponent) {
+    return {
+        type: actions.PUSH_MODAL,
+        payload: {
+            modalComponent: modalComponent
+        }
+    };
 }
 
-node {
-  version = '10.16.3'
-  download = true
+export function popModal() {
+    return {
+        type: actions.POP_MODAL
+    };
 }
 
-task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
-  group 'build'
-  args = ["run", "build"]
-}
-tasks.buildDashboard.finalizedBy 'build'
-
-jar {
-  dependsOn 'buildDashboard'
-  processResources {
-    from ("${project.projectDir.absolutePath}/dist/") {
-      into 'static/dashboard'
-    }
-  }
+export function clearAllModals() {
+    return {
+        type: actions.CLEAR_ALL_MODALS
+    };
 }

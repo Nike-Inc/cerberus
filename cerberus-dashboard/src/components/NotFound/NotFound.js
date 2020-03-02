@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-plugins {
-  id "com.github.node-gradle.node" version "2.2.0"
-}
+import React from "react";
+import { Component } from "react";
+import { hashHistory } from "react-router";
 
-node {
-  version = '10.16.3'
-  download = true
-}
+export default class NotFound extends Component {
+  componentDidMount() {
+    hashHistory.push("/");
+  }
 
-task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
-  group 'build'
-  args = ["run", "build"]
-}
-tasks.buildDashboard.finalizedBy 'build'
-
-jar {
-  dependsOn 'buildDashboard'
-  processResources {
-    from ("${project.projectDir.absolutePath}/dist/") {
-      into 'static/dashboard'
-    }
+  render() {
+    return <h1>Not found</h1>;
   }
 }
