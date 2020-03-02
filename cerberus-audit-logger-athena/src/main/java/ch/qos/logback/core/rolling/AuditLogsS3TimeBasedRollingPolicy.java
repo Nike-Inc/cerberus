@@ -41,7 +41,6 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
     this.bucketRegion = bucketRegion;
   }
 
-  @Autowired
   public void setS3LogUploaderService(S3LogUploaderService s3LogUploaderService) {
     this.s3LogUploaderService = s3LogUploaderService;
     if (logChunkFileS3Queue.size() > 0) {

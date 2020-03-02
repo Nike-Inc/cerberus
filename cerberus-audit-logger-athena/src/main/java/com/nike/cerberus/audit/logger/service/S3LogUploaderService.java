@@ -16,11 +16,13 @@
 
 package com.nike.cerberus.audit.logger.service;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import com.amazonaws.services.s3.AmazonS3;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -31,8 +33,6 @@ import java.util.regex.Pattern;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,6 +58,7 @@ public class S3LogUploaderService {
   private final String bucketRegion;
   private final boolean athenaLoggingEventListenerEnabled;
   private final AthenaService athenaService;
+  private Logger logger;
 
   @Autowired
   public S3LogUploaderService(
@@ -65,11 +66,13 @@ public class S3LogUploaderService {
       @Value("${cerberus.audit.athena.bucketRegion}") String bucketRegion,
       @Value("${cerberus.audit.athena.enabled:false}") boolean athenaLoggingEventListenerEnabled,
       AthenaService athenaService,
-      S3ClientFactory s3ClientFactory) {
+      S3ClientFactory s3ClientFactory,
+      ch.qos.logback.classic.Logger logger) {
     this.bucket = bucket;
     this.bucketRegion = bucketRegion;
     this.athenaLoggingEventListenerEnabled = athenaLoggingEventListenerEnabled;
     this.athenaService = athenaService;
+    this.logger = logger;
 
     amazonS3 = s3ClientFactory.getClient(bucketRegion);
 
@@ -123,28 +126,27 @@ public class S3LogUploaderService {
    * @param filename The file to upload to s3
    * @param retryCount The retry count
    */
+  @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN")
   private void processLogFile(String filename, int retryCount) {
-    String filteredFilename = FilenameUtils.getName(filename);
-    log.info(
-        "process log file called with filename: {}, retry count: {}", filteredFilename, retryCount);
-    final File rolledLogFile = new File(filteredFilename);
+    log.info("process log file called with filename: {}, retry count: {}", filename, retryCount);
+    final File rolledLogFile = new File(filename);
     // poll for 30 seconds waiting for file to exist or bail
     int i = 0;
     do {
       sleep(1, TimeUnit.SECONDS);
       log.info(
           "Does '{}' exist: {}, length: {}, can read: {}, poll count: {}",
-          filteredFilename,
+          filename,
           rolledLogFile.exists(),
           rolledLogFile.length(),
           rolledLogFile.canRead(),
           i);
       i++;
-    } while (!rolledLogFile.exists() || i >= 30);
+    } while (!rolledLogFile.exists() && i <= 30);
 
     // if file does not exist or empty, do nothing
     if (!rolledLogFile.exists() || rolledLogFile.length() == 0) {
-      log.error("File '{}' does not exist or is empty returning", filteredFilename);
+      log.error("File '{}' does not exist or is empty returning", filename);
       return;
     }
 
@@ -165,7 +167,7 @@ public class S3LogUploaderService {
           e);
       if (retryCount < 10) {
         sleep(1, TimeUnit.SECONDS);
-        processLogFile(filteredFilename, retryCount + 1);
+        processLogFile(filename, retryCount + 1);
       }
       throw e;
     }
@@ -194,8 +196,7 @@ public class S3LogUploaderService {
   private Optional<AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent>> getRollingPolicy() {
 
     if (athenaLoggingEventListenerEnabled) {
-      ch.qos.logback.classic.Logger auditLogger =
-          (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ATHENA_LOG_NAME);
+      ch.qos.logback.classic.Logger auditLogger = this.logger;
 
       FiveMinuteRollingFileAppender<ILoggingEvent> appender =
           (FiveMinuteRollingFileAppender<ILoggingEvent>)
