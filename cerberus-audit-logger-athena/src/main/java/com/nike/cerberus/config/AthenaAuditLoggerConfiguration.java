@@ -25,9 +25,12 @@ import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import ch.qos.logback.core.util.FileSize;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -49,8 +52,17 @@ public class AthenaAuditLoggerConfiguration {
 
   @Autowired
   public AthenaAuditLoggerConfiguration(
+      @Value("${cerberus.audit.athena.log.path:#{null}}") String logPath,
       AuditLogsS3TimeBasedRollingPolicy<ILoggingEvent> auditLogsS3TimeBasedRollingPolicy) {
 
+    if (StringUtils.isBlank(logPath)) {
+      logPath = "";
+    } else if (!logPath.endsWith("/")) {
+      logPath += "/";
+      FilenameUtils.getPath(
+          logPath); // this shouldn't be necessary because the path is provided by Spring config,
+      // but extra safety
+    }
     this.auditLogsS3TimeBasedRollingPolicy = auditLogsS3TimeBasedRollingPolicy;
 
     LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -73,12 +85,12 @@ public class AthenaAuditLoggerConfiguration {
         new FiveMinuteRollingFileAppender<>();
     fiveMinuteRollingFileAppender.setName(ATHENA_LOG_APPENDER_NAME);
     fiveMinuteRollingFileAppender.setContext(loggerContext);
-    fiveMinuteRollingFileAppender.setFile(hostname + "-audit.log");
+    fiveMinuteRollingFileAppender.setFile(logPath + hostname + "-audit.log");
     fiveMinuteRollingFileAppender.setEncoder(patternLayoutEncoder);
 
     this.auditLogsS3TimeBasedRollingPolicy.setContext(loggerContext);
     this.auditLogsS3TimeBasedRollingPolicy.setFileNamePattern(
-        hostname + "-audit.%d{yyyy-MM-dd-HH-mm, UTC}.log.gz");
+        logPath + hostname + "-audit.%d{yyyy-MM-dd_HH-mm, UTC}.log.gz");
     this.auditLogsS3TimeBasedRollingPolicy.setMaxHistory(100);
     this.auditLogsS3TimeBasedRollingPolicy.setParent(fiveMinuteRollingFileAppender);
     this.auditLogsS3TimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("10gb"));
@@ -97,7 +109,7 @@ public class AthenaAuditLoggerConfiguration {
   }
 
   @Bean
-  public Logger getAthenaAuditLogger() {
-    return athenaAuditLogger;
+  public ch.qos.logback.classic.Logger getAthenaAuditLogger() {
+    return (ch.qos.logback.classic.Logger) athenaAuditLogger;
   }
 }
