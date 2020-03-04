@@ -172,8 +172,10 @@ const mapStateToProps = state => ({
     }
 });
 
-export default reduxForm({
+const form = reduxForm({
     form: formName,
     fields: fields,
     validate
-})(connect(mapStateToProps)(CreateSDBoxForm));
+})(CreateSDBoxForm);
+
+export default connect(mapStateToProps)(form);

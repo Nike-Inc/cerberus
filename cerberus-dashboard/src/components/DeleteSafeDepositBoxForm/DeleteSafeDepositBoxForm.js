@@ -87,17 +87,18 @@ const mapStateToProps = state => ({
     cerberusAuthToken: state.auth.cerberusAuthToken,
     sdbId: state.manageSafetyDepositBox.data.id,
     sdbName: state.manageSafetyDepositBox.data.name,
-
     initialValues: {
         verifiedSdbName: '',
         sdbName: state.manageSafetyDepositBox.data.name
     }
 });
 
-export default reduxForm(
+const form = reduxForm(
     {
         form: formName,
         fields: fields,
         validate
     }
-)(connect(mapStateToProps)(DeleteSafeDepositBoxForm));
+)(DeleteSafeDepositBoxForm);
+
+export default connect(mapStateToProps)(form);

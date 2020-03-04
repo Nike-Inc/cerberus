@@ -226,11 +226,12 @@ const mapStateToProps = state => ({
     secureDataKeys: state.manageSafetyDepositBox.keysForSecureDataPath
 });
 
-
-export default reduxForm(
+const form = reduxForm(
     {
         form: 'add-new-secure-file',
         fields: fields,
         validate
     }
-)(connect(mapStateToProps)(SecureFileForm));
+)(SecureFileForm);
+
+export default connect(mapStateToProps)(form);
