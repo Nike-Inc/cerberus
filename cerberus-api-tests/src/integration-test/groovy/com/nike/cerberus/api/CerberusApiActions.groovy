@@ -570,7 +570,7 @@ class CerberusApiActions {
             .get(partialUriPath)
         .then()
             .statusCode(HttpStatus.SC_OK)
-            .body(stringContainsInOrder(["<html>", "Cerberus", "</html>"]))
+            .body(stringContainsInOrder(["<html lang=\"en\">", "Cerberus", "</html>"]))
     }
 
 
