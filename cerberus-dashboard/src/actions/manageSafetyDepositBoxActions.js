@@ -52,7 +52,7 @@ export function fetchSDBDataFromCMS(sdbId, token) {
                 log.debug("Fetched SDB Data from CMS", response);
                 dispatch(storeSDBData(humps.camelizeKeys(response.data)));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error("Failed to fetch SDB", response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Fetch SDB Data from CMS" response={response} />));
             });
@@ -73,7 +73,7 @@ export function fetchSecureDataPathKeys(path, token) {
             .then((response) => {
                 dispatch(updateSecureDataPathKeys(response.data.data.keys));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 // no keys for the SDB Yet
                 if (response.status === 404) {
                     dispatch(updateSecureDataPathKeys([]));
@@ -102,7 +102,7 @@ export function fetchSecureFilePathKeys(path, token) {
                 });
                 dispatch(updateSecureFilePathKeys(keys));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 // no keys for the SDB Yet
                 if (response.status === 404) {
                     dispatch(updateSecureFilePathKeys([]));
@@ -166,7 +166,7 @@ export function getSecureData(path, token) {
             .then((response) => {
                 dispatch(storeSecureData(path, response.data.data));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error("Failed to fetch Secure Data", response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch Secret Path: ${path}`} response={response} />));
             });
@@ -187,7 +187,7 @@ export function getSecureFileMetadata(path, token) {
             .then((response) => {
                 dispatch(storeSecureFileMetadata(path, response.headers['content-length']));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error('Failed to fetch Secure Data', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to Fetch Secret Path: ${path}`} response={response} />));
             });
@@ -307,7 +307,7 @@ export function commitSecret(navigatedPath, data, token, isNewSecureDataPath) {
                 // once saved we can use the data we have locally to update the state, without additional API calls
                 dispatch(updateLocalStateAfterSaveCommit(navigatedPath, key, secureData, isNewSecureDataPath, false));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error("Failed to save Secure Data", response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Secret on Path: ${fullPath}`} response={response} />));
             });
@@ -349,7 +349,7 @@ export function uploadFile(token, navigatedPath, secureFileKey, fileData, isNewS
                 dispatch(updateLocalStateAfterSaveCommit(navigatedPath, secureFileKey, fileData, isNewSecureFilePath, true));
                 dispatch(secureFileUploaded());
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error('Failed to save Secure File', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to save Secret on Path: ${fullPath}`} response={response} />));
             });
@@ -373,7 +373,7 @@ export function downloadFile(token, fullPath, filename) {
                 downloadjs(reader.result, filename);
             };
         })
-        .catch((response) => {
+        .catch(({ response }) => {
             log.error('Failed to fetch Secure File', response);
         });
 }
@@ -481,7 +481,7 @@ export function deleteSecureDataPath(navigatedPath, label, token) {
                 dispatch(removeSecureDataFromLocalStore(`${navigatedPath}${label}`));
                 dispatch(removeKeyForSecureDataNodeFromLocalStore(label));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error("Failed to delete Secure Data", response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Secret: "${label}"`}
                     response={response} />));
@@ -501,7 +501,7 @@ export function deleteSecureFilePath(navigatedPath, label, token) {
                 dispatch(removeSecureFileFromLocalStore(`${navigatedPath}${label}`));
                 dispatch(removeKeyForSecureFileNodeFromLocalStore(label));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error('Failed to delete Secure Data', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={`Failed to delete Secret: ${navigatedPath}`}
                     response={response} />));
@@ -523,7 +523,7 @@ export function deleteSDB(sdbId, token) {
                 dispatch(appActions.fetchSideBarData(token));
                 hashHistory.push('/');
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 log.error("Failed to delete SDB", response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to delete SDB Data from CMS" response={response} />));
             });
@@ -550,7 +550,7 @@ export function submitEditSDBRequest(sdbId, data, token) {
                 dispatch(modalActions.popModal());
                 dispatch(resetSubmittingEditSDBRequest());
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to edit SDB', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to edit SDB" response={response} />));
                 dispatch(resetSubmittingEditSDBRequest());

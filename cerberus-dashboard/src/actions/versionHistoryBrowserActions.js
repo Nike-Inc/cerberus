@@ -33,7 +33,7 @@ export function fetchVersionDataForSdb(safeDepositBodId, token) {
             .then((response) => {
                 dispatch(updatePathsWithHistory(response.data));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 let msg = 'Failed to fetch version data for sdb';
                 log.error(msg, response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={msg} response={response} />));
@@ -62,7 +62,7 @@ export function fetchPathVersionData(path, token, pageNumber, perPage) {
             .then((response) => {
                 dispatch(updateVersionDataForPath(path, response.data));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 let msg = 'Failed to fetch path version data';
                 log.error(msg, response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={msg} response={response} />));
@@ -129,7 +129,7 @@ export function fetchVersionedSecureDataForPath(path, versionId, token) {
             .then((response) => {
                 dispatch(updateVersionedSecureDataForPath(versionId, response.data.data));
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 let msg = 'Failed to fetch versioned secure data for path';
                 log.error(msg, response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={msg} response={response} />));
@@ -166,7 +166,7 @@ export function downloadSecureFileVersion(path, versionId, token) {
                 };
                 // dispatch(updateVersionedSecureDataForPath(versionId, new Uint8Array(response.data), 'FILE'))
             })
-            .catch((response) => {
+            .catch(({ response }) => {
                 let msg = 'Failed to fetch version data for secure file path';
                 log.error(msg, response);
                 dispatch(messengerActions.addNewMessage(<ApiError message={msg} response={response} />));
