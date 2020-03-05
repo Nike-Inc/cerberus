@@ -178,10 +178,12 @@ const mapStateToProps = state => ({
     secureData: state.manageSafetyDepositBox.secureData
 });
 
-export default reduxForm(
+const form = reduxForm(
     {
         form: 'add-new-secure-data',
         fields: fields,
         validate
     }
-)(connect(mapStateToProps)(SecureDataForm));
+)(SecureDataForm);
+
+export default connect(mapStateToProps)(form);

@@ -158,7 +158,7 @@ export function loginUser(username, password) {
                     handleUserLogin(response, dispatch);
                 }
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to login user', response);
 
                 dispatch(messengerActions.addNewMessage(
@@ -198,7 +198,7 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
             .then(function (response) {
                 handleUserLogin(response, dispatch);
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to finalize MFA login', response);
 
                 dispatch(messengerActions.addNewMessage(
@@ -233,7 +233,7 @@ export function triggerCodeChallenge(mfaDeviceId, stateToken) {
             },
             timeout: AUTH_ACTION_TIMEOUT
         })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to trigger challenge', response);
 
                 dispatch(messengerActions.addNewMessage(
@@ -273,7 +273,7 @@ export function refreshAuth(token, redirectPath = '/', redirect = true) {
                 }, 2000);
 
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 // Clears View Token Modal upon max refresh token limit to prevent errors
                 dispatch(modalActions.clearAllModals());
                 log.error('Failed to login user', response);
@@ -305,7 +305,7 @@ export function logoutUser(token) {
                 dispatch(headerActions.mouseOutUsername());
                 hashHistory.push('/login');
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to logout user', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Logout User" response={response} />));
             });

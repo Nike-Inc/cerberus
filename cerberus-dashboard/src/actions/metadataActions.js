@@ -44,7 +44,7 @@ export function fetchMetadata(token, pageNumber, perPage) {
                     log.warn("Metadata was null or undefined");
                 }
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to get metadata', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to retrieve metadata" response={response} />));
             });

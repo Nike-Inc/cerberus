@@ -93,7 +93,7 @@ export function fetchSideBarData(cerberusAuthToken) {
 
                 dispatch(fetchedSideBarData(data));
             }))
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to fetch SideBar Data', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Fetch Side Bar Data" response={response} />));
             });
@@ -117,7 +117,7 @@ export function fetchCmsDomainData(cerberusAuthToken) {
             .then(axios.spread(function (categories, roles) {
                 dispatch(storeCMSDomainData({ categories: categories.data, roles: roles.data }));
             }))
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to fetch domain data', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to Fetch CMS Domain Data" response={response} />));
             });
@@ -171,7 +171,7 @@ export function loadDashboardMetadata() {
             .then(function (response) {
                 dispatch(storeDashboardMetadata(response.data));
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error(JSON.stringify(response, null, 2));
                 dispatch(modalActions.popModal());
                 dispatch(messengerActions.addNewMessage(

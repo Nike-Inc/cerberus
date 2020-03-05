@@ -140,10 +140,12 @@ const mapStateToProps = state => ({
     }
 });
 
-export default reduxForm(
+const form = reduxForm(
     {
         form: formName,
         fields: fields,
         validate
     }
-)(connect(mapStateToProps)(LoginMfaForm));
+)(LoginMfaForm);
+
+export default connect(mapStateToProps)(form);

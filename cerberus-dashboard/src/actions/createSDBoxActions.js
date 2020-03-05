@@ -51,7 +51,7 @@ export function submitCreateNewSDB(data, token) {
                 dispatch(appActions.fetchSideBarData(token));
                 hashHistory.push(`/manage-safe-deposit-box/${response.data.id}`);
             })
-            .catch(function (response) {
+            .catch(function ({ response }) {
                 log.error('Failed to create new SDB', response);
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to create new SDB" response={response} />));
                 dispatch(resetSubmittingNewSDBRequest());
