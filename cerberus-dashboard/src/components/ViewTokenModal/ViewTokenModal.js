@@ -60,7 +60,7 @@ class ViewTokenModal extends Component {
               style={{ display: this.state.isTokenRevealed ? 'block' : 'none' }}
             >{clientToken}
             </div>
-            <div className="secret-value-placeHolder"
+            <div className="secret-value-placeholder"
               style={{ display: !this.state.isTokenRevealed ? 'block' : 'none' }}
             >Hidden, click the reveal button
             </div>
