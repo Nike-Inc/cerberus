@@ -118,7 +118,7 @@ class SecureDataForm extends Component {
                                             placeholder='Value'
                                             style={{ display: entry.revealed.value ? 'block' : 'none' }} />
 
-                                        <div className="ncss-input pt2-sm pr4-sm pb2-sm pl4-sm secret-value-placeHolder"
+                                        <div className="ncss-input pt2-sm pr4-sm pb2-sm pl4-sm secret-value-placeholder"
                                             style={{ display: !entry.revealed.value ? 'block' : 'none' }}
                                         >
                                             Hidden, click the reveal button
