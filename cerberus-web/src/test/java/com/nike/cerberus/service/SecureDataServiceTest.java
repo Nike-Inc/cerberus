@@ -34,6 +34,7 @@ import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureData;
 import com.nike.cerberus.domain.SecureDataType;
+import com.nike.cerberus.metric.MetricsService;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -73,6 +74,7 @@ public class SecureDataServiceTest {
   @Mock private EncryptionService encryptionService;
   @Mock private DateTimeSupplier dateTimeSupplier;
   @Mock private SecureDataVersionDao secureDataVersionDao;
+  @Mock private MetricsService metricsService;
   private ObjectMapper objectMapper;
 
   private SecureDataService secureDataService;
@@ -83,7 +85,12 @@ public class SecureDataServiceTest {
     objectMapper = new ObjectMapper();
     secureDataService =
         new SecureDataService(
-            secureDataDao, encryptionService, objectMapper, dateTimeSupplier, secureDataVersionDao);
+            secureDataDao,
+            encryptionService,
+            objectMapper,
+            dateTimeSupplier,
+            secureDataVersionDao,
+            metricsService);
   }
 
   @After

@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import com.codahale.metrics.Counter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.*;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.metric.MetricsService;
 import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
@@ -48,6 +50,8 @@ public class SecureDataService {
   private final ObjectMapper objectMapper;
   private final DateTimeSupplier dateTimeSupplier;
   private final SecureDataVersionDao secureDataVersionDao;
+  private final Counter reencryptSuccessCounter;
+  private final Counter reencryptFailCounter;
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -57,12 +61,16 @@ public class SecureDataService {
       EncryptionService encryptionService,
       ObjectMapper objectMapper,
       DateTimeSupplier dateTimeSupplier,
-      SecureDataVersionDao secureDataVersionDao) {
+      SecureDataVersionDao secureDataVersionDao,
+      MetricsService metricsService) {
     this.secureDataDao = secureDataDao;
     this.encryptionService = encryptionService;
     this.objectMapper = objectMapper;
     this.dateTimeSupplier = dateTimeSupplier;
     this.secureDataVersionDao = secureDataVersionDao;
+    reencryptSuccessCounter =
+        metricsService.getOrCreateCounter("cms.encryption.reencrypt.success", null);
+    reencryptFailCounter = metricsService.getOrCreateCounter("cms.encryption.reencrypt.fail", null);
   }
 
   @Transactional
@@ -491,16 +499,20 @@ public class SecureDataService {
         try {
           reencryptData(id);
           counter[0]++;
+          reencryptSuccessCounter.inc();
         } catch (Exception e) {
           log.error("Failed to re-encrypt secure data id: {}", id);
+          reencryptFailCounter.inc();
         }
       } else if (source == Source.SECURE_DATA_VERSION) {
         String versionId = dataKeyInfo.getId();
         try {
           reencryptDataVersion(versionId);
           counter[1]++;
+          reencryptSuccessCounter.inc();
         } catch (Exception e) {
           log.error("Failed to re-encrypt secure data version id: {}", versionId);
+          reencryptFailCounter.inc();
         }
       }
 
