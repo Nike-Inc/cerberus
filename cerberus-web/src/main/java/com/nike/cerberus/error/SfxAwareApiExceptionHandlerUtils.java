@@ -69,7 +69,7 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
       Integer httpStatusCode,
       Throwable cause,
       List<Pair<String, String>> extraDetailsForLogging) {
-    reactSensitiveHeaders(request);
+    redactSensitiveHeaders(request);
     try {
       // Do the normal logging thing.
       return super.buildErrorMessageForLogs(
@@ -90,7 +90,7 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
     }
   }
 
-  private void reactSensitiveHeaders(RequestInfoForLogging request) {
+  protected void redactSensitiveHeaders(RequestInfoForLogging request) {
     List<String> redactedHeaderValue = Arrays.asList("REDACTED");
 
     Map<String, List<String>> headersMap = request.getHeadersMap();
