@@ -22,6 +22,7 @@ import com.nike.backstopper.handler.ApiExceptionHandlerUtils;
 import com.nike.backstopper.handler.RequestInfoForLogging;
 import com.nike.cerberus.metric.MetricsService;
 import com.nike.internal.util.Pair;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
       Integer httpStatusCode,
       Throwable cause,
       List<Pair<String, String>> extraDetailsForLogging) {
+    reactSensitiveHeaders(request);
     try {
       // Do the normal logging thing.
       return super.buildErrorMessageForLogs(
@@ -80,5 +82,14 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
                   EXCEPTION_CLASS_DIM_KEY, cause.getClass().getName()))
           .inc();
     }
+  }
+
+  private void reactSensitiveHeaders(RequestInfoForLogging request) {
+    Map<String, List<String>> headersMap = request.getHeadersMap();
+    List<String> redactedHeaderValue = Arrays.asList("REDACTED");
+    headersMap.put("Authorization", redactedHeaderValue);
+    headersMap.put("X-Amz-Security-Token", redactedHeaderValue);
+    headersMap.put("X-Cerberus-Token", redactedHeaderValue);
+    headersMap.put("X-Vault-Token", redactedHeaderValue);
   }
 }
