@@ -17,14 +17,18 @@
 package com.nike.cerberus.error;
 
 import com.codahale.metrics.Counter;
+import com.google.common.collect.ImmutableSet;
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.handler.ApiExceptionHandlerUtils;
 import com.nike.backstopper.handler.RequestInfoForLogging;
 import com.nike.cerberus.metric.MetricsService;
 import com.nike.internal.util.Pair;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -46,6 +50,9 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
   public static final String CONTRIBUTING_ERRORS_DIM_KEY = "contributing_errors";
   /** The name/key of the exception class dimension applied to the API errors metric. */
   public static final String EXCEPTION_CLASS_DIM_KEY = "exception_class";
+  /** The names/keys of sensitive HTTP headers in lower case. */
+  public static final Set<String> sensitiveHeaderNamesInLowerCase =
+      ImmutableSet.of("authorization", "x-amz-security-token", "x-cerberus-token", "x-vault-token");
 
   private final MetricsService metricsService;
 
@@ -62,6 +69,7 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
       Integer httpStatusCode,
       Throwable cause,
       List<Pair<String, String>> extraDetailsForLogging) {
+    redactSensitiveHeaders(request);
     try {
       // Do the normal logging thing.
       return super.buildErrorMessageForLogs(
@@ -80,5 +88,16 @@ public class SfxAwareApiExceptionHandlerUtils extends ApiExceptionHandlerUtils {
                   EXCEPTION_CLASS_DIM_KEY, cause.getClass().getName()))
           .inc();
     }
+  }
+
+  protected void redactSensitiveHeaders(RequestInfoForLogging request) {
+    List<String> redactedHeaderValue = Arrays.asList("REDACTED");
+
+    Map<String, List<String>> headersMap = request.getHeadersMap();
+    Set<String> headerNames =
+        headersMap.keySet().stream()
+            .filter(name -> sensitiveHeaderNamesInLowerCase.contains(name.toLowerCase()))
+            .collect(Collectors.toSet());
+    headerNames.stream().forEach(name -> headersMap.put(name, redactedHeaderValue));
   }
 }
