@@ -32,8 +32,8 @@ jdbc:
 #  password: encrypted:secrets-manager!r:some-region!s:some-secret!k:some-key
 
 c3p0:
-  initialPoolSize: 40
-  minPoolSize: 40
+  initialPoolSize: 80
+  minPoolSize: 80
   maxPoolSize: 400
   acquireIncrement: 10
   checkoutTimeout: 5000
