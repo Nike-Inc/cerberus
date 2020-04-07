@@ -36,7 +36,7 @@ c3p0:
   minPoolSize: 80
   maxPoolSize: 400
   acquireIncrement: 10
-  checkoutTimeout: 5000
+  checkoutTimeout: 30000
   testConnectionOnCheckin: true
   idleConnectionTestPeriod: 300
   maxIdleTimeExcessConnections: 4200
