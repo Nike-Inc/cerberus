@@ -38,6 +38,7 @@ public class AwsStsHttpClient {
       MediaType.parse("application/x-www-form-urlencoded");
   private static final MediaType DEFAULT_ACCEPTED_MEDIA_TYPE = MediaType.parse("application/json");
   private static final String AWS_STS_ENDPOINT_TEMPLATE = "https://sts.%s.amazonaws.com";
+  private static final String AWS_CN_STS_ENDPOINT_TEMPLATE = "https://sts.%s.amazonaws.com.cn";
   private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION =
       "Action=GetCallerIdentity&Version=2011-06-15";
   private static final String DEFAULT_METHOD = "POST";
@@ -115,9 +116,15 @@ public class AwsStsHttpClient {
 
   /** Build the request */
   protected Request buildRequest(String region, Map<String, String> headers) {
+    String stsEndpointUrl;
+    if (region.startsWith("cn-")) {
+      stsEndpointUrl = String.format(AWS_CN_STS_ENDPOINT_TEMPLATE, region);
+    } else {
+      stsEndpointUrl = String.format(AWS_STS_ENDPOINT_TEMPLATE, region);
+    }
     Request.Builder requestBuilder =
         new Request.Builder()
-            .url(String.format(AWS_STS_ENDPOINT_TEMPLATE, region))
+            .url(stsEndpointUrl)
             .addHeader("Accept", DEFAULT_ACCEPTED_MEDIA_TYPE.toString());
 
     if (headers != null) {
