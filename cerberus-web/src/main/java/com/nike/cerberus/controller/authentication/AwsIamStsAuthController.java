@@ -68,9 +68,7 @@ public class AwsIamStsAuthController {
     AuthTokenResponse authResponse;
 
     try {
-      if (headerAuthorization == null
-          || headerXAmzDate == null
-          || headerXAmzSecurityToken == null) {
+      if (headerAuthorization == null || headerXAmzDate == null) {
         throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
       }
 
