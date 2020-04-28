@@ -38,7 +38,6 @@ public final class AwsStsHttpHeader {
 
   public AwsStsHttpHeader(String amzDate, String amzSecurityToken, String authorization) {
     Preconditions.checkNotNull(amzDate);
-    Preconditions.checkNotNull(amzSecurityToken);
     Preconditions.checkNotNull(authorization);
 
     this.amzDate = amzDate;
@@ -50,7 +49,9 @@ public final class AwsStsHttpHeader {
     Map<String, String> headers = Maps.newHashMap();
     headers.put(HEADER_AUTHORIZATION, authorization);
     headers.put(HEADER_X_AMZ_DATE, amzDate);
-    headers.put(HEADER_X_AMZ_SECURITY_TOKEN, amzSecurityToken);
+    if (amzSecurityToken != null) {
+      headers.put(HEADER_X_AMZ_SECURITY_TOKEN, amzSecurityToken);
+    }
     return headers;
   }
 
