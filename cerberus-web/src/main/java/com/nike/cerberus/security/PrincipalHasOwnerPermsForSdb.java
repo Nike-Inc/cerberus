@@ -25,5 +25,5 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @PreAuthorize(
-    "@permissionValidationService.doesPrincipalHaveOwnerPermissions(authentication, #sdbId)")
+    "hasRole('ROLE_ADMIN') or @permissionValidationService.doesPrincipalHaveOwnerPermissions(authentication, #sdbId)")
 public @interface PrincipalHasOwnerPermsForSdb {}
