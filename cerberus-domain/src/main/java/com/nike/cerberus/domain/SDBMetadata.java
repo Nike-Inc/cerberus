@@ -21,6 +21,7 @@ import java.util.Map;
 
 public class SDBMetadata {
 
+  private String id;
   private String name;
   private String path;
   private String category;
@@ -128,5 +129,13 @@ public class SDBMetadata {
 
   public void setData(Map<String, Map<String, Object>> data) {
     this.data = data;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public String getId() {
+    return id;
   }
 }

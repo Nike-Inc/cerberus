@@ -229,6 +229,7 @@ public class MetadataService {
         sdb -> {
           SDBMetadata data = new SDBMetadata();
           data.setName(sdb.getName());
+          data.setId(sdb.getId());
           data.setPath(sdb.getPath());
           data.setDescription(sdb.getDescription());
           data.setCategory(catIdToStringMap.get(sdb.getCategoryId()));
