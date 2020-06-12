@@ -1431,7 +1431,7 @@ SDBs under different categories have no functional difference. They are simply a
 
 # Group Admin Endpoints
 
-## SDB Metadata [/v1/metadata?limit={limit}&offset={offset}]
+## SDB Metadata [/v1/metadata?limit={limit}&offset={offset}&sdbName={sdbName}]
 
 ### Get metadata [GET]
 
@@ -1442,6 +1442,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
 + Parameters
     + limit (number) - OPTIONAL: The number of records to include in the metadata result. Defaults to 100
     + offset (number) - OPTIONAL: The offset to use when paginating records. Defaults to 0
+    + sdbName (string) - OPTIONAL: The name of the SDB.
 
 + Request
 
@@ -1463,6 +1464,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
                 "total_sdbcount": 3,
                 "safe_deposit_box_metadata": [
                     {
+                        "id": "sdb id",
                         "name": "dev demo",
                         "path": "app/dev-demo/",
                         "category": "Applications",
@@ -1480,6 +1482,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
                         }
                     },
                     {
+                        "id": "sdb id 2",
                         "name": "nike dev foo bar",
                         "path": "app/nike-dev-foo-bar/",
                         "category": "Applications",
@@ -1495,6 +1498,7 @@ This endpoint does not return any secret data but can be used by Cerberus admins
                         "iam_role_permissions": {}
                     },
                     {
+                        "id": "sdb id 3",
                         "name": "IaM W d WASD",
                         "path": "shared/iam-w-d-wasd/",
                         "category": "Shared",
