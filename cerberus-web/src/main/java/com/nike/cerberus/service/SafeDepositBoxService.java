@@ -321,7 +321,7 @@ public class SafeDepositBoxService {
         String.format(
             "Update details for SDB with name: '%s' and id: '%s'",
             currentBox.getName(), currentBox.getId()));
-    auditLoggingFilterDetails.setSdbNameSlug(currentBox.getName());
+    auditLoggingFilterDetails.setSdbNameSlug(slugger.toSlug(currentBox.getName()));
 
     return getSDBAndValidatePrincipalAssociationV2(id);
   }
