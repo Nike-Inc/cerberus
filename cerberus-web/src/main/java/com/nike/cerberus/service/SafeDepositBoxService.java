@@ -26,14 +26,12 @@ import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.dao.UserGroupDao;
 import com.nike.cerberus.domain.*;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
-import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.cerberus.util.Slugger;
-import com.nike.cerberus.util.UuidSupplier;
+import com.nike.cerberus.util.*;
 import java.time.OffsetDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +63,7 @@ public class SafeDepositBoxService {
   private final SecureDataService secureDataService;
   private final SecureDataVersionDao secureDataVersionDao;
   private final Boolean userGroupsCaseSensitive;
+  private final AuditLoggingFilterDetails auditLoggingFilterDetails;
 
   @Autowired
   public SafeDepositBoxService(
@@ -80,7 +79,9 @@ public class SafeDepositBoxService {
       AwsIamRoleArnParser awsIamRoleArnParser,
       SecureDataService secureDataService,
       SecureDataVersionDao secureDataVersionDao,
-      @Value(USER_GROUPS_CASE_SENSITIVE) Boolean userGroupsCaseSensitive) {
+      @Value(USER_GROUPS_CASE_SENSITIVE) Boolean userGroupsCaseSensitive,
+      SdbAccessRequest sdbAccessRequest,
+      AuditLoggingFilterDetails auditLoggingFilterDetails) {
 
     this.safeDepositBoxDao = safeDepositBoxDao;
     this.userGroupDao = userGroupDao;
@@ -95,6 +96,7 @@ public class SafeDepositBoxService {
     this.secureDataService = secureDataService;
     this.secureDataVersionDao = secureDataVersionDao;
     this.userGroupsCaseSensitive = userGroupsCaseSensitive;
+    this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
   /**
@@ -298,7 +300,6 @@ public class SafeDepositBoxService {
       final String id) {
 
     final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(id);
-
     String principalName = authPrincipal.getName();
     final OffsetDateTime now = dateTimeSupplier.get();
     final SafeDepositBoxRecord boxToUpdate =
@@ -315,6 +316,12 @@ public class SafeDepositBoxService {
     updateOwner(currentBox.getId(), safeDepositBox.getOwner(), principalName, now);
     modifyUserGroupPermissions(currentBox, userGroupPermissionSet, principalName, now);
     modifyIamPrincipalPermissions(currentBox, iamRolePermissionSet, principalName, now);
+
+    auditLoggingFilterDetails.setAction(
+        String.format(
+            "Update details for SDB with name: '%s' and id: '%s'",
+            currentBox.getName(), currentBox.getId()));
+    auditLoggingFilterDetails.setSdbNameSlug(slugger.toSlug(currentBox.getName()));
 
     return getSDBAndValidatePrincipalAssociationV2(id);
   }

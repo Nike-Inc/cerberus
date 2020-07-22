@@ -135,7 +135,12 @@ public class AuditLoggingFilter extends OncePerRequestFilter {
             .originatingClass(this.getClass().getSimpleName())
             .traceId(getTraceId());
 
-    Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(eventContext::sdbNameSlug);
+    if (auditLoggingFilterDetails.getSdbNameSlug() != null
+        && !auditLoggingFilterDetails.getSdbNameSlug().isEmpty()) {
+      eventContext.sdbNameSlug(auditLoggingFilterDetails.getSdbNameSlug());
+    } else {
+      Optional.ofNullable(sdbAccessRequest.getSdbSlug()).ifPresent(eventContext::sdbNameSlug);
+    }
 
     AuditableEvent event = new AuditableEvent(this, eventContext.build());
 
