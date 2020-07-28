@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 public class DomainConstants {
 
-  public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:aws:iam::%s:role/%s";
+  public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:%s:iam::%s:role/%s";
 
   /**
    * Pattern used to determine if an ARN should be allowed in DB.
@@ -28,7 +28,7 @@ public class DomainConstants {
    * <p>This is also the list of ARN types that are allowed in KMS key policies.
    */
   public static final String AWS_IAM_PRINCIPAL_ARN_REGEX_ALLOWED =
-      "^arn:(aws|aws-cn):(iam|sts)::(?<accountId>\\d+?):(role|user|federated-user|assumed-role).*/.+(?<!\\s)$";
+      "^arn:(?<region>aws|aws-cn):(iam|sts)::(?<accountId>\\d+?):(role|user|federated-user|assumed-role).*/.+(?<!\\s)$";
 
   /**
    * Pattern used to determine if an ARN should be allowed in DB
@@ -66,7 +66,7 @@ public class DomainConstants {
       "^arn:(aws|aws-cn):iam::(?<accountId>\\d+?):role/(?<roleName>.+)$";
   public static final Pattern IAM_ROLE_ARN_PATTERN = Pattern.compile(AWS_IAM_ROLE_ARN_REGEX);
   private static final String AWS_IAM_ASSUMED_ROLE_ARN_REGEX =
-      "^arn:(aws|aws-cn):sts::(?<accountId>\\d+?):assumed-role/(?<roleName>.+)/.+$";
+      "^arn:(?<region>aws|aws-cn):sts::(?<accountId>\\d+?):assumed-role/(?<roleName>.+)/.+$";
   public static final Pattern IAM_ASSUMED_ROLE_ARN_PATTERN =
       Pattern.compile(AWS_IAM_ASSUMED_ROLE_ARN_REGEX);
   private static final String GENERIC_ASSUMED_ROLE_REGEX =

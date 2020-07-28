@@ -119,8 +119,9 @@ public class AwsIamRoleArnParser {
     final String accountId =
         getNamedGroupFromRegexPattern(patternToMatch, "accountId", principalArn);
     final String roleName = getNamedGroupFromRegexPattern(patternToMatch, "roleName", principalArn);
+    final String region = getNamedGroupFromRegexPattern(patternToMatch, "region", principalArn);
 
-    return String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    return String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE, region, accountId, roleName);
   }
 
   public String convertPrincipalArnToRootArn(final String principalArn) {
@@ -133,7 +134,11 @@ public class AwsIamRoleArnParser {
         getNamedGroupFromRegexPattern(
             DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "accountId", principalArn);
 
-    return String.format("arn:aws:iam::%s:root", accountId);
+    final String region =
+        getNamedGroupFromRegexPattern(
+            DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "region", principalArn);
+
+    return String.format("arn:%s:iam::%s:root", region, accountId);
   }
 
   /**
