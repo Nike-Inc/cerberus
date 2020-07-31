@@ -27,4 +27,5 @@ import org.springframework.web.context.WebApplicationContext;
 @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class AuditLoggingFilterDetails {
   private String action;
+  private String sdbNameSlug;
 }
