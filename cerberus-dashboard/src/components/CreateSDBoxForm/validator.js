@@ -76,7 +76,7 @@ const validateIamPrincipalPermissions = (permission, index, errors) => {
 
     if (!permission.iamPrincipalArn) {
         errors.iamPrincipalPermissions[`${index}`].iamPrincipalArn = 'You must enter a IAM principal ARN for this permission';
-    } else if (! /^arn:aws:(iam|sts)::.+$/.test(permission.iamPrincipalArn)) {
+    } else if (! /^arn:(aws|aws-cn):(iam|sts)::.+$/.test(permission.iamPrincipalArn)) {
         errors.iamPrincipalPermissions[`${index}`].iamPrincipalArn = 'Invalid ARN';
     }
 
