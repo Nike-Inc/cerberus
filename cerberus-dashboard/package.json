@@ -67,7 +67,11 @@
     ]
   },
   "resolutions": {
-    "yargs-parser": "13.1.2",
-    "websocket-extensions": "0.1.4"
+    "yargs-parser": "13.1.2"
+  },
+  "comments:": {
+    "resolutions": {
+      "yargs-parser": "React scripts 3.4.1 pulls in yargs-parser 11.1.1 which is vulnerable, we are forcing to 13.1.2 to resolve this vulnerablity"
+    }
   }
 }
