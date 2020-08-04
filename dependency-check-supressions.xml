@@ -83,4 +83,11 @@
         <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@.*$</packageUrl>
         <cve>CVE-2020-10683</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: websocket-extensions:0.1.4
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/websocket\-extensions@.*$</packageUrl>
+        <vulnerabilityName>CVE-2020-7663</vulnerabilityName>
+    </suppress>
 </suppressions>
