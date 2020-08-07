@@ -98,7 +98,7 @@ public class KmsServiceTest {
             kmsClientFactory,
             kmsPolicyService,
             dateTimeSupplier,
-            new AwsIamRoleArnParser(),
+            new AwsIamRoleArnParser(true, false),
             3000,
             ENV,
             slugger,

@@ -221,7 +221,10 @@ public class AuthenticationService {
 
     final String iamPrincipalArn =
         String.format(
-            AWS_IAM_ROLE_ARN_TEMPLATE, credentials.getAccountId(), credentials.getRoleName());
+            AWS_IAM_ROLE_ARN_TEMPLATE,
+            "aws",
+            credentials.getAccountId(),
+            credentials.getRoleName());
     final String region = credentials.getRegion();
 
     final AwsIamKmsAuthRequest awsIamKmsAuthRequest = new AwsIamKmsAuthRequest();
@@ -243,6 +246,7 @@ public class AuthenticationService {
   public EncryptedAuthDataWrapper authenticate(AwsIamKmsAuthRequest awsIamKmsAuthRequest) {
 
     final String iamPrincipalArn = awsIamKmsAuthRequest.getIamPrincipalArn();
+    awsIamRoleArnParser.iamPrincipalPartitionCheck(iamPrincipalArn);
     final Map<String, String> authPrincipalMetadata =
         generateCommonIamPrincipalAuthMetadata(iamPrincipalArn, awsIamKmsAuthRequest.getRegion());
     authPrincipalMetadata.put(
@@ -258,6 +262,7 @@ public class AuthenticationService {
    * @return Unencrypted auth response
    */
   public AuthTokenResponse stsAuthenticate(final String iamPrincipalArn) {
+    awsIamRoleArnParser.iamPrincipalPartitionCheck(iamPrincipalArn);
     final Map<String, String> authPrincipalMetadata =
         generateCommonIamPrincipalAuthMetadata(iamPrincipalArn);
     authPrincipalMetadata.put(

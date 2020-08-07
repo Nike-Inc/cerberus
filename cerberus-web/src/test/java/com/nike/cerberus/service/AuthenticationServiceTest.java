@@ -266,7 +266,7 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws", accountId, roleName);
 
     AwsIamRoleRecord awsIamRoleRecord = mock(AwsIamRoleRecord.class);
     when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
@@ -311,7 +311,7 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws", accountId, roleName);
     String rootArn = String.format("arn:aws:iam::%s:root", accountId);
 
     AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);

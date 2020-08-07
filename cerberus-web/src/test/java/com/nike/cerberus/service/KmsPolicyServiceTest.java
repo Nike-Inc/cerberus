@@ -51,29 +51,29 @@ public class KmsPolicyServiceTest {
     String cmsRoleArn = "arn:aws:iam::1111111111:role/cms-iam-role";
     kmsPolicyService =
         new KmsPolicyService(
-            true, rootUserArn, adminRoleArn, cmsRoleArn, new AwsIamRoleArnParser());
+            true, rootUserArn, adminRoleArn, cmsRoleArn, new AwsIamRoleArnParser(true, false));
     objectMapper = new ObjectMapper();
   }
 
   @Test(expected = NullPointerException.class)
   public void test_that_KmsPolicyService_throws_error_when_required_field_null_rootUserArn() {
-    new KmsPolicyService(true, null, "foo", "bar", new AwsIamRoleArnParser());
+    new KmsPolicyService(true, null, "foo", "bar", new AwsIamRoleArnParser(true, false));
   }
 
   @Test(expected = NullPointerException.class)
   public void test_that_KmsPolicyService_throws_error_when_required_field_null_adminRoleArn() {
-    new KmsPolicyService(true, "foo", null, "bar", new AwsIamRoleArnParser());
+    new KmsPolicyService(true, "foo", null, "bar", new AwsIamRoleArnParser(true, false));
   }
 
   @Test(expected = NullPointerException.class)
   public void test_that_KmsPolicyService_throws_error_when_required_field_null_cmsRoleArn() {
-    new KmsPolicyService(true, "foo", "bar", null, new AwsIamRoleArnParser());
+    new KmsPolicyService(true, "foo", "bar", null, new AwsIamRoleArnParser(true, false));
   }
 
   @Test()
   public void
       test_that_KmsPolicyService_throws_no_error_when_required_fields_are_null_but_kms_auth_disabled() {
-    new KmsPolicyService(false, null, null, null, new AwsIamRoleArnParser());
+    new KmsPolicyService(false, null, null, null, new AwsIamRoleArnParser(true, false));
   }
 
   @Test

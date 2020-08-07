@@ -27,39 +27,46 @@ import org.junit.Test;
 /** Tests the AwsIamRoleArnParser class */
 public class AwsIamRoleArnParserTest {
 
-  private AwsIamRoleArnParser awsIamRoleArnParser;
+  private AwsIamRoleArnParser awsGlobalIamRoleArnParser;
+  private AwsIamRoleArnParser awsChinaIamRoleArnParser;
 
   @Before
   public void setup() {
-
-    awsIamRoleArnParser = new AwsIamRoleArnParser();
+    awsGlobalIamRoleArnParser = new AwsIamRoleArnParser(true, false);
+    awsChinaIamRoleArnParser = new AwsIamRoleArnParser(false, true);
   }
 
   @Test
   public void getAccountId_returns_an_account_id_given_a_valid_arn() {
-
     assertEquals(
         "1111111111",
-        awsIamRoleArnParser.getAccountId("arn:aws:iam::1111111111:role/lamb_dev_health"));
+        awsGlobalIamRoleArnParser.getAccountId("arn:aws:iam::1111111111:role/lamb_dev_health"));
+    assertEquals(
+        "1111111111",
+        awsChinaIamRoleArnParser.getAccountId("arn:aws-cn:iam::1111111111:role/lamb_dev_health"));
   }
 
   @Test(expected = RuntimeException.class)
   public void getAccountId_fails_on_invalid_arn() {
 
-    awsIamRoleArnParser.getAccountId("hullabaloo");
+    awsGlobalIamRoleArnParser.getAccountId("hullabaloo");
   }
 
   @Test
   public void getRoleNameHappy_returns_the_role_name_given_a_valid_arn() {
 
     assertEquals(
-        "my_roleName", awsIamRoleArnParser.getRoleName("arn:aws:iam::222222:role/my_roleName"));
+        "my_roleName",
+        awsGlobalIamRoleArnParser.getRoleName("arn:aws:iam::222222:role/my_roleName"));
+    assertEquals(
+        "my_roleName",
+        awsChinaIamRoleArnParser.getRoleName("arn:aws-cn:iam::222222:role/my_roleName"));
   }
 
   @Test(expected = RuntimeException.class)
   public void getRoleName_fails_on_invalid_arn() {
 
-    awsIamRoleArnParser.getRoleName("brouhaha");
+    awsGlobalIamRoleArnParser.getRoleName("brouhaha");
   }
 
   @Test
@@ -67,51 +74,87 @@ public class AwsIamRoleArnParserTest {
 
     assertEquals(
         "arn:aws:iam::1111111111:role/lamb_dev_health",
-        awsIamRoleArnParser.convertPrincipalArnToRoleArn(
+        awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
             "arn:aws:sts::1111111111:federated-user/lamb_dev_health"));
     assertEquals(
         "arn:aws:iam::2222222222:role/prince_role",
-        awsIamRoleArnParser.convertPrincipalArnToRoleArn(
+        awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
             "arn:aws:sts::2222222222:assumed-role/prince_role/session-name"));
     assertEquals(
         "arn:aws:iam::2222222222:role/sir/alfred/role",
-        awsIamRoleArnParser.convertPrincipalArnToRoleArn(
+        awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
             "arn:aws:sts::2222222222:assumed-role/sir/alfred/role/session-name"));
     assertEquals(
         "arn:aws:iam::3333333333:role/path/to/foo",
-        awsIamRoleArnParser.convertPrincipalArnToRoleArn(
+        awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
             "arn:aws:iam::3333333333:role/path/to/foo"));
     assertEquals(
         "arn:aws:iam::4444444444:role/name",
-        awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:iam::4444444444:role/name"));
+        awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws:iam::4444444444:role/name"));
+
+    assertEquals(
+        "arn:aws-cn:iam::1111111111:role/lamb_dev_health",
+        awsChinaIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws-cn:sts::1111111111:federated-user/lamb_dev_health"));
+    assertEquals(
+        "arn:aws-cn:iam::2222222222:role/prince_role",
+        awsChinaIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws-cn:sts::2222222222:assumed-role/prince_role/session-name"));
+    assertEquals(
+        "arn:aws-cn:iam::2222222222:role/sir/alfred/role",
+        awsChinaIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws-cn:sts::2222222222:assumed-role/sir/alfred/role/session-name"));
+    assertEquals(
+        "arn:aws-cn:iam::3333333333:role/path/to/foo",
+        awsChinaIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws-cn:iam::3333333333:role/path/to/foo"));
+    assertEquals(
+        "arn:aws-cn:iam::4444444444:role/name",
+        awsChinaIamRoleArnParser.convertPrincipalArnToRoleArn(
+            "arn:aws-cn:iam::4444444444:role/name"));
   }
 
   @Test(expected = RuntimeException.class)
   public void convertPrincipalArnToRoleArn_fails_on_invalid_arn() {
 
-    awsIamRoleArnParser.convertPrincipalArnToRoleArn("foobar");
+    awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn("foobar");
   }
 
   @Test(expected = RuntimeException.class)
   public void convertPrincipalArnToRoleArn_fails_on_group_arn() {
 
-    awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:iam::1111111111:group/path/to/group");
+    awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
+        "arn:aws:iam::1111111111:group/path/to/group");
   }
 
   @Test(expected = RuntimeException.class)
   public void convertPrincipalArnToRoleArn_fails_on_invalid_assumed_role_arn() {
 
-    awsIamRoleArnParser.convertPrincipalArnToRoleArn("arn:aws:sts::1111111111:assumed-role/blah");
+    awsGlobalIamRoleArnParser.convertPrincipalArnToRoleArn(
+        "arn:aws:sts::1111111111:assumed-role/blah");
   }
 
   @Test
   public void isRoleArn_returns_true_when_is_role_arn() {
 
-    assertTrue(awsIamRoleArnParser.isRoleArn("arn:aws:iam::2222222222:role/fancy/role/path"));
-    assertTrue(awsIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:role/name"));
-    assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:iam::3333333333:assumed-role/happy/path"));
-    assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:sts::1111111111:federated-user/my_user"));
-    assertFalse(awsIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:group/path/to/group"));
+    assertTrue(awsGlobalIamRoleArnParser.isRoleArn("arn:aws:iam::2222222222:role/fancy/role/path"));
+    assertTrue(awsGlobalIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:role/name"));
+    assertFalse(
+        awsGlobalIamRoleArnParser.isRoleArn("arn:aws:iam::3333333333:assumed-role/happy/path"));
+    assertFalse(
+        awsGlobalIamRoleArnParser.isRoleArn("arn:aws:sts::1111111111:federated-user/my_user"));
+    assertFalse(awsGlobalIamRoleArnParser.isRoleArn("arn:aws:iam::1111111111:group/path/to/group"));
+
+    assertTrue(
+        awsChinaIamRoleArnParser.isRoleArn("arn:aws-cn:iam::2222222222:role/fancy/role/path"));
+    assertTrue(awsChinaIamRoleArnParser.isRoleArn("arn:aws-cn:iam::1111111111:role/name"));
+    assertFalse(
+        awsChinaIamRoleArnParser.isRoleArn("arn:aws-cn:iam::3333333333:assumed-role/happy/path"));
+    assertFalse(
+        awsChinaIamRoleArnParser.isRoleArn("arn:aws-cn:sts::1111111111:federated-user/my_user"));
+    assertFalse(
+        awsChinaIamRoleArnParser.isRoleArn("arn:aws-cn:iam::1111111111:group/path/to/group"));
   }
 
   @Test
@@ -191,33 +234,33 @@ public class AwsIamRoleArnParserTest {
   @Test
   public void test_isArnThatCanGoInKeyPolicy() {
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:role/some-role"));
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:role/some/path/some-role"));
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:user/some-user"));
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:sts::12345678901234:assumed-role/some-path/some-role"));
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:sts::12345678901234:assumed-role/some-role"));
     assertTrue(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:sts::12345678901234:federated-user/my_user"));
 
     // invalid - KMS doesn't allow 'group' or 'instance-profile'
     assertFalse(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:group/some-group"));
     assertFalse(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:instance-profile/some-profile"));
     assertFalse(
-        awsIamRoleArnParser.isArnThatCanGoInKeyPolicy(
+        awsGlobalIamRoleArnParser.isArnThatCanGoInKeyPolicy(
             "arn:aws:iam::12345678901234:other/some-value"));
   }
 
@@ -225,38 +268,42 @@ public class AwsIamRoleArnParserTest {
   public void test_stripOutDescription() {
     assertEquals(
         "12345678901234/some-role",
-        awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:role/some-role"));
+        awsGlobalIamRoleArnParser.stripOutDescription(
+            "arn:aws:iam::12345678901234:role/some-role"));
     assertEquals(
         "12345678901234/some/path/some-role",
-        awsIamRoleArnParser.stripOutDescription(
+        awsGlobalIamRoleArnParser.stripOutDescription(
             "arn:aws:iam::12345678901234:role/some/path/some-role"));
     assertEquals(
         "12345678901234/some-user",
-        awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:user/some-user"));
+        awsGlobalIamRoleArnParser.stripOutDescription(
+            "arn:aws:iam::12345678901234:user/some-user"));
     assertEquals(
         "12345678901234/some-path/some-role",
-        awsIamRoleArnParser.stripOutDescription(
+        awsGlobalIamRoleArnParser.stripOutDescription(
             "arn:aws:sts::12345678901234:assumed-role/some-path/some-role"));
     assertEquals(
         "12345678901234/some-role",
-        awsIamRoleArnParser.stripOutDescription(
+        awsGlobalIamRoleArnParser.stripOutDescription(
             "arn:aws:sts::12345678901234:assumed-role/some-role"));
     assertEquals(
         "12345678901234/my_user",
-        awsIamRoleArnParser.stripOutDescription(
+        awsGlobalIamRoleArnParser.stripOutDescription(
             "arn:aws:sts::12345678901234:federated-user/my_user"));
 
     // invalid - KMS doesn't allow 'group' or 'instance-profile' though some parsing is still
     // possible (this behavior isn't important)
     assertEquals(
         "",
-        awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:group/some-group"));
+        awsGlobalIamRoleArnParser.stripOutDescription(
+            "arn:aws:iam::12345678901234:group/some-group"));
     assertEquals(
         "12345678901234/some-value",
-        awsIamRoleArnParser.stripOutDescription("arn:aws:iam::12345678901234:other/some-value"));
+        awsGlobalIamRoleArnParser.stripOutDescription(
+            "arn:aws:iam::12345678901234:other/some-value"));
     assertEquals(
         "12345678901234/some-profile",
-        awsIamRoleArnParser.stripOutDescription(
+        awsGlobalIamRoleArnParser.stripOutDescription(
             "arn:aws:iam::12345678901234:instance-profile/some-profile"));
   }
 
@@ -274,13 +321,27 @@ public class AwsIamRoleArnParserTest {
 
   @Test
   public void test_isAccountRootArn() {
-    assertTrue(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:root"));
+    assertTrue(awsGlobalIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:root"));
 
-    assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:role/foo"));
-    assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:user/bar"));
-    assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:assumed-role/baz"));
-    assertFalse(awsIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:group/foobar"));
+    assertFalse(awsGlobalIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:role/foo"));
+    assertFalse(awsGlobalIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:user/bar"));
     assertFalse(
-        awsIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:federated-user/foobaz"));
+        awsGlobalIamRoleArnParser.isAccountRootArn("arn:aws:sts::0000000000:assumed-role/baz"));
+    assertFalse(awsGlobalIamRoleArnParser.isAccountRootArn("arn:aws:iam::0000000000:group/foobar"));
+    assertFalse(
+        awsGlobalIamRoleArnParser.isAccountRootArn(
+            "arn:aws:sts::0000000000:federated-user/foobaz"));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void iamPrincipalPartitionCheck_fails_on_disabled_aws_china_partition() {
+    awsGlobalIamRoleArnParser.iamPrincipalPartitionCheck(
+        "arn:aws-cn:iam::1111111111:role/lamb_dev_health");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void iamPrincipalPartitionCheck_fails_on_disabled_aws_global_partition() {
+    awsChinaIamRoleArnParser.iamPrincipalPartitionCheck(
+        "arn:aws:iam::1111111111:role/lamb_dev_health");
   }
 }
