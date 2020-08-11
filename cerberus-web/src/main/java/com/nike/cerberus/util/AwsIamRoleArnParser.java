@@ -28,14 +28,14 @@ import org.springframework.stereotype.Component;
 /** Utility class for concatenating and parsing AWS IAM role ARNs. */
 @Component
 public class AwsIamRoleArnParser {
-  private final boolean awsChinaAllowed;
-  private final boolean awsGlobalAllowed;
+  private final boolean awsChinaEnabled;
+  private final boolean awsGlobalEnabled;
 
   public AwsIamRoleArnParser(
-      @Value("${cerberus.partitions.awsGlobal.enabled}") boolean awsGlobalAllowed,
-      @Value("${cerberus.partitions.awsChina.enabled}") boolean awsChinaAllowed) {
-    this.awsGlobalAllowed = awsGlobalAllowed;
-    this.awsChinaAllowed = awsChinaAllowed;
+      @Value("${cerberus.partitions.awsGlobal.enabled}") boolean awsGlobalEnabled,
+      @Value("${cerberus.partitions.awsChina.enabled}") boolean awsChinaEnabled) {
+    this.awsGlobalEnabled = awsGlobalEnabled;
+    this.awsChinaEnabled = awsChinaEnabled;
   }
 
   /**
@@ -188,10 +188,10 @@ public class AwsIamRoleArnParser {
   }
 
   private void partitionCheck(String partition) {
-    if ("aws".equals(partition) && !awsGlobalAllowed) {
+    if ("aws".equals(partition) && !awsGlobalEnabled) {
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_GLOBAL_NOT_ALLOWED).build();
     }
-    if ("aws-cn".equals(partition) && !awsChinaAllowed) {
+    if ("aws-cn".equals(partition) && !awsChinaEnabled) {
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_CHINA_NOT_ALLOWED).build();
     }
   }

@@ -334,6 +334,35 @@ public class AuthenticationServiceTest {
 
   @Test
   public void
+      test_that_findIamRoleAssociatedWithSdb_returns_generic_role_when_iam_principal_not_found_and_root_found_for_aws_china() {
+
+    String accountId = "0000000000";
+    String roleName = "role/path";
+    String principalArn =
+        String.format("arn:aws-cn:iam::%s:instance-profile/%s", accountId, roleName);
+    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws-cn", accountId, roleName);
+    String rootArn = String.format("arn:aws-cn:iam::%s:root", accountId);
+
+    AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);
+    AwsIamRoleRecord roleRecord = mock(AwsIamRoleRecord.class);
+    when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
+    when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.empty());
+    when(awsIamRoleDao.getIamRole(rootArn)).thenReturn(Optional.of(rootRecord));
+
+    when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+    when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+    when(awsIamRoleArnParser.convertPrincipalArnToRootArn(roleArn)).thenReturn(rootArn);
+
+    when(awsIamRoleService.createIamRole(roleArn)).thenReturn(roleRecord);
+
+    Optional<AwsIamRoleRecord> result =
+        authenticationService.findIamRoleAssociatedWithSdb(principalArn);
+
+    assertEquals(roleRecord, result.get());
+  }
+
+  @Test
+  public void
       tests_that_validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize_returns_the_original_payload_if_the_size_can_be_encrypted_by_kms()
           throws JsonProcessingException {
     AuthTokenResponse response =
