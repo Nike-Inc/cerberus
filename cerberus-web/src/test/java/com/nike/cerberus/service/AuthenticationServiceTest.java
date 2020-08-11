@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.service;
 
-import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE;
+import static com.nike.cerberus.domain.DomainConstants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -266,7 +266,8 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws", accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_GLOBAL_PARTITION_NAME, accountId, roleName);
 
     AwsIamRoleRecord awsIamRoleRecord = mock(AwsIamRoleRecord.class);
     when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
@@ -311,7 +312,8 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws", accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_GLOBAL_PARTITION_NAME, accountId, roleName);
     String rootArn = String.format("arn:aws:iam::%s:root", accountId);
 
     AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);
@@ -340,7 +342,8 @@ public class AuthenticationServiceTest {
     String roleName = "role/path";
     String principalArn =
         String.format("arn:aws-cn:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, "aws-cn", accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_CHINA_PARTITION_NAME, accountId, roleName);
     String rootArn = String.format("arn:aws-cn:iam::%s:root", accountId);
 
     AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);
