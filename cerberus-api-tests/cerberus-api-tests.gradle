@@ -21,10 +21,15 @@ repositories {
   jcenter()
 }
 
+configurations.all {
+  resolutionStrategy {
+    force 'org.apache.ant:ant:1.10.8'
+  }
+}
 dependencies {
   compile project(':cerberus-core').sourceSets.test.output
-  compile group: 'org.testng', name: 'testng', version: '7.1.0'
-  compile 'junit:junit:4.12'
+  compile group: 'org.testng', name: 'testng', version: '7.3.0'
+  compile 'junit:junit:4.13'
   compile 'org.slf4j:slf4j-api:1.7.21'
   compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.5.12'
   compile 'io.rest-assured:rest-assured:4.1.2'
