@@ -639,7 +639,9 @@ public class SafeDepositBoxService {
                         .withIamPrincipalArn(
                             String.format(
                                 DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
-                                "aws",
+                                DomainConstants
+                                    .AWS_GLOBAL_PARTITION_NAME, // hardcoding this to AWS Global for
+                                // backwards compatibility
                                 iamRolePermission.getAccountId(),
                                 iamRolePermission.getIamRoleName()))
                         .withRoleId(iamRolePermission.getRoleId()))

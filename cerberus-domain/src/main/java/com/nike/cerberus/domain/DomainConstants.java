@@ -20,6 +20,10 @@ import java.util.regex.Pattern;
 
 public class DomainConstants {
 
+  public static final String AWS_GLOBAL_PARTITION_NAME = "aws";
+
+  public static final String AWS_CHINA_PARTITION_NAME = "aws-cn";
+
   public static final String AWS_IAM_ROLE_ARN_TEMPLATE = "arn:%s:iam::%s:role/%s";
 
   /**

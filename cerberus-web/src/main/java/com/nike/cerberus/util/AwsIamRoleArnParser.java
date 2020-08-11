@@ -167,6 +167,12 @@ public class AwsIamRoleArnParser {
     }
   }
 
+  /**
+   * Checks if the partition of an IAM principal ARN is enabled
+   *
+   * @param iamPrincipalArn The IAM principal ARN to be checked
+   * @throws ApiException Throws an exception if the partition of the IAM principal isn't enabled
+   */
   public void iamPrincipalPartitionCheck(String iamPrincipalArn) {
     getNamedGroupFromRegexPattern(
         DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "partition", iamPrincipalArn);
@@ -188,10 +194,10 @@ public class AwsIamRoleArnParser {
   }
 
   private void partitionCheck(String partition) {
-    if ("aws".equals(partition) && !awsGlobalEnabled) {
+    if (DomainConstants.AWS_GLOBAL_PARTITION_NAME.equals(partition) && !awsGlobalEnabled) {
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_GLOBAL_NOT_ALLOWED).build();
     }
-    if ("aws-cn".equals(partition) && !awsChinaEnabled) {
+    if (DomainConstants.AWS_CHINA_PARTITION_NAME.equals(partition) && !awsChinaEnabled) {
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_CHINA_NOT_ALLOWED).build();
     }
   }

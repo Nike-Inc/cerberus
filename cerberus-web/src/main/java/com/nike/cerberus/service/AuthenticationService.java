@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.service;
 
+import static com.nike.cerberus.domain.DomainConstants.AWS_GLOBAL_PARTITION_NAME;
 import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE;
 import static com.nike.cerberus.security.CerberusPrincipal.*;
 
@@ -222,7 +223,7 @@ public class AuthenticationService {
     final String iamPrincipalArn =
         String.format(
             AWS_IAM_ROLE_ARN_TEMPLATE,
-            "aws",
+            AWS_GLOBAL_PARTITION_NAME, // hardcoding this to AWS Global for backwards compatibility
             credentials.getAccountId(),
             credentials.getRoleName());
     final String region = credentials.getRegion();
