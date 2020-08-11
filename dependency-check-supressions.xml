@@ -90,4 +90,18 @@
         <packageUrl regex="true">^pkg:npm/websocket\-extensions@.*$</packageUrl>
         <vulnerabilityName>CVE-2020-7663</vulnerabilityName>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: kotlin-stdlib-1.3.72.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib@.*$</packageUrl>
+        <cve>CVE-2020-15824</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: kotlin-stdlib-common-1.3.72.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib\-common@.*$</packageUrl>
+        <cve>CVE-2020-15824</cve>
+    </suppress>
 </suppressions>
