@@ -248,6 +248,7 @@ public class SafeDepositBoxService {
 
     final Set<IamPrincipalPermission> iamRolePermissionSet =
         safeDepositBox.getIamPrincipalPermissions();
+    partitionCheck(iamRolePermissionSet);
 
     final boolean isSlugUnique = safeDepositBoxDao.isSlugUnique(boxRecordToStore.getSdbNameSlug());
 
@@ -308,6 +309,8 @@ public class SafeDepositBoxService {
         safeDepositBox.getUserGroupPermissions();
     final Set<IamPrincipalPermission> iamRolePermissionSet =
         safeDepositBox.getIamPrincipalPermissions();
+
+    partitionCheck(iamRolePermissionSet);
 
     if (!StringUtils.equals(currentBox.getDescription(), boxToUpdate.getDescription())) {
       safeDepositBoxDao.updateSafeDepositBox(boxToUpdate);
@@ -636,6 +639,9 @@ public class SafeDepositBoxService {
                         .withIamPrincipalArn(
                             String.format(
                                 DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
+                                DomainConstants
+                                    .AWS_GLOBAL_PARTITION_NAME, // hardcoding this to AWS Global for
+                                // backwards compatibility
                                 iamRolePermission.getAccountId(),
                                 iamRolePermission.getIamRoleName()))
                         .withRoleId(iamRolePermission.getRoleId()))
@@ -792,5 +798,13 @@ public class SafeDepositBoxService {
         safeDepositBoxRecordOptional.orElseThrow(
             () ->
                 ApiException.newBuilder().withApiErrors(DefaultApiError.ENTITY_NOT_FOUND).build()));
+  }
+
+  private void partitionCheck(Set<IamPrincipalPermission> iamRolePermissionSet) {
+    iamRolePermissionSet.stream()
+        .forEach(
+            iamRolePermission ->
+                awsIamRoleArnParser.iamPrincipalPartitionCheck(
+                    iamRolePermission.getIamPrincipalArn()));
   }
 }

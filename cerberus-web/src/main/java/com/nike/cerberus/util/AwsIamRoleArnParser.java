@@ -18,14 +18,25 @@ package com.nike.cerberus.util;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.domain.DomainConstants;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.error.InvalidIamRoleArnApiError;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /** Utility class for concatenating and parsing AWS IAM role ARNs. */
 @Component
 public class AwsIamRoleArnParser {
+  private final boolean awsChinaEnabled;
+  private final boolean awsGlobalEnabled;
+
+  public AwsIamRoleArnParser(
+      @Value("${cerberus.partitions.awsGlobal.enabled}") boolean awsGlobalEnabled,
+      @Value("${cerberus.partitions.awsChina.enabled}") boolean awsChinaEnabled) {
+    this.awsGlobalEnabled = awsGlobalEnabled;
+    this.awsChinaEnabled = awsChinaEnabled;
+  }
 
   /**
    * Gets account ID from a 'role' ARN
@@ -119,8 +130,10 @@ public class AwsIamRoleArnParser {
     final String accountId =
         getNamedGroupFromRegexPattern(patternToMatch, "accountId", principalArn);
     final String roleName = getNamedGroupFromRegexPattern(patternToMatch, "roleName", principalArn);
+    final String partition =
+        getNamedGroupFromRegexPattern(patternToMatch, "partition", principalArn);
 
-    return String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    return String.format(DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE, partition, accountId, roleName);
   }
 
   public String convertPrincipalArnToRootArn(final String principalArn) {
@@ -133,7 +146,11 @@ public class AwsIamRoleArnParser {
         getNamedGroupFromRegexPattern(
             DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "accountId", principalArn);
 
-    return String.format("arn:aws:iam::%s:root", accountId);
+    final String partition =
+        getNamedGroupFromRegexPattern(
+            DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "partition", principalArn);
+
+    return String.format("arn:%s:iam::%s:root", partition, accountId);
   }
 
   /**
@@ -150,6 +167,17 @@ public class AwsIamRoleArnParser {
     }
   }
 
+  /**
+   * Checks if the partition of an IAM principal ARN is enabled
+   *
+   * @param iamPrincipalArn The IAM principal ARN to be checked
+   * @throws ApiException Throws an exception if the partition of the IAM principal isn't enabled
+   */
+  public void iamPrincipalPartitionCheck(String iamPrincipalArn) {
+    getNamedGroupFromRegexPattern(
+        DomainConstants.IAM_PRINCIPAL_ARN_PATTERN_ALLOWED, "partition", iamPrincipalArn);
+  }
+
   private String getNamedGroupFromRegexPattern(
       final Pattern pattern, final String groupName, final String input) {
     final Matcher iamRoleArnMatcher = pattern.matcher(input);
@@ -160,7 +188,17 @@ public class AwsIamRoleArnParser {
           .withExceptionMessage("ARN does not match pattern: " + pattern.toString())
           .build();
     }
+    partitionCheck(iamRoleArnMatcher.group("partition"));
 
     return iamRoleArnMatcher.group(groupName);
+  }
+
+  private void partitionCheck(String partition) {
+    if (DomainConstants.AWS_GLOBAL_PARTITION_NAME.equals(partition) && !awsGlobalEnabled) {
+      throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_GLOBAL_NOT_ALLOWED).build();
+    }
+    if (DomainConstants.AWS_CHINA_PARTITION_NAME.equals(partition) && !awsChinaEnabled) {
+      throw ApiException.newBuilder().withApiErrors(DefaultApiError.AWS_CHINA_NOT_ALLOWED).build();
+    }
   }
 }

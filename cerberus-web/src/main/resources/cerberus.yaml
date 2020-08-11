@@ -44,6 +44,11 @@ c3p0:
   preferredTestQuery: SELECT 1
 
 cerberus:
+  partitions:
+    awsGlobal:
+      enabled: true
+    awsChina:
+      enabled: false
   environmentName: TODO
   admin:
     # These are aws principal that you want to allow to use the admin API

@@ -233,6 +233,18 @@ public enum DefaultApiError implements ApiError {
       "Failed to validate factor. Please try again or try a different factor.",
       SC_UNAUTHORIZED),
 
+  /** AWS China ARNs are not allowed. */
+  AWS_CHINA_NOT_ALLOWED(
+      99244,
+      "The AWS China partition is disabled by the admin. If you're creating or updating an SDB, please remove IAM principal ARNs that start with \"arn:aws-cn:\"",
+      SC_UNAUTHORIZED),
+
+  /** AWS Global ARNs are not allowed. */
+  AWS_GLOBAL_NOT_ALLOWED(
+      99245,
+      "The AWS Global partition is disabled by the admin. If you're creating or updating an SDB, please remove IAM principal ARNs that start with \"arn:aws:\"",
+      SC_UNAUTHORIZED),
+
   /** Generic not found error. */
   ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),
 

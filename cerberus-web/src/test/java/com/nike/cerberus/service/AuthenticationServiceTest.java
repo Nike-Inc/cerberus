@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.service;
 
-import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE;
+import static com.nike.cerberus.domain.DomainConstants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -266,7 +266,8 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_GLOBAL_PARTITION_NAME, accountId, roleName);
 
     AwsIamRoleRecord awsIamRoleRecord = mock(AwsIamRoleRecord.class);
     when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
@@ -311,8 +312,39 @@ public class AuthenticationServiceTest {
     String accountId = "0000000000";
     String roleName = "role/path";
     String principalArn = String.format("arn:aws:iam::%s:instance-profile/%s", accountId, roleName);
-    String roleArn = String.format(AWS_IAM_ROLE_ARN_TEMPLATE, accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_GLOBAL_PARTITION_NAME, accountId, roleName);
     String rootArn = String.format("arn:aws:iam::%s:root", accountId);
+
+    AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);
+    AwsIamRoleRecord roleRecord = mock(AwsIamRoleRecord.class);
+    when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.empty());
+    when(awsIamRoleDao.getIamRole(roleArn)).thenReturn(Optional.empty());
+    when(awsIamRoleDao.getIamRole(rootArn)).thenReturn(Optional.of(rootRecord));
+
+    when(awsIamRoleArnParser.isRoleArn(principalArn)).thenReturn(false);
+    when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(principalArn)).thenReturn(roleArn);
+    when(awsIamRoleArnParser.convertPrincipalArnToRootArn(roleArn)).thenReturn(rootArn);
+
+    when(awsIamRoleService.createIamRole(roleArn)).thenReturn(roleRecord);
+
+    Optional<AwsIamRoleRecord> result =
+        authenticationService.findIamRoleAssociatedWithSdb(principalArn);
+
+    assertEquals(roleRecord, result.get());
+  }
+
+  @Test
+  public void
+      test_that_findIamRoleAssociatedWithSdb_returns_generic_role_when_iam_principal_not_found_and_root_found_for_aws_china() {
+
+    String accountId = "0000000000";
+    String roleName = "role/path";
+    String principalArn =
+        String.format("arn:aws-cn:iam::%s:instance-profile/%s", accountId, roleName);
+    String roleArn =
+        String.format(AWS_IAM_ROLE_ARN_TEMPLATE, AWS_CHINA_PARTITION_NAME, accountId, roleName);
+    String rootArn = String.format("arn:aws-cn:iam::%s:root", accountId);
 
     AwsIamRoleRecord rootRecord = mock(AwsIamRoleRecord.class);
     AwsIamRoleRecord roleRecord = mock(AwsIamRoleRecord.class);
