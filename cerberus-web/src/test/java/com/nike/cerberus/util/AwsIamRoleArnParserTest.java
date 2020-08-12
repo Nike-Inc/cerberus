@@ -333,6 +333,12 @@ public class AwsIamRoleArnParserTest {
             "arn:aws:sts::0000000000:federated-user/foobaz"));
   }
 
+  @Test
+  public void test_root_arn_passes_partition_check() {
+    awsGlobalIamRoleArnParser.iamPrincipalPartitionCheck("arn:aws:iam::0000000000:root");
+    awsChinaIamRoleArnParser.iamPrincipalPartitionCheck("arn:aws-cn:iam::0000000000:root");
+  }
+
   @Test(expected = RuntimeException.class)
   public void iamPrincipalPartitionCheck_fails_on_disabled_aws_china_partition() {
     awsGlobalIamRoleArnParser.iamPrincipalPartitionCheck(
@@ -340,8 +346,18 @@ public class AwsIamRoleArnParserTest {
   }
 
   @Test(expected = RuntimeException.class)
+  public void iamPrincipalPartitionCheck_fails_on_root_arn_with_disabled_aws_china_partition() {
+    awsGlobalIamRoleArnParser.iamPrincipalPartitionCheck("arn:aws-cn:iam::1111111111:root");
+  }
+
+  @Test(expected = RuntimeException.class)
   public void iamPrincipalPartitionCheck_fails_on_disabled_aws_global_partition() {
     awsChinaIamRoleArnParser.iamPrincipalPartitionCheck(
         "arn:aws:iam::1111111111:role/lamb_dev_health");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void iamPrincipalPartitionCheck_fails_on_root_arn_with_disabled_aws_global_partition() {
+    awsChinaIamRoleArnParser.iamPrincipalPartitionCheck("arn:aws:iam::1111111111:root");
   }
 }
