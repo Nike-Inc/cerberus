@@ -42,8 +42,8 @@ public class AwsStsHttpClient {
   private static final String DEFAULT_GET_CALLER_IDENTITY_ACTION =
       "Action=GetCallerIdentity&Version=2011-06-15";
   private static final String DEFAULT_METHOD = "POST";
-  protected static final int DEFAULT_AUTH_RETRIES = 3;
-  private static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
+  protected static final int DEFAULT_AUTH_RETRIES = 5;
+  private static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 250;
   private static final int DEFAULT_TIMEOUT = 15;
   private static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
   private final OkHttpClient httpClient;
