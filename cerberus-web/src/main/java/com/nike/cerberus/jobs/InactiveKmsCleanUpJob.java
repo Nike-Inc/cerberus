@@ -27,9 +27,9 @@ import org.springframework.stereotype.Component;
 /** Scans through the data store and deletes in-active KMS CMKs */
 @Slf4j
 @Deprecated
-@ConditionalOnProperty("cerberus.jobs.inactiveKmsKeyCleanUpJob.enabled")
+@ConditionalOnProperty("cerberus.jobs.inactiveKmsCleanUpJob.enabled")
 @Component
-public class InactiveKmsKeyCleanUpJob extends LockingJob {
+public class InactiveKmsCleanUpJob extends LockingJob {
 
   private final CleanUpService cleanUpService;
 
@@ -38,7 +38,7 @@ public class InactiveKmsKeyCleanUpJob extends LockingJob {
   private final int pauseTimeInSeconds;
 
   @Autowired
-  public InactiveKmsKeyCleanUpJob(
+  public InactiveKmsCleanUpJob(
       CleanUpService cleanUpService,
       @Value("${cerberus.jobs.inactiveKmsCleanUpJob.deleteKmsKeysOlderThanNDays}")
           int expirationPeriodInDays,
