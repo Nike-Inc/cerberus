@@ -46,6 +46,12 @@ class InvalidAuthApiTests {
     static final String FAKE_ACCOUNT_ID = "1111111111"
     static final String FAKE_ROLE_NAME = "fake_role"
 
+    private final List<String> CHINA_REGIONS = new ArrayList<String>(
+            Arrays.asList(
+                    "cn-north-1",
+                    "cn-northwest-1")
+    );
+
     @BeforeTest
     void beforeTest() {
         TestUtils.configureRestAssured()
@@ -170,19 +176,25 @@ class InvalidAuthApiTests {
         validateDELETEApiResponse(INVALID_AUTH_TOKEN_STR, V2_FAKE_SDB_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath)
     }
 
-    @Test
-    void "an IAM role cannot auth if it does not have permission to any safe deposit box"() {
-        def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-role-auth-no-permission-to-any-sdb.json"
-        def requestBody = [account_id: "0000000000", role_name: "non-existent-role-name", region: "us-west-2"]
-
-        validatePOSTApiResponse("token not needed", IAM_ROLE_AUTH_PATH, HttpStatus.SC_BAD_REQUEST, schemaFilePath, requestBody)
-    }
+//    @Test
+//    void "an IAM role cannot auth if it does not have permission to any safe deposit box"() {
+//        def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-role-auth-no-permission-to-any-sdb.json"
+//        def requestBody = [account_id: "0000000000", role_name: "non-existent-role-name", region: "us-west-2"]
+//
+//        validatePOSTApiResponse("token not needed", IAM_ROLE_AUTH_PATH, HttpStatus.SC_BAD_REQUEST, schemaFilePath, requestBody)
+//    }
 
     @Test
     void "an IAM principal cannot auth if it does not have permission to any safe deposit box"() {
         def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-principal-auth-no-permission-to-any-sdb.json"
+        String iamPrincipalArn
+        if (CHINA_REGIONS.contains(region)) {
+            iamPrincipalArn = "arn:aws-cn:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME"
+        } else {
+            iamPrincipalArn = "arn:aws:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME"
+        }
         def requestBody = [
-                iam_principal_arn: "arn:aws:iam::1111111111:role/imaginary-role-name-should-not-exist",
+                iam_principal_arn: iamPrincipalArn,
                 role_name        : "non-existent-role-name",
                 region           : "us-west-2"
         ]

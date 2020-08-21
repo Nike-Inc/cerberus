@@ -62,10 +62,10 @@ class CerberusUserApiTests {
         logoutUser(cerberusAuthToken)
     }
 
-    @Test
-    void "test that an authenticated user can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
-    }
+//    @Test
+//    void "test that an authenticated user can create, read, update then delete a safe deposit box v1"() {
+//        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+//    }
 
     @Test
     void "test that an authenticated user can create, read, update then delete a safe deposit box v2"() {

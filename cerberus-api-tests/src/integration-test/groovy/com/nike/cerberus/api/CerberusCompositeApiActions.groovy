@@ -36,6 +36,8 @@ class CerberusCompositeApiActions {
     static final String PRE_EXISTING_TEST_SECRET_PATH = "${ROOT_INTEGRATION_TEST_SDB_PATH}/default-test-secret"
     static final String NEGATIVE_JSON_SCHEMA_ROOT_PATH = "json-schema/negative"
 
+    static final String region = PropUtils.getRequiredProperty("TEST_REGION")
+
     static void "create, read, update then delete a secret node"(String cerberusAuthToken) {
         "create, read, update then delete a secret node"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
     }
@@ -256,7 +258,12 @@ class CerberusCompositeApiActions {
             ]
         ]
 
-        String arn = "arn:aws:iam::${accountId}:role/${roleName}"
+        String arn
+        if (CHINA_REGIONS.contains(region)) {
+            arn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
+        } else {
+            arn = "arn:aws:iam::${accountId}:role/${roleName}"
+        }
         def iamPrincipalPermissions = [
             [
                 "iam_principal_arn": arn,
@@ -294,13 +301,19 @@ class CerberusCompositeApiActions {
             assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
             // update the sdb
+            String newArn
+            if (CHINA_REGIONS.contains(region)) {
+                newArn = "arn:aws-cn:iam::1111111111:role/fake_role2"
+            } else {
+                newArn = "arn:aws:iam::1111111111:role/fake_role2"
+            }
             description = "${Lorem.getWords(60)}"
             userGroupPermissions.add([
                     "name"   : 'bar',
                     "role_id": roleMap.write
             ])
             iamPrincipalPermissions.add([
-                    "iam_principal_arn": "arn:aws:iam::1111111111:role/fake_role2",
+                    "iam_principal_arn": newArn,
                     "role_id"          : roleMap.read
             ])
             JsonPath sdbUpdatedUpdate = updateSdbV2(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamPrincipalPermissions)

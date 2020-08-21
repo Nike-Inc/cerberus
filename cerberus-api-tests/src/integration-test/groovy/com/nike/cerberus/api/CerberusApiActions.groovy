@@ -16,8 +16,13 @@
 
 package com.nike.cerberus.api
 
+import com.amazonaws.DefaultRequest
+import com.amazonaws.auth.AWS4Signer
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.auth.profile.internal.securitytoken.RoleInfo
 import com.amazonaws.auth.profile.internal.securitytoken.STSProfileCredentialsServiceProvider
+import com.amazonaws.http.HttpMethodName
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.kms.AWSKMSClient
 import com.amazonaws.services.kms.model.DecryptRequest
@@ -25,7 +30,9 @@ import com.amazonaws.services.kms.model.DecryptResult
 import com.nike.cerberus.util.PropUtils
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
+import com.sun.net.httpserver.Headers
 import groovy.json.JsonSlurper
+import io.restassured.http.Header
 import io.restassured.path.json.JsonPath
 import io.restassured.response.Response
 import org.apache.commons.lang3.StringUtils
@@ -57,6 +64,12 @@ class CerberusApiActions {
     public static String SAFE_DEPOSIT_BOX_VERSION_PATHS_PATH = "v1/sdb-secret-version-paths"
     public static int SLEEP_IN_MILLISECONDS = PropUtils.getPropWithDefaultValue("SLEEP_IN_MILLISECONDS",
             "0").toInteger()
+
+    static final List<String> CHINA_REGIONS = new ArrayList<String>(
+            Arrays.asList(
+                    "cn-north-1",
+                    "cn-northwest-1")
+    );
 
     /**
      * Use a cache of KMS clients because creating too many kmsCLients causes a performance bottleneck
@@ -91,6 +104,77 @@ class CerberusApiActions {
                 return retrieveUserAuthToken(username, password, otpSecret, otpDeviceId, retryCount + 1)
             } else {throw t}
         }
+    }
+
+    /**
+     * Signs request using AWS V4 signing.
+     * @param request AWS STS request to sign
+     * @param credentials AWS credentials
+     */
+    static void signRequest(com.amazonaws.Request request, AWSCredentials credentials, String region){
+
+        AWS4Signer signer = new AWS4Signer();
+        signer.setRegionName(region);
+        signer.setServiceName("sts");
+        signer.sign(request, credentials);
+    }
+
+    /**
+     * Generates and returns signed headers.
+     * @return Signed headers
+     */
+    static Map<String, String> getSignedHeaders(String region){
+
+        String url = "https://sts." + region + ".amazonaws.com";
+        if(CHINA_REGIONS.contains(region)) {
+            url += ".cn";
+        }
+
+        URI endpoint = null;
+
+        try {
+            endpoint = new URI(url);
+        } catch (URISyntaxException e) {
+            System.out.println(String.format("URL is not formatted correctly"), e);
+
+        }
+
+        Map<String, List<String>> parameters = new HashMap<>();
+        parameters.put("Action", Arrays.asList("GetCallerIdentity"));
+        parameters.put("Version", Arrays.asList("2011-06-15"));
+
+        DefaultRequest<String> requestToSign = new DefaultRequest<>("sts");
+        requestToSign.setParameters(parameters);
+        requestToSign.setHttpMethod(HttpMethodName.POST);
+        requestToSign.setEndpoint(endpoint);
+
+        System.out.println(String.format("Signing request with [%s] as host", url));
+
+        signRequest(requestToSign, DefaultAWSCredentialsProviderChain.getInstance().getCredentials(), region);
+
+        return requestToSign.getHeaders();
+    }
+
+    static def retrieveStsToken(String region) {
+        // get the encrypted payload and validate response
+
+        Map<String, String> signedHeaders = getSignedHeaders(region);
+
+        Response response =
+                given()
+                        .headers(signedHeaders)
+                        .contentType("application/json")
+                        .when()
+                        .post("/v2/auth/sts-identity")
+                        .then()
+                        .statusCode(200)
+                        .contentType("application/json")
+                        .assertThat().body(matchesJsonSchemaInClasspath("json-schema/v2/auth/sts-auth.json"))
+                        .extract().
+                        response()
+
+        String jsonString = new String(response.getBody().asString())
+        return new JsonSlurper().parseText(jsonString)
     }
 
     /**

@@ -37,6 +37,12 @@ class ValidationErrorApiTests {
     private String region
     private String iamAuthToken
 
+    private final List<String> CHINA_REGIONS = new ArrayList<String>(
+        Arrays.asList(
+            "cn-north-1",
+            "cn-northwest-1")
+    );
+
     private def testSdb
 
     private void loadRequiredEnvVars() {
@@ -54,8 +60,13 @@ class ValidationErrorApiTests {
     void beforeTest() {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
+        String iamPrincipalArn
+        if (CHINA_REGIONS.contains(region)) {
+            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
+        } else {
+            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
+        }
+        def iamAuthData = retrieveStsToken(region)
         iamAuthToken = iamAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
@@ -66,7 +77,8 @@ class ValidationErrorApiTests {
         testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, [], iamPrincipalPermissions)
 
         // regenerate token to get policy for new SDB
-        iamAuthToken = retrieveIamAuthToken(iamPrincipalArn, region)."client_token"
+        iamAuthData = retrieveStsToken(region)
+        iamAuthToken = iamAuthData."client_token"
     }
 
     @AfterTest
@@ -131,8 +143,12 @@ class ValidationErrorApiTests {
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
-
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
+        String iamPrincipalArn
+        if (CHINA_REGIONS.contains(region)) {
+            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
+        } else {
+            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
+        }
         def iamPrincipalPermissions = [["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId]]
         def sdbObject = [
                 category_id             : sdbCategoryId,

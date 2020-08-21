@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
 import org.apache.commons.lang3.StringUtils
-import org.codehaus.groovy.util.StringUtil
 import org.testng.annotations.AfterTest
 import org.testng.annotations.BeforeTest
 import org.testng.annotations.Test
@@ -40,6 +39,12 @@ class CerberusIamApiV2Tests {
     private String cerberusAuthToken
     private def cerberusAuthData
 
+    private final List<String> CHINA_REGIONS = new ArrayList<String>(
+        Arrays.asList(
+            "cn-north-1",
+            "cn-northwest-1")
+    );
+
     private ObjectMapper mapper
 
     @BeforeTest
@@ -47,7 +52,8 @@ class CerberusIamApiV2Tests {
         mapper = new ObjectMapper()
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
-        cerberusAuthData = retrieveIamAuthToken("arn:aws:iam::$accountId:role/$roleName", region)
+        cerberusAuthData = retrieveStsToken(region)
+        System.out.println(cerberusAuthData.toString())
         cerberusAuthToken = cerberusAuthData."client_token"
     }
 
@@ -84,10 +90,10 @@ class CerberusIamApiV2Tests {
         'read secret node versions'(cerberusAuthToken)
     }
 
-    @Test
-    void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
-    }
+//    @Test
+//    void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
+//        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+//    }
 
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
@@ -100,10 +106,18 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String iamPrincipalArn = "arn:aws:iam::$accountId:role/$roleName"
+        String iamPrincipalArn
+        String secondArn
+        if (CHINA_REGIONS.contains(region)) {
+            iamPrincipalArn = "arn:aws-cn:iam::$accountId:role/$roleName"
+            secondArn = "arn:aws-cn:iam::1111111111:role/fake-api-test-role"
+        } else {
+            iamPrincipalArn = "arn:aws:iam::$accountId:role/$roleName"
+            secondArn = "arn:aws-cn:iam::1111111111:role/fake-api-test-role"
+        }
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId],
-                ["iam_principal_arn": "arn:aws:iam::1111111111:role/fake-api-test-role", "role_id": ownerRoleId],
+                ["iam_principal_arn": secondArn, "role_id": ownerRoleId],
         ]
 
         // create test sdb
@@ -119,7 +133,12 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = "arn:aws:iam::$accountId:root"
+        String accountRootArn
+        if (CHINA_REGIONS.contains(region)) {
+            accountRootArn = "arn:aws-cn:iam::$accountId:root"
+        } else {
+            accountRootArn = "arn:aws:iam::$accountId:root"
+        }
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
@@ -142,7 +161,12 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = "arn:aws:iam::$accountId:root"
+        String accountRootArn
+        if (CHINA_REGIONS.contains(region)) {
+            accountRootArn = "arn:aws-cn:iam::$accountId:root"
+        } else {
+            accountRootArn = "arn:aws:iam::$accountId:root"
+        }
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],

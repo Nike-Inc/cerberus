@@ -54,6 +54,12 @@ class NegativeUserPermissionsApiTests {
     private def userReadOnlySdb
     private def userWriteOnlySdb
 
+    private final List<String> CHINA_REGIONS = new ArrayList<String>(
+        Arrays.asList(
+            "cn-north-1",
+            "cn-northwest-1")
+    );
+
     private void loadRequiredEnvVars() {
         accountId = PropUtils.getRequiredProperty("TEST_ACCOUNT_ID",
                 "The account id to use when authenticating with Cerberus using the IAM Auth endpoint")
@@ -86,8 +92,13 @@ class NegativeUserPermissionsApiTests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
+        String iamPrincipalArn
+        if (CHINA_REGIONS.contains(region)) {
+            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
+        } else {
+            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
+        }
+        def iamAuthData = retrieveStsToken(region)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
         String userGroupOfTestUser = userGroup
