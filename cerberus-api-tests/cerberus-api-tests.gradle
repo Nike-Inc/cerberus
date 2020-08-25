@@ -58,4 +58,7 @@ integrationTest {
   if (project.hasProperty('excludeTests')) {
     exclude project.property('excludeTests')
   }
+    if (project.hasProperty('includeTests')) {
+        include project.property('includeTests')
+    }
 }

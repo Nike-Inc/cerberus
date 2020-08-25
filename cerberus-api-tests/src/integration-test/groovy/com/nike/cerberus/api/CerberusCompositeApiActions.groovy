@@ -17,12 +17,14 @@
 package com.nike.cerberus.api
 
 import com.amazonaws.util.IOUtils
+import com.nike.cerberus.api.util.TestUtils
 import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
 import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils
 import org.jboss.aerogear.security.otp.Totp
 
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static org.junit.Assert.assertEquals
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static org.junit.Assert.assertFalse
@@ -37,6 +39,7 @@ class CerberusCompositeApiActions {
     static final String NEGATIVE_JSON_SCHEMA_ROOT_PATH = "json-schema/negative"
 
     static final String region = PropUtils.getRequiredProperty("TEST_REGION")
+    static final String partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
 
     static void "create, read, update then delete a secret node"(String cerberusAuthToken) {
         "create, read, update then delete a secret node"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
@@ -258,12 +261,7 @@ class CerberusCompositeApiActions {
             ]
         ]
 
-        String arn
-        if (CHINA_REGIONS.contains(region)) {
-            arn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
-        } else {
-            arn = "arn:aws:iam::${accountId}:role/${roleName}"
-        }
+        String arn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamPrincipalPermissions = [
             [
                 "iam_principal_arn": arn,
@@ -301,12 +299,7 @@ class CerberusCompositeApiActions {
             assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
             // update the sdb
-            String newArn
-            if (CHINA_REGIONS.contains(region)) {
-                newArn = "arn:aws-cn:iam::1111111111:role/fake_role2"
-            } else {
-                newArn = "arn:aws:iam::1111111111:role/fake_role2"
-            }
+            String newArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake_role2")
             description = "${Lorem.getWords(60)}"
             userGroupPermissions.add([
                     "name"   : 'bar',

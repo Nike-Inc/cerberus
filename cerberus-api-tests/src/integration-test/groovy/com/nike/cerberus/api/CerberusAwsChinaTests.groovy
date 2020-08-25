@@ -17,8 +17,8 @@
 package com.nike.cerberus.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
+import com.nike.cerberus.util.PropUtils
 import org.apache.commons.lang3.StringUtils
 import org.testng.annotations.AfterTest
 import org.testng.annotations.BeforeTest
@@ -26,12 +26,11 @@ import org.testng.annotations.Test
 
 import java.security.NoSuchAlgorithmException
 
-import static com.nike.cerberus.api.CerberusCompositeApiActions.*
 import static com.nike.cerberus.api.CerberusApiActions.*
+import static com.nike.cerberus.api.CerberusCompositeApiActions.*
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
-import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
-class CerberusIamApiV2Tests {
+class CerberusAwsChinaTests {
 
     private String accountId
     private String roleName
@@ -74,7 +73,6 @@ class CerberusIamApiV2Tests {
                 "The region to use when authenticating with Cerberus using the IAM Auth endpoint")
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
-
     }
 
     @Test
@@ -92,11 +90,6 @@ class CerberusIamApiV2Tests {
         'read secret node versions'(cerberusAuthToken)
     }
 
-//    @Test
-//    void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-//        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
-//    }
-
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
         "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
@@ -108,8 +101,8 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$accountId:role/$roleName")
-        String secondArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake-api-test-role")
+        String iamPrincipalArn = "arn:aws-cn:iam::$accountId:role/$roleName"
+        String secondArn = "arn:aws-cn:iam::1111111111:role/fake-api-test-role"
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId],
                 ["iam_principal_arn": secondArn, "role_id": ownerRoleId],
@@ -128,7 +121,7 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = updateArnWithPartition("arn:aws:iam::$accountId:root")
+        String accountRootArn = "arn:aws-cn:iam::$accountId:root"
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
@@ -151,7 +144,7 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = updateArnWithPartition("arn:aws:iam::$accountId:root")
+        String accountRootArn = "arn:aws-cn:iam::$accountId:root"
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
