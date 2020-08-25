@@ -36,6 +36,7 @@ import static com.nike.cerberus.api.CerberusApiActions.validateGETApiResponse
 import static com.nike.cerberus.api.CerberusApiActions.validatePOSTApiResponse
 import static com.nike.cerberus.api.CerberusApiActions.validatePUTApiResponse
 import static com.nike.cerberus.api.CerberusCompositeApiActions.*
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class InvalidAuthApiTests {
 
@@ -187,12 +188,7 @@ class InvalidAuthApiTests {
     @Test
     void "an IAM principal cannot auth if it does not have permission to any safe deposit box"() {
         def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-principal-auth-no-permission-to-any-sdb.json"
-        String iamPrincipalArn
-        if (CHINA_REGIONS.contains(region)) {
-            iamPrincipalArn = "arn:aws-cn:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME"
-        } else {
-            iamPrincipalArn = "arn:aws:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME"
-        }
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME")
         def requestBody = [
                 iam_principal_arn: iamPrincipalArn,
                 role_name        : "non-existent-role-name",

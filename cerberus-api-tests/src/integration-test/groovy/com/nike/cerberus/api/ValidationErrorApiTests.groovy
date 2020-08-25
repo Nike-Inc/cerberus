@@ -28,6 +28,7 @@ import org.testng.annotations.Test
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static io.restassured.RestAssured.given
 
 class ValidationErrorApiTests {
@@ -60,12 +61,7 @@ class ValidationErrorApiTests {
     void beforeTest() {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
-        String iamPrincipalArn
-        if (CHINA_REGIONS.contains(region)) {
-            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
-        } else {
-            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        }
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamAuthData = retrieveStsToken(region)
         iamAuthToken = iamAuthData."client_token"
 
@@ -143,12 +139,7 @@ class ValidationErrorApiTests {
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
-        String iamPrincipalArn
-        if (CHINA_REGIONS.contains(region)) {
-            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
-        } else {
-            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        }
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamPrincipalPermissions = [["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId]]
         def sdbObject = [
                 category_id             : sdbCategoryId,

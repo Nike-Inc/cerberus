@@ -29,6 +29,8 @@ class TestUtils {
 
     private static boolean hasBeenConfigured = false;
 
+    private static String partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
+
     private TestUtils() {
         // no constructing
     }
@@ -74,8 +76,8 @@ class TestUtils {
     }
 
     static String updateArnWithPartition(String arn) {
-        partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
-
-
+        String[] arnParts = arn.split(":")
+        arnParts[1] = partition
+        return arnParts.collect().join(":")
     }
 }

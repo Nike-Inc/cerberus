@@ -31,6 +31,7 @@ import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class NegativeIamPermissionsApiTests {
 
@@ -95,12 +96,7 @@ class NegativeIamPermissionsApiTests {
         userAuthToken = userAuthData."client_token"
         String userGroupOfTestUser = ownerGroup
 
-        String iamPrincipalArn
-        if (CHINA_REGIONS.contains(region)) {
-            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
-        } else {
-            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        }
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamAuthData = retrieveStsToken(region)
         iamAuthToken = iamAuthData."client_token"
 
@@ -130,12 +126,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a read IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalReadOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        String fake_arn
-        if (CHINA_REGIONS.contains(region)) {
-            fake_arn = "arn:aws-cn:iam::0011001100:user/obviously-fake-test-user"
-        } else {
-            fake_arn = "arn:aws:iam::0011001100:user/obviously-fake-test-user"
-        }
+        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -199,12 +190,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a write IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalWriteOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        String fake_arn
-        if (CHINA_REGIONS.contains(region)) {
-            fake_arn = "arn:aws-cn:iam::0011001100:user/obviously-fake-test-user"
-        } else {
-            fake_arn = "arn:aws:iam::0011001100:user/obviously-fake-test-user"
-        }
+        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -283,12 +269,7 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn
-        if (CHINA_REGIONS.contains(region)) {
-            accountRootArn = "arn:aws-cn:iam::00000000:root"
-        } else {
-            accountRootArn = "arn:aws:iam::00000000:root"
-        }
+        String accountRootArn = updateArnWithPartition("arn:aws:iam::00000000:root")
         String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPrincipalPermissions = [
@@ -322,15 +303,8 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootWithNoAccess
-        String accountRootWithAccess
-        if (CHINA_REGIONS.contains(region)) {
-            accountRootWithNoAccess = "arn:aws-cn:iam::00000000:root"
-            accountRootWithAccess = "arn:aws-cn:iam::$accountId:root"
-        } else {
-            accountRootWithNoAccess = "arn:aws:iam::00000000:root"
-            accountRootWithAccess = "arn:aws:iam::$accountId:root"
-        }
+        String accountRootWithNoAccess = updateArnWithPartition("arn:aws:iam::00000000:root")
+        String accountRootWithAccess = updateArnWithPartition("arn:aws:iam::$accountId:root")
 
         String automationUserGroup = ownerGroup
         def userPerms = []

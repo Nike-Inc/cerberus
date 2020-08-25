@@ -31,6 +31,7 @@ import static com.nike.cerberus.api.CerberusCompositeApiActions.*
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class NegativeUserPermissionsApiTests {
 
@@ -92,12 +93,7 @@ class NegativeUserPermissionsApiTests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
-        String iamPrincipalArn
-        if (CHINA_REGIONS.contains(region)) {
-            iamPrincipalArn = "arn:aws-cn:iam::${accountId}:role/${roleName}"
-        } else {
-            iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        }
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamAuthData = retrieveStsToken(region)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
