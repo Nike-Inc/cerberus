@@ -87,7 +87,7 @@ class NegativeUserPermissionsApiTests {
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
         String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
-        def iamAuthData = retrieveStsToken(region)
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
         String userGroupOfTestUser = userGroup

@@ -48,7 +48,7 @@ class CerberusIamApiV2Tests {
         mapper = new ObjectMapper()
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
-        cerberusAuthData = retrieveStsToken(region)
+        cerberusAuthData = retrieveStsToken(region, accountId, roleName)
         cerberusAuthToken = cerberusAuthData."client_token"
     }
 

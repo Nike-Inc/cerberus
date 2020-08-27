@@ -92,7 +92,7 @@ class NegativeIamPermissionsApiTests {
         String userGroupOfTestUser = ownerGroup
 
         String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
-        def iamAuthData = retrieveStsToken(region)
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(userAuthToken).Applications

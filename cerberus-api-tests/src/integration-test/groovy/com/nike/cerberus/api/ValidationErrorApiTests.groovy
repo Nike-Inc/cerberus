@@ -56,7 +56,7 @@ class ValidationErrorApiTests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
-        def iamAuthData = retrieveStsToken(region)
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
@@ -67,7 +67,7 @@ class ValidationErrorApiTests {
         testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, [], iamPrincipalPermissions)
 
         // regenerate token to get policy for new SDB
-        iamAuthData = retrieveStsToken(region)
+        iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
     }
 
