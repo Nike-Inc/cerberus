@@ -39,7 +39,7 @@ class CerberusIamApiTests {
 
     private ObjectMapper mapper
 
-    @BeforeTest
+    @BeforeTest (groups = ['deprecated'])
     void beforeTest() throws NoSuchAlgorithmException {
         mapper = new ObjectMapper()
         TestUtils.configureRestAssured()
@@ -48,7 +48,7 @@ class CerberusIamApiTests {
         cerberusAuthToken = cerberusAuthData."client_token"
     }
 
-    @AfterTest
+    @AfterTest (groups = ['deprecated'])
     void afterTest() {
         deleteAuthToken(cerberusAuthToken)
     }
@@ -67,32 +67,32 @@ class CerberusIamApiTests {
                 "The owner group to use when creating an SDB")
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a secret node"() {
         'create, read, update then delete a secret node'(cerberusAuthToken)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update, then delete a file"() {
         "create, read, update then delete a file"(cerberusAuthToken)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can read secret node versions"() {
         'read secret node versions'(cerberusAuthToken)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
         "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
         "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can read a preexisting secret"() {
         readSecretNode(PRE_EXISTING_TEST_SECRET_PATH, cerberusAuthToken)
     }

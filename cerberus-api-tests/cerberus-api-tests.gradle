@@ -50,15 +50,24 @@ dependencies {
 }
 
 integrationTest {
-  useTestNG()
   testLogging {
     showStandardStreams = true
     events "passed", "skipped", "failed"
   }
+  if (project.hasProperty('deprecatedEndpoint')) {
+    useTestNG() {
+      excludeGroups 'deprecated'
+    }
+  } else {
+    useTestNG()
+  }
+
   if (project.hasProperty('excludeTests')) {
     exclude project.property('excludeTests')
   }
-    if (project.hasProperty('includeTests')) {
-        include project.property('includeTests')
-    }
+
+  if (project.hasProperty('includeTests')) {
+    include project.property('includeTests')
+  }
+
 }

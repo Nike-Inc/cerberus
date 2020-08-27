@@ -38,12 +38,6 @@ class ValidationErrorApiTests {
     private String region
     private String iamAuthToken
 
-    private final List<String> CHINA_REGIONS = new ArrayList<String>(
-        Arrays.asList(
-            "cn-north-1",
-            "cn-northwest-1")
-    );
-
     private def testSdb
 
     private void loadRequiredEnvVars() {

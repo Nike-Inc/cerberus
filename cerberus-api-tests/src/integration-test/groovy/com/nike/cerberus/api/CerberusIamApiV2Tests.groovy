@@ -40,11 +40,6 @@ class CerberusIamApiV2Tests {
     private String cerberusAuthToken
     private def cerberusAuthData
 
-    private final List<String> CHINA_REGIONS = new ArrayList<String>(
-        Arrays.asList(
-            "cn-north-1",
-            "cn-northwest-1")
-    );
 
     private ObjectMapper mapper
 
@@ -54,7 +49,6 @@ class CerberusIamApiV2Tests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         cerberusAuthData = retrieveStsToken(region)
-        System.out.println(cerberusAuthData.toString())
         cerberusAuthToken = cerberusAuthData."client_token"
     }
 
@@ -92,10 +86,10 @@ class CerberusIamApiV2Tests {
         'read secret node versions'(cerberusAuthToken)
     }
 
-//    @Test
-//    void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-//        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
-//    }
+    @Test (groups = ['deprecated'])
+    void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+    }
 
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {

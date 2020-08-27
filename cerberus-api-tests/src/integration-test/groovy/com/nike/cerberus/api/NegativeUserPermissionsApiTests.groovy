@@ -18,8 +18,6 @@ package com.nike.cerberus.api
 
 import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
-import com.thedeanda.lorem.Lorem
-import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpStatus
 import org.testng.annotations.AfterTest
@@ -54,12 +52,7 @@ class NegativeUserPermissionsApiTests {
 
     private def userReadOnlySdb
     private def userWriteOnlySdb
-
-    private final List<String> CHINA_REGIONS = new ArrayList<String>(
-        Arrays.asList(
-            "cn-north-1",
-            "cn-northwest-1")
-    );
+    
 
     private void loadRequiredEnvVars() {
         accountId = PropUtils.getRequiredProperty("TEST_ACCOUNT_ID",
