@@ -134,6 +134,8 @@ class CerberusApiActions {
             url += ".cn";
         }
 
+        println(region)
+
         URI endpoint = null;
 
         def iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$accountId:role/$roleName")

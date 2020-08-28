@@ -182,7 +182,7 @@ class InvalidAuthApiTests {
     @Test
     void "an IAM principal cannot auth if it does not have permission to any safe deposit box"() {
         def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-principal-auth-no-permission-to-any-sdb.json"
-        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$FAKE_ACCOUNT_ID:role/$FAKE_ROLE_NAME")
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::1111111111:role/imaginary-role-name-should-not-exist")
         def requestBody = [
                 iam_principal_arn: iamPrincipalArn,
                 role_name        : "non-existent-role-name",
