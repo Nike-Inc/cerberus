@@ -136,202 +136,202 @@ class NegativeIamPermissionsApiTests {
         validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
     }
 
-//    @Test
-//    void "test that a read IAM principal cannot update the SDB owner"() {
-//        def sdbId = iamPrincipalReadOnlySdb.getString("id")
-//        def newOwner = "new-owner-group"
-//
-//        def updateSdbJson = generateSdbJson(
-//                iamPrincipalReadOnlySdb.getString("description"),
-//                newOwner,
-//                iamPrincipalReadOnlySdb.get("user_group_permissions"),
-//                iamPrincipalReadOnlySdb.get("iam_principal_permissions"))
-//        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
-//
-//        // update SDB
-//        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
-//    }
-//
-//    @Test
-//    void "test that a read IAM principal cannot write a secret"() {
-//        String sdbPath = iamPrincipalReadOnlySdb.getString("path")
-//        sdbPath = StringUtils.substringBeforeLast(sdbPath, "/")
-//
-//        def writeSecretRequestUri = "$SECRETS_PATH/$sdbPath/${UUID.randomUUID().toString()}"
-//
-//        // create secret
-//        validatePOSTApiResponse(iamAuthToken, writeSecretRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA, [value: 'value'])
-//    }
-//
-//    @Test
-//    void "test that a read IAM principal cannot delete the SDB V2"() {
-//        def sdbId = iamPrincipalReadOnlySdb.getString("id")
-//        def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//
-//        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
-//    }
-//
-//    @Test
-//    void "test that a read IAM principal cannot delete the SDB V1"() {
-//        def sdbId = iamPrincipalReadOnlySdb.getString("id")
-//        def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//
-//        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
-//    }
-//
-//
-//    @Test
-//    void "test that a write IAM principal cannot edit permissions"() {
-//        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
-//        def roleMap = getRoleMap(userAuthToken)
-//        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
-//
-//        def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
-//        def updateSdbJson = generateSdbJson(
-//                iamPrincipalWriteOnlySdb.getString("description"),
-//                iamPrincipalWriteOnlySdb.getString("owner"),
-//                iamPrincipalWriteOnlySdb.get("user_group_permissions"),
-//                newIamPrincipalPermissions)
-//        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
-//
-//        // update SDB
-//        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
-//    }
-//
-//    @Test
-//    void "test that a write IAM principal cannot update the SDB owner"() {
-//        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
-//        def newOwner = "new-owner-group"
-//
-//        def updateSdbJson = generateSdbJson(
-//                iamPrincipalWriteOnlySdb.getString("description"),
-//                newOwner,
-//                iamPrincipalWriteOnlySdb.get("user_group_permissions"),
-//                iamPrincipalWriteOnlySdb.get("iam_principal_permissions"))
-//        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
-//
-//        // update SDB
-//        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
-//    }
-//
-//    @Test
-//    void "test that a write IAM principal cannot delete the SDB V1"() {
-//        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
-//        def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//
-//        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
-//        System.out.println("After write tries to delete SDB")
-//    }
-//
-//    @Test
-//    void "test that a write IAM principal cannot delete the SDB V2"() {
-//        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
-//        def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
-//
-//        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
-//        System.out.println("After write tries to delete SDB")
-//    }
-//
-//    @Test
-//    void "test that a write IAM principal cannot call refresh endpoint"() {
-//        validateGETApiResponse(
-//                AUTH_TOKEN_HEADER_NAME,
-//                iamAuthToken,
-//                "v2/auth/user/refresh",
-//                HttpStatus.SC_FORBIDDEN,
-//                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/requested-resource-for-user-principals-only.json")
-//    }
-//
-//    @Test
-//    void "test that a non admin IAM principal cannot call PUT v1 metadata endpoint"() {
-//        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/access-to-requested-resource-is-denied.json"
-//        // call PUT metadata
-//        validatePUTApiResponse(iamAuthToken, "v1/metadata", HttpStatus.SC_FORBIDDEN, schemaFilePath, Maps.newHashMap())
-//    }
-//
-//    @Test
-//    void "test that a non admin IAM principal cannot call GET v1 metadata endpoint"() {
-//        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/access-to-requested-resource-is-denied.json"
-//        // call PUT metadata
-//        validateGETApiResponse(AUTH_TOKEN_HEADER_NAME, iamAuthToken, "v1/metadata", HttpStatus.SC_FORBIDDEN, schemaFilePath)
-//    }
-//
-//    @Test
-//    void "test that IAM Root ARN permissions do not grant access to an IAM principal from a different account"() {
-//        String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
-//        String sdbDescription = generateRandomSdbDescription()
-//        String ownerRoleId = getRoleMap(iamAuthToken).owner
-//        String accountRootArn = updateArnWithPartition("arn:aws:iam::00000000:root")
-//        String automationUserGroup = ownerGroup
-//        def userPerms = []
-//        def iamPrincipalPermissions = [
-//                ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
-//        ]
-//
-//        // create test sdb
-//        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPrincipalPermissions)
-//        def testSecretName = "${RandomStringUtils.randomAlphabetic(5,10)} ${RandomStringUtils.randomAlphabetic(5,10)}"
-//
-//        // create test secret to read
-//        def secret = ["foo": "bar"]
-//        def secretPath = "${testSdb.getString("path")}${testSecretName}"
-//        createOrUpdateSecretNode(secret, secretPath, userAuthToken)
-//
-//        // test that principal cannot read
-//        validateGETApiResponse(
-//                AUTH_TOKEN_HEADER_NAME,
-//                iamAuthToken,
-//                "v1/secret/${secretPath}",
-//                HttpStatus.SC_FORBIDDEN,
-//                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/permission-denied-invalid-auth-token-error.json")
-//
-//        // delete test sdb
-//        String testSdbId = testSdb.getString("id")
-//        deleteSdb(userAuthToken, testSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
-//    }
-//
-//    @Test
-//    void "test that IAM Root ARN permissions do not grant access to a IAM principal with permissions to a different SDB"() {
-//        String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
-//        String sdbDescription = generateRandomSdbDescription()
-//        String ownerRoleId = getRoleMap(iamAuthToken).owner
-//        String accountRootWithNoAccess = updateArnWithPartition("arn:aws:iam::00000000:root")
-//        String accountRootWithAccess = updateArnWithPartition("arn:aws:iam::$accountId:root")
-//
-//        String automationUserGroup = ownerGroup
-//        def userPerms = []
-//        def iamPermsWithNoAccess = [
-//                ["iam_principal_arn": accountRootWithNoAccess, "role_id": ownerRoleId],
-//        ]
-//        def iamPermsWithAccess = [
-//                ["iam_principal_arn": accountRootWithAccess, "role_id": ownerRoleId],
-//        ]
-//
-//        // create test sdb
-//        def sdbWithNoAccess = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPermsWithNoAccess)
-//        def sdbWithAccess = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPermsWithAccess)
-//
-//        // create test secret to read
-//        def secret = ["foo": "bar"]
-//        def sdbPathWithNoAccess = sdbWithNoAccess.getString("path")
-//        def secretPathWithNoAccess = "${sdbPathWithNoAccess}${RandomStringUtils.randomAlphabetic(5,10)}"
-//        createOrUpdateSecretNode(secret, secretPathWithNoAccess, userAuthToken)
-//
-//        // test that principal cannot read from sdb without access
-//        validateGETApiResponse(
-//                AUTH_TOKEN_HEADER_NAME,
-//                iamAuthToken,
-//                "v1/secret/${secretPathWithNoAccess}",
-//                HttpStatus.SC_FORBIDDEN,
-//                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/permission-denied-invalid-auth-token-error.json")
-//
-//        // delete test sdbs
-//        deleteSdb(userAuthToken, sdbWithNoAccess.getString("id"), V2_SAFE_DEPOSIT_BOX_PATH)
-//        deleteSdb(iamAuthToken, sdbWithAccess.getString("id"), V2_SAFE_DEPOSIT_BOX_PATH)
-//    }
+    @Test
+    void "test that a read IAM principal cannot update the SDB owner"() {
+        def sdbId = iamPrincipalReadOnlySdb.getString("id")
+        def newOwner = "new-owner-group"
+
+        def updateSdbJson = generateSdbJson(
+                iamPrincipalReadOnlySdb.getString("description"),
+                newOwner,
+                iamPrincipalReadOnlySdb.get("user_group_permissions"),
+                iamPrincipalReadOnlySdb.get("iam_principal_permissions"))
+        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
+
+        // update SDB
+        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+    }
+
+    @Test
+    void "test that a read IAM principal cannot write a secret"() {
+        String sdbPath = iamPrincipalReadOnlySdb.getString("path")
+        sdbPath = StringUtils.substringBeforeLast(sdbPath, "/")
+
+        def writeSecretRequestUri = "$SECRETS_PATH/$sdbPath/${UUID.randomUUID().toString()}"
+
+        // create secret
+        validatePOSTApiResponse(iamAuthToken, writeSecretRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA, [value: 'value'])
+    }
+
+    @Test
+    void "test that a read IAM principal cannot delete the SDB V2"() {
+        def sdbId = iamPrincipalReadOnlySdb.getString("id")
+        def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+
+        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+    }
+
+    @Test
+    void "test that a read IAM principal cannot delete the SDB V1"() {
+        def sdbId = iamPrincipalReadOnlySdb.getString("id")
+        def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+
+        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+    }
+
+
+    @Test
+    void "test that a write IAM principal cannot edit permissions"() {
+        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
+        def roleMap = getRoleMap(userAuthToken)
+        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
+
+        def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
+        def updateSdbJson = generateSdbJson(
+                iamPrincipalWriteOnlySdb.getString("description"),
+                iamPrincipalWriteOnlySdb.getString("owner"),
+                iamPrincipalWriteOnlySdb.get("user_group_permissions"),
+                newIamPrincipalPermissions)
+        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
+
+        // update SDB
+        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+    }
+
+    @Test
+    void "test that a write IAM principal cannot update the SDB owner"() {
+        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
+        def newOwner = "new-owner-group"
+
+        def updateSdbJson = generateSdbJson(
+                iamPrincipalWriteOnlySdb.getString("description"),
+                newOwner,
+                iamPrincipalWriteOnlySdb.get("user_group_permissions"),
+                iamPrincipalWriteOnlySdb.get("iam_principal_permissions"))
+        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
+
+        // update SDB
+        validatePUTApiResponse(iamAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+    }
+
+    @Test
+    void "test that a write IAM principal cannot delete the SDB V1"() {
+        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
+        def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+
+        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        System.out.println("After write tries to delete SDB")
+    }
+
+    @Test
+    void "test that a write IAM principal cannot delete the SDB V2"() {
+        def sdbId = iamPrincipalWriteOnlySdb.getString("id")
+        def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+
+        validateDELETEApiResponse(iamAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        System.out.println("After write tries to delete SDB")
+    }
+
+    @Test
+    void "test that a write IAM principal cannot call refresh endpoint"() {
+        validateGETApiResponse(
+                AUTH_TOKEN_HEADER_NAME,
+                iamAuthToken,
+                "v2/auth/user/refresh",
+                HttpStatus.SC_FORBIDDEN,
+                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/requested-resource-for-user-principals-only.json")
+    }
+
+    @Test
+    void "test that a non admin IAM principal cannot call PUT v1 metadata endpoint"() {
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/access-to-requested-resource-is-denied.json"
+        // call PUT metadata
+        validatePUTApiResponse(iamAuthToken, "v1/metadata", HttpStatus.SC_FORBIDDEN, schemaFilePath, Maps.newHashMap())
+    }
+
+    @Test
+    void "test that a non admin IAM principal cannot call GET v1 metadata endpoint"() {
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/access-to-requested-resource-is-denied.json"
+        // call PUT metadata
+        validateGETApiResponse(AUTH_TOKEN_HEADER_NAME, iamAuthToken, "v1/metadata", HttpStatus.SC_FORBIDDEN, schemaFilePath)
+    }
+
+    @Test
+    void "test that IAM Root ARN permissions do not grant access to an IAM principal from a different account"() {
+        String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
+        String sdbDescription = generateRandomSdbDescription()
+        String ownerRoleId = getRoleMap(iamAuthToken).owner
+        String accountRootArn = updateArnWithPartition("arn:aws:iam::00000000:root")
+        String automationUserGroup = ownerGroup
+        def userPerms = []
+        def iamPrincipalPermissions = [
+                ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
+        ]
+
+        // create test sdb
+        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPrincipalPermissions)
+        def testSecretName = "${RandomStringUtils.randomAlphabetic(5,10)} ${RandomStringUtils.randomAlphabetic(5,10)}"
+
+        // create test secret to read
+        def secret = ["foo": "bar"]
+        def secretPath = "${testSdb.getString("path")}${testSecretName}"
+        createOrUpdateSecretNode(secret, secretPath, userAuthToken)
+
+        // test that principal cannot read
+        validateGETApiResponse(
+                AUTH_TOKEN_HEADER_NAME,
+                iamAuthToken,
+                "v1/secret/${secretPath}",
+                HttpStatus.SC_FORBIDDEN,
+                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/permission-denied-invalid-auth-token-error.json")
+
+        // delete test sdb
+        String testSdbId = testSdb.getString("id")
+        deleteSdb(userAuthToken, testSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+    }
+
+    @Test
+    void "test that IAM Root ARN permissions do not grant access to a IAM principal with permissions to a different SDB"() {
+        String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
+        String sdbDescription = generateRandomSdbDescription()
+        String ownerRoleId = getRoleMap(iamAuthToken).owner
+        String accountRootWithNoAccess = updateArnWithPartition("arn:aws:iam::00000000:root")
+        String accountRootWithAccess = updateArnWithPartition("arn:aws:iam::$accountId:root")
+
+        String automationUserGroup = ownerGroup
+        def userPerms = []
+        def iamPermsWithNoAccess = [
+                ["iam_principal_arn": accountRootWithNoAccess, "role_id": ownerRoleId],
+        ]
+        def iamPermsWithAccess = [
+                ["iam_principal_arn": accountRootWithAccess, "role_id": ownerRoleId],
+        ]
+
+        // create test sdb
+        def sdbWithNoAccess = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPermsWithNoAccess)
+        def sdbWithAccess = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, automationUserGroup, userPerms, iamPermsWithAccess)
+
+        // create test secret to read
+        def secret = ["foo": "bar"]
+        def sdbPathWithNoAccess = sdbWithNoAccess.getString("path")
+        def secretPathWithNoAccess = "${sdbPathWithNoAccess}${RandomStringUtils.randomAlphabetic(5,10)}"
+        createOrUpdateSecretNode(secret, secretPathWithNoAccess, userAuthToken)
+
+        // test that principal cannot read from sdb without access
+        validateGETApiResponse(
+                AUTH_TOKEN_HEADER_NAME,
+                iamAuthToken,
+                "v1/secret/${secretPathWithNoAccess}",
+                HttpStatus.SC_FORBIDDEN,
+                "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/permission-denied-invalid-auth-token-error.json")
+
+        // delete test sdbs
+        deleteSdb(userAuthToken, sdbWithNoAccess.getString("id"), V2_SAFE_DEPOSIT_BOX_PATH)
+        deleteSdb(iamAuthToken, sdbWithAccess.getString("id"), V2_SAFE_DEPOSIT_BOX_PATH)
+    }
 
     private static Map getRoleMap(String cerberusAuthToken) {
         // Create a map of role ids to names
