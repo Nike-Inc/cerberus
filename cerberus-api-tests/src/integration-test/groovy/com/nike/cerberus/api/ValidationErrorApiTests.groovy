@@ -28,6 +28,7 @@ import org.testng.annotations.Test
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static io.restassured.RestAssured.given
 
 class ValidationErrorApiTests {
@@ -54,8 +55,8 @@ class ValidationErrorApiTests {
     void beforeTest() {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
@@ -66,7 +67,8 @@ class ValidationErrorApiTests {
         testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, [], iamPrincipalPermissions)
 
         // regenerate token to get policy for new SDB
-        iamAuthToken = retrieveIamAuthToken(iamPrincipalArn, region)."client_token"
+        iamAuthData = retrieveStsToken(region, accountId, roleName)
+        iamAuthToken = iamAuthData."client_token"
     }
 
     @AfterTest
@@ -131,8 +133,7 @@ class ValidationErrorApiTests {
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
-
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamPrincipalPermissions = [["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId]]
         def sdbObject = [
                 category_id             : sdbCategoryId,

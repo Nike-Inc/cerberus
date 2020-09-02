@@ -17,12 +17,14 @@
 package com.nike.cerberus.api
 
 import com.amazonaws.util.IOUtils
+import com.nike.cerberus.api.util.TestUtils
 import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
 import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils
 import org.jboss.aerogear.security.otp.Totp
 
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static org.junit.Assert.assertEquals
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static org.junit.Assert.assertFalse
@@ -35,6 +37,9 @@ class CerberusCompositeApiActions {
     static final String ROOT_INTEGRATION_TEST_SDB_PATH = "app/cerberus-integration-tests-sdb"
     static final String PRE_EXISTING_TEST_SECRET_PATH = "${ROOT_INTEGRATION_TEST_SDB_PATH}/default-test-secret"
     static final String NEGATIVE_JSON_SCHEMA_ROOT_PATH = "json-schema/negative"
+
+    static final String region = PropUtils.getRequiredProperty("TEST_REGION")
+    static final String partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
 
     static void "create, read, update then delete a secret node"(String cerberusAuthToken) {
         "create, read, update then delete a secret node"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
@@ -256,7 +261,7 @@ class CerberusCompositeApiActions {
             ]
         ]
 
-        String arn = "arn:aws:iam::${accountId}:role/${roleName}"
+        String arn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
         def iamPrincipalPermissions = [
             [
                 "iam_principal_arn": arn,
@@ -294,13 +299,14 @@ class CerberusCompositeApiActions {
             assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
             // update the sdb
+            String newArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake_role2")
             description = "${Lorem.getWords(60)}"
             userGroupPermissions.add([
                     "name"   : 'bar',
                     "role_id": roleMap.write
             ])
             iamPrincipalPermissions.add([
-                    "iam_principal_arn": "arn:aws:iam::1111111111:role/fake_role2",
+                    "iam_principal_arn": newArn,
                     "role_id"          : roleMap.read
             ])
             JsonPath sdbUpdatedUpdate = updateSdbV2(cerberusAuthToken, sdbId, description, owner, userGroupPermissions, iamPrincipalPermissions)

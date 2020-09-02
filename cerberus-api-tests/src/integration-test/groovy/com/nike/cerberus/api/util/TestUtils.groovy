@@ -22,11 +22,14 @@ import org.apache.commons.lang3.RandomStringUtils
 
 import java.security.NoSuchAlgorithmException
 
+import static com.nike.cerberus.api.CerberusCompositeApiActions.partition
 import static io.restassured.RestAssured.*
 
 class TestUtils {
 
     private static boolean hasBeenConfigured = false;
+
+    private static String partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
 
     private TestUtils() {
         // no constructing
@@ -70,5 +73,11 @@ class TestUtils {
                 'user_group_permissions': userGroupPermissions,
                 'iam_role_permissions': iamPrincipalPermissions
         ]
+    }
+
+    static String updateArnWithPartition(String arn) {
+        String[] arnParts = arn.split(":")
+        arnParts[1] = partition
+        return arnParts.collect().join(":")
     }
 }

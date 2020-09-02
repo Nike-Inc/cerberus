@@ -36,6 +36,7 @@ import static com.nike.cerberus.api.CerberusApiActions.validateGETApiResponse
 import static com.nike.cerberus.api.CerberusApiActions.validatePOSTApiResponse
 import static com.nike.cerberus.api.CerberusApiActions.validatePUTApiResponse
 import static com.nike.cerberus.api.CerberusCompositeApiActions.*
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class InvalidAuthApiTests {
 
@@ -45,8 +46,8 @@ class InvalidAuthApiTests {
     static final V2_FAKE_SDB_PATH = "$V1_SAFE_DEPOSIT_BOX_PATH/1111-1111-1111-1111"
     static final String FAKE_ACCOUNT_ID = "1111111111"
     static final String FAKE_ROLE_NAME = "fake_role"
-
-    @BeforeTest
+    
+    @BeforeTest 
     void beforeTest() {
         TestUtils.configureRestAssured()
     }
@@ -87,7 +88,7 @@ class InvalidAuthApiTests {
         validateDELETEApiResponse(INVALID_AUTH_TOKEN_STR, FAKE_SECRET_REQUEST_URI_PATH, HttpStatus.SC_UNAUTHORIZED, schemaFilePath)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that a v1 safe deposit box cannot be created with an invalid token"() {
         String schemeFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/auth-token-is-malformed-cms-error.json"
 
@@ -97,21 +98,21 @@ class InvalidAuthApiTests {
         validatePOSTApiResponse(INVALID_AUTH_TOKEN_STR, V1_SAFE_DEPOSIT_BOX_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath, sdb)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that a v1 safe deposit box cannot be read with an invalid token"() {
         String schemeFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/auth-token-is-malformed-cms-error.json"
 
         validateGETApiResponse(AUTH_TOKEN_HEADER_NAME, INVALID_AUTH_TOKEN_STR, V1_FAKE_SDB_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that a v1 safe deposit boxes cannot be listed with an invalid token"() {
         String schemeFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/auth-token-is-malformed-cms-error.json"
 
         validateGETApiResponse(AUTH_TOKEN_HEADER_NAME, INVALID_AUTH_TOKEN_STR, V1_FAKE_SDB_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that a v1 safe deposit box cannot be updated with an invalid token"() {
         String schemeFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/auth-token-is-malformed-cms-error.json"
 
@@ -121,7 +122,7 @@ class InvalidAuthApiTests {
         validatePUTApiResponse(INVALID_AUTH_TOKEN_STR, V1_FAKE_SDB_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath, sdb)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that a v1 safe deposit box cannot be deleted with an invalid token"() {
         String schemeFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/auth-token-is-malformed-cms-error.json"
 
@@ -170,7 +171,7 @@ class InvalidAuthApiTests {
         validateDELETEApiResponse(INVALID_AUTH_TOKEN_STR, V2_FAKE_SDB_PATH, HttpStatus.SC_UNAUTHORIZED, schemeFilePath)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "an IAM role cannot auth if it does not have permission to any safe deposit box"() {
         def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-role-auth-no-permission-to-any-sdb.json"
         def requestBody = [account_id: "0000000000", role_name: "non-existent-role-name", region: "us-west-2"]
@@ -181,8 +182,9 @@ class InvalidAuthApiTests {
     @Test
     void "an IAM principal cannot auth if it does not have permission to any safe deposit box"() {
         def schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/iam-principal-auth-no-permission-to-any-sdb.json"
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::1111111111:role/imaginary-role-name-should-not-exist")
         def requestBody = [
-                iam_principal_arn: "arn:aws:iam::1111111111:role/imaginary-role-name-should-not-exist",
+                iam_principal_arn: iamPrincipalArn,
                 role_name        : "non-existent-role-name",
                 region           : "us-west-2"
         ]

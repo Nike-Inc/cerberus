@@ -38,8 +38,8 @@ dependencies {
   compile group: 'io.rest-assured', name: 'xml-path', version: '4.1.2'
   compile group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
   compile "com.google.guava:guava:${versions.guava}"
-  compile group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: '1.11.76'
-  compile group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.76'
+  compile group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
+  compile group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: "${versions.awsSdkVersion}"
   compile group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
   compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
   compile group: 'com.thedeanda', name: 'lorem', version: '1.2'
@@ -50,9 +50,24 @@ dependencies {
 }
 
 integrationTest {
-  useTestNG()
   testLogging {
     showStandardStreams = true
     events "passed", "skipped", "failed"
   }
+  if (project.hasProperty('deprecatedEndpoint')) {
+    useTestNG() {
+      excludeGroups 'deprecated'
+    }
+  } else {
+    useTestNG()
+  }
+
+  if (project.hasProperty('excludeTests')) {
+    exclude project.property('excludeTests')
+  }
+
+  if (project.hasProperty('includeTests')) {
+    include project.property('includeTests')
+  }
+
 }

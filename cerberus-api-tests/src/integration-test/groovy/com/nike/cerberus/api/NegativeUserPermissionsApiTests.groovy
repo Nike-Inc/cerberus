@@ -18,8 +18,6 @@ package com.nike.cerberus.api
 
 import com.nike.cerberus.util.PropUtils
 import com.nike.cerberus.api.util.TestUtils
-import com.thedeanda.lorem.Lorem
-import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpStatus
 import org.testng.annotations.AfterTest
@@ -31,6 +29,7 @@ import static com.nike.cerberus.api.CerberusCompositeApiActions.*
 import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class NegativeUserPermissionsApiTests {
 
@@ -53,6 +52,7 @@ class NegativeUserPermissionsApiTests {
 
     private def userReadOnlySdb
     private def userWriteOnlySdb
+    
 
     private void loadRequiredEnvVars() {
         accountId = PropUtils.getRequiredProperty("TEST_ACCOUNT_ID",
@@ -86,8 +86,8 @@ class NegativeUserPermissionsApiTests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         userAuthToken = userAuthData."client_token"
         iamAuthToken = iamAuthData."client_token"
         String userGroupOfTestUser = userGroup

@@ -34,7 +34,7 @@ class CerberusUserApiTests {
     private String ownerGroup
     private String cerberusAuthToken
     private Map cerberusAuthData
-
+    
     @BeforeTest
     void beforeTest() {
         TestUtils.configureRestAssured()
@@ -62,7 +62,7 @@ class CerberusUserApiTests {
         logoutUser(cerberusAuthToken)
     }
 
-    @Test
+    @Test (groups = ['deprecated'])
     void "test that an authenticated user can create, read, update then delete a safe deposit box v1"() {
         "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
     }

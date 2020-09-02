@@ -31,6 +31,7 @@ import static com.nike.cerberus.api.CerberusApiActions.*
 import static com.nike.cerberus.api.CerberusCompositeApiActions.NEGATIVE_JSON_SCHEMA_ROOT_PATH
 import static com.nike.cerberus.api.util.TestUtils.generateRandomSdbDescription
 import static com.nike.cerberus.api.util.TestUtils.generateSdbJson
+import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 
 class NegativeIamPermissionsApiTests {
 
@@ -53,6 +54,7 @@ class NegativeIamPermissionsApiTests {
 
     private def iamPrincipalReadOnlySdb
     private def iamPrincipalWriteOnlySdb
+
 
     private void loadRequiredEnvVars() {
         accountId = PropUtils.getRequiredProperty("TEST_ACCOUNT_ID",
@@ -89,8 +91,8 @@ class NegativeIamPermissionsApiTests {
         userAuthToken = userAuthData."client_token"
         String userGroupOfTestUser = ownerGroup
 
-        String iamPrincipalArn = "arn:aws:iam::${accountId}:role/${roleName}"
-        def iamAuthData = retrieveIamAuthToken(iamPrincipalArn, region)
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(userAuthToken).Applications
@@ -119,7 +121,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a read IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalReadOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        def fake_arn = "arn:aws:iam::0011001100:user/obviously-fake-test-user"
+        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -183,7 +185,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a write IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalWriteOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        def fake_arn = "arn:aws:iam::0011001100:user/obviously-fake-test-user"
+        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -262,7 +264,7 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = "arn:aws:iam::00000000:root"
+        String accountRootArn = updateArnWithPartition("arn:aws:iam::00000000:root")
         String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPrincipalPermissions = [
@@ -296,8 +298,9 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootWithNoAccess = "arn:aws:iam::00000000:root"
-        String accountRootWithAccess = "arn:aws:iam::$accountId:root"
+        String accountRootWithNoAccess = updateArnWithPartition("arn:aws:iam::00000000:root")
+        String accountRootWithAccess = updateArnWithPartition("arn:aws:iam::$accountId:root")
+
         String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPermsWithNoAccess = [
