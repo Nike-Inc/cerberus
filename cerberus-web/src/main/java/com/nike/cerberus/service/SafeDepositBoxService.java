@@ -357,7 +357,8 @@ public class SafeDepositBoxService {
     if (ownerRole.isEmpty()) {
       String msg = "Owner role doesn't exist!";
       throw ApiException.newBuilder()
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
           .withExceptionMessage(msg)
           .build();
     }
@@ -478,7 +479,8 @@ public class SafeDepositBoxService {
     if (ownerRole.isEmpty()) {
       String msg = "Owner role doesn't exist!";
       throw ApiException.newBuilder()
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
           .withExceptionMessage(msg)
           .build();
     }

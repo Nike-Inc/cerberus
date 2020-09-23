@@ -263,11 +263,12 @@ public class PermissionValidationService {
                 () -> {
                   auditLoggingFilterDetails.setAction(
                       "A request was made for an SDB that did not exist");
-
+                  String msg = "The SDB for the path: " + sdbBasePath + " was not found.";
                   return ApiException.newBuilder()
-                      .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-                      .withExceptionMessage(
-                          "The SDB for the path: " + sdbBasePath + " was not found.")
+                      .withApiErrors(
+                          CustomApiError.createCustomApiError(
+                              DefaultApiError.ENTITY_NOT_FOUND, msg))
+                      .withExceptionMessage(msg)
                       .build();
                 });
 
