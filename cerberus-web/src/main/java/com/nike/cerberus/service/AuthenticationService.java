@@ -316,7 +316,6 @@ public class AuthenticationService {
       kmsKeyRecord = getKmsKeyRecordForIamPrincipal(iamRoleRecord, credentials.getRegion());
     } catch (AmazonServiceException e) {
       if ("InvalidArnException".equals(e.getErrorCode())) {
-<<<<<<< HEAD
         String msg =
             String.format(
                 "Failed to lazily provision KMS key for %s in region: %s",
@@ -324,13 +323,6 @@ public class AuthenticationService {
         throw ApiException.newBuilder()
             .withApiErrors(
                 CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_ROLE_REJECTED, msg))
-=======
-        String msg = String.format(
-                "Failed to lazily provision KMS key for %s in region: %s",
-                credentials.getIamPrincipalArn(), credentials.getRegion());
-        throw ApiException.newBuilder()
-            .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_ROLE_REJECTED, msg))
->>>>>>> chore: improve error messaging
             .withExceptionCause(e)
             .withExceptionMessage(msg)
             .build();
@@ -349,13 +341,10 @@ public class AuthenticationService {
     try {
       authResponseJson = objectMapper.writeValueAsBytes(authResponse);
     } catch (JsonProcessingException e) {
-<<<<<<< HEAD
       String msg = "Failed to write IAM role authentication response as JSON for encrypting.";
-=======
-      String msg = "Failed to write IAM role authentication response as JSON for encrypting."
->>>>>>> chore: improve error messaging
       throw ApiException.newBuilder()
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
           .withExceptionCause(e)
           .withExceptionMessage(msg)
           .build();
@@ -462,7 +451,8 @@ public class AuthenticationService {
     } catch (JsonProcessingException e) {
       String msg = "Failed to write IAM role authentication response as JSON for encrypting.";
       throw ApiException.newBuilder()
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
           .withExceptionCause(e)
           .withExceptionMessage(msg)
           .build();
@@ -550,12 +540,8 @@ public class AuthenticationService {
     if (!iamRole.isPresent()) {
       String msg = String.format("The role: %s was not configured for any SDB", iamPrincipalArn);
       throw ApiException.newBuilder()
-<<<<<<< HEAD
           .withApiErrors(
               CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID, msg))
-=======
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID, msg))
->>>>>>> chore: improve error messaging
           .withExceptionMessage(msg)
           .build();
     }
@@ -653,17 +639,11 @@ public class AuthenticationService {
           String.format("Failed to encrypt token using KMS key with id: %s", keyId),
           keyNotUsableException);
     } catch (AmazonClientException ace) {
-<<<<<<< HEAD
       String msg =
           String.format("Unexpected error communicating with AWS KMS for region %s.", regionName);
       throw ApiException.newBuilder()
           .withApiErrors(
               CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
-=======
-      String msg = String.format("Unexpected error communicating with AWS KMS for region %s.", regionName);
-      throw ApiException.newBuilder()
-          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
->>>>>>> chore: improve error messaging
           .withExceptionCause(ace)
           .withExceptionMessage(msg)
           .build();
