@@ -28,6 +28,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.SdbAccessRequest;
 import java.util.Collection;
 import java.util.List;
@@ -242,9 +243,11 @@ public class PermissionValidationService {
 
     if (isBlank(sdbAccessRequest.getCategory()) || isBlank(sdbAccessRequest.getSdbSlug())) {
       auditLoggingFilterDetails.setAction("Required path params missing");
+      String msg = "Request path is invalid.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
-          .withExceptionMessage("Request path is invalid.")
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -270,12 +273,13 @@ public class PermissionValidationService {
 
     if (!doesPrincipalHavePermissionForSdb(principal, sdbId, secureDataAction)) {
       auditLoggingFilterDetails.setAction("Permission was not granted for principal");
+      String msg =
+          String.format(
+              "Permission was not granted for principal: %s for path: %s",
+              principal.getName(), sdbBasePath);
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ACCESS_DENIED)
-          .withExceptionMessage(
-              String.format(
-                  "Permission was not granted for principal: %s for path: %s",
-                  principal.getName(), sdbBasePath))
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ACCESS_DENIED, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

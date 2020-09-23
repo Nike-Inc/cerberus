@@ -355,9 +355,10 @@ public class SafeDepositBoxService {
     final Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
 
     if (ownerRole.isEmpty()) {
+      String msg = "Owner role doesn't exist!";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.MISCONFIGURED_APP)
-          .withExceptionMessage("Owner role doesn't exist!")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -475,9 +476,10 @@ public class SafeDepositBoxService {
     final Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
 
     if (ownerRole.isEmpty()) {
+      String msg = "Owner role doesn't exist!";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.MISCONFIGURED_APP)
-          .withExceptionMessage("Owner role doesn't exist!")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.MISCONFIGURED_APP, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -767,9 +769,10 @@ public class SafeDepositBoxService {
   public Set<String> getSecureDataVersionPathsForSdb(String sdbId) {
     Optional<SafeDepositBoxRecord> sdbOpt = safeDepositBoxDao.getSafeDepositBox(sdbId);
     if (sdbOpt.isEmpty()) {
+      String msg = "Could not find SDB with ID: " + sdbId;
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage("Could not find SDB with ID: " + sdbId)
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

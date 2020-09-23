@@ -56,6 +56,7 @@ import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.DateTimeSupplier;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -293,13 +294,13 @@ public class AuthenticationService {
       kmsKeyRecord = getKmsKeyRecordForIamPrincipal(iamRoleRecord, credentials.getRegion());
     } catch (AmazonServiceException e) {
       if ("InvalidArnException".equals(e.getErrorCode())) {
+        String msg = String.format(
+                "Failed to lazily provision KMS key for %s in region: %s",
+                credentials.getIamPrincipalArn(), credentials.getRegion());
         throw ApiException.newBuilder()
-            .withApiErrors(DefaultApiError.AUTH_IAM_ROLE_REJECTED)
+            .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_ROLE_REJECTED, msg))
             .withExceptionCause(e)
-            .withExceptionMessage(
-                String.format(
-                    "Failed to lazily provision KMS key for %s in region: %s",
-                    credentials.getIamPrincipalArn(), credentials.getRegion()))
+            .withExceptionMessage(msg)
             .build();
       }
       throw e;
@@ -316,11 +317,11 @@ public class AuthenticationService {
     try {
       authResponseJson = objectMapper.writeValueAsBytes(authResponse);
     } catch (JsonProcessingException e) {
+      String msg = "Failed to write IAM role authentication response as JSON for encrypting."
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
           .withExceptionCause(e)
-          .withExceptionMessage(
-              "Failed to write IAM role authentication response as JSON for encrypting.")
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -423,11 +424,11 @@ public class AuthenticationService {
     try {
       return objectMapper.writeValueAsBytes(authToken);
     } catch (JsonProcessingException e) {
+      String msg = "Failed to write IAM role authentication response as JSON for encrypting.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
           .withExceptionCause(e)
-          .withExceptionMessage(
-              "Failed to write IAM role authentication response as JSON for encrypting.")
+          .withExceptionMessage(msg)
           .build();
     }
   }
@@ -442,9 +443,10 @@ public class AuthenticationService {
   public AuthResponse refreshUserToken(final CerberusPrincipal authPrincipal) {
 
     if (!PrincipalType.USER.equals(authPrincipal.getPrincipalType())) {
+      String msg = "The principal: %s attempted to use the user token refresh method";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.USER_ONLY_RESOURCE)
-          .withExceptionMessage("The principal: %s attempted to use the user token refresh method")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.USER_ONLY_RESOURCE, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -509,10 +511,10 @@ public class AuthenticationService {
     final Optional<AwsIamRoleRecord> iamRole = findIamRoleAssociatedWithSdb(iamPrincipalArn);
 
     if (!iamRole.isPresent()) {
+      String msg = String.format("The role: %s was not configured for any SDB", iamPrincipalArn);
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID)
-          .withExceptionMessage(
-              String.format("The role: %s was not configured for any SDB", iamPrincipalArn))
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.AUTH_IAM_PRINCIPAL_INVALID, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -609,12 +611,11 @@ public class AuthenticationService {
           String.format("Failed to encrypt token using KMS key with id: %s", keyId),
           keyNotUsableException);
     } catch (AmazonClientException ace) {
+      String msg = String.format("Unexpected error communicating with AWS KMS for region %s.", regionName);
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
           .withExceptionCause(ace)
-          .withExceptionMessage(
-              String.format(
-                  "Unexpected error communicating with AWS KMS for region %s.", regionName))
+          .withExceptionMessage(msg)
           .build();
     }
   }
