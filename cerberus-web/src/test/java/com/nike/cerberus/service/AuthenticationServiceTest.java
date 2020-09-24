@@ -429,7 +429,12 @@ public class AuthenticationServiceTest {
     }
 
     assertTrue(e instanceof ApiException);
-    assertTrue(((ApiException) e).getApiErrors().contains(DefaultApiError.USER_ONLY_RESOURCE));
+    assertTrue(
+        ((ApiException) e)
+            .getApiErrors()
+            .get(0)
+            .getErrorCode()
+            .equals(DefaultApiError.USER_ONLY_RESOURCE.getErrorCode()));
   }
 
   @Test
