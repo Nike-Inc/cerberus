@@ -1,38 +1,44 @@
 language: java
 install: true
+
 os: linux
 dist: bionic
 jdk: openjdk11
+
 script:
-- "./gradlew check build buildDashboard generateAggregatedReports -x integrationTest
-  --continue"
+  - "./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue"
+
 after_success:
-- "./gradlew coveralls"
-- curl -F 'json_file=@build/coveralls/report.json' 'https://coveralls.io/api/v1/jobs'
-- test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew
-  bintrayUpload
+  - ./gradlew coveralls
+  - curl -F 'json_file=@build/coveralls/report.json' 'https://coveralls.io/api/v1/jobs' # https://github.com/kt3k/coveralls-gradle-plugin/issues/85#issuecomment-475958699
+  - test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew bintrayUpload
+
 before_cache:
-- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
+
 deploy:
   skip_cleanup: true
   provider: releases
   api_key:
     secure: XLz7OW+p6OyAM06C2NuNxTOEfsYvfVL2VNYU6UyEDeTk7rFSGy1fxHcUzYqLFZDwSxYndCEXtXCPje7ZDIWBVjR01lRiuJKz1kkf0M6EY3bxkMaIc8u8SMaDePQBsuma10bhUxiuwTHEsCB+NERjwmFxqE/kADKfOBsD89QxLLfrn+vL2AbLJXswISZv9ExhKQgSwLAyINQ4ReTZCN9kWgsC/qAseWBDYNFl9qrNK+uN2AaaTH4NhzEJLuRgdECCSey30Dk3AsnxHWNE4KmIyp9RfInDFvqUXQ2QN3FoNhkAUjUKBGz8ynQiNOkUijE64IDmsi2TM3IYpZir4zN2bhRomymRWqR2cROb7yjVQeWM63qfEY5ouw9aRdr19FuCnhiAAS6NIrccix9MWjqHbXIi3pqO5CPsm6PifA/c4+UHi1ZRdLKSakJ0+ah3LFkRDd2OjV8W7DXZnszN3ktPxlRplRAhj6CDZvazp7py4X6ufKFSq9JMqqwEh6hFKSAUVw3q2AmqCtz7bR6zzQQPp03H5EMU3W97MUqb+KNkAcE0jPCBYG11hfBPqKOPs/MW0M1EBPwwEbX883uqVr3mtaPa3Yjrk/nk4A5+LgzIm7kmnEl/bNcJZF7qEZ621Tek2YYtk2vKdLjck0s90mxfLQSj9Bt4ranv37V5P/3p6Sg=
   file:
-  - cerberus-web/build/libs/cerberus.jar
-  - cerberus-web/build/libs/cerberus.jar.MD5
+    - cerberus-web/build/libs/cerberus.jar
+    - cerberus-web/build/libs/cerberus.jar.MD5
   on:
     repo: Nike-Inc/cerberus
     tags: true
+
 env:
   global:
   - secure: R8NA4hNA8SmxP7J0x3Nidv0GDnBctrTp0Wrd5s4VFP9+9SQdAgoulSoUgz69CuAJwmB/p0JtMFtd4LQfDeyL97u1SxfCDQFbuJf93Oj341ADOyK0p7dLBa3tmvquaCtWJqfx6GiR0Rp3WipGeyae/1nloMXltvA/gEKFQlingjXfwBERJ7aVWx2LBnuhU7QayhqEHb6AP/BSUtHBYBww7UG2xfpR1goFWp2XCCXElCot2efAxSh/mCiN3ZCn+kn3qs14lb/IM379U8In9XwAJuEdBV50Woawi+9j5cWdPo/+nCGlBM4csrR7rkz9MtGDUTTLN30xq9NkKsPeN5dYkuly/2JNSLyFIfGhsjSAeHqxB7Zw49o99pypERItmHKNzcE3WPzJrPhvHhm6T5Tf+4Rc7rUg3b5cZ6sl+/qonL19U30gF/dDJ/gdSFBULbYwh582Z0+0MrkCDkWBau/KPgt/zsDtWe8xqtKIQYPexlSCjyRujDDZCgwxx6k3AgS5mjjU/qqj6xjBLERy9IEwwe2J9mVfTfrYg5UXDxa2H+MSev1ZFDxWswhTfV/YmEk9biOADNcZI3VBnR2fUekklcPuEuI3qtxbY21iCN2Kwu38+vX+90NfS9jCfPnrY+OHtF9duSpOojPDQs+V/hcZ8wrbYAbf96itS3WZSbDSjZ8=
   - secure: YYl4kXd0TKA11aEY8HDbtZmo1g6V2a/qQFUD96/2U+5LaYTyDtFqRL/My9PJqHGh7xmD5TvWhW2ZYRc3Uoh6+Zq4ekNjkk6hKWv01hHCcQo4DDaBNbqTi05+zjmMuA1X8wPS6RGd7rnOhmdpSWX5S66oQc1UjvNa6SJd1txxKHUqfu5g4V0XbKSC+ypHj54cvaOLUY+goQ4MJiZP29iAAzy1AH6gPONwxwi5i/++NNvvLesq0TgObQUUXh5j/nEw7WbjiYUCMmBbssqqUq9koZNyC/DDJbEvcHzpc8oCSzWLrGXVanhoD3Vu5DBUE/JEP18mjCGjkzSSF56nysYNm4QNtwXpx313D3f120GERjA2x81LcAcJc4UaUPNKLUxxRfbjILezJX0nmzK7UMmgegy81iGj7DrChw1BTjanVIXrXNRzZjjVcOgVxTw+Vdi+vpB+BGiEsB4RJKL5I2XGFVwvP8KVOek+OKyrrHP2MdalXteld2ShTwe8jsYbcojdAJ5eLqqYbq9cdCiYO2+wpzK1bB1Cz4FPXrxrBGL2a3bSASsh2h3bV13eOi6J7igeY4BMYqcfFJnxC9ZSBllqoei7f3eiNpDSJQZ3FI5JPTE5b1Hoc9QiaaP5x9cuSI9zbXajGSYd0ym5tAPei3R7NTBCwsesE/vELdTPSwkrR5I=
+
 notifications:
   slack:
     secure: R/YW8djWEIMJwyT+9Pq8e8dJ3O/eXHfMoNP6ikihpovweD4cgZiDQ0AMbWJTvhjTjJZAMPNJTZOoBKol2bpl+0NUV3mcd17pKZdEfizXLKZqG7WuKupPvEwlVcJtBRfpKxxi4DWOR3aqLzufQWF4UVGC0VtoiVgzUvJLX/b77oFhUmajWkpVcoocktlbdNGbIXx5Ew/I8+Aadv/damszpLg3flEizi65wiCavZz7fi2bO4wRrM+EPFCudkfkr3Qs1e+RlnA/sx/8jwWDIZOxDCAGBDc8d2efdPyGAbAgtO9ZR2QOvYQT3RMiOjOOBJtxh+18jaMQh2qM5WAWh8AN0oGNM4epyhRt6Od3cQiSeI+8Fjs5NwW9kwGJdgoXpFboW7aPaZzfg8Uk0/cADwduuZueRJRUD95rJhZKq7xSjRIA4hzNS+QxZUYRwgA6pyBBIYiCz4pEpapa216BUsTDE/Oo8HBgV/PKggpcNKCBrh0BQFmJSllRWPCKTyrPbZaqD8UgpYRnYy6XuLXn6ExSJDPpXMi+fK4qKxcOM/2wz4SN/j3JWFCrjl/ALdQ9OlgDxRX604ho0XVg7pWFZuGo2J+dxotMM4xn3hX2dK8vM1FRjeBWLJcyLW9CSPgmgTVSeXZXlZRLOWTlUQzEBkDxUX/eTL4aS0s9uG6c1V20Hi4=
