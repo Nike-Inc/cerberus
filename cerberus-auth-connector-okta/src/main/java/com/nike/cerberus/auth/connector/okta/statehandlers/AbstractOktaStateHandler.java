@@ -19,12 +19,12 @@ package com.nike.cerberus.auth.connector.okta.statehandlers;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.util.CustomApiError;
 import com.okta.authn.sdk.AuthenticationStateHandlerAdapter;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
@@ -204,12 +204,8 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
     }
 
     throw ApiException.newBuilder()
-        .withApiErrors(
-            new ApiErrorBase(
-                DefaultApiError.AUTH_FAILED.getName(),
-                DefaultApiError.AUTH_FAILED.getErrorCode(),
-                message,
-                DefaultApiError.AUTH_FAILED.getHttpStatusCode()))
+        .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.AUTH_FAILED, message))
+        .withExceptionMessage(message)
         .build();
   }
 }

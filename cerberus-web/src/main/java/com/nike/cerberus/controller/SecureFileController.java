@@ -28,6 +28,7 @@ import com.nike.cerberus.security.PrincipalHasReadPermsForPath;
 import com.nike.cerberus.security.PrincipalHasWritePermsForPath;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.cerberus.service.SecureDataVersionService;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.SdbAccessRequest;
 import java.io.IOException;
 import javax.validation.constraints.NotNull;
@@ -131,10 +132,12 @@ public class SecureFileController {
     try {
       fileContents = file.getBytes();
     } catch (IOException ex) {
+      String msg = "Failed to get contents from multipart file";
       throw ApiException.newBuilder()
-          .withExceptionMessage("Failed to get contents from multipart file")
+          .withExceptionMessage(msg)
           .withExceptionCause(ex)
-          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
           .build();
     }
 
