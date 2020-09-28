@@ -41,7 +41,7 @@ env:
 
 notifications:
   slack:
-    if: branch = master AND type = push
+    if: branch = master AND (type = push OR type=cron)
     on_success: change
     on_failure: always
     rooms:
