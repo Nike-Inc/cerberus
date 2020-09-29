@@ -32,10 +32,7 @@ import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.domain.AuthKmsKeyMetadata;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
-import com.nike.cerberus.util.AwsIamRoleArnParser;
-import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.cerberus.util.Slugger;
-import com.nike.cerberus.util.UuidSupplier;
+import com.nike.cerberus.util.*;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -228,9 +225,10 @@ public class KmsService {
         awsIamRoleDao.getKmsKey(awsIamRoleId, awsRegion);
 
     if (kmsKey.isEmpty()) {
+      String msg = "Unable to update a KMS key that does not exist.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage("Unable to update a KMS key that does not exist.")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

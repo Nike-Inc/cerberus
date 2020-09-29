@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.UserGroupPermissionRecord;
 import com.nike.cerberus.record.UserGroupRecord;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.UuidSupplier;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -165,10 +166,10 @@ public class UserGroupPermissionService {
         userGroupDao.getUserGroupByName(userGroupPermission.getName());
 
     if (possibleUserGroupRecord.isEmpty()) {
+      String msg = "Unable to update permissions for user group name that doesn't exist.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage(
-              "Unable to update permissions for user group name that doesn't exist.")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -208,10 +209,10 @@ public class UserGroupPermissionService {
         userGroupDao.getUserGroupByName(userGroupPermission.getName());
 
     if (userGroupRecord.isEmpty()) {
+      String msg = "Unable to revoke permissions for user group name that doesn't exist.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage(
-              "Unable to revoke permissions for user group name that doesn't exist.")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

@@ -21,6 +21,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.util.CustomApiError;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,8 +62,10 @@ public final class AwsStsHttpHeader {
     boolean didMatch = matcher.matches();
 
     if (!didMatch) {
+      String msg = "Failed to determine region from header.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
           .withExceptionMessage(
               String.format("Failed to determine region from header %s.", authorization))
           .build();
@@ -74,9 +77,11 @@ public final class AwsStsHttpHeader {
       //noinspection ResultOfMethodCallIgnored
       Regions.fromName(region);
     } catch (IllegalArgumentException e) {
+      String msg = String.format("Invalid region supplied %s.", region);
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
-          .withExceptionMessage(String.format("Invalid region supplied %s.", region))
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

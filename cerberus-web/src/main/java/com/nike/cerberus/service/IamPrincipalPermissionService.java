@@ -24,6 +24,7 @@ import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRolePermissionRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.UuidSupplier;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -161,9 +162,10 @@ public class IamPrincipalPermissionService {
         awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 
     if (iamRole.isEmpty()) {
+      String msg = "Unable to update permissions for IAM role that doesn't exist.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage("Unable to update permissions for IAM role that doesn't exist.")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 
@@ -203,9 +205,10 @@ public class IamPrincipalPermissionService {
         awsIamRoleDao.getIamRole(iamPrincipalPermission.getIamPrincipalArn());
 
     if (iamRole.isEmpty()) {
+      String msg = "Unable to revoke permissions for IAM role that doesn't exist.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
-          .withExceptionMessage("Unable to revoke permissions for IAM role that doesn't exist.")
+          .withApiErrors(CustomApiError.createCustomApiError(DefaultApiError.ENTITY_NOT_FOUND, msg))
+          .withExceptionMessage(msg)
           .build();
     }
 

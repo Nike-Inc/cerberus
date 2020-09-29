@@ -18,6 +18,7 @@ package com.nike.cerberus.auth.connector.okta;
 
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.util.CustomApiError;
 import com.okta.sdk.clients.UserGroupApiClient;
 import com.okta.sdk.framework.ApiClientConfiguration;
 import com.okta.sdk.framework.PagedResults;
@@ -99,7 +100,8 @@ public class OktaApiClientHelper {
               "failed to get user groups for user (%s) for reason: %s", userId, ioe.getMessage());
 
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.GENERIC_BAD_REQUEST)
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
           .withExceptionMessage(msg)
           .build();
     }

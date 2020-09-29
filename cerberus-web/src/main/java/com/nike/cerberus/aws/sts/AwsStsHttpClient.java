@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.util.CustomApiError;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +105,8 @@ public class AwsStsHttpClient {
                 "Something is wrong with AWS, error message: %s", response.body().string());
 
         throw ApiException.newBuilder()
-            .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
+            .withApiErrors(
+                CustomApiError.createCustomApiError(DefaultApiError.SERVICE_UNAVAILABLE, msg))
             .withExceptionMessage(msg)
             .build();
       }
@@ -141,10 +143,12 @@ public class AwsStsHttpClient {
   }
 
   protected ApiException toApiException(IOException e) {
+    String msg = "I/O error while communicating with AWS STS.";
     return ApiException.newBuilder()
-        .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
+        .withApiErrors(
+            CustomApiError.createCustomApiError(DefaultApiError.SERVICE_UNAVAILABLE, msg))
         .withExceptionCause(e)
-        .withExceptionMessage("I/O error while communicating with AWS STS.")
+        .withExceptionMessage(msg)
         .build();
   }
 
@@ -160,10 +164,12 @@ public class AwsStsHttpClient {
     try {
       return objectMapper.readValue(response.body().string(), responseClass);
     } catch (IOException e) {
+      String msg = "Error parsing the response body from AWS STS.";
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.SERVICE_UNAVAILABLE, msg))
           .withExceptionCause(e)
-          .withExceptionMessage("Error parsing the response body from AWS STS.")
+          .withExceptionMessage(msg)
           .build();
     }
   }
