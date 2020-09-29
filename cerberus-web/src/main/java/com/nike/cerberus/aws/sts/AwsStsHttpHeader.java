@@ -62,11 +62,12 @@ public final class AwsStsHttpHeader {
     boolean didMatch = matcher.matches();
 
     if (!didMatch) {
-      String msg = String.format("Failed to determine region from header %s.", authorization);
+      String msg = "Failed to determine region from header.";
       throw ApiException.newBuilder()
           .withApiErrors(
               CustomApiError.createCustomApiError(DefaultApiError.GENERIC_BAD_REQUEST, msg))
-          .withExceptionMessage(msg)
+          .withExceptionMessage(
+              String.format("Failed to determine region from header %s.", authorization))
           .build();
     }
 
