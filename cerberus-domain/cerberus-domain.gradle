@@ -20,6 +20,7 @@ dependencies {
   api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.1'
 
   api group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+  api group: 'org.apache.commons', name: 'commons-text', version: '1.9'
 
   testImplementation group: 'org.glassfish', name: 'javax.el', version: '3.0.0'
 }

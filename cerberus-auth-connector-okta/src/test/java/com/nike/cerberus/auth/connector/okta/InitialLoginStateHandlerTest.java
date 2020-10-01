@@ -28,9 +28,9 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHand
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultFactor;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
+import com.okta.authn.sdk.resource.FactorProvider;
+import com.okta.authn.sdk.resource.FactorType;
 import com.okta.authn.sdk.resource.User;
-import com.okta.sdk.resource.user.factor.FactorProvider;
-import com.okta.sdk.resource.user.factor.FactorType;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -71,44 +71,6 @@ public class InitialLoginStateHandlerTest {
 
     FactorProvider provider = FactorProvider.OKTA;
     FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
-    String deviceId = "device id";
-    String status = "status";
-
-    AuthenticationResponse expectedResponse = mock(AuthenticationResponse.class);
-
-    User user = mock(User.class);
-    when(user.getId()).thenReturn(id);
-    when(user.getLogin()).thenReturn(email);
-    when(expectedResponse.getUser()).thenReturn(user);
-
-    DefaultFactor factor = mock(DefaultFactor.class);
-
-    when(factor.getType()).thenReturn(type);
-    when(factor.getProvider()).thenReturn(provider);
-    when(factor.getStatus()).thenReturn(status);
-    when(factor.getId()).thenReturn(deviceId);
-    when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
-
-    // do the call
-    initialLoginStateHandler.handleMfaRequired(expectedResponse);
-
-    AuthResponse actualResponse = authenticationResponseFuture.get(1, TimeUnit.SECONDS);
-
-    //  verify results
-    assertEquals(id, actualResponse.getData().getUserId());
-    assertEquals(email, actualResponse.getData().getUsername());
-    assertEquals(expectedStatus, actualResponse.getStatus());
-  }
-
-  @Test(expected = ApiException.class)
-  public void handleMfaRequiredFailNoSupportedDevicesEnrolled() throws Exception {
-
-    String email = "email";
-    String id = "id";
-    AuthStatus expectedStatus = AuthStatus.MFA_REQUIRED;
-
-    FactorProvider provider = FactorProvider.OKTA;
-    FactorType type = FactorType.PUSH;
     String deviceId = "device id";
     String status = "status";
 

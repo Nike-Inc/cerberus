@@ -18,7 +18,6 @@ package com.nike.cerberus.auth.connector.okta.statehandlers;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
@@ -35,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 /**
  * Abstract state handler to provide helper methods for authentication and MFA validation. Also
@@ -74,9 +73,6 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
           .put("LOCKED_OUT", "Your OKTA user account is locked.")
           .put("MFA_ENROLL_ACTIVATE", "Please activate your factor to complete enrollment.")
           .build();
-
-  // We currently do not support push notifications for Okta MFA verification.
-  private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of();
 
   public final AuthenticationClient client;
   public final CompletableFuture<AuthResponse> authenticationResponseFuture;
@@ -149,20 +145,6 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
     final FactorProvider provider = factor.getProvider();
 
     return (provider.equals(FactorProvider.OKTA) && type == FactorType.PUSH);
-  }
-
-  /**
-   * Determines if a MFA factor is currently supported by Cerberus or not
-   *
-   * @param factor Okta MFA factor
-   * @return boolean
-   */
-  public boolean isSupportedFactor(Factor factor) {
-
-    final FactorType type = factor.getType();
-    final FactorProvider provider = factor.getProvider();
-
-    return !(provider.equals(FactorProvider.OKTA) && UNSUPPORTED_OKTA_MFA_TYPES.contains(type));
   }
 
   /**

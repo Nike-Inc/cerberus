@@ -23,9 +23,9 @@ import com.nike.cerberus.auth.connector.AuthStatus;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
 import com.okta.authn.sdk.resource.Factor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /** Initial state handler to handle relevant states during authentication. */
 public class InitialLoginStateHandler extends AbstractOktaStateHandler {
@@ -70,10 +70,7 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
     authData.setStateToken(mfaResponse.getStateToken());
     authResponse.setStatus(AuthStatus.MFA_REQUIRED);
 
-    final List<Factor> factors =
-        mfaResponse.getFactors().stream()
-            .filter(this::isSupportedFactor)
-            .collect(Collectors.toList());
+    final List<Factor> factors = new ArrayList<>(mfaResponse.getFactors());
 
     validateUserFactors(factors);
 
