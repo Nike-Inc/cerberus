@@ -29,8 +29,8 @@ import com.okta.authn.sdk.AuthenticationStateHandlerAdapter;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
 import com.okta.authn.sdk.resource.Factor;
-import com.okta.sdk.resource.user.factor.FactorProvider;
-import com.okta.sdk.resource.user.factor.FactorType;
+import com.okta.authn.sdk.resource.FactorProvider;
+import com.okta.authn.sdk.resource.FactorType;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -76,7 +76,7 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
           .build();
 
   // We currently do not support push notifications for Okta MFA verification.
-  private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of(FactorType.PUSH);
+  private static final ImmutableSet UNSUPPORTED_OKTA_MFA_TYPES = ImmutableSet.of();
 
   public final AuthenticationClient client;
   public final CompletableFuture<AuthResponse> authenticationResponseFuture;
@@ -135,6 +135,20 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
       return MFA_FACTOR_TRIGGER_REQUIRED.get(factorKey);
     }
     return false;
+  }
+
+  /**
+   * Determines whether a trigger is required for a provided MFA factor
+   *
+   * @param factor Okta MFA factor
+   * @return boolean trigger required
+   */
+  public boolean isPush(Factor factor) {
+
+    final FactorType type = factor.getType();
+    final FactorProvider provider = factor.getProvider();
+
+    return (provider.equals(FactorProvider.OKTA) && type == FactorType.PUSH);
   }
 
   /**

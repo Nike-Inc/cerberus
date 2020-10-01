@@ -78,7 +78,9 @@ public class UserAuthenticationController {
 
   @RequestMapping(value = "/mfa_check", method = POST, consumes = APPLICATION_JSON_VALUE)
   public AuthResponse handleMfaCheck(@Valid @RequestBody MfaCheckRequest request) {
-    if (StringUtils.isBlank(request.getOtpToken())) {
+    if (request.isPush()) {
+      return authenticationService.triggerPush(request);
+    } else if (StringUtils.isBlank(request.getOtpToken())) {
       return authenticationService.triggerChallenge(request);
     } else {
       return authenticationService.mfaCheck(request);

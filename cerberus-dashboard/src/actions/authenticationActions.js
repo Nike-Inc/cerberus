@@ -245,7 +245,44 @@ export function triggerCodeChallenge(mfaDeviceId, stateToken) {
                         </div>
                     </div>
                 ));
+                dispatch(resetAuthState());
+            });
+    };
+}
 
+/**
+ * This action triggers a push notification challenge for a user with MFA, if MFA is required
+ * @param mfaDeviceId ID of the MFA security device
+ * @param stateToken Identifying token for the authentication request
+ */
+export function triggerPushChallenge(mfaDeviceId, stateToken) {
+    return function (dispatch) {
+        dispatch(loginMfaChallenge());
+        return axios({
+            method: 'post',
+            url: environmentService.getDomain() + cms.USER_AUTH_MFA_PATH,
+            data: {
+                state_token: stateToken,
+                device_id: mfaDeviceId,
+                is_push: true
+            },
+            timeout: AUTH_ACTION_TIMEOUT
+        })
+            .then(function (response) {
+                handleUserLogin(response, dispatch);
+            })
+            .catch(function ({ response }) {
+                log.error('Failed to finalize MFA login', response);
+
+                dispatch(messengerActions.addNewMessage(
+                    <div className="login-error-msg-container">
+                        <div className="login-error-msg-header">Failed to Login</div>
+                        <div className="login-error-msg-content-wrapper">
+                            <div className="login-error-msg-label">Server Message:</div>
+                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                        </div>
+                    </div>
+                ));
                 dispatch(resetAuthState());
             });
     };

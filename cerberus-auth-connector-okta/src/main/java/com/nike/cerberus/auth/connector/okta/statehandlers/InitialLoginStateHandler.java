@@ -85,7 +85,8 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
                     new AuthMfaDevice()
                         .setId(factor.getId())
                         .setName(getDeviceName(factor))
-                        .setRequiresTrigger(isTriggerRequired(factor))));
+                        .setRequiresTrigger(isTriggerRequired(factor))
+                        .setIsPush(isPush(factor))));
 
     authenticationResponseFuture.complete(authResponse);
   }

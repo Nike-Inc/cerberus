@@ -110,6 +110,44 @@ public class OneLoginAuthConnector implements AuthConnector {
   }
 
   @Override
+  public AuthResponse triggerPush(String stateToken, String deviceId) {
+
+    // TODO Convert to Default API Error once bug in Backstopper that doesn't allow 501 status codes
+    // is fixed.
+    throw ApiException.newBuilder()
+        .withApiErrors(
+            new ApiError() {
+              @Override
+              public String getName() {
+                return "TRIGGER_PUSH_NOT_IMPLEMENTED";
+              }
+
+              @Override
+              public String getErrorCode() {
+                return "99244";
+              }
+
+              @Override
+              public String getMessage() {
+                return "Call to trigger push notification challenge for OneLogin is not implemented.";
+              }
+
+              @Override
+              public Map<String, Object> getMetadata() {
+                return null;
+              }
+
+              @Override
+              public int getHttpStatusCode() {
+                return 501;
+              }
+            })
+        .withExceptionMessage(
+            "Call to trigger push notification challenge for OneLogin is not implemented.")
+        .build();
+  }
+
+  @Override
   public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
     final SessionLoginTokenData sessionLoginToken = verifyFactor(deviceId, stateToken, otpToken);
     final AuthData authData = new AuthData();
