@@ -108,11 +108,9 @@ export default createReducer(initialState, {
         return Object.assign({}, state, {
             selectedDeviceId: payload.selectedDeviceId,
             shouldDisplaySendCodeButton: state.mfaDevices
-                .filter(device => device.id === payload.selectedDeviceId)[0].requires_trigger &&
-                !state.mfaDevices.filter(device => device.id === payload.selectedDeviceId)[0].is_push,
+                .filter(device => device.id === payload.selectedDeviceId)[0].requires_trigger,
             shouldDisplaySendPushButton: state.mfaDevices
-                .filter(device => device.id === payload.selectedDeviceId)[0].requires_trigger &&
-                state.mfaDevices.filter(device => device.id === payload.selectedDeviceId)[0].is_push
+                .filter(device => device.id === payload.selectedDeviceId)[0].is_push
         })
     }
 })
