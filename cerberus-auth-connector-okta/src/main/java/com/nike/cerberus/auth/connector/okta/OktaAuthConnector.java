@@ -111,8 +111,8 @@ public class OktaAuthConnector implements AuthConnector {
 
       AuthResponse authResponse = authResponseFuture.get(45, TimeUnit.SECONDS);
       long startTime = System.currentTimeMillis();
-      while (authResponse.getData().getFactorResult().equals("WAITING") &&
-            System.currentTimeMillis() - startTime <= 55000) {
+      while (authResponse.getData().getFactorResult().equals("WAITING")
+          && System.currentTimeMillis() - startTime <= 55000) {
         sleep(100);
         authResponseFuture = new CompletableFuture<>();
         stateHandler = new PushStateHandler(oktaAuthenticationClient, authResponseFuture);
@@ -120,17 +120,17 @@ public class OktaAuthConnector implements AuthConnector {
         authResponse = authResponseFuture.get(45, TimeUnit.SECONDS);
       }
       String factorResult = authResponse.getData().getFactorResult();
-      if(!factorResult.equals("SUCCESS")) {
+      if (!factorResult.equals("SUCCESS")) {
         if (factorResult.equals("TIMEOUT") || factorResult.equals("WAITING")) {
           throw ApiException.newBuilder()
-                  .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT)
-                  .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT.getMessage())
-                  .build();
+              .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT)
+              .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT.getMessage())
+              .build();
         } else if (factorResult.equals("REJECTED")) {
           throw ApiException.newBuilder()
-                  .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_REJECTED)
-                  .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_REJECTED.getMessage())
-                  .build();
+              .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_REJECTED)
+              .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_REJECTED.getMessage())
+              .build();
         }
       }
       return authResponseFuture.get(45, TimeUnit.SECONDS);

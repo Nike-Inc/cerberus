@@ -16,10 +16,14 @@
 
 package com.nike.cerberus.error;
 
+import static com.nike.backstopper.apierror.ApiErrorConstants.*;
 import static javax.servlet.http.HttpServletResponse.*;
 
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.apierror.ApiErrorBase;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -247,27 +251,21 @@ public enum DefaultApiError implements ApiError {
 
   /** SMS and call challenges have not been implemented for OneLogin MFA */
   TRIGGER_CHALLENGE_NOT_IMPLEMENTED(
-          99246,
-          "Call to trigger sms or call challenge for OneLogin is not implemented.",
-          SC_NOT_IMPLEMENTED),
+      99246,
+      "Call to trigger sms or call challenge for OneLogin is not implemented.",
+      SC_NOT_IMPLEMENTED),
 
   /** Push notification challenges have not been implemented for OneLogin MFA */
   TRIGGER_PUSH_NOT_IMPLEMENTED(
-          99247,
-          "Call to trigger push notification challenge for OneLogin is not implemented.",
-          SC_NOT_IMPLEMENTED),
+      99247,
+      "Call to trigger push notification challenge for OneLogin is not implemented.",
+      SC_NOT_IMPLEMENTED),
 
   /** Push notification challenges have not been implemented for OneLogin MFA */
   OKTA_PUSH_MFA_TIMEOUT(
-          99249,
-          "User did not respond to push notification before timeout expired",
-          SC_UNAUTHORIZED),
+      99248, "User did not respond to push notification before timeout expired", SC_UNAUTHORIZED),
   /** Push notification challenges have not been implemented for OneLogin MFA */
-  OKTA_PUSH_MFA_REJECTED(
-          99249,
-          "Push notification request was rejected by user",
-          SC_UNAUTHORIZED),
-
+  OKTA_PUSH_MFA_REJECTED(99249, "Push notification request was rejected by user", SC_UNAUTHORIZED),
 
   /** Generic not found error. */
   ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),
