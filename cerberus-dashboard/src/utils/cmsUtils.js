@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-export function parseCMSError(response) {
+export function parseCMSError(response, is_push=false) {
     let msg = 'Connection timed out. Check console for full error response.'
 
     try {
-        if (response.data.errors[0].message) {
+        if(is_push && ! response.data.errors[0].message){
+            msg = "Push notification was not approved prior to timing out, please try again"
+        }
+        else if (response.data.errors[0].message) {
             msg = response.data.errors[0].message
         }
     } catch(TypeError) {

@@ -56,7 +56,7 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
       ImmutableMap.of(
           "google-token:software:totp", false,
           "okta-token:software:totp", false,
-          "okta-push", true,
+          "okta-push", false,
           "okta-call", true,
           "okta-sms", true);
 

@@ -204,6 +204,8 @@ public class AuthenticationService {
                   authResponse.getData().getUsername(),
                   authServiceConnector.getGroups(authResponse.getData()),
                   0));
+    } else {
+
     }
     return authResponse;
   }

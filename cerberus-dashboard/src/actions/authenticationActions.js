@@ -279,7 +279,7 @@ export function triggerPushChallenge(mfaDeviceId, stateToken) {
                         <div className="login-error-msg-header">Failed to Login</div>
                         <div className="login-error-msg-content-wrapper">
                             <div className="login-error-msg-label">Server Message:</div>
-                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response)}</div>
+                            <div className="login-error-msg-cms-msg">{cmsUtils.parseCMSError(response, true)}</div>
                         </div>
                     </div>
                 ));
