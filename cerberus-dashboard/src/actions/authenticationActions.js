@@ -152,7 +152,11 @@ export function loginUser(username, password) {
             timeout: AUTH_ACTION_TIMEOUT
         })
             .then(function (response) {
-                handleUserLogin(response, dispatch);
+                if (response.data.status === cms.MFA_REQUIRED_STATUS) {
+                    dispatch(loginMfaRequired(response));
+                } else {
+                    handleUserLogin(response, dispatch);
+                }
             })
             .catch(function ({ response }) {
                 log.error('Failed to login user', response);
@@ -192,12 +196,7 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
             timeout: AUTH_ACTION_TIMEOUT
         })
             .then(function (response) {
-                if(response.data.challenge_correct_answer != null){
-
-                } else {
-                    handleUserLogin(response, dispatch);
-                }
-
+                handleUserLogin(response, dispatch);
             })
             .catch(function ({ response }) {
                 log.error('Failed to finalize MFA login', response);
