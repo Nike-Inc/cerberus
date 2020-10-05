@@ -113,7 +113,11 @@ public class OktaAuthConnector implements AuthConnector {
       long startTime = System.currentTimeMillis();
       while (authResponse.getData().getFactorResult().equals("WAITING")
           && System.currentTimeMillis() - startTime <= 55000) {
+        if(authResponse.getData().getChallengeCorrectAnswer() != null) {
+          return authResponse;
+        }
         sleep(100);
+
         authResponseFuture = new CompletableFuture<>();
         stateHandler = new PushStateHandler(oktaAuthenticationClient, authResponseFuture);
         oktaAuthenticationClient.verifyFactor(deviceId, stateToken, stateHandler);

@@ -31,6 +31,8 @@ public class AuthData {
 
   private String factorResult;
 
+  private Integer challengeCorrectAnswer;
+
   private List<AuthMfaDevice> devices = new LinkedList<>();
 
   private AuthTokenResponse clientToken;
@@ -86,6 +88,15 @@ public class AuthData {
 
   public AuthData setFactorResult(String factorResult) {
     this.factorResult = factorResult;
+    return this;
+  }
+
+  public Integer getChallengeCorrectAnswer() {
+    return challengeCorrectAnswer;
+  }
+
+  public AuthData setChallengeCorrectAnswer(Integer challengeCorrectAnswer) {
+    this.challengeCorrectAnswer = challengeCorrectAnswer;
     return this;
   }
 }

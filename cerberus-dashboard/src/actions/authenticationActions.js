@@ -196,7 +196,12 @@ export function finalizeMfaLogin(otpToken, mfaDeviceId, stateToken) {
             timeout: AUTH_ACTION_TIMEOUT
         })
             .then(function (response) {
-                handleUserLogin(response, dispatch);
+                if(response.data.challenge_correct_answer != null){
+
+                } else {
+                    handleUserLogin(response, dispatch);
+                }
+
             })
             .catch(function ({ response }) {
                 log.error('Failed to finalize MFA login', response);
