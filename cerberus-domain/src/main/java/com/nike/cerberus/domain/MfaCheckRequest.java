@@ -25,6 +25,8 @@ public class MfaCheckRequest {
 
   private String otpToken;
 
+  private boolean isPush;
+
   public String getStateToken() {
     return stateToken;
   }
@@ -49,6 +51,15 @@ public class MfaCheckRequest {
 
   public MfaCheckRequest setOtpToken(String otpToken) {
     this.otpToken = otpToken;
+    return this;
+  }
+
+  public boolean isPush() {
+    return isPush;
+  }
+
+  public MfaCheckRequest setIsPush(boolean isPush) {
+    this.isPush = isPush;
     return this;
   }
 }

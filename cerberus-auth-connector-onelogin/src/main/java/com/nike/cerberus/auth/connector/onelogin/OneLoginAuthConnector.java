@@ -18,12 +18,10 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.*;
 import com.nike.cerberus.error.DefaultApiError;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,35 +75,19 @@ public class OneLoginAuthConnector implements AuthConnector {
     // TODO Convert to Default API Error once bug in Backstopper that doesn't allow 501 status codes
     // is fixed.
     throw ApiException.newBuilder()
-        .withApiErrors(
-            new ApiError() {
-              @Override
-              public String getName() {
-                return "TRIGGER_CHALLENGE_NOT_IMPLEMENTED";
-              }
+        .withApiErrors(DefaultApiError.TRIGGER_CHALLENGE_NOT_IMPLEMENTED)
+        .withExceptionMessage(DefaultApiError.TRIGGER_CHALLENGE_NOT_IMPLEMENTED.getMessage())
+        .build();
+  }
 
-              @Override
-              public String getErrorCode() {
-                return "99244";
-              }
+  @Override
+  public AuthResponse triggerPush(String stateToken, String deviceId) {
 
-              @Override
-              public String getMessage() {
-                return "Call to trigger sms or call challenge for OneLogin is not implemented.";
-              }
-
-              @Override
-              public Map<String, Object> getMetadata() {
-                return null;
-              }
-
-              @Override
-              public int getHttpStatusCode() {
-                return 501;
-              }
-            })
-        .withExceptionMessage(
-            "Call to trigger sms or call challenge for OneLogin is not implemented.")
+    // TODO Convert to Default API Error once bug in Backstopper that doesn't allow 501 status codes
+    // is fixed.
+    throw ApiException.newBuilder()
+        .withApiErrors(DefaultApiError.TRIGGER_PUSH_NOT_IMPLEMENTED)
+        .withExceptionMessage(DefaultApiError.TRIGGER_PUSH_NOT_IMPLEMENTED.getMessage())
         .build();
   }
 

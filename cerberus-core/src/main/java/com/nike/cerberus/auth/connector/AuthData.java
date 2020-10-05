@@ -29,6 +29,8 @@ public class AuthData {
 
   private String stateToken;
 
+  private String factorResult;
+
   private List<AuthMfaDevice> devices = new LinkedList<>();
 
   private AuthTokenResponse clientToken;
@@ -75,6 +77,15 @@ public class AuthData {
 
   public AuthData setClientToken(AuthTokenResponse clientToken) {
     this.clientToken = clientToken;
+    return this;
+  }
+
+  public String getFactorResult() {
+    return factorResult;
+  }
+
+  public AuthData setFactorResult(String factorResult) {
+    this.factorResult = factorResult;
     return this;
   }
 }

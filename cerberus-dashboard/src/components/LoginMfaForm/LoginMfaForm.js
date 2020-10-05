@@ -19,7 +19,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { reduxForm, touch } from 'redux-form';
-import { finalizeMfaLogin, triggerCodeChallenge } from '../../actions/authenticationActions';
+import {finalizeMfaLogin, triggerCodeChallenge, triggerPushChallenge} from '../../actions/authenticationActions';
 import MfaDeviceSelect from '../MfaDeviceSelect/MfaDeviceSelect';
 import './LoginFormMfa.scss';
 
@@ -64,61 +64,74 @@ class LoginMfaForm extends Component {
 
     render() {
         const { fields: { otpToken, mfaDeviceId }, stateToken, handleSubmit, isAuthenticating, isChallengeSent, mfaDevices,
-            dispatch, selectedDeviceId, shouldDisplaySendCodeButton } = this.props;
+            dispatch, selectedDeviceId, shouldDisplaySendCodeButton, shouldDisplaySendPushButton } = this.props;
 
         return (
             <div >
                 <h3 id="mfa-required-header" className="text-color-">MFA is required.</h3>
-                <form id={formName} onSubmit={handleSubmit(data => {
-                    dispatch(finalizeMfaLogin(data.otpToken, data.mfaDeviceId, stateToken));
-                })}>
+                <form id={formName} onSubmit={handleSubmit(data => (shouldDisplaySendPushButton) ?
+                                                            dispatch(triggerPushChallenge(selectedDeviceId, stateToken, shouldDisplaySendPushButton)) :
+                                                            dispatch(finalizeMfaLogin(data.otpToken, data.mfaDeviceId, stateToken)))}>
                     <div>
-
                         <label className='ncss-label'>MFA Devices:</label>
                         <div id='top-section'>
                             <MfaDeviceSelect {...mfaDeviceId}
-                                dispatch={dispatch}
-                                mfaDevices={mfaDevices}
-                                handleBeingTouched={() => { this.handleMfaDeviceTouch(formName); }} />
+                                             dispatch={dispatch}
+                                             mfaDevices={mfaDevices}
+                                             handleBeingTouched={() => { this.handleMfaDeviceTouch(formName); }} />
                         </div>
 
                         <div id='otp-div' className='ncss-form-group'>
                             <div className={((otpToken.touched && otpToken.error) ? 'ncss-input-container error' : 'ncss-input-container')}>
-
-                                <label className='ncss-label'>One-Time Passcode:</label>
+                                {!shouldDisplaySendPushButton &&
+                                    <label className='ncss-label'>One-Time Passcode:</label>
+                                }
 
                                 <div id='otp-input-row'>
-                                    {shouldDisplaySendCodeButton &&
-                                        <button id={isChallengeSent ? 'sent-mfa-btn' : 'send-code-mfa-btn'} type='button' className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
 
+                                    {shouldDisplaySendCodeButton &&
+                                    <button id={isChallengeSent ? 'sent-mfa-btn' : 'send-code-mfa-btn'} type='button' className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
                                             onClick={function () {
-                                                dispatch(triggerCodeChallenge(selectedDeviceId, stateToken));
+                                                dispatch(triggerCodeChallenge(selectedDeviceId, stateToken, shouldDisplaySendPushButton));
                                             }
                                             }
                                             disabled={isChallengeSent}
-                                        >{isChallengeSent ? "Sent" : "Send Code"}</button>
+                                    >{isChallengeSent ? "Sent" : "Send Code"}</button>
                                     }
-
+                                    {!shouldDisplaySendPushButton &&
                                     <input type='text'
-                                        className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm r'
-                                        placeholder='Please enter your OTP token'
-                                        autoComplete="off"
-                                        autoFocus={true}
-                                        {...otpToken} />
+                                           className='ncss-input pt2-sm pr4-sm pb2-sm pl4-sm r'
+                                           placeholder='Please enter your OTP token'
+                                           autoComplete="off"
+                                           autoFocus={true}
+                                           {...otpToken} />
+                                    }
                                 </div>
                                 {otpToken.touched && otpToken.error && <div className='ncss-error-msg'>{otpToken.error}</div>}
                             </div>
                         </div>
-
                     </div>
-                    <div id='login-form-submit-container'>
-                        <div id="login-help">
-                            <a target="_blank" href="/dashboard/help/index.html">Need help?</a>
-                        </div>
-                        <button id='login-mfa-btn'
-                            type='submit'
-                            className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
-                            disabled={isAuthenticating}>Login</button>
+                        <div id='login-form-submit-container'>
+                            <div id="login-help">
+                                <a target="_blank" href="/dashboard/help/index.html">Need help?</a>
+                            </div>
+                            {shouldDisplaySendPushButton &&
+                                <button id={isChallengeSent ? 'sent-mfa-btn' : 'send-code-mfa-btn'}
+                                        type='submit'
+                                        className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                                        onClick={function () {
+                                                dispatch(triggerPushChallenge(selectedDeviceId, stateToken));
+                                            }
+                                        }
+                                        disabled={isChallengeSent}
+                                >{isChallengeSent ? "Push Notification Sent" : "Send Push Notification"}</button>
+                            }
+                            {!shouldDisplaySendPushButton &&
+                            <button id='login-mfa-btn'
+                                    type='submit'
+                                    className='ncss-btn-offwhite ncss-brand pt3-sm pr5-sm pb3-sm pl5-sm pt2-lg pb2-lg u-uppercase'
+                                    disabled={isAuthenticating}>Login</button>
+                            }
                     </div>
                 </form>
             </div>
@@ -129,6 +142,7 @@ class LoginMfaForm extends Component {
 
 const mapStateToProps = state => ({
     shouldDisplaySendCodeButton: state.auth.shouldDisplaySendCodeButton,
+    shouldDisplaySendPushButton: state.auth.shouldDisplaySendPushButton,
     selectedDeviceId: state.auth.selectedDeviceId,
     mfaDevices: state.auth.mfaDevices,
     stateToken: state.auth.stateToken,

@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import static java.lang.Thread.sleep;
+
 import com.google.common.base.Preconditions;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthConnector;
@@ -23,6 +25,7 @@ import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHandler;
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
+import com.nike.cerberus.auth.connector.okta.statehandlers.PushStateHandler;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
@@ -85,6 +88,52 @@ public class OktaAuthConnector implements AuthConnector {
     try {
       oktaAuthenticationClient.challengeFactor(deviceId, stateToken, stateHandler);
       return authResponse.get(45, TimeUnit.SECONDS);
+    } catch (ApiException e) {
+      throw e;
+    } catch (Exception e) {
+      throw ApiException.newBuilder()
+          .withExceptionCause(e)
+          .withApiErrors(DefaultApiError.AUTH_RESPONSE_WAIT_FAILED)
+          .withExceptionMessage("Failed to trigger challenge due to timeout. Please try again.")
+          .build();
+    }
+  }
+
+  /** Triggers challenge for SMS or Call factors using Okta Auth SDK. */
+  public AuthResponse triggerPush(String stateToken, String deviceId) {
+
+    CompletableFuture<AuthResponse> authResponseFuture = new CompletableFuture<>();
+    PushStateHandler stateHandler =
+        new PushStateHandler(oktaAuthenticationClient, authResponseFuture);
+
+    try {
+      oktaAuthenticationClient.verifyFactor(deviceId, stateToken, stateHandler);
+
+      AuthResponse authResponse = authResponseFuture.get(45, TimeUnit.SECONDS);
+      long startTime = System.currentTimeMillis();
+      while (authResponse.getData().getFactorResult().equals("WAITING")
+          && System.currentTimeMillis() - startTime <= 55000) {
+        sleep(100);
+        authResponseFuture = new CompletableFuture<>();
+        stateHandler = new PushStateHandler(oktaAuthenticationClient, authResponseFuture);
+        oktaAuthenticationClient.verifyFactor(deviceId, stateToken, stateHandler);
+        authResponse = authResponseFuture.get(45, TimeUnit.SECONDS);
+      }
+      String factorResult = authResponse.getData().getFactorResult();
+      if (!factorResult.equals("SUCCESS")) {
+        if (factorResult.equals("TIMEOUT") || factorResult.equals("WAITING")) {
+          throw ApiException.newBuilder()
+              .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT)
+              .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_TIMEOUT.getMessage())
+              .build();
+        } else if (factorResult.equals("REJECTED")) {
+          throw ApiException.newBuilder()
+              .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_REJECTED)
+              .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_REJECTED.getMessage())
+              .build();
+        }
+      }
+      return authResponseFuture.get(45, TimeUnit.SECONDS);
     } catch (ApiException e) {
       throw e;
     } catch (Exception e) {

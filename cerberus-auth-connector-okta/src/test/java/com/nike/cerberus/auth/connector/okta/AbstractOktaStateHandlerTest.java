@@ -29,12 +29,11 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.AbstractOktaStateHand
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultFactor;
 import com.okta.authn.sdk.resource.AuthenticationResponse;
+import com.okta.authn.sdk.resource.FactorProvider;
+import com.okta.authn.sdk.resource.FactorType;
 import com.okta.authn.sdk.resource.User;
-import com.okta.sdk.resource.user.factor.FactorProvider;
-import com.okta.sdk.resource.user.factor.FactorType;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import junit.framework.TestCase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -158,32 +157,6 @@ public class AbstractOktaStateHandlerTest {
   public void getDeviceNameFailsNullFactor() {
 
     this.abstractOktaStateHandler.getDeviceName(null);
-  }
-
-  @Test
-  public void isSupportedFactorFalse() {
-
-    DefaultFactor factor = mock(DefaultFactor.class);
-    when(factor.getType()).thenReturn(FactorType.PUSH);
-    when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
-
-    boolean expected = false;
-    boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
-
-    TestCase.assertEquals(expected, actual);
-  }
-
-  @Test
-  public void isSupportedFactorTrue() {
-
-    DefaultFactor factor = mock(DefaultFactor.class);
-    when(factor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
-    when(factor.getProvider()).thenReturn(FactorProvider.OKTA);
-
-    boolean expected = true;
-    boolean actual = abstractOktaStateHandler.isSupportedFactor(factor);
-
-    TestCase.assertEquals(expected, actual);
   }
 
   @Test

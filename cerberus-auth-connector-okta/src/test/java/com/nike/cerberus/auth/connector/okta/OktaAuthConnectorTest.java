@@ -202,7 +202,7 @@ public class OktaAuthConnectorTest {
               return null;
             })
         .when(client)
-        .verifyFactor(any(), any(), any());
+        .verifyFactor(anyString(), isA(DefaultVerifyPassCodeFactorRequest.class), any());
 
     // do the call
     AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
@@ -238,7 +238,7 @@ public class OktaAuthConnectorTest {
               return null;
             })
         .when(client)
-        .verifyFactor(any(), any(), any());
+        .verifyFactor(any(), isA(DefaultVerifyPassCodeFactorRequest.class), any());
 
     // do the call
     AuthResponse actualResponse = this.oktaAuthConnector.mfaCheck(stateToken, deviceId, otpToken);
