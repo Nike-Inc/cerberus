@@ -29,6 +29,7 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.PushStateHandler;
 import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
+import com.okta.authn.sdk.http.RequestContext;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
 import com.okta.sdk.models.usergroups.UserGroup;
 import java.util.HashSet;
@@ -100,20 +101,23 @@ public class OktaAuthConnector implements AuthConnector {
   }
 
   /** Triggers challenge for SMS or Call factors using Okta Auth SDK. */
-  public AuthResponse triggerPush(String stateToken, String deviceId) {
+  public AuthResponse triggerPush(String stateToken, String deviceId, String userIp) {
 
     CompletableFuture<AuthResponse> authResponseFuture = new CompletableFuture<>();
+    RequestContext context = new RequestContext();
     PushStateHandler stateHandler =
         new PushStateHandler(oktaAuthenticationClient, authResponseFuture);
 
+    context.addHeader("X-Forwarded-For", userIp);
+
     try {
-      oktaAuthenticationClient.verifyFactor(deviceId, stateToken, stateHandler);
+      oktaAuthenticationClient.verifyFactor(deviceId, stateToken, context, stateHandler);
 
       AuthResponse authResponse = authResponseFuture.get(45, TimeUnit.SECONDS);
       long startTime = System.currentTimeMillis();
       while (authResponse.getData().getFactorResult().equals("WAITING")
           && System.currentTimeMillis() - startTime <= 55000) {
-        if(authResponse.getData().getChallengeCorrectAnswer() != null) {
+        if (authResponse.getData().getChallengeCorrectAnswer() != null) {
           return authResponse;
         }
         sleep(100);
@@ -133,7 +137,8 @@ public class OktaAuthConnector implements AuthConnector {
         } else if (factorResult.equals("REJECTED")) {
           throw ApiException.newBuilder()
               .withApiErrors(DefaultApiError.OKTA_PUSH_MFA_REJECTED)
-              .withExceptionMessage(DefaultApiError.OKTA_PUSH_MFA_REJECTED.getMessage())
+              .withExceptionMessage(
+                  DefaultApiError.OKTA_PUSH_MFA_REJECTED.getMessage() + "ip= " + userIp)
               .build();
         }
       }

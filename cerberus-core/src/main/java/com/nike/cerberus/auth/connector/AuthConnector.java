@@ -24,7 +24,7 @@ public interface AuthConnector {
 
   AuthResponse triggerChallenge(final String stateToken, final String deviceId);
 
-  AuthResponse triggerPush(final String stateToken, final String deviceId);
+  AuthResponse triggerPush(final String stateToken, final String deviceId, String userIp);
 
   AuthResponse mfaCheck(final String stateToken, final String deviceId, final String otpToken);
 

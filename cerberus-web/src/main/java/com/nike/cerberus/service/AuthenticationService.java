@@ -192,10 +192,10 @@ public class AuthenticationService {
    * @param challengeRequest Request containing the MFA token details with no passcode
    * @return The auth response
    */
-  public AuthResponse triggerPush(final MfaCheckRequest challengeRequest) {
+  public AuthResponse triggerPush(final MfaCheckRequest challengeRequest, String userIp) {
     final AuthResponse authResponse =
         authServiceConnector.triggerPush(
-            challengeRequest.getStateToken(), challengeRequest.getDeviceId());
+            challengeRequest.getStateToken(), challengeRequest.getDeviceId(), userIp);
     if (authResponse.getStatus() == AuthStatus.SUCCESS) {
       authResponse
           .getData()

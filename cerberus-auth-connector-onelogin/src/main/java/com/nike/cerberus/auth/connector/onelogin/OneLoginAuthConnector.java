@@ -81,7 +81,7 @@ public class OneLoginAuthConnector implements AuthConnector {
   }
 
   @Override
-  public AuthResponse triggerPush(String stateToken, String deviceId) {
+  public AuthResponse triggerPush(String stateToken, String deviceId, String userIp) {
 
     // TODO Convert to Default API Error once bug in Backstopper that doesn't allow 501 status codes
     // is fixed.

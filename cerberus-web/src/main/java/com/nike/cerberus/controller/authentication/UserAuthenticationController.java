@@ -29,6 +29,7 @@ import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import java.nio.charset.Charset;
+import javax.servlet.ServletRequest;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -77,13 +78,14 @@ public class UserAuthenticationController {
   }
 
   @RequestMapping(value = "/mfa_check", method = POST, consumes = APPLICATION_JSON_VALUE)
-  public AuthResponse handleMfaCheck(@Valid @RequestBody MfaCheckRequest request) {
-    if (request.isPush()) {
-      return authenticationService.triggerPush(request);
-    } else if (StringUtils.isBlank(request.getOtpToken())) {
-      return authenticationService.triggerChallenge(request);
+  public AuthResponse handleMfaCheck(
+      @Valid @RequestBody MfaCheckRequest mfaCheckRequest, ServletRequest request) {
+    if (mfaCheckRequest.isPush()) {
+      return authenticationService.triggerPush(mfaCheckRequest, request.getRemoteAddr());
+    } else if (StringUtils.isBlank(mfaCheckRequest.getOtpToken())) {
+      return authenticationService.triggerChallenge(mfaCheckRequest);
     } else {
-      return authenticationService.mfaCheck(request);
+      return authenticationService.mfaCheck(mfaCheckRequest);
     }
   }
 
