@@ -269,7 +269,7 @@ export function triggerPushChallenge(mfaDeviceId, stateToken) {
             timeout: AUTH_ACTION_TIMEOUT
         })
             .then(function (response) {
-                if(response.data.challenge_correct_answer != null){
+                if(response.data.data.challenge_correct_answer != null){
 
                 } else {
                     handleUserLogin(response, dispatch);
