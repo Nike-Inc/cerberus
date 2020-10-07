@@ -343,8 +343,7 @@ public class AuthenticationService {
     } catch (JsonProcessingException e) {
       String msg = "Failed to write IAM role authentication response as JSON for encrypting.";
       throw ApiException.newBuilder()
-          .withApiErrors(
-              CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
+          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
           .withExceptionCause(e)
           .withExceptionMessage(msg)
           .build();
@@ -451,8 +450,7 @@ public class AuthenticationService {
     } catch (JsonProcessingException e) {
       String msg = "Failed to write IAM role authentication response as JSON for encrypting.";
       throw ApiException.newBuilder()
-          .withApiErrors(
-              CustomApiError.createCustomApiError(DefaultApiError.INTERNAL_SERVER_ERROR, msg))
+          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
           .withExceptionCause(e)
           .withExceptionMessage(msg)
           .build();
