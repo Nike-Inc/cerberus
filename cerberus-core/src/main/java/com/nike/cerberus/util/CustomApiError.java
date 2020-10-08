@@ -19,13 +19,12 @@ package com.nike.cerberus.util;
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.apierror.ApiErrorBase;
 import com.nike.cerberus.error.DefaultApiError;
-import java.util.UUID;
 
 public final class CustomApiError {
 
   public static ApiError createCustomApiError(DefaultApiError error, final String message) {
     return new ApiErrorBase(
-        "custom-error-wrapper-" + UUID.randomUUID().toString(),
+        error.getName(),
         error.getErrorCode(),
         error.getMessage() + " " + message,
         error.getHttpStatusCode());

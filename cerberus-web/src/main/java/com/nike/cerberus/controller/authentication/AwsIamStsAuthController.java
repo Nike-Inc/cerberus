@@ -80,7 +80,7 @@ public class AwsIamStsAuthController {
       authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
     } catch (Exception e) {
       auditLoggingFilterDetails.setAction("Failed to authenticate with AWS IAM STS Auth");
-      throw e; // TODO, throw a Backstopper error here
+      throw e;
     }
 
     auditLoggingFilterDetails.setAction("Successfully authenticated with AWS IAM STS Auth");
