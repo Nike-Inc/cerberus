@@ -23,7 +23,7 @@ repositories {
 
 configurations.all {
   resolutionStrategy {
-    force 'org.apache.ant:ant:1.10.8'
+    force 'org.apache.ant:ant:1.10.9'
   }
 }
 dependencies {
