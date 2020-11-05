@@ -23,3 +23,8 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
+      - name: Archive root build directory
+        uses: actions/upload-artifact@v2
+        with:
+          name: rootBuild
+          path: build
