@@ -146,4 +146,11 @@
         <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
         <cve>CVE-2020-11022</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: testng-7.3.0.jar: jquery-3.4.1.min.js
+   ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/jquery@.*$</packageUrl>
+        <cve>CVE-2020-11023</cve>
+    </suppress>
 </suppressions>
