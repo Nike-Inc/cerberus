@@ -5,7 +5,8 @@ name: Java CI with Gradle
 
 on:
   push:
-    -feat/try_github_actions
+    branches:
+      - feat/try_github_actions
 
 jobs:
   build:
