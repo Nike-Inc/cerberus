@@ -20,12 +20,12 @@ import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.10',
-      resilience4j: '1.1.0',
-      awsSdkVersion: '1.11.847',
-      kork: '6.22.1',
-      guava: '28.1-jre',
-      springBoot: springBootVersion,
+            lombok: '1.18.10',
+            resilience4j: '1.1.0',
+            awsSdkVersion: '1.11.847',
+            kork: '6.22.1',
+            guava: '28.1-jre',
+            springBoot: springBootVersion,
     ]
   }
   ext['groovy.version'] = '2.5.12'
@@ -37,6 +37,7 @@ buildscript {
     maven {
       url "https://plugins.gradle.org/m2/"
     }
+    google()
   }
 
   dependencies {
@@ -49,7 +50,7 @@ buildscript {
 
 plugins {
   id "io.spring.dependency-management" version "1.0.9.RELEASE"
-  id "com.github.kt3k.coveralls" version "2.9.0"
+  id "com.github.nbaztec.coveralls-jacoco" version "1.2.4"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -81,6 +82,7 @@ allprojects {
   repositories {
     jcenter()
     mavenCentral()
+    google()
   }
 
   jacoco {
@@ -161,7 +163,7 @@ subprojects {
 }
 
 List<String> blackList = [
-  'cerberus-api-tests'
+        'cerberus-api-tests'
 ]
 def publishedProjects = subprojects.findAll { !blackList.contains(it.path) }
 
@@ -189,11 +191,9 @@ task aggregatedJacocoReport(type: JacocoReport, group: 'Coverage reports') {
   }
 }
 
-coveralls {
-  sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
-  jacocoReportPath = "${buildDir}/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml"
-  saveAsFile = true
-  sendToCoveralls = false
+coverallsJacoco {
+  reportSourceSets = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
+  reportPath = "${buildDir}/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml"
 }
 
 configurations {
@@ -229,10 +229,10 @@ task aggregatedJunitHtml(type: TestReport) {
 }
 
 task generateAggregatedReports(dependsOn: [
-  aggregatedJunitXml,
-  aggregatedJunitHtml,
-  aggregatedJacocoReport,
-  dependencyCheckAggregate
+        aggregatedJunitXml,
+        aggregatedJunitHtml,
+        aggregatedJacocoReport,
+        dependencyCheckAggregate
 ]) {
   doLast {
     println "Finished generating aggregated reports"
