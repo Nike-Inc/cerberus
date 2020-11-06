@@ -23,12 +23,6 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
-      - name: Generate Coveralls Report
-        run: ./gradlew coveralls
-        env:
-          CI_NAME: github-actions
-          CI_BUILD_NUMBER: ${GITHUB_RUN_NUMBER}
-          CI_BRANCH: ${GITHUB_REF)
       - name: Archive root build directory
         uses: actions/upload-artifact@v2
         with:
