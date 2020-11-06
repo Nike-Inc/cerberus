@@ -34,10 +34,10 @@ bintray {
     name = project.name
     userOrg = 'nike'
     licenses = ['Apache-2.0']
-    websiteUrl = 'https://github.com/Nike-Inc/cerberus'
-    issueTrackerUrl = 'https://github.com/Nike-Inc/cerberus/issues'
-    vcsUrl = 'https://github.com/Nike-Inc/cerberus.git'
-    githubRepo = 'Nike-Inc/cerberus'
+    websiteUrl = 'https://github.com/tunderwood/cerberus'
+    issueTrackerUrl = 'https://github.com/tunderwood/cerberus/issues'
+    vcsUrl = 'https://github.com/tunderwood/cerberus.git'
+    githubRepo = 'tunderwood/cerberus'
 
     version {
       name = bintrayVersion
