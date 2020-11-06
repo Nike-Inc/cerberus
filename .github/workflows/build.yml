@@ -22,7 +22,7 @@ jobs:
       - name: test and publish coverage
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: ./gradlew test jacocoTestReport coverallsJacoco
+        run: ./gradlew coverallsJacoco
       - name: Archive root build directory
         uses: actions/upload-artifact@v2
         with:
