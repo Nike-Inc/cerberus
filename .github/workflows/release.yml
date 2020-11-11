@@ -37,8 +37,8 @@ jobs:
           file: cerberus-web/build/libs/cerberus.jar
           tag: ${{ github.ref }}
       - name: Upload binaries to release
-          uses: svenstaro/upload-release-action@v2
-          with:
-            repo_token: ${{ secrets.GITHUB_TOKEN }}
-            file: cerberus-web/build/libs/cerberus.jar.MD5
-            tag: ${{ github.ref }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: cerberus-web/build/libs/cerberus.jar.MD5
+          tag: ${{ github.ref }}
