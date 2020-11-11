@@ -6,7 +6,7 @@ name: Build
 on:
   push:
     branches:
-      - *
+      - '*'
   pull-request:
     branches:
       - master
