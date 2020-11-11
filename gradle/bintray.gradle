@@ -30,9 +30,9 @@ bintray {
   publications = ['jar']
 
   pkg {
-    repo = 'maven'
+    repo = 'cerberus-tunde1'
     name = project.name
-    userOrg = 'nike'
+    userOrg = 'tunderwood'
     licenses = ['Apache-2.0']
     websiteUrl = 'https://github.com/tunderwood/cerberus'
     issueTrackerUrl = 'https://github.com/tunderwood/cerberus/issues'
