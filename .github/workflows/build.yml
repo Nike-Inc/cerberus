@@ -25,11 +25,11 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
-      - name: test and publish coverage
+      - name: Test and publish coverage to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew coverallsJacoco
-      - name: Slack Notification on Master
+      - name: Slack notification when master build fails
         if: ${{ failure() && github.ref == 'refs/heads/master'}}
         uses: rtCamp/action-slack-notify@v2.1.0
         env:

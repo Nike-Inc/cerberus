@@ -21,7 +21,7 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
-      - name: test and publish coverage
+      - name: Test and publish coverage to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew coverallsJacoco
@@ -30,19 +30,19 @@ jobs:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY}}
         run: ./gradlew bintrayUpload
-      - name: Upload binaries to release
+      - name: Upload binary to GitHub release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: cerberus-web/build/libs/cerberus.jar
           tag: ${{ github.ref }}
-      - name: Upload binaries to release
+      - name: Upload checksum to GitHub release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: cerberus-web/build/libs/cerberus.jar.MD5
           tag: ${{ github.ref }}
-      - name: Slack Notification on Master
+      - name: Slack notification when release fails
         if: ${{ failure() }}
         uses: rtCamp/action-slack-notify@v2.1.0
         env:
