@@ -1,6 +1,6 @@
 # Cerberus
 
-![Build](https://github.com/Nike-Inc/cerberus/workflows/Build/badge.svg?branch=chore%2FGH_Actions)
+![][gh actions img]
 [![][coveralls img]][coveralls]
 [![][license img]][license]
 
@@ -147,8 +147,7 @@ server.ssl:
 
 Cerberus Management Service is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-[travis]:https://travis-ci.org/Nike-Inc/cerberus
-[travis img]:https://api.travis-ci.org/Nike-Inc/cerberus.svg?branch=master
+[gh actions img]:https://github.com/Nike-Inc/cerberus/workflows/Build/badge.svg?branch=chore%2FGH_Actions
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
