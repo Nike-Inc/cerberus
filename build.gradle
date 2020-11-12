@@ -20,12 +20,12 @@ import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 buildscript {
   ext {
     versions = [
-            lombok: '1.18.10',
-            resilience4j: '1.1.0',
-            awsSdkVersion: '1.11.847',
-            kork: '6.22.1',
-            guava: '28.1-jre',
-            springBoot: springBootVersion,
+      lombok: '1.18.10',
+      resilience4j: '1.1.0',
+      awsSdkVersion: '1.11.847',
+      kork: '6.22.1',
+      guava: '28.1-jre',
+      springBoot: springBootVersion,
     ]
   }
   ext['groovy.version'] = '2.5.12'

@@ -1,6 +1,6 @@
 # Cerberus
 
-[![][travis img]][travis]
+![Build](https://github.com/Nike-Inc/cerberus/workflows/Build/badge.svg?branch=chore%2FGH_Actions)
 [![][coveralls img]][coveralls]
 [![][license img]][license]
 
