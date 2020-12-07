@@ -38,5 +38,5 @@ jobs:
           SLACK_MESSAGE: 'Cerberus main build has failed :build-failed:'
           SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
           SLACK_TITLE: Cerberus Build Failure Notification
-          SLACK_COLOR: #FF0000
+          SLACK_COLOR: '#FF0000'
           SLACK_USERNAME: GitHub Actions
