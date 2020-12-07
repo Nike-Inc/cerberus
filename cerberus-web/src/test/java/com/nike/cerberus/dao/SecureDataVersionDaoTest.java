@@ -27,6 +27,7 @@ import com.nike.cerberus.domain.SecureDataType;
 import com.nike.cerberus.mapper.SecureDataVersionMapper;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.UuidSupplier;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -39,14 +40,14 @@ import org.mockito.Mock;
 
 public class SecureDataVersionDaoTest {
 
-  private final String versionId = "version id";
-  private final String sdbId = "sdb id";
-  private final String path = "path";
-  private final String encryptedBlob = "encrypted blob";
+  private static final String versionId = "version id";
+  private static final String sdbId = "sdb id";
+  private static final String path = "path";
+  private static final String encryptedBlob = "encrypted blob";
   private final SecureDataVersionRecord.SecretsAction action =
       SecureDataVersionRecord.SecretsAction.UPDATE;
-  private final String actionPrincipal = "system";
-  private final String versionCreatedBy = "system";
+  private static final String actionPrincipal = "system";
+  private static final String versionCreatedBy = "system";
   private final OffsetDateTime actionTs = OffsetDateTime.now(ZoneId.of("UTC"));
   private final OffsetDateTime versionCreatedTs = actionTs;
 
@@ -56,7 +57,7 @@ public class SecureDataVersionDaoTest {
           .setSdboxId(sdbId)
           .setAction(action.name())
           .setPath(path)
-          .setEncryptedBlob(encryptedBlob.getBytes())
+          .setEncryptedBlob(encryptedBlob.getBytes(Charset.forName("UTF-8")))
           .setVersionCreatedBy(versionCreatedBy)
           .setActionPrincipal(actionPrincipal)
           .setVersionCreatedTs(versionCreatedTs)

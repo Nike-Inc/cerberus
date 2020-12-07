@@ -25,6 +25,7 @@ import com.nike.cerberus.dao.SecureDataVersionDao;
 import com.nike.cerberus.domain.SecureDataVersionSummary;
 import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.record.SecureDataVersionRecord;
+import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class SecureDataVersionServiceTest {
     SecureDataVersionRecord record =
         new SecureDataVersionRecord()
             .setId(versionId)
-            .setEncryptedBlob("encrypted blob".getBytes())
+            .setEncryptedBlob("encrypted blob".getBytes(Charset.forName("UTF-8")))
             .setActionPrincipal(actionPrincipal)
             .setSdboxId(sdbId)
             .setActionTs(actionTs)

@@ -76,13 +76,15 @@ dependencies {
   testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.12.0"
 
   // Integration Test Deps
-  integrationTestCompile sourceSets.main.output
-  integrationTestCompile configurations.testImplementation
-  integrationTestCompile sourceSets.test.output
-  integrationTestRuntime configurations.testRuntime
+  integrationTestImplementation sourceSets.main.output
+  integrationTestImplementation sourceSets.test.output
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+  integrationTestImplementation 'io.rest-assured:rest-assured:4.3.2'
+}
+configurations{
+  integrationTestImplementation.extendsFrom(testImplementation)
+  integrationTestRuntime.extendsFrom(testRuntime)
 }
 
 jar {
@@ -90,5 +92,5 @@ jar {
 }
 
 bootJar {
-  archiveName = 'cerberus.jar'
+  archiveFileName = 'cerberus.jar'
 }

@@ -32,13 +32,13 @@ import org.junit.Test;
 
 public class RoleDaoTest {
 
-  private final String roleId = "ROLE_ID";
+  private static final String roleId = "ROLE_ID";
 
-  private final String name = "NAME";
+  private static final String name = "NAME";
 
-  private final String createdBy = "system";
+  private static final String createdBy = "system";
 
-  private final String lastUpdatedBy = "system";
+  private static final String lastUpdatedBy = "system";
 
   private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 

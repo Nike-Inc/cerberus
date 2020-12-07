@@ -34,25 +34,25 @@ import org.junit.Test;
 
 public class AwsIamRoleDaoTest {
 
-  private final String awsIamRoleArn = "IAM_ROLE_ARN";
+  private static final String awsIamRoleArn = "IAM_ROLE_ARN";
 
-  private final String awsRegion = "us-west-2";
+  private static final String awsRegion = "us-west-2";
 
-  private final String safeDepositBoxId = "SDB_ID";
+  private static final String safeDepositBoxId = "SDB_ID";
 
-  private final String roleId = "ROLE_ID";
+  private static final String roleId = "ROLE_ID";
 
-  private final String iamRoleId = "IAM_ROLE_ID";
+  private static final String iamRoleId = "IAM_ROLE_ID";
 
-  private final String iamRolePermissionId = "IAM_ROLE_PERMISSION_ID";
+  private static final String iamRolePermissionId = "IAM_ROLE_PERMISSION_ID";
 
-  private final String iamRoleKmsKeyId = "IAM_ROLE_KMS_KEY_ID";
+  private static final String iamRoleKmsKeyId = "IAM_ROLE_KMS_KEY_ID";
 
-  private final String awsKmsKeyId = "arn:aws:kms:us-west-2:ACCOUNT_ID:key/GUID";
+  private static final String awsKmsKeyId = "arn:aws:kms:us-west-2:ACCOUNT_ID:key/GUID";
 
-  private final String createdBy = "system";
+  private static final String createdBy = "system";
 
-  private final String lastUpdatedBy = "system";
+  private static final String lastUpdatedBy = "system";
 
   private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
