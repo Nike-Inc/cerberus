@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import com.github.spotbugs.SpotBugsTask
+
+import com.github.spotbugs.snom.SpotBugsReport
 import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 
 buildscript {
@@ -42,7 +43,6 @@ buildscript {
 
   dependencies {
     classpath "org.owasp:dependency-check-gradle:5.3.2"
-    classpath "com.github.spotbugs:spotbugs-gradle-plugin:3.0.0"
     classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.1.2'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
   }
@@ -51,6 +51,7 @@ buildscript {
 plugins {
   id "io.spring.dependency-management" version "1.0.9.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.4"
+  id "com.github.spotbugs" version "4.6.0"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -64,20 +65,28 @@ allprojects {
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
   }
 
   spotbugs {
-    toolVersion = '4.0.3'
-    sourceSets = [ sourceSets.main ]
+    toolVersion = '4.2.0'
     excludeFilter = file("${rootProject.projectDir}/findbugs-supressions.xml")
   }
 
-  // To generate an HTML report instead of XML
-  tasks.withType(SpotBugsTask) {
-    reports.xml.enabled = false
-    reports.html.enabled = true
+  // Example to configure HTML report
+  spotbugsMain {
+    reports(({
+      html {
+        enabled = true
+        destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+        stylesheet = 'fancy-hist.xsl'
+      }
+      xml {
+        enabled = false
+      }
+    } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
   }
+
 
   repositories {
     jcenter()
