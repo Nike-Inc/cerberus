@@ -46,6 +46,7 @@ import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -388,6 +389,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void test_that_getAssociatedSafeDepositBoxes_checks_assumed_role_and_its_base_iam_role() {
     String assumedRoleArn = "arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary";
     String iamRoleArn = "arn:aws:iam::123456789012:role/Accounting-Role";
@@ -415,6 +417,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void test_that_getAssociatedSafeDepositBoxes_checks_iam_role() {
     String iamRoleArn = "arn:aws:iam::123456789012:role/Accounting-Role";
     String rootArn = "arn:aws:iam::123456789012:root";
