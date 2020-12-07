@@ -160,7 +160,7 @@ subprojects {
 
   dependencies {
     // Lombok
-    compileClasspath "org.projectlombok:lombok:${versions.lombok}"
+    compileOnly "org.projectlombok:lombok:${versions.lombok}"
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
