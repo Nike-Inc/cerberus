@@ -73,7 +73,6 @@ allprojects {
     excludeFilter = file("${rootProject.projectDir}/findbugs-supressions.xml")
   }
 
-  // Example to configure HTML report
   spotbugsMain {
     reports(({
       html {
@@ -86,6 +85,20 @@ allprojects {
       }
     } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
   }
+
+  spotbugsTest {
+    reports(({
+      html {
+        enabled = true
+        destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+        stylesheet = 'fancy-hist.xsl'
+      }
+      xml {
+        enabled = false
+      }
+    } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
+  }
+
 
 
   repositories {
@@ -147,7 +160,7 @@ subprojects {
 
   dependencies {
     // Lombok
-    compileOnly "org.projectlombok:lombok:${versions.lombok}"
+    compileClasspath "org.projectlombok:lombok:${versions.lombok}"
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps

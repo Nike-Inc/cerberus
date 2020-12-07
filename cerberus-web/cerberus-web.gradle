@@ -77,12 +77,14 @@ dependencies {
 
   // Integration Test Deps
   integrationTestImplementation sourceSets.main.output
-  integrationTestImplementation configurations.testImplementation
   integrationTestImplementation sourceSets.test.output
-  integrationTestRuntime configurations.testRuntime
-  integrationTestCompileOnly 'org.projectlombok:lombok'
+  integrationTestCompileClasspath 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+  integrationTestImplementation 'io.rest-assured:rest-assured:4.3.2'
+}
+configurations{
+  integrationTestImplementation.extendsFrom(testImplementation)
+  integrationTestRuntime.extendsFrom(testRuntime)
 }
 
 jar {

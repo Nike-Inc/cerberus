@@ -35,33 +35,33 @@ import org.junit.Test;
 
 public class SafeDepositBoxDaoTest {
 
-  private final String safeDepositBoxId = "SDB_ID";
+  private static final String safeDepositBoxId = "SDB_ID";
 
-  private final String categoryId = "CATEGORY_ID";
+  private static final String categoryId = "CATEGORY_ID";
 
-  private final String name = "SDB_NAME";
+  private static final String name = "SDB_NAME";
 
-  private final String description = "DESCRIPTION";
+  private static final String description = "DESCRIPTION";
 
-  private final String path = "PATH";
+  private static final String path = "PATH";
 
-  private final String createdBy = "system";
+  private static final String createdBy = "system";
 
-  private final String lastUpdatedBy = "system";
+  private static final String lastUpdatedBy = "system";
 
   private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
   private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
-  private final String roleName = "ROLE_NAME";
+  private static final String roleName = "ROLE_NAME";
 
-  private final String userGroup = "USER_GROUP";
+  private static final String userGroup = "USER_GROUP";
 
   private final Set<String> userGroupSet = Sets.newHashSet(userGroup);
 
-  private final String awsIamRoleArn = "AWS_IAM_ROLE_ARN";
+  private static final String awsIamRoleArn = "AWS_IAM_ROLE_ARN";
 
-  private final String iamRootArn = "IAM_ROOT_ARN";
+  private static final String iamRootArn = "IAM_ROOT_ARN";
 
   private final SafeDepositBoxRecord safeDepositBoxRecord =
       new SafeDepositBoxRecord()

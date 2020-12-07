@@ -28,11 +28,11 @@ import org.junit.Test;
 /** Tests the KmsClientFactory class */
 public class KmsClientFactoryTest {
 
-  private final String goodRegionName = "us-west-2";
+  private static final String goodRegionName = "us-west-2";
 
   private final Region goodRegion = Region.getRegion(Regions.fromName(goodRegionName));
 
-  private final String badRegionName = "zz-space-1";
+  private static final String badRegionName = "zz-space-1";
 
   private KmsClientFactory subject;
 

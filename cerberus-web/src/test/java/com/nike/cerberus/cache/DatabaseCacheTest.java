@@ -24,6 +24,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.codahale.metrics.Counter;
 import com.google.common.collect.ImmutableMap;
 import com.nike.cerberus.metric.MetricsService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.util.Objects;
 import junit.framework.TestCase;
@@ -47,6 +48,7 @@ public class DatabaseCacheTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void
       test_that_the_cache_behaves_as_expected_when_simulated_db_reads_happen_at_various_rates()
           throws InterruptedException {

@@ -1,3 +1,5 @@
+import com.github.spotbugs.snom.SpotBugsReport
+
 /*
  * Copyright (c) 2020 Nike, inc.
  *
@@ -32,10 +34,10 @@ dependencies {
   implementation 'junit:junit:4.13'
   implementation 'org.slf4j:slf4j-api:1.7.21'
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.5.12'
-  implementation 'io.rest-assured:rest-assured:4.1.2'
-  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '4.1.2'
-  implementation group: 'io.rest-assured', name: 'json-path', version: '4.1.2'
-  implementation group: 'io.rest-assured', name: 'xml-path', version: '4.1.2'
+  implementation 'io.rest-assured:rest-assured:4.3.2'
+  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '4.3.2'
+  implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.2'
+  implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.2'
   implementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
   implementation "com.google.guava:guava:${versions.guava}"
   implementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
@@ -69,4 +71,17 @@ integrationTest {
     include project.property('includeTests')
   }
 
+}
+
+spotbugsIntegrationTest {
+  reports(({
+    html {
+      enabled = true
+      destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+      stylesheet = 'fancy-hist.xsl'
+    }
+    xml {
+      enabled = false
+    }
+  } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
 }
