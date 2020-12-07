@@ -125,4 +125,39 @@
         <packageUrl regex="true">^pkg:maven/org\.mybatis\.spring\.boot/mybatis\-spring\-boot\-starter@.*$</packageUrl>
         <cpe>cpe:/a:mybatis:mybatis</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: axios:0.19.2
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/axios@.*$</packageUrl>
+        <cve>CVE-2020-28168</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: node-sass:4.14.1
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/node\-sass@.*$</packageUrl>
+        <cve>CVE-2017-16080</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: sockjs:0.3.21
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/sockjs@.*$</packageUrl>
+        <cve>CVE-2020-8823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: y18n:3.2.1
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/y18n@.*$</packageUrl>
+        <cve>CVE-2020-7774</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: yargs-parser:5.0.0-security.0
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/yargs\-parser@.*$</packageUrl>
+        <vulnerabilityName>CWE-400: Uncontrolled Resource Consumption ('Resource Exhaustion')</vulnerabilityName>
+    </suppress>
 </suppressions>
