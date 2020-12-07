@@ -29,13 +29,13 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew coverallsJacoco
-      - name: Slack notification when master build fails
-        if: ${{ failure() && github.ref == 'refs/heads/master'}}
-        uses: rtCamp/action-slack-notify@v2.1.0
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: cerberus-alerts
-          SLACK_MESSAGE: 'Cerberus main build has failed :build-failed:'
-          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-          SLACK_TITLE: Cerberus Build Failure Notification
-          SLACK_USERNAME: GitHub Actions
+#      - name: Slack notification when master build fails
+#        if: ${{ failure() && github.ref == 'refs/heads/master'}}
+#        uses: rtCamp/action-slack-notify@v2.1.0
+#        env:
+#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+#          SLACK_CHANNEL: cerberus-alerts
+#          SLACK_MESSAGE: 'Cerberus main build has failed :build-failed:'
+#          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+#          SLACK_TITLE: Cerberus Build Failure Notification
+#          SLACK_USERNAME: GitHub Actions
