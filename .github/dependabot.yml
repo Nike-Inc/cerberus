@@ -3,10 +3,17 @@
 
 version: 2
 updates:
-  # Enable version updates for npm
+  # Enable version updates for Gradle
   - package-ecosystem: "gradle"
-    # Look for `package.json` and `lock` files in the `root` directory
+    # Look for `build.gradle`  files in the `root` directory
     directory: "/"
+    target-branch: "chore/upgrade_dependencies"
+    open-pull-requests-limit: 30
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
+    directory: "/cerberus-dashboard"
     target-branch: "chore/upgrade_dependencies"
     open-pull-requests-limit: 30
     # Check the npm registry for updates every day (weekdays)
