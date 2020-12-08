@@ -40,7 +40,6 @@ import com.nike.cerberus.config.ApplicationConfiguration;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.AuthTokenResponse;
-import com.nike.cerberus.domain.AwsIamKmsAuthRequest;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.MfaCheckRequest;
 import com.nike.cerberus.error.DefaultApiError;
@@ -49,16 +48,11 @@ import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
-import com.nike.cerberus.util.Slugger;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -81,8 +75,6 @@ public class AuthenticationServiceTest {
   @Mock private DateTimeSupplier dateTimeSupplier;
 
   @Mock private AwsIamRoleArnParser awsIamRoleArnParser;
-
-  private Slugger slugger = new Slugger();
 
   @Mock private AuthTokenService authTokenService;
 
@@ -215,10 +207,6 @@ public class AuthenticationServiceTest {
     // ensure that validate interval is passed
     OffsetDateTime dateTime = OffsetDateTime.of(2016, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
     OffsetDateTime now = OffsetDateTime.now();
-
-    AwsIamKmsAuthRequest iamPrincipalCredentials = new AwsIamKmsAuthRequest();
-    iamPrincipalCredentials.setIamPrincipalArn(principalArn);
-    iamPrincipalCredentials.setRegion(region);
 
     AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord().setAwsIamRoleArn(principalArn);
     awsIamRoleRecord.setAwsIamRoleArn(principalArn);
@@ -382,7 +370,7 @@ public class AuthenticationServiceTest {
         authenticationService.validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize(
             serializedAuth, response, "foo");
 
-    assertEquals(serializedAuth, actual);
+    assertTrue(Arrays.equals(serializedAuth, actual));
   }
 
   @Test
@@ -428,7 +416,8 @@ public class AuthenticationServiceTest {
       e = e2;
     }
 
-    assertTrue(e instanceof ApiException);
+    IsInstanceOf isInstanceOfException = new IsInstanceOf(ApiException.class);
+    assertTrue(isInstanceOfException.matches(e));
     assertTrue(
         ((ApiException) e)
             .getApiErrors()
@@ -492,7 +481,8 @@ public class AuthenticationServiceTest {
       e = e2;
     }
 
-    assertTrue(e instanceof ApiException);
+    IsInstanceOf isInstanceOfException = new IsInstanceOf(ApiException.class);
+    assertTrue(isInstanceOfException.matches(e));
     assertTrue(
         ((ApiException) e)
             .getApiErrors()

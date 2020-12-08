@@ -19,7 +19,6 @@ package com.nike.cerberus.api
 import com.amazonaws.DefaultRequest
 import com.amazonaws.auth.AWS4Signer
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider
 import com.amazonaws.auth.profile.internal.securitytoken.RoleInfo
 import com.amazonaws.auth.profile.internal.securitytoken.STSProfileCredentialsServiceProvider
@@ -33,9 +32,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
 import com.nike.cerberus.util.PropUtils
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import com.sun.net.httpserver.Headers
 import groovy.json.JsonSlurper
-import io.restassured.http.Header
 import io.restassured.path.json.JsonPath
 import io.restassured.response.Response
 import org.apache.commons.lang3.StringUtils
@@ -54,33 +51,33 @@ import static com.nike.cerberus.api.CerberusCompositeApiActions.*
 
 class CerberusApiActions {
 
-    public static String V1_SAFE_DEPOSIT_BOX_PATH = "v1/safe-deposit-box"
-    public static String V2_SAFE_DEPOSIT_BOX_PATH = "v2/safe-deposit-box"
-    public static String CLEAN_UP_PATH = "/v1/cleanup"
-    public static String SECRETS_PATH = "/v1/secret"
-    public static String IAM_ROLE_AUTH_PATH = "/v1/auth/iam-role"
-    public static String IAM_PRINCIPAL_AUTH_PATH = "/v2/auth/iam-principal"
-    public static String USER_AUTH_PATH = "v2/auth/user"
-    public static String USER_TOKEN_REFRESH_PATH = "v2/auth/user/refresh"
-    public static String SDB_METADATA_PATH = "v1/metadata"
-    public static String AUTH_TOKEN_HEADER_NAME = "X-Vault-Token"
-    public static String USER_CREDENTIALS_HEADER_NAME = "Authorization"
-    public static String SAFE_DEPOSIT_BOX_VERSION_PATHS_PATH = "v1/sdb-secret-version-paths"
-    public static int SLEEP_IN_MILLISECONDS = PropUtils.getPropWithDefaultValue("SLEEP_IN_MILLISECONDS",
+    public final static String V1_SAFE_DEPOSIT_BOX_PATH = "v1/safe-deposit-box"
+    public final static String V2_SAFE_DEPOSIT_BOX_PATH = "v2/safe-deposit-box"
+    public final static String CLEAN_UP_PATH = "/v1/cleanup"
+    public final static String SECRETS_PATH = "/v1/secret"
+    public final static String IAM_ROLE_AUTH_PATH = "/v1/auth/iam-role"
+    public final static String IAM_PRINCIPAL_AUTH_PATH = "/v2/auth/iam-principal"
+    public final static String USER_AUTH_PATH = "v2/auth/user"
+    public final static String USER_TOKEN_REFRESH_PATH = "v2/auth/user/refresh"
+    public final static String SDB_METADATA_PATH = "v1/metadata"
+    public final static String AUTH_TOKEN_HEADER_NAME = "X-Vault-Token"
+    public final static String USER_CREDENTIALS_HEADER_NAME = "Authorization"
+    public final static String SAFE_DEPOSIT_BOX_VERSION_PATHS_PATH = "v1/sdb-secret-version-paths"
+    public final static int SLEEP_IN_MILLISECONDS = PropUtils.getPropWithDefaultValue("SLEEP_IN_MILLISECONDS",
             "0").toInteger()
 
     static final List<String> CHINA_REGIONS = new ArrayList<String>(
             Arrays.asList(
                     "cn-north-1",
                     "cn-northwest-1")
-    );
+    )
 
     /**
      * Use a cache of KMS clients because creating too many kmsCLients causes a performance bottleneck
      */
     private static Cache<Tuple2<String,String>,AWSKMSClient> kmsClientCache = CacheBuilder.newBuilder()
             .expireAfterWrite(30, TimeUnit.MINUTES)
-            .build();
+            .build()
 
     /**
      * Executes a delete on the v1 auth endpoint to trigger a logout / destroy token action
@@ -117,10 +114,10 @@ class CerberusApiActions {
      */
     static void signRequest(com.amazonaws.Request request, AWSCredentials credentials, String region){
 
-        AWS4Signer signer = new AWS4Signer();
-        signer.setRegionName(region);
-        signer.setServiceName("sts");
-        signer.sign(request, credentials);
+        AWS4Signer signer = new AWS4Signer()
+        signer.setRegionName(region)
+        signer.setServiceName("sts")
+        signer.sign(request, credentials)
     }
 
     /**
@@ -129,12 +126,12 @@ class CerberusApiActions {
      */
     static Map<String, String> getSignedHeaders(String region, String accountId, String roleName){
 
-        String url = "https://sts." + region + ".amazonaws.com";
+        String url = "https://sts." + region + ".amazonaws.com"
         if(CHINA_REGIONS.contains(region)) {
-            url += ".cn";
+            url += ".cn"
         }
 
-        URI endpoint = null;
+        URI endpoint = null
 
         def iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$accountId:role/$roleName")
         AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard().withRegion(Regions.fromName(region)).build()
@@ -144,32 +141,32 @@ class CerberusApiActions {
                         .getCredentials()
 
         try {
-            endpoint = new URI(url);
+            endpoint = new URI(url)
         } catch (URISyntaxException e) {
-            System.out.println(String.format("URL is not formatted correctly"), e);
+            System.out.println(String.format("URL is not formatted correctly"), e)
 
         }
 
-        Map<String, List<String>> parameters = new HashMap<>();
-        parameters.put("Action", Arrays.asList("GetCallerIdentity"));
-        parameters.put("Version", Arrays.asList("2011-06-15"));
+        Map<String, List<String>> parameters = new HashMap<>()
+        parameters.put("Action", Arrays.asList("GetCallerIdentity"))
+        parameters.put("Version", Arrays.asList("2011-06-15"))
 
-        DefaultRequest<String> requestToSign = new DefaultRequest<>("sts");
-        requestToSign.setParameters(parameters);
-        requestToSign.setHttpMethod(HttpMethodName.POST);
-        requestToSign.setEndpoint(endpoint);
+        DefaultRequest<String> requestToSign = new DefaultRequest<>("sts")
+        requestToSign.setParameters(parameters)
+        requestToSign.setHttpMethod(HttpMethodName.POST)
+        requestToSign.setEndpoint(endpoint)
 
-        System.out.println(String.format("Signing request with [%s] as host", url));
+        System.out.println(String.format("Signing request with [%s] as host", url))
 
-        signRequest(requestToSign, credentials, region);
+        signRequest(requestToSign, credentials, region)
 
-        return requestToSign.getHeaders();
+        return requestToSign.getHeaders()
     }
 
     static def retrieveStsToken(String region, String accountId, String roleName) {
         // get the encrypted payload and validate response
 
-        Map<String, String> signedHeaders = getSignedHeaders(region, accountId, roleName);
+        Map<String, String> signedHeaders = getSignedHeaders(region, accountId, roleName)
 
         Response response =
                 given()
@@ -735,6 +732,7 @@ class CerberusApiActions {
         return roleMap
     }
 
+    
     static Map getCategoryMap(String cerberusAuthToken) {
         // Create a map of category ids to names'
         JsonPath getCategoriesResponse = getCategories(cerberusAuthToken)

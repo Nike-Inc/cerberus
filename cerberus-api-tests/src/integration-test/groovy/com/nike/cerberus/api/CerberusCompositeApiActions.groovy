@@ -24,6 +24,8 @@ import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils
 import org.jboss.aerogear.security.otp.Totp
 
+import javax.annotation.CheckReturnValue
+
 import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static org.junit.Assert.assertEquals
 import static com.nike.cerberus.api.CerberusApiActions.*
