@@ -29,7 +29,7 @@
     "react": "15.7",
     "react-addons-create-fragment": "15.6.2",
     "react-addons-css-transition-group": "15.6.2",
-    "react-addons-shallow-compare": "15.6.2",
+    "react-addons-shallow-compare": "15.6.3",
     "react-copy-to-clipboard": "4.1.0",
     "react-dom": "15.6.2",
     "react-json-pretty": "^2.2.0",
