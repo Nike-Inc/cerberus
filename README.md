@@ -1,7 +1,7 @@
 # Cerberus
 
 ![][gh actions img]
-[![][coveralls img]][coveralls]
+[![codecov](https://codecov.io/gh/Nike-Inc/cerberus/branch/master/graph/badge.svg?token=oZ36lHQ97H)](https://codecov.io/gh/Nike-Inc/cerberus)
 [![][license img]][license]
 
 The Cerberus API is a cloud native, scalable Springboot application that can securely store application properties and files with robust auditing features.
@@ -151,6 +151,7 @@ Cerberus Management Service is released under the [Apache License, Version 2.0](
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
+
 
 [coveralls]:https://coveralls.io/github/Nike-Inc/cerberus
 [coveralls img]:https://coveralls.io/repos/github/Nike-Inc/cerberus/badge.svg?branch=master
