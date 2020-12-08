@@ -47,7 +47,7 @@ dependencies {
   implementation group: 'com.thedeanda', name: 'lorem', version: '1.2'
   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-  implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+  implementation "org.glassfish.jaxb:jaxb-runtime:3.0.0"
 }
 
 integrationTest {
