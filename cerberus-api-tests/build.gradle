@@ -45,8 +45,8 @@ dependencies {
   implementation group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
   implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
   implementation "org.glassfish.jaxb:jaxb-runtime:3.0.0"
 }
 
