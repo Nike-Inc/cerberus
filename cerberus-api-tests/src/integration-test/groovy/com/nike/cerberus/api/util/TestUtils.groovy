@@ -18,6 +18,7 @@ package com.nike.cerberus.api.util
 
 import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
+import com.thedeanda.lorem.LoremIpsum
 import org.apache.commons.lang3.RandomStringUtils
 
 import java.security.NoSuchAlgorithmException
@@ -60,7 +61,8 @@ class TestUtils {
     }
 
     static String generateRandomSdbDescription() {
-        return "${Lorem.getWords(50)}"
+        Lorem lorem =new LoremIpsum();
+        return lorem.getWords(50);
     }
 
     static Map generateSdbJson(String description,

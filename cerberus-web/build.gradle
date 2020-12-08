@@ -47,7 +47,7 @@ dependencies {
   implementation 'org.mybatis:mybatis:3.5.6'
   implementation 'com.mchange:c3p0:0.9.5.5'
   implementation 'mysql:mysql-connector-java:8.0.22'
-  implementation 'org.flywaydb:flyway-core:7.3.1' // Can't upgrade this past this version until Aurora is upgraded to 5.7
+  implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
   implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
@@ -80,7 +80,7 @@ dependencies {
   integrationTestImplementation sourceSets.test.output
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured:4.3.2'
+  integrationTestImplementation 'io.rest-assured:rest-assured-all:4.3.2'
 }
 configurations{
   integrationTestImplementation.extendsFrom(testImplementation)
