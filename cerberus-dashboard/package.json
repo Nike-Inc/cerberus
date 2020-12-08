@@ -43,7 +43,7 @@
     "redux-form": "5.3.4",
     "redux-logger": "2.6.1",
     "redux-thunk": "2.3.0",
-    "worker-timers": "4.0.30"
+    "worker-timers": "7.0.7"
   },
   "devDependencies": {
     "babel-core": "6.10.4",
