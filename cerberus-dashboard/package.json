@@ -23,7 +23,7 @@
     "downloadjs": "1.4.7",
     "humps": "1.1.0",
     "lodash": "^4.17.20",
-    "loglevel": "1.4.1",
+    "loglevel": "1.7.1",
     "node-sass": "4.14.1",
     "prop-types": "^15.7.2",
     "react": "15.6",
