@@ -10,7 +10,7 @@ on:
   pull_request:
     branches:
       - master
-      - chore/upgrade_dependencies
+      - dep/dependency_upgrade_staging
   schedule:
     - cron: "0 22 * * 1"
 jobs:
