@@ -35,7 +35,7 @@ dependencies {
   api "org.glassfish.jaxb:jaxb-runtime:3.0.0"
 
   // Find bugs annotations
-  api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
+  api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
 
   api group: 'com.google.guava', name: 'guava', version: '30.0-jre'
 }
