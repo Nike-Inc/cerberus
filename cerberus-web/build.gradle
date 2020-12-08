@@ -68,7 +68,7 @@ dependencies {
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
 
   //dist tracing
-  implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
+  implementation 'com.nike.wingtips:wingtips-spring-boot:0.23.1'
 
   // test deps
   testImplementation('org.springframework.boot:spring-boot-starter-test')
