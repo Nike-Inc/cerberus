@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "babel-core": "6.10.4",
-    "babel-preset-stage-1": "6.5.0",
+    "babel-preset-stage-1": "6.24.1",
     "eslint-html-reporter": "^0.7.4",
     "eslint-loader": "4.0.2",
     "eslint-plugin-react": "7.21.5",
