@@ -26,7 +26,7 @@ buildscript {
       awsSdkVersion: '1.11.914',
       kork: '7.90.0',
       guava: '30.0-jre',
-      springBoot: springBootVersion,
+      springBoot: '2.3.4-RELEASE',
     ]
   }
   ext['groovy.version'] = '2.5.12'
