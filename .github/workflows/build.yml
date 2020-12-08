@@ -32,13 +32,14 @@ jobs:
           file: build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml
           fail_ci_if_error: true # optional (default = false)
           verbose: true
-#      - name: Slack notification when master build fails
-#        if: ${{ failure() && github.ref == 'refs/heads/master'}}
-#        uses: rtCamp/action-slack-notify@v2.1.0
-#        env:
-#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-#          SLACK_CHANNEL: cerberus-alerts
-#          SLACK_MESSAGE: 'Cerberus main build has failed :build-failed:'
-#          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-#          SLACK_TITLE: Cerberus Build Failure Notification
-#          SLACK_USERNAME: GitHub Actions
+      - name: Slack notification when master build fails
+        if: ${{ failure() && github.ref == 'refs/heads/master'}}
+        uses: rtCamp/action-slack-notify@v2.1.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: cerberus-alerts
+          SLACK_MESSAGE: 'Cerberus main build has failed :build-failed:'
+          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          SLACK_TITLE: Cerberus Build Failure Notification
+          SLACK_COLOR: '#FF0000'
+          SLACK_USERNAME: GitHub Actions
