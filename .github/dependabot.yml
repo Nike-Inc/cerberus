@@ -7,7 +7,7 @@ updates:
   - package-ecosystem: "gradle"
     # Look for `build.gradle`  files in the `root` directory
     directory: "/"
-    target-branch: "chore/upgrade_dependencies"
+    target-branch: "dep/dependency_upgrade_staging"
     open-pull-requests-limit: 30
     schedule:
       interval: "daily"
