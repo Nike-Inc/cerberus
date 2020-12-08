@@ -34,7 +34,7 @@
     "react-dom": "15.6.2",
     "react-json-pretty": "^2.2.0",
     "react-paginate": "4.4.4",
-    "react-redux": "4.4.5",
+    "react-redux": "5.1.2",
     "react-router": "^2.5.2",
     "react-router-redux": "4.0.8",
     "react-select": "2.4.4",
