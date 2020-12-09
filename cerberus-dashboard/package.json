@@ -40,7 +40,7 @@
     "react-select": "2.4.4",
     "react-simple-file-input": "2.1.0",
     "redux": "4.0.5",
-    "redux-form": "7.4.3",
+    "redux-form": "5.3.4",
     "redux-logger": "3.0.6",
     "redux-thunk": "2.3.0",
     "worker-timers": "7.0.7"
