@@ -33,19 +33,19 @@ import org.junit.Test;
 
 public class UserGroupDaoTest {
 
-  private final String userGroupName = "USER_GROUP_NAME";
+  private static final String userGroupName = "USER_GROUP_NAME";
 
-  private final String safeDepositBoxId = "SDB_ID";
+  private static final String safeDepositBoxId = "SDB_ID";
 
-  private final String roleId = "ROLE_ID";
+  private static final String roleId = "ROLE_ID";
 
-  private final String userGroupId = "USER_GROUP_ID";
+  private static final String userGroupId = "USER_GROUP_ID";
 
-  private final String userGroupPermissionId = "USER_GROUP_PERMISSION_ID";
+  private static final String userGroupPermissionId = "USER_GROUP_PERMISSION_ID";
 
-  private final String createdBy = "system";
+  private static final String createdBy = "system";
 
-  private final String lastUpdatedBy = "system";
+  private static final String lastUpdatedBy = "system";
 
   private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 

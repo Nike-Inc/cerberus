@@ -35,7 +35,7 @@ include 'cerberus-domain'
 include 'cerberus-web'
 
 def setBuildFile(project) {
-  project.buildFileName = "${project.name}.gradle"
+  project.buildFileName = "build.gradle"
   project.children.each {
     setBuildFile(it)
   }

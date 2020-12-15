@@ -1,0 +1,90 @@
+import com.github.spotbugs.snom.SpotBugsReport
+
+/*
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+repositories {
+  jcenter()
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'org.apache.ant:ant:1.10.9'
+  }
+}
+dependencies {
+  implementation project(':cerberus-core').sourceSets.test.output
+  implementation group: 'org.testng', name: 'testng', version: '7.3.0'
+  implementation 'junit:junit:4.13'
+  implementation 'org.slf4j:slf4j-api:1.7.30'
+  implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.7'
+  implementation 'io.rest-assured:rest-assured:4.3.2'
+  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '4.3.2'
+  implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.2'
+  implementation group: 'io.rest-assured', name: 'xml-path', version: '4.3.2'
+  implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+  implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.0'
+  implementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+  implementation "com.google.guava:guava:${versions.guava}"
+  implementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
+  implementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: "${versions.awsSdkVersion}"
+  implementation group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+  implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
+  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
+  implementation "org.glassfish.jaxb:jaxb-runtime:3.0.0"
+  implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
+}
+
+integrationTest {
+  testLogging {
+    showStandardStreams = true
+    events "passed", "skipped", "failed"
+  }
+  if (project.hasProperty('deprecatedEndpoint')) {
+    useTestNG() {
+      excludeGroups 'deprecated'
+    }
+  } else {
+    useTestNG()
+  }
+
+  if (project.hasProperty('excludeTests')) {
+    exclude project.property('excludeTests')
+  }
+
+  if (project.hasProperty('includeTests')) {
+    include project.property('includeTests')
+  }
+
+}
+
+spotbugsIntegrationTest {
+  reports(({
+    html {
+      enabled = true
+      destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+      stylesheet = 'fancy-hist.xsl'
+    }
+    xml {
+      enabled = false
+    }
+  } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
+}

@@ -38,6 +38,7 @@ import com.nike.cerberus.metric.MetricsService;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -139,7 +140,10 @@ public class SecureDataServiceTest {
   @Test
   public void test_that_readSecret_decrypts_the_payload_when_present() {
     when(secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.OBJECT))
-        .thenReturn(Optional.of(new SecureDataRecord().setEncryptedBlob(ciphertext.getBytes())));
+        .thenReturn(
+            Optional.of(
+                new SecureDataRecord()
+                    .setEncryptedBlob(ciphertext.getBytes(Charset.forName("UTF-8")))));
 
     when(encryptionService.decrypt(ciphertext, path)).thenReturn(secret);
 

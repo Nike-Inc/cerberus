@@ -20,9 +20,12 @@ import com.amazonaws.util.IOUtils
 import com.nike.cerberus.api.util.TestUtils
 import com.nike.cerberus.util.PropUtils
 import com.thedeanda.lorem.Lorem
+import com.thedeanda.lorem.LoremIpsum
 import io.restassured.path.json.JsonPath
 import org.apache.commons.lang3.RandomStringUtils
 import org.jboss.aerogear.security.otp.Totp
+
+import javax.annotation.CheckReturnValue
 
 import static com.nike.cerberus.api.util.TestUtils.updateArnWithPartition
 import static org.junit.Assert.assertEquals
@@ -158,7 +161,8 @@ class CerberusCompositeApiActions {
         }
 
         String name = "${RandomStringUtils.randomAlphabetic(5, 10)} ${RandomStringUtils.randomAlphabetic(5, 10)}"
-        String description = "${Lorem.getWords(50)}"
+        Lorem lorem = new LoremIpsum()
+        String description = lorem.getWords(50)
         String categoryId = catMap.Applications
         String owner = group
         def userGroupPermissions = [
@@ -200,7 +204,7 @@ class CerberusCompositeApiActions {
             assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
             // update the sdb
-            description = "${Lorem.getWords(60)}"
+            description = lorem.getWords(60)
             userGroupPermissions.add([
                     "name"   : 'bar',
                     "role_id": roleMap.write
@@ -251,7 +255,8 @@ class CerberusCompositeApiActions {
         }
 
         String name = "${RandomStringUtils.randomAlphabetic(5,10)} ${RandomStringUtils.randomAlphabetic(5,10)}"
-        String description = "${Lorem.getWords(50)}"
+        Lorem lorem = new LoremIpsum()
+        String description = lorem.getWords(50)
         String categoryId = catMap.Applications
         String owner = group
         def userGroupPermissions = [
@@ -300,7 +305,7 @@ class CerberusCompositeApiActions {
 
             // update the sdb
             String newArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake_role2")
-            description = "${Lorem.getWords(60)}"
+            description = lorem.getWords(60)
             userGroupPermissions.add([
                     "name"   : 'bar',
                     "role_id": roleMap.write
