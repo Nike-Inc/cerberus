@@ -18,7 +18,7 @@
   "author": "Justin Field <justin.field@nike.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "cookie": "0.3.1",
     "downloadjs": "1.4.7",
     "humps": "1.1.0",
