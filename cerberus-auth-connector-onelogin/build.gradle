@@ -14,26 +14,8 @@
  * limitations under the License.
  */
 
-plugins {
-  id "com.github.node-gradle.node" version "2.2.0"
-}
-
-node {
-  version = '10.16.3'
-  download = true
-}
-
-task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
-  group 'build'
-  args = ["run", "build"]
-}
-tasks.buildDashboard.finalizedBy 'build'
-
-jar {
-  dependsOn 'buildDashboard'
-  processResources {
-    from ("${project.projectDir.absolutePath}/dist/") {
-      into 'static/dashboard'
-    }
-  }
+dependencies {
+  implementation project(":cerberus-core")
+  implementation project(":cerberus-domain")
+  implementation group: 'com.google.guava', name: 'guava', version: '30.0-jre'
 }

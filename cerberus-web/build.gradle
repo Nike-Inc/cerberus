@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "${springBootVersion}"
+  id 'org.springframework.boot' version "2.4.0"
 }
 
 sourceCompatibility = '11'
@@ -42,10 +42,10 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-security'
 
   // DB: Mybatis, Flyway, C3p0
-  implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.2'
-  implementation 'org.mybatis:mybatis-spring:2.0.5'
+  implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.4'
+  implementation 'org.mybatis:mybatis-spring:2.0.6'
   implementation 'org.mybatis:mybatis:3.5.6'
-  implementation 'com.mchange:c3p0:0.9.5.4'
+  implementation 'com.mchange:c3p0:0.9.5.5'
   implementation 'mysql:mysql-connector-java:8.0.22'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
@@ -55,10 +55,10 @@ dependencies {
   // Misc
   implementation "com.netflix.hystrix:hystrix-core:1.5.18" // TODO remove hystrix and use resilience4j
   implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
-  implementation 'com.google.code.gson:gson:2.8.1' // todo delete, should use jackson. see cipher text utils
+  implementation 'com.google.code.gson:gson:2.8.6' // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
-  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.24.1'
+  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.25'
 
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
@@ -68,21 +68,23 @@ dependencies {
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
 
   //dist tracing
-  implementation 'com.nike.wingtips:wingtips-spring-boot:0.21.0'
+  implementation 'com.nike.wingtips:wingtips-spring-boot:0.23.1'
 
   // test deps
   testImplementation('org.springframework.boot:spring-boot-starter-test')
-  testImplementation "commons-io:commons-io:2.5"
-  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.12.0"
+  testImplementation "commons-io:commons-io:2.8.0"
+  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.13.0"
 
   // Integration Test Deps
-  integrationTestCompile sourceSets.main.output
-  integrationTestCompile configurations.testImplementation
-  integrationTestCompile sourceSets.test.output
-  integrationTestRuntime configurations.testRuntime
+  integrationTestImplementation sourceSets.main.output
+  integrationTestImplementation sourceSets.test.output
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured:4.1.2'
+  integrationTestImplementation 'io.rest-assured:rest-assured-all:4.3.2'
+}
+configurations{
+  integrationTestImplementation.extendsFrom(testImplementation)
+  integrationTestRuntime.extendsFrom(testRuntime)
 }
 
 jar {
@@ -90,5 +92,5 @@ jar {
 }
 
 bootJar {
-  archiveName = 'cerberus.jar'
+  archiveFileName = 'cerberus.jar'
 }

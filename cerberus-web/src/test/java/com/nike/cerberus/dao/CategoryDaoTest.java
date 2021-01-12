@@ -32,15 +32,15 @@ import org.junit.Test;
 
 public class CategoryDaoTest {
 
-  private final String categoryId = "CATEGORY_ID";
+  private static final String categoryId = "CATEGORY_ID";
 
-  private final String displayName = "DISPLAY_NAME";
+  private static final String displayName = "DISPLAY_NAME";
 
-  private final String path = "PATH";
+  private static final String path = "PATH";
 
-  private final String createdBy = "system";
+  private static final String createdBy = "system";
 
-  private final String lastUpdatedBy = "system";
+  private static final String lastUpdatedBy = "system";
 
   private final OffsetDateTime createdTs = OffsetDateTime.now(ZoneId.of("UTC"));
 

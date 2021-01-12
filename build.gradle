@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-import com.github.spotbugs.SpotBugsTask
+
+import com.github.spotbugs.snom.SpotBugsReport
 import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.10',
-      resilience4j: '1.1.0',
-      awsSdkVersion: '1.11.847',
-      kork: '6.22.1',
+      lombok: '1.18.16',
+      resilience4j: '1.6.1',
+      awsSdkVersion: '1.11.914',
+      kork: '7.90.0',
       guava: '30.1-jre',
-      springBoot: springBootVersion,
+      springBoot: '2.4.0',
     ]
   }
-  ext['groovy.version'] = '2.5.14'
+  ext['groovy.version'] = '3.0.7'
 
   repositories {
     maven {
@@ -41,16 +42,16 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:5.3.2"
-    classpath "com.github.spotbugs:spotbugs-gradle-plugin:3.0.0"
-    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.1.2'
-    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+    classpath "org.owasp:dependency-check-gradle:6.0.3"
+    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
 
 plugins {
-  id "io.spring.dependency-management" version "1.0.9.RELEASE"
+  id "io.spring.dependency-management" version "1.0.10.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.4"
+  id "com.github.spotbugs" version "4.6.0"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -64,20 +65,41 @@ allprojects {
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
   }
 
   spotbugs {
-    toolVersion = '4.0.3'
-    sourceSets = [ sourceSets.main ]
+    toolVersion = '4.2.0'
     excludeFilter = file("${rootProject.projectDir}/findbugs-supressions.xml")
   }
 
-  // To generate an HTML report instead of XML
-  tasks.withType(SpotBugsTask) {
-    reports.xml.enabled = false
-    reports.html.enabled = true
+  spotbugsMain {
+    reports(({
+      html {
+        enabled = true
+        destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+        stylesheet = 'fancy-hist.xsl'
+      }
+      xml {
+        enabled = false
+      }
+    } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
   }
+
+  spotbugsTest {
+    reports(({
+      html {
+        enabled = true
+        destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+        stylesheet = 'fancy-hist.xsl'
+      }
+      xml {
+        enabled = false
+      }
+    } as Closure<NamedDomainObjectContainer<? extends SpotBugsReport>>))
+  }
+
+
 
   repositories {
     jcenter()
@@ -142,9 +164,9 @@ subprojects {
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
-    testImplementation 'org.codehaus.groovy:groovy-all:2.5.12'
-    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.7'
+    testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-3.0'
+    testImplementation 'junit:junit:4.13.1'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
     testImplementation 'com.openpojo:openpojo:0.8.13'
   }
@@ -201,7 +223,7 @@ configurations {
 }
 
 dependencies {
-  antJUnit 'org.apache.ant:ant-junit:1.9.15'
+  antJUnit 'org.apache.ant:ant-junit:1.10.9'
 }
 
 // Compile all the test results into a single one.

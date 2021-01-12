@@ -18,6 +18,7 @@ package com.nike.cerberus.api
 
 import com.nike.cerberus.api.util.TestUtils
 import com.thedeanda.lorem.Lorem
+import com.thedeanda.lorem.LoremIpsum
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.http.HttpStatus
 import org.testng.annotations.BeforeTest
@@ -204,7 +205,8 @@ class InvalidAuthApiTests {
 
     private static Map generateSafeDepositBox(def iamPermissions) {
         String name = "${RandomStringUtils.randomAlphabetic(5, 10)} ${RandomStringUtils.randomAlphabetic(5, 10)}"
-        String description = "${Lorem.getWords(50)}"
+        Lorem lorem = new LoremIpsum()
+        String description = lorem.getWords(50)
         String categoryId = "category id"
         String owner = "user group"
 
