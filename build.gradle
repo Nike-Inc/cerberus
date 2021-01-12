@@ -42,7 +42,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:6.0.3"
+    classpath "org.owasp:dependency-check-gradle:6.0.5"
     classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
