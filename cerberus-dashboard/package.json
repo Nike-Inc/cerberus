@@ -2,7 +2,7 @@
   "name": "cerberus-management-dashboard",
   "description": "A management dashboard for Cerberus.",
   "main": "index.js",
-  "homepage": "./",
+  "homepage": ".",
   "proxy": "http://localhost:8080",
   "repository": {
     "type": "git",
