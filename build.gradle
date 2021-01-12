@@ -153,7 +153,7 @@ subprojects {
     }
     dependencies {
       //upgrading tomcat manually until Spring-Boot 2.3.5 is released to resolve a security vulnerability
-      dependency 'org.apache.tomcat.embed:tomcat-embed-core:9.0.41'
+      dependency 'org.apache.tomcat.embed:tomcat-embed-core:10.0.0'
       dependency 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.41'
     }
   }
