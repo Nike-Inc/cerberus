@@ -23,7 +23,7 @@ dependencies {
   api 'com.nike.backstopper:backstopper-spring-web-mvc:0.13.0'
 
   // Metrics
-  api 'io.dropwizard.metrics:metrics-core:4.1.16'
+  api 'io.dropwizard.metrics:metrics-core:4.1.17'
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
@@ -42,7 +42,7 @@ dependencies {
 
 configurations.all {
   resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.4.21"
+    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.4.21-2"
     force "org.jetbrains.kotlin:kotlin-stdlib:1.4.21"
   }
 }

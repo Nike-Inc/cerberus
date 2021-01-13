@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.4.0"
+  id 'org.springframework.boot' version "2.4.1"
 }
 
 sourceCompatibility = '11'
@@ -80,7 +80,7 @@ dependencies {
   integrationTestImplementation sourceSets.test.output
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured-all:4.3.2'
+  integrationTestImplementation 'io.rest-assured:rest-assured-all:4.3.3'
 }
 configurations{
   integrationTestImplementation.extendsFrom(testImplementation)
