@@ -160,4 +160,11 @@
         <packageUrl regex="true">^pkg:npm/yargs\-parser@.*$</packageUrl>
         <vulnerabilityName>CWE-400: Uncontrolled Resource Consumption ('Resource Exhaustion')</vulnerabilityName>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: ini:1.3.8
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/ini@.*$</packageUrl>
+        <vulnerabilityName>CWE-471: Modification of Assumed-Immutable Data (MAID)</vulnerabilityName>
+    </suppress>
 </suppressions>
