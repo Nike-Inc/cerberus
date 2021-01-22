@@ -22,7 +22,7 @@ buildscript {
   ext {
     versions = [
       lombok: '1.18.16',
-      resilience4j: '1.6.1',
+      resilience4j: '1.7.0',
       awsSdkVersion: '1.11.940',
       kork: '7.97.2',
       guava: '30.1-jre',
