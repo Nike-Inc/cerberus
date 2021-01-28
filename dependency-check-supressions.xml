@@ -91,4 +91,11 @@
         <packageUrl regex="true">^pkg:npm/ini@.*$</packageUrl>
         <vulnerabilityName>CWE-471: Modification of Assumed-Immutable Data (MAID)</vulnerabilityName>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: immer:7.0.9
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/immer@.*$</packageUrl>
+        <cpe>cpe:/a:immer_project:immer</cpe>
+    </suppress>
 </suppressions>
