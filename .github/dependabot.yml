@@ -19,3 +19,10 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+  - package-ecosystem: "github-actions"
+    # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
+    directory: "/"
+    target-branch: "dep/dependency_upgrade_staging"
+    # Check the npm registry for updates every day (weekdays)
+    schedule:
+      interval: "daily"

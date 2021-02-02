@@ -21,12 +21,12 @@ import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.16',
-      resilience4j: '1.6.1',
-      awsSdkVersion: '1.11.914',
-      kork: '7.90.0',
+      lombok: '1.18.18',
+      resilience4j: '1.7.0',
+      awsSdkVersion: '1.11.946',
+      kork: '7.98.0',
       guava: '30.1-jre',
-      springBoot: '2.4.0',
+      springBoot: '2.4.2',
     ]
   }
   ext['groovy.version'] = '3.0.7'
@@ -42,15 +42,15 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:6.0.3"
+    classpath "org.owasp:dependency-check-gradle:6.1.0"
     classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
 
 plugins {
-  id "io.spring.dependency-management" version "1.0.10.RELEASE"
-  id "com.github.nbaztec.coveralls-jacoco" version "1.2.4"
+  id "io.spring.dependency-management" version "1.0.11.RELEASE"
+  id "com.github.nbaztec.coveralls-jacoco" version "1.2.10"
   id "com.github.spotbugs" version "4.6.0"
 }
 
