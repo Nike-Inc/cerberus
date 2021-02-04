@@ -98,4 +98,11 @@
         <packageUrl regex="true">^pkg:npm/immer@.*$</packageUrl>
         <cpe>cpe:/a:immer_project:immer</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: faye-websocket:0.10.0
+   ]]></notes>
+        <packageUrl regex="true">^pkg:npm/faye\-websocket@.*$</packageUrl>
+        <cve>CVE-2020-15133</cve>
+    </suppress>
 </suppressions>
