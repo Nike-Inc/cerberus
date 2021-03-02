@@ -67,6 +67,12 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
 
+  // JWT
+  implementation "io.jsonwebtoken:jjwt-api:0.10.5"
+  implementation "io.jsonwebtoken:jjwt-impl:0.10.5"
+  implementation "io.jsonwebtoken:jjwt-jackson:0.10.5"
+
+
   //dist tracing
   implementation 'com.nike.wingtips:wingtips-spring-boot:0.23.1'
 

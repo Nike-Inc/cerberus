@@ -98,7 +98,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         new DatabaseTokenAuthenticationProcessingFilter(
             authTokenService, requestDoesNotRequireAuthMatcher);
 
-    var jwtFilter = new JwtTokenFilter(requestDoesNotRequireAuthMatcher);
+    var jwtFilter = new JwtTokenFilter(requestDoesNotRequireAuthMatcher, authTokenService);
 
     // Disable CSRF (cross site request forgery)
     http.csrf().disable();
