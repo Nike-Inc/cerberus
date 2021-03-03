@@ -17,53 +17,53 @@
 package com.nike.cerberus.jwt;
 
 public class JwtSecret {
-    private String id;
+  private String id;
 
-    private String secret;
+  private String secret;
 
-    private String algorithm;
+  private String algorithm;
 
-    private long effectiveTs;
+  private long effectiveTs;
 
-    private long createdTs;
+  private long createdTs;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public String getSecret() {
-        return secret;
-    }
+  public String getSecret() {
+    return secret;
+  }
 
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
+  public void setSecret(String secret) {
+    this.secret = secret;
+  }
 
-    public long getEffectiveTs() {
-        return effectiveTs;
-    }
+  public long getEffectiveTs() {
+    return effectiveTs;
+  }
 
-    public void setEffectiveTs(long effectiveTs) {
-        this.effectiveTs = effectiveTs;
-    }
+  public void setEffectiveTs(long effectiveTs) {
+    this.effectiveTs = effectiveTs;
+  }
 
-    public long getCreatedTs() {
-        return createdTs;
-    }
+  public long getCreatedTs() {
+    return createdTs;
+  }
 
-    public void setCreatedTs(long createdTs) {
-        this.createdTs = createdTs;
-    }
+  public void setCreatedTs(long createdTs) {
+    this.createdTs = createdTs;
+  }
 
-    public String getAlgorithm() {
-        return algorithm;
-    }
+  public String getAlgorithm() {
+    return algorithm;
+  }
 
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
-    }
+  public void setAlgorithm(String algorithm) {
+    this.algorithm = algorithm;
+  }
 }

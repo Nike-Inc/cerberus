@@ -17,95 +17,94 @@
 package com.nike.cerberus.jwt;
 
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 public class CerberusJwtClaims {
 
-    private String id;
+  private String id;
 
-    private OffsetDateTime createdTs;
+  private OffsetDateTime createdTs;
 
-    private OffsetDateTime expiresTs;
+  private OffsetDateTime expiresTs;
 
-    private String principal;
+  private String principal;
 
-    private String principalType;
+  private String principalType;
 
-    private Boolean isAdmin;
+  private Boolean isAdmin;
 
-    private String groups;
+  private String groups;
 
-    private Integer refreshCount;
+  private Integer refreshCount;
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public CerberusJwtClaims setId(String id) {
-        this.id = id;
-        return this;
-    }
+  public CerberusJwtClaims setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public OffsetDateTime getCreatedTs() {
-        return createdTs;
-    }
+  public OffsetDateTime getCreatedTs() {
+    return createdTs;
+  }
 
-    public CerberusJwtClaims setCreatedTs(OffsetDateTime createdTs) {
-        this.createdTs = createdTs;
-        return this;
-    }
+  public CerberusJwtClaims setCreatedTs(OffsetDateTime createdTs) {
+    this.createdTs = createdTs;
+    return this;
+  }
 
-    public OffsetDateTime getExpiresTs() {
-        return expiresTs;
-    }
+  public OffsetDateTime getExpiresTs() {
+    return expiresTs;
+  }
 
-    public CerberusJwtClaims setExpiresTs(OffsetDateTime expiresTs) {
-        this.expiresTs = expiresTs;
-        return this;
-    }
+  public CerberusJwtClaims setExpiresTs(OffsetDateTime expiresTs) {
+    this.expiresTs = expiresTs;
+    return this;
+  }
 
-    public String getPrincipal() {
-        return principal;
-    }
+  public String getPrincipal() {
+    return principal;
+  }
 
-    public CerberusJwtClaims setPrincipal(String principal) {
-        this.principal = principal;
-        return this;
-    }
+  public CerberusJwtClaims setPrincipal(String principal) {
+    this.principal = principal;
+    return this;
+  }
 
-    public String getPrincipalType() {
-        return principalType;
-    }
+  public String getPrincipalType() {
+    return principalType;
+  }
 
-    public CerberusJwtClaims setPrincipalType(String principalType) {
-        this.principalType = principalType;
-        return this;
-    }
+  public CerberusJwtClaims setPrincipalType(String principalType) {
+    this.principalType = principalType;
+    return this;
+  }
 
-    public Boolean getIsAdmin() {
-        return isAdmin;
-    }
+  public Boolean getIsAdmin() {
+    return isAdmin;
+  }
 
-    public CerberusJwtClaims setIsAdmin(Boolean admin) {
-        isAdmin = admin;
-        return this;
-    }
+  public CerberusJwtClaims setIsAdmin(Boolean admin) {
+    isAdmin = admin;
+    return this;
+  }
 
-    public String getGroups() {
-        return groups;
-    }
+  public String getGroups() {
+    return groups;
+  }
 
-    public CerberusJwtClaims setGroups(String groups) {
-        this.groups = groups;
-        return this;
-    }
+  public CerberusJwtClaims setGroups(String groups) {
+    this.groups = groups;
+    return this;
+  }
 
-    public Integer getRefreshCount() {
-        return refreshCount;
-    }
+  public Integer getRefreshCount() {
+    return refreshCount;
+  }
 
-    public CerberusJwtClaims setRefreshCount(Integer refreshCount) {
-        this.refreshCount = refreshCount;
-        return this;
-    }
+  public CerberusJwtClaims setRefreshCount(Integer refreshCount) {
+    this.refreshCount = refreshCount;
+    return this;
+  }
 }

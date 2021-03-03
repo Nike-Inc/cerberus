@@ -18,18 +18,15 @@ package com.nike.cerberus.jwt;
 
 import java.util.LinkedList;
 
-/**
- * A POJO that represents the JWT config
- */
+/** A POJO that represents the JWT config */
 public class JwtSecretData {
-    private LinkedList<JwtSecret> jwtSecrets = new LinkedList<>();
+  private LinkedList<JwtSecret> jwtSecrets = new LinkedList<>();
 
-    public LinkedList<JwtSecret> getJwtSecrets() {
-        return jwtSecrets;
-    }
+  public LinkedList<JwtSecret> getJwtSecrets() {
+    return jwtSecrets;
+  }
 
-    public void setJwtSecrets(LinkedList<JwtSecret> jwtSecrets) {
-        this.jwtSecrets = jwtSecrets;
-    }
-
+  public void setJwtSecrets(LinkedList<JwtSecret> jwtSecrets) {
+    this.jwtSecrets = jwtSecrets;
+  }
 }
