@@ -17,11 +17,11 @@
 package com.nike.cerberus.service;
 
 //import com.google.inject.name.Named;
-//import com.nike.cerberus.dao.JwtBlacklistDao;
-import com.nike.cerberus.jwt.CerberusJwtClaims;
+import com.nike.cerberus.dao.JwtBlacklistDao;
+\import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
-//import com.nike.cerberus.record.JwtBlacklistRecord;
+import com.nike.cerberus.record.JwtBlacklistRecord;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jws;
@@ -46,7 +46,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 
-//import static org.mybatis.guice.transactional.Isolation.READ_UNCOMMITTED;
+import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
 /**
  * Service for generating, parsing, and validating JWT tokens.
@@ -63,17 +63,17 @@ public class JwtService {
 
     private final CerberusSigningKeyResolver signingKeyResolver;
     private final String environmentName;
-//    private final JwtBlacklistDao jwtBlacklistDao;
+    private final JwtBlacklistDao jwtBlacklistDao;
 
     private HashSet<String> blacklist;
 
     @Autowired
     public JwtService(CerberusSigningKeyResolver signingKeyResolver,
-                      @Value("cerberus.environmentName") String environmentName/*,
-                      JwtBlacklistDao jwtBlacklistDao*/) {
+                      @Value("cerberus.environmentName") String environmentName,
+                      JwtBlacklistDao jwtBlacklistDao) {
         this.signingKeyResolver = signingKeyResolver;
         this.environmentName = environmentName;
-//        this.jwtBlacklistDao = jwtBlacklistDao;
+        this.jwtBlacklistDao = jwtBlacklistDao;
         refreshBlacklist();
     }
 
@@ -144,15 +144,15 @@ public class JwtService {
     /**
      * Refresh signing keys in {@link CerberusSigningKeyResolver}
      */
-//    public void refreshKeys() {
-//        signingKeyResolver.refresh();
-//    }
+    public void refreshKeys() {
+        signingKeyResolver.refresh();
+    }
 
     /**
      * Refresh JWT blacklist
      */
     public void refreshBlacklist() {
-//        blacklist = jwtBlacklistDao.getBlacklist();
+        blacklist = jwtBlacklistDao.getBlacklist();
     }
 
     /**
@@ -162,20 +162,20 @@ public class JwtService {
      */
     public void revokeToken(String id, OffsetDateTime tokenExpires) {
         blacklist.add(id);
-//        JwtBlacklistRecord jwtBlacklistRecord = new JwtBlacklistRecord()
-//                .setId(id)
-//                .setExpiresTs(tokenExpires);
-//        jwtBlacklistDao.addToBlacklist(jwtBlacklistRecord);
+        JwtBlacklistRecord jwtBlacklistRecord = new JwtBlacklistRecord()
+                .setId(id)
+                .setExpiresTs(tokenExpires);
+        jwtBlacklistDao.addToBlacklist(jwtBlacklistRecord);
     }
 
     /**
      * Delete JWT blacklist entries that have expired
      * @return
      */
-//    @Transactional(
-//            isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
-//    )
-//    public int deleteExpiredTokens() {
-//        return jwtBlacklistDao.deleteExpiredTokens();
-//    }
+    @Transactional(
+            isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
+    )
+    public int deleteExpiredTokens() {
+        return jwtBlacklistDao.deleteExpiredTokens();
+    }
 }
