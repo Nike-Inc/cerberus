@@ -109,7 +109,7 @@ const mapStateToProps = state => ({
     isAuthenticating: state.auth.isAuthenticating,
     statusText: state.auth.statusText,
     initialValues: {
-        redirectTo: state.routing.locationBeforeTransitions.query.next || '/'
+        redirectTo: state.router.location.query.next || '/'
     }
 });
 

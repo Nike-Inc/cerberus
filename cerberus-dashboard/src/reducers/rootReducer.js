@@ -15,7 +15,7 @@
  */
 
 import { combineReducers } from 'redux'
-import { routerReducer } from 'react-router-redux'
+import { connectRouter } from 'connected-react-router'
 import { reducer as formReducer } from 'redux-form'
 import auth from './authenticationReducer'
 import header from './headerStateReducer'
@@ -27,16 +27,18 @@ import metadata from './metadataReducer'
 import modal from './modalReducer'
 import versionHistoryBrowser from './versionHistoryBrowserReducer'
 
-export default combineReducers({
+const rootReducer = (history) => combineReducers({
     auth,
     header,
     app,
     nSDB,
     manageSafetyDepositBox,
     modal,
-    routing: routerReducer,
+    router: connectRouter(history),
     form: formReducer,
     messenger,
     metadata,
     versionHistoryBrowser
 })
+
+export default rootReducer;

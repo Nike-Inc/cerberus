@@ -150,7 +150,7 @@ const mapStateToProps = state => ({
     isChallengeSent: state.auth.isChallengeSent,
     statusText: state.auth.statusText,
     initialValues: {
-        redirectTo: state.routing.locationBeforeTransitions.query.next || '/',
+        redirectTo: state.router.location.query.next || '/',
     }
 });
 

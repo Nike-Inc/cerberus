@@ -16,13 +16,13 @@
 
 import React from 'react'
 import { Component } from 'react'
-import { hashHistory } from 'react-router'
 import * as headerActions from '../../actions/headerActions'
 import * as authActions from '../../actions/authenticationActions'
 import './Header.scss'
 import '../../assets/images/cerberus-logo-narrow-off-white.svg'
 import * as modalActions from '../../actions/modalActions'
 import ViewTokenModal from '../ViewTokenModal/ViewTokenModal'
+import { push } from 'connected-react-router';
 
 export default class Header extends Component {
 
@@ -31,7 +31,7 @@ export default class Header extends Component {
             <header id='header'>
                 <div id='bottom-header'>
                     <div id='header-logo' onClick={ function(dispatch) {
-                        hashHistory.push('/')
+                        push('/')
                     }.bind(this, this.props.dispatch)
                     }></div>
                     <div id='header-title' className='ncss-brand u-uppercase un-selectable'>Cerberus</div>
@@ -83,7 +83,7 @@ class UserBox extends Component {
                 <div id='u-b-context-menu' className={this.props.displayUserContextMenu ? 'show-me-block' : 'hide-me'}
                      onMouseEnter={this.handleMouseClickUserName}
                      onMouseLeave={this.handleMouseLeaveUserMenuContext} >
-                    {isAdmin && <div className='context-menu-button' onClick={() => {hashHistory.push('/admin/sdb-metadata')}}>SDB Summary</div>}
+                    {isAdmin && <div className='context-menu-button' onClick={() => {push('/admin/sdb-metadata')}}>SDB Summary</div>}
                     <div className='context-menu-button' onClick={this.handleMouseClickViewToken}>View Token</div>
                     <div className='context-menu-button' onClick={this.handleMouseClickLogout}>Logout</div>
                 </div>

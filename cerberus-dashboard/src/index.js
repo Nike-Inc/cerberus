@@ -16,15 +16,9 @@
 
 import React from "react";
 import { render } from "react-dom";
-import { Router, Route, IndexRoute, hashHistory } from "react-router";
 import { Provider } from "react-redux";
-import { syncHistoryWithStore } from "react-router-redux";
 
 import App from "./components/App/App";
-import LandingView from "./components/LandingView/LandingView";
-import SDBMetadataList from "./components/SDBMetadataList/SDBMetadataList";
-import ManageSafeDepositBox from "./components/ManageSafeDepositBox/ManageSafeDepositBox";
-import NotFound from "./components/NotFound/NotFound";
 import configureStore from "./store/configureStore";
 import {
   loginUserSuccess,
@@ -78,9 +72,6 @@ if (token !== null && token !== "") {
   store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId));
 }
 
-// Create an enhanced history that syncs navigation events with the store
-const history = syncHistoryWithStore(hashHistory, store);
-
 /**
  * The Provider makes the dispatch method available to children components that connect to it.
  * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.
@@ -93,23 +84,8 @@ const history = syncHistoryWithStore(hashHistory, store);
  * This is an implementation of FLUX.
  */
 render(
-  <div>
     <Provider store={store}>
-      <div>
-        <Router history={history}>
-          <Route path="/" component={App}>
-            <IndexRoute component={LandingView} />
-            <Route
-              path="manage-safe-deposit-box/:id"
-              component={ManageSafeDepositBox}
-            />
-            <Route path="admin/sdb-metadata" component={SDBMetadataList} />
-            <Route path="*" component={NotFound} />
-          </Route>
-          <Route path="*" component={NotFound} />
-        </Router>
-      </div>
-    </Provider>
-  </div>,
+      <App />
+    </Provider>,
   document.getElementById("root")
 );
