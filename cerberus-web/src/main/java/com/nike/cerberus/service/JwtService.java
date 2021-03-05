@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Service for generating, parsing, and validating JWT tokens. */
 @Component
-@ComponentScan(basePackages = {"com.nike.cerberus.jwt"})
+@ComponentScan(basePackages = {"com.nike.cerberus.jwt", "com.nike.cerberus.dao"})
 public class JwtService {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());

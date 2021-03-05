@@ -61,17 +61,17 @@
 package com.nike.cerberus.domain;
 
 import com.nike.cerberus.PrincipalType;
+import java.io.Serializable;
 import java.time.OffsetDateTime;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class CerberusAuthToken {
+// @Data
+// @Builder
+// @AllArgsConstructor
+// @NoArgsConstructor
+public class CerberusAuthToken implements Serializable {
+
+  private static final long serialVersionUID = 703097175899198451L;
 
   private String token;
   private OffsetDateTime created;
