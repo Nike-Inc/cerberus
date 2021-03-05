@@ -195,10 +195,15 @@ public class AuthTokenService {
   //  }
 
   @Transactional
-  public void revokeToken(String token) {
-    String hash = tokenHasher.hashToken(token);
-    authTokenDao.deleteAuthTokenFromHash(hash);
+  public void revokeToken(String tokenId, OffsetDateTime tokenExpires) {
+    logger.info("Revoking token ID: {}", tokenId);
+    jwtService.revokeToken(tokenId, tokenExpires);
   }
+  //  @Transactional
+  //  public void revokeToken(String token) {
+  //    String hash = tokenHasher.hashToken(token);
+  //    authTokenDao.deleteAuthTokenFromHash(hash);
+  //  }
 
   @Transactional(
       isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
