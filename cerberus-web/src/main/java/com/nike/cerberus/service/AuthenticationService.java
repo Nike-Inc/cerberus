@@ -487,7 +487,8 @@ public class AuthenticationService {
           .build();
     }
 
-    revoke(authPrincipal.getToken());
+    revoke(authPrincipal.getTokenId(), authPrincipal.getTokenExpires());
+    //    revoke(authPrincipal.getToken());
 
     final AuthResponse authResponse = new AuthResponse();
     authResponse.setStatus(AuthStatus.SUCCESS);
@@ -501,10 +502,18 @@ public class AuthenticationService {
     return authResponse;
   }
 
-  /** @param authToken Auth Token to be revoked */
-  public void revoke(final String authToken) {
-    authTokenService.revokeToken(authToken);
+  /**
+   * @param tokenId Auth Token ID to be revoked
+   * @param tokenExpires Token expire timestamp
+   */
+  public void revoke(final String tokenId, OffsetDateTime tokenExpires) {
+    authTokenService.revokeToken(tokenId, tokenExpires);
   }
+
+  //  /** @param authToken Auth Token to be revoked */
+  //  public void revoke(final String authToken) {
+  //    authTokenService.revokeToken(authToken);
+  //  }
 
   /**
    * Creates a token request and executes it returning the auth response.

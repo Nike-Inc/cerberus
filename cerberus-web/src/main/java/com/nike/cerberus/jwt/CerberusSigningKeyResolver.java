@@ -89,11 +89,6 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
   /**
    * This 'holder' class allows optional injection of Cerberus JWT-specific properties that are only
    * necessary for local development.
-   *
-   * <p>The 'optional=true' parameter to Guice @Inject cannot be used in combination with
-   * the @Provides annotation or with constructor injection.
-   *
-   * <p>https://github.com/google/guice/wiki/FrequentlyAskedQuestions
    */
   static class JwtServiceOptionalPropertyHolder {
     private static final String JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM =
@@ -122,7 +117,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
   /**
    * Return the signing key that should be used to sign JWT. The signing key is defined as the
-   * "newest active key" i.e. key with the biggest effectiveTs value and effectiveTs <= now.
+   * "newest active key" i.e. key with the biggest effectiveTs value and effectiveTs before now.
    *
    * @return The signing key
    */
@@ -199,7 +194,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
   /**
    * Set the signing key that should be used to sign JWT and the next signing key in line. The
    * signing key is defined as the "newest active key" i.e. key with the biggest effectiveTs value
-   * and effectiveTs <= now.
+   * and effectiveTs before now.
    *
    * @param jwtSecretData JWT config
    */
@@ -224,7 +219,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
   }
 
   /**
-   * Get future signing keys i.e. keys with effectiveTs > now.
+   * Get future signing keys i.e. keys with effectiveTs after now.
    *
    * @param jwtSecretData JWT config
    * @param now Timestamp of now
@@ -242,7 +237,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
   /**
    * Get the ID of signing key that should be used to sign JWT. The signing key is defined as the
-   * "newest active key" i.e. key with the biggest effectiveTs value and effectiveTs <= now.
+   * "newest active key" i.e. key with the biggest effectiveTs value and effectiveTs before now.
    *
    * @param jwtSecretData JWT config
    * @param now Timestamp of now in millisecond
