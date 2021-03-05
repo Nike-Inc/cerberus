@@ -19,17 +19,19 @@ package com.nike.cerberus.dao;
 import com.nike.cerberus.mapper.JwtBlacklistMapper;
 import com.nike.cerberus.record.JwtBlacklistRecord;
 import java.util.HashSet;
-import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JwtBlacklistDao {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private final JwtBlacklistMapper jwtBlacklistMapper;
 
-  @Inject
+  @Autowired
   public JwtBlacklistDao(JwtBlacklistMapper jwtBlacklistMapper) {
     this.jwtBlacklistMapper = jwtBlacklistMapper;
   }
