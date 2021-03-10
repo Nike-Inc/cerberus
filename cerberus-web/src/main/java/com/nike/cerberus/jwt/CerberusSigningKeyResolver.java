@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
-import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +46,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
   @Autowired
   public CerberusSigningKeyResolver(
+      JwtServiceOptionalPropertyHolder jwtServiceOptionalPropertyHolder,
       ObjectMapper objectMapper,
       ConfigService configService,
       @Value("${cerberus.auth.jwt.secret.local.autoGenerate}") boolean autoGenerate,
@@ -55,35 +55,32 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
     this.objectMapper = objectMapper;
 
     // Override key with properties, useful for local development
-    //        if (configService.isS3ConfigDisabled()) {
-    if (autoGenerate) {
-      log.info("Auto generating JWT secret for local development");
-      SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.forName(DEFAULT_JWT_ALG_HEADER));
-      this.signingKey = new CerberusJwtKeySpec(key, uuidSupplier.get());
+    if (configService.isS3ConfigDisabled()) {
+      if (autoGenerate) {
+        log.info("Auto generating JWT secret for local development");
+        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.forName(DEFAULT_JWT_ALG_HEADER));
+        this.signingKey = new CerberusJwtKeySpec(key, uuidSupplier.get());
+      } else {
+        log.info("Using JWT secret from properties");
+        if (!StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial)
+            && !StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId)) {
+          byte[] key =
+              Base64.getDecoder().decode(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial);
+          this.signingKey =
+              new CerberusJwtKeySpec(
+                  key, DEFAULT_ALGORITHM, jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId);
+        } else {
+          throw new IllegalArgumentException(
+              "Invalid JWT config. To resolve, either set "
+                  + "cms.auth.jwt.secret.local.autoGenerate=true or provide both cms.auth.jwt.secret.local.material"
+                  + " and cms.auth.jwt.secret.local.kid");
+        }
+      }
+      rotateKeyMap(signingKey);
     } else {
-      log.info("Using JWT secret from properties");
-      //            if
-      // (!StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial) &&
-      //
-      // !StringUtils.isBlank(jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId)) {
-      //                byte[] key =
-      // Base64.getDecoder().decode(jwtServiceOptionalPropertyHolder.jwtSecretLocalMaterial);
-      //                this.signingKey = new CerberusJwtKeySpec(key,
-      //                        DEFAULT_ALGORITHM,
-      //                        jwtServiceOptionalPropertyHolder.jwtSecretLocalKeyId);
-      //            } else {
-      //                throw new IllegalArgumentException("Invalid JWT config. To resolve, either
-      // set " +
-      //                        "cms.auth.jwt.secret.local.autoGenerate=true or provide both
-      // cms.auth.jwt.secret.local.material" +
-      //                        " and cms.auth.jwt.secret.local.kid");
-      //            }
+      log.info("Initializing JWT key resolver using S3 config");
+      refresh();
     }
-    rotateKeyMap(signingKey);
-    //        } else {
-    //            log.info("Initializing JWT key resolver using S3 config");
-    //            refresh();
-    //        }
   }
 
   /**
@@ -94,12 +91,13 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
     private static final String JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM =
         "cms.auth.jwt.secret.local.material";
     //        @com.google.inject.Inject(optional=true)
-    @Named(JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM)
+    //    @Named(JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM)
+    @Value("${cms.auth.jwt.secret.local.material: #{null}}")
     String jwtSecretLocalMaterial;
 
     private static final String JWT_SECRET_LOCAL_KID_CONFIG_PARAM = "cms.auth.jwt.secret.local.kid";
     //        @com.google.inject.Inject(optional=true)
-    @Named(JWT_SECRET_LOCAL_KID_CONFIG_PARAM)
+    @Value("${cms.auth.jwt.secret.local.kid: #{null}}")
     String jwtSecretLocalKeyId;
   }
 
