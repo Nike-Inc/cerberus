@@ -40,8 +40,7 @@ public class RevokeAuthenticationController {
   @RequestMapping(method = DELETE)
   public void revokeAuthentication(Authentication authentication) {
     var cerberusPrincipal = (CerberusPrincipal) authentication;
-    authenticationService.revoke(
-        cerberusPrincipal.getTokenId(), cerberusPrincipal.getTokenExpires());
+    authenticationService.revoke(cerberusPrincipal, cerberusPrincipal.getTokenExpires());
     //    authenticationService.revoke(cerberusPrincipal.getToken());
   }
 }

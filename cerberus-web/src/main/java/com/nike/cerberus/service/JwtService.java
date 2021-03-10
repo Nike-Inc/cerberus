@@ -17,6 +17,7 @@
 package com.nike.cerberus.service;
 
 // import com.google.inject.name.Named;
+import static io.jsonwebtoken.JwtParser.SEPARATOR_CHAR;
 import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
 import com.nike.cerberus.dao.JwtBlacklistDao;
@@ -35,6 +36,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,5 +178,16 @@ public class JwtService {
       )
   public int deleteExpiredTokens() {
     return jwtBlacklistDao.deleteExpiredTokens();
+  }
+
+  /**
+   * Return if the token looks like a JWT. Technically a JWT can have one dot but we don't allow it
+   * here.
+   *
+   * @param token The token to examine
+   * @return Does the token look like a JWT
+   */
+  public boolean isJwt(String token) {
+    return StringUtils.countMatches(token, SEPARATOR_CHAR) == 2;
   }
 }
