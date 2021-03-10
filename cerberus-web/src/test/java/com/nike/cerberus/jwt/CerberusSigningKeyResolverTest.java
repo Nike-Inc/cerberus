@@ -34,8 +34,6 @@ public class CerberusSigningKeyResolverTest {
 
   private JwtSecretData jwtSecretData = new JwtSecretData();
 
-  //  private UuidSupplier uuidSupplier = new UuidSupplier();
-
   private String configStoreJwtSecretData;
 
   @Before
@@ -74,7 +72,12 @@ public class CerberusSigningKeyResolverTest {
 
     cerberusSigningKeyResolver =
         new CerberusSigningKeyResolver(
-            jwtServiceOptionalPropertyHolder, objectMapper, configService, false, uuidSupplier);
+            jwtServiceOptionalPropertyHolder,
+            objectMapper,
+            configService,
+            false,
+            false,
+            uuidSupplier);
   }
 
   @Test

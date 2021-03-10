@@ -50,12 +50,13 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
       ObjectMapper objectMapper,
       ConfigService configService,
       @Value("${cerberus.auth.jwt.secret.local.autoGenerate}") boolean autoGenerate,
+      @Value("${cerberus.auth.jwt.secret.local.enabled}") boolean jwtLocalEnabled,
       UuidSupplier uuidSupplier) {
     this.configService = configService;
     this.objectMapper = objectMapper;
 
     // Override key with properties, useful for local development
-    if (configService.isS3ConfigDisabled()) {
+    if (jwtLocalEnabled) {
       if (autoGenerate) {
         log.info("Auto generating JWT secret for local development");
         SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.forName(DEFAULT_JWT_ALG_HEADER));
@@ -78,7 +79,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
       }
       rotateKeyMap(signingKey);
     } else {
-      log.info("Initializing JWT key resolver using S3 config");
+      log.info("Initializing JWT key resolver using Jwt Secret from S3 bucket");
       refresh();
     }
   }
@@ -87,16 +88,11 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
    * This 'holder' class allows optional injection of Cerberus JWT-specific properties that are only
    * necessary for local development.
    */
+  @Component
   static class JwtServiceOptionalPropertyHolder {
-    private static final String JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM =
-        "cms.auth.jwt.secret.local.material";
-    //        @com.google.inject.Inject(optional=true)
-    //    @Named(JWT_SECRET_LOCAL_MATERIAL_CONFIG_PARAM)
     @Value("${cms.auth.jwt.secret.local.material: #{null}}")
     String jwtSecretLocalMaterial;
 
-    private static final String JWT_SECRET_LOCAL_KID_CONFIG_PARAM = "cms.auth.jwt.secret.local.kid";
-    //        @com.google.inject.Inject(optional=true)
     @Value("${cms.auth.jwt.secret.local.kid: #{null}}")
     String jwtSecretLocalKeyId;
   }
