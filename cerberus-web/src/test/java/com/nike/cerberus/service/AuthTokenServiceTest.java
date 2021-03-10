@@ -77,6 +77,8 @@ public class AuthTokenServiceTest {
 
     when(uuidSupplier.get()).thenReturn(id);
     when(jwtService.generateJwtToken(any())).thenReturn(expectedTokenId);
+    // TODO: will need when using both session/jwt at the same time
+
     //        when(authTokenGenerator.generateSecureToken()).thenReturn(expectedTokenId);
     when(dateTimeSupplier.get()).thenReturn(now);
     when(tokenHasher.hashToken(expectedTokenId)).thenReturn(fakeHash);
@@ -101,6 +103,7 @@ public class AuthTokenServiceTest {
         "The newly created token should have a refresh count of 0", 0, token.getRefreshCount());
 
     // TODO: does this need to be fixed?
+
     //    verify(authTokenDao)
     //        .createAuthToken(
     //            argThat(
@@ -194,6 +197,7 @@ public class AuthTokenServiceTest {
   }
 
   // TODO: does this need to be updated to use jwt?
+
   //  @Test
   //  public void test_that_revokeToken_calls_the_dao_with_the_hashed_token() {
   //    final String tokenId = "abc-123-def-456";
