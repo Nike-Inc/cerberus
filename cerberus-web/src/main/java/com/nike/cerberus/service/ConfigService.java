@@ -55,17 +55,26 @@ public class ConfigService {
 
   private final Region currentRegion;
 
+  private final boolean s3ConfigEnabled;
+
   @Autowired
   public ConfigService(
       @Value("${cerberus.auth.jwt.secret.bucket}") final String bucketName,
       final String region,
-      AwsCrypto awsCrypto) {
+      AwsCrypto awsCrypto,
+      @Value("${cerberus.s3.config.enabled: #{false}}") boolean s3ConfigEnabled) {
 
     currentRegion = Region.getRegion(Regions.fromName(region));
     this.s3Client = AmazonS3Client.builder().withRegion(region).build();
 
     this.bucketName = bucketName;
     this.awsCrypto = awsCrypto;
+    this.s3ConfigEnabled = s3ConfigEnabled;
+  }
+
+  /** Returns whether or not config can be loaded from S3 */
+  public boolean isS3ConfigDisabled() {
+    return s3ConfigEnabled;
   }
 
   public String getJwtSecrets() {
