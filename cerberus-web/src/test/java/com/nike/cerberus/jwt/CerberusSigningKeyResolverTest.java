@@ -34,11 +34,14 @@ public class CerberusSigningKeyResolverTest {
 
   private JwtSecretData jwtSecretData = new JwtSecretData();
 
+  //  private UuidSupplier uuidSupplier = new UuidSupplier();
+
   private String configStoreJwtSecretData;
 
   @Before
   public void setUp() throws Exception {
     initMocks(this);
+    configStoreJwtSecretData = "foo";
     LinkedList<JwtSecret> jwtSecrets = new LinkedList<>();
     jwtSecretData.setJwtSecrets(jwtSecrets);
 
@@ -70,7 +73,8 @@ public class CerberusSigningKeyResolverTest {
     when(configService.getJwtSecrets()).thenReturn(configStoreJwtSecretData);
 
     cerberusSigningKeyResolver =
-        new CerberusSigningKeyResolver(objectMapper, configService, false, uuidSupplier);
+        new CerberusSigningKeyResolver(
+            jwtServiceOptionalPropertyHolder, objectMapper, configService, false, uuidSupplier);
   }
 
   @Test
