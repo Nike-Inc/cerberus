@@ -18,8 +18,8 @@
 package com.nike.cerberus.domain;
 
 /** Enum used to distinguish between JWT and session token */
-public enum AuthTokenType {
+public enum AuthTokenAcceptType {
   JWT,
   SESSION,
-  ALL // accept only
+  ALL
 }
