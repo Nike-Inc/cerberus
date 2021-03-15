@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nike, Inc.
+ * Copyright (c) 2021 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 
 package com.nike.cerberus.service;
 
-// import com.google.inject.name.Named;
 import static io.jsonwebtoken.JwtParser.SEPARATOR_CHAR;
 import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
-import com.nike.cerberus.dao.JwtBlacklistDao;
+import com.nike.cerberus.dao.JwtBlocklistDao;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
-import com.nike.cerberus.record.JwtBlacklistRecord;
+import com.nike.cerberus.record.JwtBlocklistRecord;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jws;
@@ -58,19 +57,19 @@ public class JwtService {
 
   private final CerberusSigningKeyResolver signingKeyResolver;
   private final String environmentName;
-  private final JwtBlacklistDao jwtBlacklistDao;
+  private final JwtBlocklistDao jwtBlocklistDao;
 
-  private HashSet<String> blacklist;
+  private HashSet<String> blocklist;
 
   @Autowired
   public JwtService(
       CerberusSigningKeyResolver signingKeyResolver,
       @Value("cerberus.environmentName") String environmentName,
-      JwtBlacklistDao jwtBlacklistDao) {
+      JwtBlocklistDao jwtBlocklistDao) {
     this.signingKeyResolver = signingKeyResolver;
     this.environmentName = environmentName;
-    this.jwtBlacklistDao = jwtBlacklistDao;
-    refreshBlacklist();
+    this.jwtBlocklistDao = jwtBlocklistDao;
+    refreshBlocklist();
   }
 
   /**
@@ -123,8 +122,8 @@ public class JwtService {
       return Optional.empty();
     }
     Claims claims = claimsJws.getBody();
-    if (blacklist.contains(claims.getId())) {
-      log.warn("This JWT token is blacklisted. ID: {}", claims.getId());
+    if (blocklist.contains(claims.getId())) {
+      log.warn("This JWT token is blocklisted. ID: {}", claims.getId());
       return Optional.empty();
     }
     String subject = claims.getSubject();
@@ -150,9 +149,9 @@ public class JwtService {
     signingKeyResolver.refresh();
   }
 
-  /** Refresh JWT blacklist */
-  public void refreshBlacklist() {
-    blacklist = jwtBlacklistDao.getBlacklist();
+  /** Refresh JWT blocklist */
+  public void refreshBlocklist() {
+    blocklist = jwtBlocklistDao.getBlocklist();
   }
 
   /**
@@ -162,14 +161,14 @@ public class JwtService {
    * @param tokenExpires Expiration timestamp of the JWT
    */
   public void revokeToken(String id, OffsetDateTime tokenExpires) {
-    blacklist.add(id);
-    JwtBlacklistRecord jwtBlacklistRecord =
-        new JwtBlacklistRecord().setId(id).setExpiresTs(tokenExpires);
-    jwtBlacklistDao.addToBlacklist(jwtBlacklistRecord);
+    blocklist.add(id);
+    JwtBlocklistRecord jwtBlocklistRecord =
+        new JwtBlocklistRecord().setId(id).setExpiresTs(tokenExpires);
+    jwtBlocklistDao.addToBlocklist(jwtBlocklistRecord);
   }
 
   /**
-   * Delete JWT blacklist entries that have expired
+   * Delete JWT blocklist entries that have expired
    *
    * @return
    */
@@ -177,7 +176,7 @@ public class JwtService {
       isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
       )
   public int deleteExpiredTokens() {
-    return jwtBlacklistDao.deleteExpiredTokens();
+    return jwtBlocklistDao.deleteExpiredTokens();
   }
 
   /**

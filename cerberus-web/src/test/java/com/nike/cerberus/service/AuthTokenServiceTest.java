@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Nike, inc.
+ * Copyright (c) 2021 Nike, inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,6 @@ public class AuthTokenServiceTest {
     String id = UUID.randomUUID().toString();
     String expectedTokenId = "abc-123-def-456";
     OffsetDateTime now = OffsetDateTime.now();
-    //    final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
     String principal = "test-user@domain.com";
     String groups = "group1,group2,group3";
     when(tokenFlag.getIssueType()).thenReturn(AuthTokenIssueType.JWT);
@@ -136,7 +135,6 @@ public class AuthTokenServiceTest {
     when(jwtService.generateJwtToken(any())).thenReturn(expectedTokenId);
 
     when(dateTimeSupplier.get()).thenReturn(now);
-    //    when(tokenHasher.hashToken(expectedTokenId)).thenReturn(fakeHash);
 
     CerberusAuthToken token =
         authTokenService.generateToken(principal, PrincipalType.USER, false, groups, 5, 0);
@@ -175,8 +173,6 @@ public class AuthTokenServiceTest {
     final String tokenId = "abc-123-def-456";
     final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
 
-    //    when(tokenFlag.getIssueType()).thenReturn(AuthTokenType.SESSION);
-    //    when(tokenFlag.getAcceptType()).thenReturn(AuthTokenType.ALL);
     when(tokenHasher.hashToken(tokenId)).thenReturn(fakeHash);
     when(authTokenDao.getAuthTokenFromHash(fakeHash)).thenReturn(Optional.empty());
 
@@ -187,13 +183,9 @@ public class AuthTokenServiceTest {
   @Test
   public void test_that_getCerberusAuthToken_returns_empty_if_JWT_not_present() {
     final String tokenId = "abc.123.def";
-    //    final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
 
-    //    when(tokenFlag.getIssueType()).thenReturn(AuthTokenType.JWT);
     when(jwtService.isJwt(tokenId)).thenReturn(true);
     when(jwtService.parseAndValidateToken(tokenId)).thenReturn(Optional.empty());
-    //    when(tokenHasher.hashToken(tokenId)).thenReturn(fakeHash);
-    //    when(authTokenDao.getAuthTokenFromHash(fakeHash)).thenReturn(Optional.empty());
 
     Optional<CerberusAuthToken> tokenOptional = authTokenService.getCerberusAuthToken(tokenId);
     assertTrue("optional should be empty", !tokenOptional.isPresent());
@@ -216,17 +208,11 @@ public class AuthTokenServiceTest {
   @Test
   public void test_that_when_a_token_is_expired_empty_is_returned_jwt() {
     final String tokenId = "abc.123.def";
-    //    final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
 
     when(jwtService.isJwt(tokenId)).thenReturn(true);
     when(jwtService.parseAndValidateToken(tokenId))
         .thenReturn(
             Optional.of(new CerberusJwtClaims().setExpiresTs(OffsetDateTime.now().minusHours(1))));
-    //    when(tokenHasher.hashToken(tokenId)).thenReturn(fakeHash);
-    //    when(authTokenDao.getAuthTokenFromHash(fakeHash))
-    //        .thenReturn(
-    //            Optional.of(new
-    // AuthTokenRecord().setExpiresTs(OffsetDateTime.now().minusHours(1))));
 
     Optional<CerberusAuthToken> tokenOptional = authTokenService.getCerberusAuthToken(tokenId);
     assertTrue("optional should be empty", !tokenOptional.isPresent());

@@ -103,11 +103,9 @@ public class AuthTokenService {
 
     switch (tokenFlag.getIssueType()) {
       case JWT:
-        // TODO: Make this a method
         return getCerberusAuthTokenFromJwt(
             principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
       case SESSION:
-        // TODO: Make this a method
         return getCerberusAuthTokenFromSession(
             principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
       default:
@@ -229,31 +227,6 @@ public class AuthTokenService {
       authTokenDao.deleteAuthTokenFromHash(hash);
     }
   }
-  //    switch (tokenFlag.getAcceptType()) {
-  //      case JWT:
-  //        logger.info("Revoking token ID: {}", cerberusPrincipal);
-  //        jwtService.revokeToken(cerberusPrincipal.getTokenId(), tokenExpires);
-  //        break;
-  //      case SESSION:
-  //        String hash = tokenHasher.hashToken(cerberusPrincipal.getToken());
-  //        authTokenDao.deleteAuthTokenFromHash(hash);
-  //        break;
-  //      case ALL:
-  //        if (jwtService.isJwt(cerberusPrincipal.getToken())) {
-  //          logger.info("Revoking token ID: {}", cerberusPrincipal);
-  //          jwtService.revokeToken(cerberusPrincipal.getTokenId(), tokenExpires);
-  //        } else {
-  //          hash = tokenHasher.hashToken(cerberusPrincipal.getToken());
-  //          authTokenDao.deleteAuthTokenFromHash(hash);
-  //        }
-  //        break;
-  //  }
-
-  //  @Transactional
-  //  public void revokeToken(String token) {
-  //    String hash = tokenHasher.hashToken(token);
-  //    authTokenDao.deleteAuthTokenFromHash(hash);
-  //  }
 
   @Transactional(
       isolation = READ_UNCOMMITTED // allow dirty reads so we don't block other threads
