@@ -5,7 +5,7 @@ title: AWS STS Authentication
 
 This is the newest and preferred method for authenticating with Cerberus as an AWS IAM principal.
 
-# Quick Start
+# Create an IAM Principal ARN for STS Auth
 
 To use STS Auth, make sure you are on the latest version of the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://engineering.nike.com/cerberus/components/')" href="https://engineering.nike.com/cerberus/components/">Cerberus Clients</a>.
 

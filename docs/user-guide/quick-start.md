@@ -87,7 +87,7 @@ can [contribute](../contributing/how-to-contribute) a new client or use the [RES
 
 # Local Development
 
-To get started with local development, check out the <a target="_blank rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
+To get started with local development, check out the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
 
 ## Verifying Your Identity
 
