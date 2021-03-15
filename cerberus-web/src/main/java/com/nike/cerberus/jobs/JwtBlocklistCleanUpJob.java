@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nike, Inc.
+ * Copyright (c) 2021 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,34 @@
 package com.nike.cerberus.jobs;
 
 import com.nike.cerberus.service.JwtService;
-import javax.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-/** Periodically clean up JWT blacklist. */
-public class JwtBlacklistCleanUpJob extends LockingJob {
+/** Periodically clean up JWT blocklist. */
+@Slf4j
+@ConditionalOnProperty("cerberus.jobs.jwtBlocklistCleanUpJob.enabled")
+@Component
+public class JwtBlocklistCleanUpJob extends LockingJob {
 
   private final JwtService jwtService;
-  protected final Logger log = LoggerFactory.getLogger(getClass());
 
-  @Inject
-  public JwtBlacklistCleanUpJob(JwtService jwtService) {
+  @Autowired
+  public JwtBlocklistCleanUpJob(JwtService jwtService) {
     this.jwtService = jwtService;
+  }
+
+  @Override
+  @Scheduled(cron = "${cerberus.jobs.jwtBlocklistCleanUpJob.cronExpression}")
+  public void execute() {
+    super.execute();
   }
 
   @Override
   protected void executeLockableCode() {
     int numberOfDeletedTokens = jwtService.deleteExpiredTokens();
-    log.info("Deleted {} JWT blacklist entries", numberOfDeletedTokens);
+    log.info("Deleted {} JWT blocklist entries", numberOfDeletedTokens);
   }
 }

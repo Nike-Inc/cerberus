@@ -232,6 +232,21 @@ cerberus:
       # Every hour
       cronExpression: "0 0 * ? * *"
 
+    # JWT
+    jwtSecretRefreshJob:
+      enabled: true
+      # Every minute
+      cronExpression: "0 * * ? * *"
+
+    jwtBlacklistCleanUpJob:
+      enabled: true
+      # Every 5 seconds
+      cronExpression: "0/5 * * ? * *"
+
+    jwtBlacklistRefreshJob:
+      enabled: true
+      # Every minute
+      cronExpression: "0 * * ? * *"
 
     ################################################################################################
     # This Job require auth.iam.kms.rootUserArn,adminRoleArn,cmsRoleArn to be configured

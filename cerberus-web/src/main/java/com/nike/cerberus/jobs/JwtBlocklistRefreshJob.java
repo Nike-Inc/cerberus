@@ -24,22 +24,22 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Periodically refresh JWT signing keys. */
+/** Periodically refresh JWT blocklist. */
 @Slf4j
-@ConditionalOnProperty("cerberus.jobs.jwtSecretRefreshJob.enabled")
+@ConditionalOnProperty("cerberus.jobs.jwtBlocklistRefreshJob.enabled")
 @Component
-public class JwtSecretRefreshJob {
+public class JwtBlocklistRefreshJob {
 
   private final JwtService jwtService;
 
   @Autowired
-  public JwtSecretRefreshJob(JwtService jwtService) {
+  public JwtBlocklistRefreshJob(JwtService jwtService) {
     this.jwtService = jwtService;
   }
 
-  @Scheduled(cron = "${cerberus.jobs.jwtSecretRefreshJob.cronExpression}")
+  @Scheduled(cron = "${cerberus.jobs.jwtBlocklistRefreshJob.cronExpression}")
   public void execute() {
-    log.debug("Running JWT secret refresh job");
-    jwtService.refreshKeys();
+    log.debug("Running JWT blocklist refresh job");
+    jwtService.refreshBlocklist();
   }
 }

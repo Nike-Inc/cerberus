@@ -41,6 +41,5 @@ public class RevokeAuthenticationController {
   public void revokeAuthentication(Authentication authentication) {
     var cerberusPrincipal = (CerberusPrincipal) authentication;
     authenticationService.revoke(cerberusPrincipal, cerberusPrincipal.getTokenExpires());
-    //    authenticationService.revoke(cerberusPrincipal.getToken());
   }
 }

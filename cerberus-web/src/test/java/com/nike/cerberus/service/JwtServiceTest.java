@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.common.collect.Sets;
-import com.nike.cerberus.dao.JwtBlacklistDao;
+import com.nike.cerberus.dao.JwtBlocklistDao;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
@@ -23,7 +23,7 @@ public class JwtServiceTest {
 
   @Mock private CerberusSigningKeyResolver signingKeyResolver;
 
-  @Mock private JwtBlacklistDao jwtBlacklistDao;
+  @Mock private JwtBlocklistDao jwtBlocklistDao;
 
   private JwtService jwtService;
 
@@ -34,7 +34,7 @@ public class JwtServiceTest {
   @Before
   public void setUp() throws Exception {
     initMocks(this);
-    jwtService = new JwtService(signingKeyResolver, "local", jwtBlacklistDao);
+    jwtService = new JwtService(signingKeyResolver, "local", jwtBlocklistDao);
     cerberusJwtKeySpec = new CerberusJwtKeySpec(new byte[64], "HmacSHA512", "key id");
     cerberusJwtClaims = new CerberusJwtClaims();
     cerberusJwtClaims.setId("id");
@@ -93,10 +93,10 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_parseAndValidateToken_returns_empty_for_blacklisted_token() {
+  public void test_parseAndValidateToken_returns_empty_for_blocklisted_token() {
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
-    when(jwtBlacklistDao.getBlacklist()).thenReturn(Sets.newHashSet("id"));
-    jwtService.refreshBlacklist();
+    when(jwtBlocklistDao.getBlocklist()).thenReturn(Sets.newHashSet("id"));
+    jwtService.refreshBlocklist();
     Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
     assertFalse(cerberusJwtClaims.isPresent());
   }
@@ -105,6 +105,6 @@ public class JwtServiceTest {
   public void test_that_revokeToken_calls_the_dao() {
     final String tokenId = "abc-123-def-456";
     jwtService.revokeToken(tokenId, OffsetDateTime.now());
-    verify(jwtBlacklistDao, times(1)).addToBlacklist(any());
+    verify(jwtBlocklistDao, times(1)).addToBlocklist(any());
   }
 }

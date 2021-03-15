@@ -19,17 +19,17 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!--suppress SqlNoDataSourceInspection -->
-<mapper namespace="com.nike.cerberus.mapper.JwtBlacklistMapper">
+<mapper namespace="com.nike.cerberus.mapper.JwtBlocklistMapper">
 
-    <select id="getBlacklist" resultType="String">
+    <select id="getBlocklist" resultType="String">
     SELECT
       ID
     FROM
-      JWT_BLACKLIST
+      JWT_BLOCKLIST
   </select>
 
-    <insert id="addToBlacklist" parameterType="JwtBlacklistRecord">
-    INSERT INTO JWT_BLACKLIST (
+    <insert id="addToBlocklist" parameterType="JwtBlocklistRecord">
+    INSERT INTO JWT_BLOCKLIST (
       ID,
       EXPIRES_TS
     )
@@ -40,6 +40,6 @@
   </insert>
 
     <delete id="deleteExpiredTokens">
-    DELETE FROM JWT_BLACKLIST WHERE EXPIRES_TS &lt; CURRENT_TIME
+    DELETE FROM JWT_BLOCKLIST WHERE EXPIRES_TS &lt; CURRENT_TIME
   </delete>
 </mapper>

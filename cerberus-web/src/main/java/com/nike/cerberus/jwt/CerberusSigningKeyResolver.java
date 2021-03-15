@@ -124,7 +124,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
     }
   }
 
-  /** // * Poll for JWT config and update key map with new data */
+  /** Poll for JWT config and update key map with new data */
   public void refresh() {
     JwtSecretData jwtSecretData = getJwtSecretData();
 
