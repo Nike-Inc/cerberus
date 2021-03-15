@@ -3,7 +3,7 @@ layout: documentation
 title: AWS IAM KMS Authentication
 ---
 
-### <span style="background-color:#d9534f"> Deprecation Notice <span>
+# Deprecation Notice
 AWS IAM KMS Authentication is deprecrated. KMS Auth is Cerberus's original AWS IAM authentication mechanism.
 Please see [AWS STS Authentication](../authentication/aws-iam-sts-authentication) for more information on how to 
 use AWS STS Authentication, the current authentication mechanism. To use STS Auth, make sure you are

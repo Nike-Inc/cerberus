@@ -31,7 +31,9 @@ deposit box (SDB) is a logical grouping of data with a single set of access cont
 1. Under `IAM Principal Permissions`, click the `+ Add New Permission` button.
 1. Construct an IAM Principal ARN.
    This is an example of a base role ARN:
-   ```arn:aws:iam::1111111111111:role/ExampleAdminRole```
+   ```
+   arn:aws:iam::1111111111111:role/ExampleAdminRole
+   ```
    
    In this example, `1111111111111` is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
    documentation for the account ID that you should use.
@@ -85,7 +87,7 @@ can [contribute](../contributing/how-to-contribute) a new client or use the [RES
 
 # Local Development
 
-To get started with local development, check out the <a target="_blank "rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
+To get started with local development, check out the <a target="_blank rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
 
 ## Verifying Your Identity
 
