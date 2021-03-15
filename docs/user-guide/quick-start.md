@@ -15,12 +15,12 @@ deposit box (SDB) is a logical grouping of data with a single set of access cont
 
 1. Login to the Cerberus [dashboard](dashboard) with your credentials.
 1. In the left navigation bar, click the `+ Create a New SDB` button next to the Applications section.
-1. Enter a descriptive name for your SDB.  If your app is `myexampleapp`, go with `My Example App`.
+1. Enter a descriptive name for your SDB.  If your app is `myexampleapp`, use `My Example App`.
 1. The owner field is the Active Directory group that will have ownership and admin privileges for this SDB. Select one of the AD groups of which you 
    are currently a member.
 1. Under `User Group Permissions`, you can give additional Active Directory groups, that you are a member of, read or write access to the SDB. This is optional.
 1. Under `IAM Principal Permissions`, you can provide the AWS role name that will have either read or write access 
-   to the SDB. This is optional. See `How to add an IAM Principal Permission` section below.
+   to the SDB. This is optional. See "How to add an IAM Principal Permission" section below.
 1. Click the `SUBMIT` button.
 
 <a href="../../images/dashboard/create-new-safe-deposit-box-screen.png" target="_blank">
@@ -67,16 +67,17 @@ a list of several key/value pairs is optimal. This allows all values to be read 
 
 # 3. Access Your Secrets with Cerberus
 
-Use one of the clients:
+Use one of the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://engineering.nike.com/cerberus/components/')" href="https://engineering.nike.com/cerberus/components/">Cerberus Clients</a>. 
+The clients are also listed below:
 
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-java-client')" href="https://github.com/Nike-Inc/cerberus-java-client">Java Client</a>
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-spring-boot-client')" href="https://github.com/Nike-Inc/cerberus-spring-boot-client">Java Spring Boot Client</a>
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-archaius-client')" href="https://github.com/Nike-Inc/cerberus-archaius-client">Java Archaius Polling Client</a> (generally preferred for 
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-java-client')" href="https://github.com/Nike-Inc/cerberus-java-client">Java Client</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-spring-boot-client')" href="https://github.com/Nike-Inc/cerberus-spring-boot-client">Java Spring Boot Client</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-archaius-client')" href="https://github.com/Nike-Inc/cerberus-archaius-client">Java Archaius Polling Client</a> (generally preferred for 
   companies using [Archaius](archaius))
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-node-client')" href="https://github.com/Nike-Inc/cerberus-node-client">Node Client</a>
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-python-client')" href="https://github.com/Nike-Inc/cerberus-python-client">Python Client</a>
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-go-client')" href="https://github.com/Nike-Inc/cerberus-go-client">Go Client</a>
-* <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-cli')" href="https://github.com/Nike-Inc/cerberus-cli">Cerberus CLI</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-node-client')" href="https://github.com/Nike-Inc/cerberus-node-client">Node Client</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-python-client')" href="https://github.com/Nike-Inc/cerberus-python-client">Python Client</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-go-client')" href="https://github.com/Nike-Inc/cerberus-go-client">Go Client</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-cli')" href="https://github.com/Nike-Inc/cerberus-cli">Cerberus CLI</a>
 
 
 Don't see your desired client? Cerberus has a REST API. You 
@@ -84,7 +85,7 @@ can [contribute](../contributing/how-to-contribute) a new client or use the [RES
 
 # Local Development
 
-To get started with local development, check out the <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
+To get started with local development, check out the <a target="_blank "rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus#getting-started-for-local-development')" href="https://github.com/Nike-Inc/cerberus#getting-started-for-local-development">Cerberus README</a>.
 
 ## Verifying Your Identity
 

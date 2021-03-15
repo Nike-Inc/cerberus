@@ -3,7 +3,11 @@ layout: documentation
 title: AWS IAM KMS Authentication
 ---
 
-This is Cerberus's original AWS IAM authentication mechanism, we consider this to be deprecated and are actively perusing ways of removing / disabling the endpoint in the near future. 
+### <span style="background-color:#d9534f"> Deprecation Notice <span>
+AWS IAM KMS Authentication is deprecrated. KMS Auth is Cerberus's original AWS IAM authentication mechanism.
+Please see [AWS STS Authentication](../authentication/aws-iam-sts-authentication) for more information on how to 
+use AWS STS Authentication, the current authentication mechanism. To use STS Auth, make sure you are
+on the latest version of the Cerberus clients.
 
 # IAM Authentication
 
@@ -64,6 +68,6 @@ You will want to make this the region you are running in and not hard code this 
 
 # References
 
-*  <a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/ec2/')" href="https://aws.amazon.com/ec2/">Amazon EC2 - Virtual Server Hosting</a>
-*  <a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/iam/')" href="https://aws.amazon.com/iam/">AWS Identity and Access Management (IAM)</a>
-*  <a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/kms/')" href="https://aws.amazon.com/kms/">AWS Key Management Service (KMS)</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/ec2/')" href="https://aws.amazon.com/ec2/">Amazon EC2 - Virtual Server Hosting</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/iam/')" href="https://aws.amazon.com/iam/">AWS Identity and Access Management (IAM)</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/kms/')" href="https://aws.amazon.com/kms/">AWS Key Management Service (KMS)</a>

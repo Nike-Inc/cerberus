@@ -9,21 +9,21 @@ Here are some other options you may want to consider:
 
 # AWS Secrets Manager
 
-<a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/secrets-manager/')" href="https://aws.amazon.com/secrets-manager/">AWS Secrets Manager</a> came out after Cerberus and is the official solution for secrets management with in AWS and should seriously be considered over Cerberus.
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/secrets-manager/')" href="https://aws.amazon.com/secrets-manager/">AWS Secrets Manager</a> came out after Cerberus and is the official solution for secrets management with in AWS and should seriously be considered over Cerberus.
 
 # HashiCorp Vault with Consul backend
 
-<a target="_blank" onclick="trackOutboundLink('https://www.vaultproject.io/')" href="https://www.vaultproject.io/">Vault</a> is a popular open source secrets management tool created by <a target="_blank" onclick="trackOutboundLink('https://www.hashicorp.com/')" href="https://www.hashicorp.com/">HashiCorp</a>.
- There is also an <a target="_blank" onclick="trackOutboundLink('https://www.hashicorp.com/vault.html')" href="https://www.hashicorp.com/vault.html">enterprise version</a> that includes a UI and other additional features.
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://www.vaultproject.io/')" href="https://www.vaultproject.io/">Vault</a> is a popular open source secrets management tool created by <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://www.hashicorp.com/')" href="https://www.hashicorp.com/">HashiCorp</a>.
+ There is also an <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://www.hashicorp.com/vault.html')" href="https://www.hashicorp.com/vault.html">enterprise version</a> that includes a UI and other additional features.
 
 # CyberArk Password Vault and AIM
 
-<a target="_blank" onclick="trackOutboundLink('http://www.cyberark.com/')" href="http://www.cyberark.com/">CyberArk</a> is a company that owns and licenses enterprise security solutions such as
-the <a target="_blank" onclick="trackOutboundLink('http://www.cyberark.com/products/privileged-account-security-solutions/')" href="http://www.cyberark.com/products/privileged-account-security-solutions/">Privileged Account Security Solution</a>.
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('http://www.cyberark.com/')" href="http://www.cyberark.com/">CyberArk</a> is a company that owns and licenses enterprise security solutions such as
+the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('http://www.cyberark.com/products/privileged-account-security-solutions/')" href="http://www.cyberark.com/products/privileged-account-security-solutions/">Privileged Account Security Solution</a>.
 
 # Confidant
 
-<a target="_blank" onclick="trackOutboundLink('https://lyft.github.io/confidant/')" href="https://lyft.github.io/confidant/">Confidant</a> is open source solution developed by Lyft that provides user-friendly 
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://lyft.github.io/confidant/')" href="https://lyft.github.io/confidant/">Confidant</a> is open source solution developed by Lyft that provides user-friendly 
 storage and access to secrets in a secure way.  Uses KMS, IAM authentication, and Google OAuth.
 
 # Credstash
