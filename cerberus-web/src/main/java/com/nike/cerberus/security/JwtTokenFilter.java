@@ -20,9 +20,6 @@ public class JwtTokenFilter extends CerberusAuthenticationFilter {
 
   @Override
   Optional<CerberusPrincipal> extractCerberusPrincipalFromRequest(HttpServletRequest request) {
-    //    System.out.println("using JWT");
-    ////    System.out.println(request.getHeader(HEADER_X_CERBERUS_TOKEN));
-    ////    return Optional.empty();
     return Optional.ofNullable(request.getHeader(HEADER_X_CERBERUS_TOKEN))
         .or(() -> Optional.ofNullable(request.getHeader(LEGACY_AUTH_TOKN_HEADER)))
         // If the token is present then use the auth service to map it to a Cerberus Principal

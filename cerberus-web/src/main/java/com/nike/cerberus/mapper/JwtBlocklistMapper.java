@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nike, Inc.
+ * Copyright (c) 2021 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,17 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.record;
+package com.nike.cerberus.mapper;
 
-import java.time.OffsetDateTime;
+import com.nike.cerberus.record.JwtBlocklistRecord;
+import java.util.HashSet;
+import org.apache.ibatis.annotations.Param;
 
-public class JwtBlacklistRecord {
+public interface JwtBlocklistMapper {
 
-  private String id;
+  HashSet<String> getBlocklist();
 
-  private OffsetDateTime expiresTs;
+  int addToBlocklist(@Param("record") JwtBlocklistRecord record);
 
-  public String getId() {
-    return id;
-  }
-
-  public JwtBlacklistRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public OffsetDateTime getExpiresTs() {
-    return expiresTs;
-  }
-
-  public JwtBlacklistRecord setExpiresTs(OffsetDateTime expiresTs) {
-    this.expiresTs = expiresTs;
-    return this;
-  }
+  int deleteExpiredTokens();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nike, Inc.
+ * Copyright (c) 2021 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.nike.cerberus.dao;
 
-import com.nike.cerberus.mapper.JwtBlacklistMapper;
-import com.nike.cerberus.record.JwtBlacklistRecord;
+import com.nike.cerberus.mapper.JwtBlocklistMapper;
+import com.nike.cerberus.record.JwtBlocklistRecord;
 import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,26 +25,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtBlacklistDao {
+public class JwtBlocklistDao {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private final JwtBlacklistMapper jwtBlacklistMapper;
+  private final JwtBlocklistMapper jwtBlocklistMapper;
 
   @Autowired
-  public JwtBlacklistDao(JwtBlacklistMapper jwtBlacklistMapper) {
-    this.jwtBlacklistMapper = jwtBlacklistMapper;
+  public JwtBlocklistDao(JwtBlocklistMapper jwtBlocklistMapper) {
+    this.jwtBlocklistMapper = jwtBlocklistMapper;
   }
 
-  public HashSet<String> getBlacklist() {
-    return jwtBlacklistMapper.getBlacklist();
+  public HashSet<String> getBlocklist() {
+    return jwtBlocklistMapper.getBlocklist();
   }
 
-  public int addToBlacklist(JwtBlacklistRecord jwtBlacklistRecord) {
-    return jwtBlacklistMapper.addToBlacklist(jwtBlacklistRecord);
+  public int addToBlocklist(JwtBlocklistRecord jwtBlocklistRecord) {
+    return jwtBlocklistMapper.addToBlocklist(jwtBlocklistRecord);
   }
 
   public int deleteExpiredTokens() {
-    return jwtBlacklistMapper.deleteExpiredTokens();
+    return jwtBlocklistMapper.deleteExpiredTokens();
   }
 }
