@@ -102,8 +102,8 @@ Java 7 example code available [here](https://github.com/Nike-Inc/cerberus-java-c
 #### JettyEclipseRun Conflict
 
 We've also seen this during local development as result of a library conflict with the
-<a target="_blank" onclick="trackOutboundLink('https://github.com/Khoulaiz/gradle-jetty-eclipse-plugin')" href="https://github.com/Khoulaiz/gradle-jetty-eclipse-plugin">jettyEclipseRun</a> Gradle plugin.  Upgrading to the
-<a target="_blank" onclick="trackOutboundLink('https://github.com/akhikhl/gretty')" href="https://github.com/akhikhl/gretty">Gretty</a> plugin resolved.
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Khoulaiz/gradle-jetty-eclipse-plugin')" href="https://github.com/Khoulaiz/gradle-jetty-eclipse-plugin">jettyEclipseRun</a> Gradle plugin.  Upgrading to the
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/akhikhl/gretty')" href="https://github.com/akhikhl/gretty">Gretty</a> plugin resolved.
 
 
 # SSL Plaintext Connection Error
@@ -144,5 +144,5 @@ configurations.all {
 
 ### Maven
 
-Maven users can use the <a target="_blank" onclick="trackOutboundLink('http://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html')" href="http://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html">dependency tree</a>
+Maven users can use the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('http://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html')" href="http://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html">dependency tree</a>
 plugin to learn more about how dependencies are being resolved.

@@ -58,5 +58,5 @@ title: Security Features
 
 # References
 
-*  <a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/kms/')" href="https://aws.amazon.com/kms/">AWS Key Management Service (KMS)</a>
-*  <a target="_blank" onclick="trackOutboundLink('https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html')" href="https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html">AWS Encryption SDK</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/kms/')" href="https://aws.amazon.com/kms/">AWS Key Management Service (KMS)</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html')" href="https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html">AWS Encryption SDK</a>

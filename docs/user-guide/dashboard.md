@@ -69,10 +69,10 @@ Only the owner is allowed to modify permissions or to delete the SDB.
 
 # Implementation
 
-The dashboard is implemented as a <a target="_blank" onclick="trackOutboundLink('https://facebook.github.io/react/')" href="https://facebook.github.io/react/">React</a> single-page application (SPA) that interacts with the
+The dashboard is implemented as a <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://facebook.github.io/react/')" href="https://facebook.github.io/react/">React</a> single-page application (SPA) that interacts with the
 [REST API](../architecture/rest-api).
 
 # References
 
-*  <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-management-service/tree/master/dashboard')" href="https://github.com/Nike-Inc/cerberus-management-service/tree/master/dashboard">Cerberus Management Dashboard Github</a>
-*  <a target="_blank" onclick="trackOutboundLink('https://facebook.github.io/react/')" href="https://facebook.github.io/react/">React JavaScript Library</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-management-service/tree/master/dashboard')" href="https://github.com/Nike-Inc/cerberus-management-service/tree/master/dashboard">Cerberus Management Dashboard Github</a>
+*  <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://facebook.github.io/react/')" href="https://facebook.github.io/react/">React JavaScript Library</a>

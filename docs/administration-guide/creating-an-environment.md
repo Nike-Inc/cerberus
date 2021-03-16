@@ -15,7 +15,7 @@ services from being able to impersonate each other.  In the future, we hope to r
 
 ## Create the Cerberus AMI
 
-Clone or download the <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-util-scripts')" href="https://github.com/Nike-Inc/cerberus-util-scripts">Cerberus Utility Script</a> project and follow
+Clone or download the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-util-scripts')" href="https://github.com/Nike-Inc/cerberus-util-scripts">Cerberus Utility Script</a> project and follow
 the README to create the AMI for the Cerberus Management Service.
 
 
@@ -24,7 +24,7 @@ the README to create the AMI for the Cerberus Management Service.
 Ensure you have a Java 8 JRE with Java Cryptography Extension (JCE) Unlimited
 Strength Jurisdiction Policy installed and available on your path (Note: a second download is required).
 
-Download the <a target="_blank" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-lifecycle-cli/releases/latest')" href="https://github.com/Nike-Inc/cerberus-lifecycle-cli/releases/latest">Cerberus Lifecycle CLI</a>
+Download the <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-lifecycle-cli/releases/latest')" href="https://github.com/Nike-Inc/cerberus-lifecycle-cli/releases/latest">Cerberus Lifecycle CLI</a>
 (both the cerberus shell script and jar) to some location like `~/Applications/cerberus` and setup environment variables:
 
 ```bash
@@ -36,7 +36,7 @@ Recommended: Install the AWS CLI. This is not required to stand up a Cerberus en
 to delete one. Then configure your AWS credentials via the CLI command: `aws configure`.
 
 If you do not wish to install the AWS CLI, see
-<a target="_blank" onclick="trackOutboundLink('http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html')" href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">Working with AWS Credentials</a>
+<a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html')" href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">Working with AWS Credentials</a>
 for alternative ways to supply credentials for the Cerberus Lifecycle CLI. We use the default credential provider chain with
 an added STSAssumeRoleSessionCredentialsProvider (so that build systems can assume a role). You can allow cerberus to
 assume a role by setting environment variables `CERBERUS_ASSUME_ROLE_ARN` and `CERBERUS_ASSUME_ROLE_EXTERNAL_ID`.

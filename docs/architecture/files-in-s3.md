@@ -54,4 +54,4 @@ rate_limit_processor_blacklist_data.json
 
 # References
 
-* <a target="_blank" onclick="trackOutboundLink('https://aws.amazon.com/s3/')" href="https://aws.amazon.com/s3/">Amazon S3</a>
+* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://aws.amazon.com/s3/')" href="https://aws.amazon.com/s3/">Amazon S3</a>
