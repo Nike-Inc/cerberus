@@ -51,7 +51,7 @@ a list of several key/value pairs is optimal. This allows all values to be read 
 1. Click the "Add new path" button.
 1. Enter a subpath name.
 1. Add the key/value pairs that you'd like to store at that subpath.
-1. Click "SAVE.
+1. Click "SAVE".
 1. The page will refresh and you'll be able to add more subpaths or edit the subpath you just added.
 
 <a href="../../images/dashboard/add-new-path-screen.png" target="_blank">
