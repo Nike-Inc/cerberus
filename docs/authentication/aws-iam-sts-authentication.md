@@ -31,14 +31,14 @@ ARN that works with STS Authentication.
    
    With KMS auth you might have had a permission like this:
 
-    ```
-    arn:aws:iam::1111111111111:role/some/path/ExampleAdminRole
+   ```
+   arn:aws:iam::1111111111111:role/some/path/ExampleAdminRole
    ```
     
-    With STS Auth, the paths in the role must be removed to update the ARN resulting in this:
+   With STS Auth, the paths in the role must be removed to update the ARN resulting in this:
     
-    ```
-    arn:aws:iam::1111111111111:role/ExampleAdminRole
+   ```
+   arn:aws:iam::1111111111111:role/ExampleAdminRole
    ```
 
 <a name="how"></a>
