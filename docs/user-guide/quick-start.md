@@ -14,53 +14,44 @@ deposit box (SDB) is a logical grouping of data with a single set of access cont
 # 1. Create a Safe Deposit Box
 
 1. Login to the Cerberus [dashboard](dashboard) with your credentials.
-1. In the left navigation bar, click the `+ Create a New SDB` button next to the Applications section.
-1. Enter a descriptive name for your SDB.  If your app is `myexampleapp`, use `My Example App`.
+1. In the left navigation bar, click the "+ Create a New SDB" button next to the Applications section.
+1. Enter a descriptive name for your SDB.  If your app is "myexampleapp", use "My Example App".
 1. The owner field is the Active Directory group that will have ownership and admin privileges for this SDB. Select one of the AD groups of which you 
    are currently a member.
-1. Under `User Group Permissions`, you can give additional Active Directory groups, that you are a member of, read or write access to the SDB. This is optional.
-1. Under `IAM Principal Permissions`, you can provide the AWS role name that will have either read or write access 
+1. Under "User Group Permissions", you can give additional Active Directory groups, that you are a member of, read or write access to the SDB. This is optional.
+1. Under "IAM Principal Permissions", you can provide the AWS role name that will have either read or write access 
    to the SDB. This is optional. See "How to add an IAM Principal Permission" section below.
-1. Click the `SUBMIT` button.
+1. Click the "SUBMIT" button.
 
 <a href="../../images/dashboard/create-new-safe-deposit-box-screen.png" target="_blank">
 <img src="../../images/dashboard/create-new-safe-deposit-box-screen.png" alt="Cerberus Dashboard new SDB screenshot" style="width: 25%; height: 25%;"/>
 </a>
 
 ### How to add an IAM Principal Permission:
-1. Under `IAM Principal Permissions`, click the `+ Add New Permission` button.
-1. Construct an IAM Principal ARN.
-   This is an example of a base role ARN:
+1. Under "IAM Principal Permissions", click the "+ Add New Permission" button.
+1. Construct an IAM Principal ARN. See the example below. In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal documentation for the account ID that you should use. "ExampleAdminRole" is the base role. Please note that because Cerberus uses STS Auth, this IAM Principal ARN does NOT contain paths.
    ```
    arn:aws:iam::1111111111111:role/ExampleAdminRole
    ```
    
-   In this example, `1111111111111` is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
-   documentation for the account ID that you should use.
-   
-   `ExampleAdminRole` is the base role.
-   
-   Please note that because Cerberus uses STS Auth, this IAM Principal ARN does NOT contain paths.
 1. Select whether you want read or write permissions for this ARN.
-1. Click `SUBMIT`.
-   
-   Please see [AWS STS Authentication](../authentication/aws-iam-sts-authentication) for more information.
-
+1. Click "SUBMIT".
+1. See [AWS STS Authentication](../authentication/aws-iam-sts-authentication) for more information.
 
 # 2. Manage Data in your Safe Deposit Box
 
 Data is stored using a path structure.  Note that the application name is normalized to be 
-URL friendly.  So, if you had `My Example App` in the Applications category your root path will be 
-`applications/my-example-app`.  From there you can add sub-paths to store key value pairs.
+URL friendly.  So, if you had "My Example App" in the Applications category your root path will be 
+"applications/my-example-app".  From there you can add sub-paths to store key value pairs.
 
 Cerberus will allow an SDB to contain a folder structure with many subpaths. However for most applications, a single path with
 a list of several key/value pairs is optimal. This allows all values to be read with a single API call.
 
 ### How to add a subpath:
-1. Click the `Add new path` button.
+1. Click the "Add new path" button.
 1. Enter a subpath name.
 1. Add the key/value pairs that you'd like to store at that subpath.
-1. Click `SAVE`.
+1. Click "SAVE.
 1. The page will refresh and you'll be able to add more subpaths or edit the subpath you just added.
 
 <a href="../../images/dashboard/add-new-path-screen.png" target="_blank">
