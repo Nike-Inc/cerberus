@@ -12,7 +12,7 @@ To use STS Auth, make sure you are on the latest version of the <a target="_blan
 To authenticate with Cerberus as an AWS IAM principal, you will need to construct an IAM Principal
 ARN that works with STS Authentication.
 
-1. Construct a new IAM Principal ARN
+### Option 1: Construct a new IAM Principal ARN
    
    This is an example of a base role ARN that works with STS Auth:
    
@@ -20,14 +20,12 @@ ARN that works with STS Authentication.
    arn:aws:iam::1111111111111:role/ExampleAdminRole
    ```
 
-   In this example, `1111111111111` is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
+   In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
    documentation for the account ID that you should use.
 
-   `ExampleAdminRole` is the base role.
+   "ExampleAdminRole" is the base role.
 
-OR
-
-2. Convert a KMS Auth IAM Principal Permission to an STS Auth IAM Principal Permission  
+### Option 2: Convert a KMS Auth IAM Principal Permission to an STS Auth IAM Principal Permission  
    
    Because Cerberus uses STS Auth, IAM Principal ARNs no longer contain paths.
    
