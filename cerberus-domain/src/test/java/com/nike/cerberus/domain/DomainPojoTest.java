@@ -37,8 +37,6 @@ public class DomainPojoTest {
 
     pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.class));
     pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.Builder.class));
-    //    pojoClasses.remove(
-    //        PojoClassFactory.getPojoClass(CerberusAuthToken.CerberusAuthTokenBuilder.class));
     pojoClasses.remove(PojoClassFactory.getPojoClass(VaultStyleErrorResponse.Builder.class));
     pojoClasses.remove(PojoClassFactory.getPojoClass(IamPrincipalPermission.Builder.class));
     pojoClasses.remove(PojoClassFactory.getPojoClass(UserGroupPermission.Builder.class));
