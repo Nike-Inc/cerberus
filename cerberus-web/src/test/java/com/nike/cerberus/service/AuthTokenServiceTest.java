@@ -110,8 +110,6 @@ public class AuthTokenServiceTest {
     assertEquals(
         "The newly created token should have a refresh count of 0", 0, token.getRefreshCount());
 
-    // TODO: does this need to be fixed?
-
     verify(authTokenDao)
         .createAuthToken(
             argThat(
@@ -154,18 +152,6 @@ public class AuthTokenServiceTest {
         "The token should have the groups that where passed in", groups, token.getGroups());
     assertEquals(
         "The newly created token should have a refresh count of 0", 0, token.getRefreshCount());
-
-    // TODO: does this need to be fixed?
-
-    //    verify(authTokenDao)
-    //        .createAuthToken(
-    //            argThat(
-    //                new ArgumentMatcher<AuthTokenRecord>() {
-    //                  @Override
-    //                  public boolean matches(Object argument) {
-    //                    return ((AuthTokenRecord) argument).getTokenHash().equals(fakeHash);
-    //                  }
-    //                }));
   }
 
   @Test
@@ -263,7 +249,6 @@ public class AuthTokenServiceTest {
     String id = UUID.randomUUID().toString();
     String tokenId = "abc.123.def";
     OffsetDateTime now = OffsetDateTime.now();
-    //    final String fakeHash = "kjadlkfjasdlkf;jlkj1243asdfasdf";
     String principal = "test-user@domain.com";
     String groups = "group1,group2,group3";
 
@@ -294,8 +279,6 @@ public class AuthTokenServiceTest {
     assertEquals(groups, token.getGroups());
     assertEquals(0, token.getRefreshCount());
   }
-
-  //   TODO: does this need to be updated to use jwt?
 
   @Test
   public void test_that_revokeToken_calls_the_dao_with_the_hashed_token() {

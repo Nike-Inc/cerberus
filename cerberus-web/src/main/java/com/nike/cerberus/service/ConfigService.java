@@ -36,8 +36,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+@ConditionalOnProperty(name = "cerberus.auth.jwt.secret.local.enabled", havingValue = "false")
 @Component
 public class ConfigService {
 
@@ -55,7 +57,7 @@ public class ConfigService {
 
   @Autowired
   public ConfigService(
-      @Value("${cerberus.auth.jwt.secret.bucket}") final String bucketName,
+      @Value("${cerberus.auth.jwt.secret.bucket:#{null}}") final String bucketName,
       final String region,
       AwsCrypto awsCrypto) {
 
