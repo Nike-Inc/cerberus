@@ -33,6 +33,9 @@ buildscript {
 
   repositories {
     maven {
+      url "https://repo.maven.apache.org/maven2"
+    }
+    maven {
       url "https://dl.bintray.com/spinnaker/gradle"
     }
     maven {
