@@ -57,7 +57,7 @@ public class ConfigService {
 
   @Autowired
   public ConfigService(
-      @Value("${cerberus.auth.jwt.secret.bucket:#{null}}") final String bucketName,
+      @Value("${cerberus.auth.jwt.secret.bucket}") final String bucketName,
       final String region,
       AwsCrypto awsCrypto) {
 
