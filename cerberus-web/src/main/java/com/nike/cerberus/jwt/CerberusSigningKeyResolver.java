@@ -13,6 +13,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
 
-  private final ConfigService configService;
+  private ConfigService configService;
   private final ObjectMapper objectMapper;
   private CerberusJwtKeySpec signingKey;
   private Map<String, CerberusJwtKeySpec> keyMap;
@@ -48,11 +49,11 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
   public CerberusSigningKeyResolver(
       JwtServiceOptionalPropertyHolder jwtServiceOptionalPropertyHolder,
       ObjectMapper objectMapper,
-      ConfigService configService,
+      Optional<ConfigService> configService,
       @Value("${cerberus.auth.jwt.secret.local.autoGenerate}") boolean autoGenerate,
       @Value("${cerberus.auth.jwt.secret.local.enabled}") boolean jwtLocalEnabled,
       UuidSupplier uuidSupplier) {
-    this.configService = configService;
+    this.configService = configService.orElse(null);
     this.objectMapper = objectMapper;
 
     // Override key with properties, useful for local development
