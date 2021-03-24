@@ -26,7 +26,7 @@ buildscript {
       awsSdkVersion: '1.11.948',
       kork: '7.107.0',
       guava: '30.1-jre',
-      springBoot: '2.4.2',
+      springBoot: '2.4.4',
     ]
   }
   ext['groovy.version'] = '3.0.7'
@@ -156,8 +156,8 @@ subprojects {
     }
     dependencies {
       //upgrading tomcat manually until Spring-Boot 2.3.5 is released to resolve a security vulnerability
-      dependency 'org.apache.tomcat.embed:tomcat-embed-core:10.0.4'
-      dependency 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.41'
+      dependency 'org.apache.tomcat.embed:tomcat-embed-core:9.0.44'
+      dependency 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.44'
     }
   }
 
