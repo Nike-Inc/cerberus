@@ -28,7 +28,7 @@
     "prop-types": "^15.7.2",
     "react": "15.7",
     "react-addons-create-fragment": "15.6.2",
-    "react-transition-group": "1.2.0",
+    "react-transition-group": "2.9.0",
     "react-addons-shallow-compare": "15.6.3",
     "react-copy-to-clipboard": "5.0.3",
     "react-dom": "15.7.0",
