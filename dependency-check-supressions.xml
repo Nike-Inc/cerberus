@@ -19,6 +19,7 @@
     <suppress>
         <notes><![CDATA[
            file name: is-svg:3.0.0
+           Already on latest of current major version. Suppressing these for the time being due to requiring a major version upgrade with breaking changes.
        ]]></notes>
             <packageUrl regex="true">^pkg:npm/is\-svg@.*$</packageUrl>
             <cve>CVE-2021-28092</cve>
@@ -26,6 +27,7 @@
     <suppress>
         <notes><![CDATA[
            file name: ssri:6.0.1
+           Already on latest of current major version. Suppressing these for the time being due to requiring a major version upgrade with breaking changes.
            ]]></notes>
         <packageUrl regex="true">^pkg:npm/ssri@.*$</packageUrl>
         <cve>CVE-2021-27290</cve>
@@ -33,6 +35,7 @@
     <suppress>
         <notes><![CDATA[
             file name: ssri:8.0.0
+            Already on latest of current major version. Suppressing these for the time being due to requiring a major version upgrade with breaking changes.
        ]]></notes>
         <packageUrl regex="true">^pkg:npm/ssri@.*$</packageUrl>
         <cve>CVE-2021-27290</cve>
@@ -40,6 +43,7 @@
     <suppress>
         <notes><![CDATA[
             file name: ua-parser-js:0.7.23
+            Already on latest of current major version. Suppressing these for the time being due to requiring a major version upgrade with breaking changes.
        ]]></notes>
         <packageUrl regex="true">^pkg:npm/ua\-parser\-js@.*$</packageUrl>
         <cve>CVE-2021-27292</cve>

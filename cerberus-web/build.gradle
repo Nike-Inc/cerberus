@@ -50,7 +50,6 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
-  implementation "io.rsocket:rsocket-bom:1.0.0-RC6"
   implementation "io.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
