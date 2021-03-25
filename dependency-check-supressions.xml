@@ -18,6 +18,34 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
         <notes><![CDATA[
+           file name: is-svg:3.0.0
+       ]]></notes>
+            <packageUrl regex="true">^pkg:npm/is\-svg@.*$</packageUrl>
+            <cve>CVE-2021-28092</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+           file name: ssri:6.0.1
+           ]]></notes>
+        <packageUrl regex="true">^pkg:npm/ssri@.*$</packageUrl>
+        <cve>CVE-2021-27290</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: ssri:8.0.0
+       ]]></notes>
+        <packageUrl regex="true">^pkg:npm/ssri@.*$</packageUrl>
+        <cve>CVE-2021-27290</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: ua-parser-js:0.7.23
+       ]]></notes>
+        <packageUrl regex="true">^pkg:npm/ua\-parser\-js@.*$</packageUrl>
+        <cve>CVE-2021-27292</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
             file name: spring-security-web-5.3.2.RELEASE.jar
             According to https://pivotal.io/security/cve-2018-1258
             Users leveraging Spring Framework 5.x should avoid using Spring Framework 5.0.5.RELEASE.
