@@ -74,7 +74,7 @@ public class CerberusSigningKeyResolverTest {
         new CerberusSigningKeyResolver(
             jwtServiceOptionalPropertyHolder,
             objectMapper,
-            configService,
+            java.util.Optional.of(configService),
             false,
             false,
             uuidSupplier);
