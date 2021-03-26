@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.4.2"
+  id 'org.springframework.boot' version "2.4.4"
 }
 
 sourceCompatibility = '11'
@@ -50,7 +50,7 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
-  implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
+  implementation "io.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
   implementation "com.netflix.hystrix:hystrix-core:1.5.18" // TODO remove hystrix and use resilience4j
