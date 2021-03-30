@@ -46,6 +46,21 @@ const store = configureStore(window.__INITIAL_STATE__);
 /**
  * Grab token from session storage
  */
+const tokenCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('token='))
+    .split('=')[1];
+
+const expireDateCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('lease-duration='))
+    .split('=')[1];
+
+function alertCookieValue() {
+  alert(tokenCookie);
+}
+alertCookieValue()
+
 let token = JSON.parse(sessionStorage.getItem("token"));
 
 // use session token to register user as logged in

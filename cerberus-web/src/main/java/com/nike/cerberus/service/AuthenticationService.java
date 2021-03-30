@@ -172,6 +172,15 @@ public class AuthenticationService {
     return authResponse;
   }
 
+  public AuthResponse authenticate(final String username) {
+    final AuthData authData = new AuthData().setUsername(username);
+    final AuthResponse authResponse = new AuthResponse().setData(authData);
+
+    authResponse.getData().setClientToken(generateToken(username, new HashSet<>(), 0));
+
+    return authResponse;
+  }
+
   /**
    * Enables a user to trigger a factor challenge.
    *
