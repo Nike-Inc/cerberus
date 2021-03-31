@@ -24,12 +24,7 @@ import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
 import com.nike.cerberus.record.JwtBlocklistRecord;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.InvalidClaimException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -93,7 +88,9 @@ public class JwtService {
             .setExpiration(Date.from(cerberusJwtClaims.getExpiresTs().toInstant()))
             .setIssuedAt(Date.from(cerberusJwtClaims.getCreatedTs().toInstant()))
             .signWith(cerberusJwtKeySpec)
+            .compressWith(CompressionCodecs.GZIP)
             .compact();
+    log.info("JWT length: {}", jwtToken.length());
     return jwtToken;
   }
 
