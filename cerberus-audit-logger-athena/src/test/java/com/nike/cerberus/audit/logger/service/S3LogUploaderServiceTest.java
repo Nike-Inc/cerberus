@@ -17,11 +17,13 @@
 package com.nike.cerberus.audit.logger.service;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -50,5 +52,36 @@ public class S3LogUploaderServiceTest {
     String actual = s3LogUploader.getPartition(fileName);
     String expected = "partitioned/year=2018/month=01/day=29/hour=12";
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_that_getPartition_fails() {
+    String fileName = "dummy";
+    String actual = s3LogUploader.getPartition(fileName);
+    String expected = "un-partitioned";
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void test_ingest_log_works() {
+    try {
+      String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
+      // File f = new File(fileName);
+      s3LogUploader.ingestLog(fileName);
+      Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(60));
+      assertTrue(true);
+    } catch (Exception e) {
+      assertTrue(false);
+    }
+  }
+
+  @Test
+  public void test_executor_shutdown_works() {
+    try {
+      s3LogUploader.executeServerShutdownHook();
+      assertTrue(true);
+    } catch (Exception e) {
+      assertTrue(false);
+    }
   }
 }
