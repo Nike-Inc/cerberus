@@ -19,11 +19,14 @@ package com.nike.cerberus.service;
 import static io.jsonwebtoken.JwtParser.SEPARATOR_CHAR;
 import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.JwtBlocklistDao;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
 import com.nike.cerberus.record.JwtBlocklistRecord;
+import com.nike.cerberus.util.CustomApiError;
 import io.jsonwebtoken.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -49,6 +52,7 @@ public class JwtService {
   private static final String GROUP_CLAIM_NAME = "groups";
   private static final String IS_ADMIN_CLAIM_NAME = "isAdmin";
   private static final String REFRESH_COUNT_CLAIM_NAME = "refreshCount";
+  private static final int MAX_HEADER_LENGTH = 16000; // Leave room under 16K
 
   private final CerberusSigningKeyResolver signingKeyResolver;
   private final String environmentName;
@@ -75,12 +79,14 @@ public class JwtService {
    */
   public String generateJwtToken(CerberusJwtClaims cerberusJwtClaims) {
     CerberusJwtKeySpec cerberusJwtKeySpec = signingKeyResolver.resolveSigningKey();
+    String principal = cerberusJwtClaims.getPrincipal();
+
     String jwtToken =
         Jwts.builder()
             .setHeaderParam(JwsHeader.KEY_ID, cerberusJwtKeySpec.getKid())
             .setId(cerberusJwtClaims.getId())
             .setIssuer(environmentName)
-            .setSubject(cerberusJwtClaims.getPrincipal())
+            .setSubject(principal)
             .claim(PRINCIPAL_TYPE_CLAIM_NAME, cerberusJwtClaims.getPrincipalType())
             .claim(GROUP_CLAIM_NAME, cerberusJwtClaims.getGroups())
             .claim(IS_ADMIN_CLAIM_NAME, cerberusJwtClaims.getIsAdmin())
@@ -90,7 +96,20 @@ public class JwtService {
             .signWith(cerberusJwtKeySpec)
             .compressWith(CompressionCodecs.GZIP)
             .compact();
-    log.info("JWT length: {}", jwtToken.length());
+
+    int tokenLength = jwtToken.length();
+    log.info("{}: JWT length: {}", principal, tokenLength);
+    if (tokenLength > MAX_HEADER_LENGTH) {
+      String msg =
+          String.format(
+              "Token for %s is %d characters long. The max is %d bytes.",
+              principal, tokenLength, MAX_HEADER_LENGTH);
+      throw ApiException.newBuilder()
+          .withApiErrors(
+              CustomApiError.createCustomApiError(DefaultApiError.AUTH_TOKEN_TOO_LONG, msg))
+          .withExceptionMessage(msg)
+          .build();
+    }
     return jwtToken;
   }
 
