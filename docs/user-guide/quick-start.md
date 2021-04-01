@@ -29,7 +29,7 @@ deposit box (SDB) is a logical grouping of data with a single set of access cont
 
 ### How to add an IAM Principal Permission:
 1. Under "IAM Principal Permissions", click the "+ Add New Permission" button.
-1. Construct an IAM Principal ARN. See the example below. In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal documentation for the account ID that you should use. "ExampleAdminRole" is the base role. Please note that because Cerberus uses STS Auth, this IAM Principal ARN does NOT contain paths.
+1. Construct an IAM Principal ARN. See the example below. In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID for the user's account.  See your company's internal documentation for the account ID that you should use. "ExampleAdminRole" is the base role. Please note that because Cerberus uses STS Auth, this IAM Principal ARN does NOT contain paths.
    ```
    arn:aws:iam::1111111111111:role/ExampleAdminRole
    ```
