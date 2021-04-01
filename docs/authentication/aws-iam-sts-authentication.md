@@ -20,7 +20,7 @@ ARN that works with STS Authentication.
    arn:aws:iam::1111111111111:role/ExampleAdminRole
    ```
 
-   In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
+   In this example, "1111111111111" is the account ID. The account ID in the ARN should be the account ID for the user's account.  See your company's internal
    documentation for the account ID that you should use.
 
    "ExampleAdminRole" is the base role.
