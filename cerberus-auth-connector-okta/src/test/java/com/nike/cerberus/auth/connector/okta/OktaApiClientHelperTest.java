@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -54,6 +55,17 @@ public class OktaApiClientHelperTest {
   /////////////////////////
   // Test Methods
   /////////////////////////
+  @Test
+  public void OktaApiClientHelper() {
+    OktaConfigurationProperties oktaConfigurationProperties =
+        mock(OktaConfigurationProperties.class);
+    when(oktaConfigurationProperties.getBaseUrl()).thenReturn("url");
+    when(oktaConfigurationProperties.getApiKey()).thenReturn("api_key");
+    this.oktaApiClientHelper = new OktaApiClientHelper(oktaConfigurationProperties);
+    assertNotNull(oktaApiClientHelper);
+    assertNotNull(oktaConfigurationProperties.getBaseUrl());
+    assertNotNull(oktaConfigurationProperties.getApiKey());
+  }
 
   @Test
   public void getUserGroupsHappy() throws Exception {
@@ -67,6 +79,23 @@ public class OktaApiClientHelperTest {
 
     // do the call
     List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id);
+
+    // verify results
+    assertTrue(result.contains(group));
+  }
+
+  @Test
+  public void getUserGroupsWithLimit() throws Exception {
+
+    String id = "id";
+    UserGroup group = mock(UserGroup.class);
+    PagedResults res = mock(PagedResults.class);
+    when(res.getResult()).thenReturn(Lists.newArrayList(group));
+    when(res.isLastPage()).thenReturn(true);
+    when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenReturn(res);
+
+    // do the call
+    List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id, 1);
 
     // verify results
     assertTrue(result.contains(group));
