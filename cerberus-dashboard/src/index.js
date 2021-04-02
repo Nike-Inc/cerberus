@@ -59,8 +59,10 @@ const expireDateCookie = document.cookie
 function alertCookieValue() {
   alert(tokenCookie);
 }
-alertCookieValue()
-
+// alertCookieValue()
+sessionStorage.setItem("token", atob(tokenCookie))
+sessionStorage.setItem('tokenExpiresDate', "Tue Mar 30 2022 23:23:36 GMT-0700 (Pacific Daylight Time)");
+sessionStorage.setItem('userRespondedToSessionWarning', false);
 let token = JSON.parse(sessionStorage.getItem("token"));
 
 // use session token to register user as logged in

@@ -172,11 +172,11 @@ public class AuthenticationService {
     return authResponse;
   }
 
-  public AuthResponse authenticate(final String username) {
+  public AuthResponse authenticate(final String username, List<String> groups) {
     final AuthData authData = new AuthData().setUsername(username);
     final AuthResponse authResponse = new AuthResponse().setData(authData);
 
-    authResponse.getData().setClientToken(generateToken(username, new HashSet<>(), 0));
+    authResponse.getData().setClientToken(generateToken(username, new HashSet<>(groups), 0));
 
     return authResponse;
   }
