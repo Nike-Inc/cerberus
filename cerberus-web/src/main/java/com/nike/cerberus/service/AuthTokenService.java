@@ -103,8 +103,20 @@ public class AuthTokenService {
 
     switch (tokenFlag.getIssueType()) {
       case JWT:
-        return getCerberusAuthTokenFromJwt(
-            principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
+        try {
+          return getCerberusAuthTokenFromJwt(
+              principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
+        } catch (ApiException e) {
+          String tooLongName = DefaultApiError.AUTH_TOKEN_TOO_LONG.getName();
+          boolean isTooLong =
+              e.getApiErrors().stream().anyMatch(err -> err.getName().equals(tooLongName));
+
+          if ((tokenFlag.getAcceptType() == AuthTokenAcceptType.ALL) && isTooLong) {
+            return getCerberusAuthTokenFromSession(
+                principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
+          }
+          throw (e);
+        }
       case SESSION:
         return getCerberusAuthTokenFromSession(
             principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
