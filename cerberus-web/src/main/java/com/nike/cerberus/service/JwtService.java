@@ -52,7 +52,10 @@ public class JwtService {
   private static final String GROUP_CLAIM_NAME = "groups";
   private static final String IS_ADMIN_CLAIM_NAME = "isAdmin";
   private static final String REFRESH_COUNT_CLAIM_NAME = "refreshCount";
-  private static final int MAX_TOKEN_LENGTH = 16000; // Leave room under 16K
+
+  // Max header line length for an AWS ALB is 16k, so it needs to be less
+  @Value("${cerberus.auth.jwt.maxTokenLength:#{16000}}")
+  private int maxTokenLength;
 
   private final CerberusSigningKeyResolver signingKeyResolver;
   private final String environmentName;
@@ -99,11 +102,11 @@ public class JwtService {
 
     int tokenLength = jwtToken.length();
     log.info("{}: JWT length: {}", principal, tokenLength);
-    if (tokenLength > MAX_TOKEN_LENGTH) {
+    if (tokenLength > maxTokenLength) {
       String msg =
           String.format(
               "Token for %s is %d characters long. The max is %d bytes.",
-              principal, tokenLength, MAX_TOKEN_LENGTH);
+              principal, tokenLength, maxTokenLength);
       throw ApiException.newBuilder()
           .withApiErrors(
               CustomApiError.createCustomApiError(DefaultApiError.AUTH_TOKEN_TOO_LONG, msg))
