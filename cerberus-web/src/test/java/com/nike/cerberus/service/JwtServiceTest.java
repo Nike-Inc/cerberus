@@ -18,6 +18,7 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class JwtServiceTest {
 
@@ -35,6 +36,7 @@ public class JwtServiceTest {
   public void setUp() throws Exception {
     initMocks(this);
     jwtService = new JwtService(signingKeyResolver, "local", jwtBlocklistDao);
+    ReflectionTestUtils.setField(jwtService, "maxTokenLength", 1600);
     cerberusJwtKeySpec = new CerberusJwtKeySpec(new byte[64], "HmacSHA512", "key id");
     cerberusJwtClaims = new CerberusJwtClaims();
     cerberusJwtClaims.setId("id");
