@@ -55,7 +55,7 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
 
   @Override
   public void rollover() throws RolloverFailure {
-    super.rollover();
+    superRollOver();
 
     if (isS3AuditLogCopyingEnabled()) {
       String filename = timeBasedFileNamingAndTriggeringPolicy.getElapsedPeriodsFileName() + ".gz";
@@ -65,5 +65,10 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
         logChunkFileS3Queue.offer(filename);
       }
     }
+  }
+
+  void superRollOver() {
+    super.rollover();
+    ;
   }
 }
