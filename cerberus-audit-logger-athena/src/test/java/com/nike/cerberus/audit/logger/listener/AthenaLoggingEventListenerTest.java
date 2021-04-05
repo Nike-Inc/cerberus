@@ -72,7 +72,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getTimestamp())
         .thenReturn(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -91,7 +91,7 @@ public class AthenaLoggingEventListenerTest {
         .thenReturn(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"));
     Mockito.when(auditableEventContext.getPrincipalName()).thenReturn("pricinpleName");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -111,7 +111,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getPrincipalName()).thenReturn("pricinpleName");
     Mockito.when(auditableEventContext.getIpAddress()).thenReturn("ipAddress");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -132,7 +132,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getIpAddress()).thenReturn("ipAddress");
     Mockito.when(auditableEventContext.getXForwardedFor()).thenReturn("xforwarder");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -154,7 +154,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getXForwardedFor()).thenReturn("xforwarder");
     Mockito.when(auditableEventContext.getVersion()).thenReturn("version");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -177,7 +177,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getVersion()).thenReturn("version");
     Mockito.when(auditableEventContext.getClientVersion()).thenReturn("clientVersion");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -201,7 +201,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getClientVersion()).thenReturn("clientVersion");
     Mockito.when(auditableEventContext.getMethod()).thenReturn("post");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -226,7 +226,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getMethod()).thenReturn("post");
     Mockito.when(auditableEventContext.getPath()).thenReturn("/path");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -252,7 +252,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getPath()).thenReturn("/path");
     Mockito.when(auditableEventContext.getAction()).thenReturn("action");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -279,7 +279,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getAction()).thenReturn("action");
     Mockito.when(auditableEventContext.getEventName()).thenReturn("eventName");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
@@ -307,7 +307,7 @@ public class AthenaLoggingEventListenerTest {
     Mockito.when(auditableEventContext.getEventName()).thenReturn("eventName");
     Mockito.when(auditableEventContext.getOriginatingClass()).thenReturn("originatingClass");
     Mockito.when(auditableEvent.getAuditableEventContext()).thenReturn(auditableEventContext);
-    String exceptionMessage = null;
+    String exceptionMessage = "";
     try {
       athenaLoggingEventListener.onApplicationEvent(auditableEvent);
     } catch (NullPointerException nullPointerException) {
