@@ -23,7 +23,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -64,15 +63,20 @@ public class S3LogUploaderServiceTest {
 
   @Test
   public void test_ingest_log_works() {
-    try {
-      String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
-      // File f = new File(fileName);
-      s3LogUploader.ingestLog(fileName);
-      Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(60));
-      assertTrue(true);
-    } catch (Exception e) {
-      assertTrue(false);
-    }
+    String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
+    s3LogUploader.ingestLog(fileName);
+    String fileName1 = "localhost-audit.2019-01-29_12-58.log.gz";
+    s3LogUploader.ingestLog(fileName);
+    s3LogUploader.ingestLog(fileName1);
+    //    try {
+    //      String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
+    //      // File f = new File(fileName);
+    //      s3LogUploader.ingestLog(fileName);
+    //      Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(60));
+    //      assertTrue(true);
+    //    } catch (Exception e) {
+    //      assertTrue(false);
+    //    }
   }
 
   @Test

@@ -56,7 +56,7 @@ public class OktaApiClientHelperTest {
   // Test Methods
   /////////////////////////
   @Test
-  public void OktaApiClientHelper() {
+  public void oktaApiClientHelper() {
     OktaConfigurationProperties oktaConfigurationProperties =
         mock(OktaConfigurationProperties.class);
     when(oktaConfigurationProperties.getBaseUrl()).thenReturn("url");

@@ -20,6 +20,7 @@ import com.nike.cerberus.audit.logger.service.S3LogUploaderService;
 import com.nike.internal.util.StringUtils;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class AuditLogsS3TimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy
 
   private final String bucket;
   private final String bucketRegion;
-  private LinkedBlockingQueue<String> logChunkFileS3Queue = new LinkedBlockingQueue<>();
+  @Setter private LinkedBlockingQueue<String> logChunkFileS3Queue = new LinkedBlockingQueue<>();
   private S3LogUploaderService s3LogUploaderService = null;
 
   @Autowired
