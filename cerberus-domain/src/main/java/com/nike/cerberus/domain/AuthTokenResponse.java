@@ -18,7 +18,15 @@ package com.nike.cerberus.domain;
 
 import java.util.Map;
 import java.util.Set;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
 public class AuthTokenResponse {
 
   private String clientToken;
@@ -30,49 +38,4 @@ public class AuthTokenResponse {
   private long leaseDuration;
 
   private boolean renewable;
-
-  public String getClientToken() {
-    return clientToken;
-  }
-
-  public AuthTokenResponse setClientToken(String clientToken) {
-    this.clientToken = clientToken;
-    return this;
-  }
-
-  public Set<String> getPolicies() {
-    return policies;
-  }
-
-  public AuthTokenResponse setPolicies(Set<String> policies) {
-    this.policies = policies;
-    return this;
-  }
-
-  public Map<String, String> getMetadata() {
-    return metadata;
-  }
-
-  public AuthTokenResponse setMetadata(Map<String, String> metadata) {
-    this.metadata = metadata;
-    return this;
-  }
-
-  public long getLeaseDuration() {
-    return leaseDuration;
-  }
-
-  public AuthTokenResponse setLeaseDuration(long leaseDuration) {
-    this.leaseDuration = leaseDuration;
-    return this;
-  }
-
-  public boolean isRenewable() {
-    return renewable;
-  }
-
-  public AuthTokenResponse setRenewable(boolean renewable) {
-    this.renewable = renewable;
-    return this;
-  }
 }

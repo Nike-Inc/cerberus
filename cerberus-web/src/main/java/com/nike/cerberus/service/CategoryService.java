@@ -67,16 +67,16 @@ public class CategoryService {
 
     records.forEach(
         r -> {
-          final Category category = new Category();
           categories.add(
-              category
-                  .setId(r.getId())
-                  .setPath(r.getPath())
-                  .setDisplayName(r.getDisplayName())
-                  .setCreatedBy(r.getCreatedBy())
-                  .setLastUpdatedBy(r.getLastUpdatedBy())
-                  .setCreatedTs(r.getCreatedTs())
-                  .setLastUpdatedTs(r.getLastUpdatedTs()));
+              Category.builder()
+                  .id(r.getId())
+                  .path(r.getPath())
+                  .displayName(r.getDisplayName())
+                  .createdBy(r.getCreatedBy())
+                  .lastUpdatedBy(r.getLastUpdatedBy())
+                  .createdTs(r.getCreatedTs())
+                  .lastUpdatedTs(r.getLastUpdatedTs())
+                  .build());
         });
 
     return categories;
@@ -93,14 +93,15 @@ public class CategoryService {
 
     if (record.isPresent()) {
       final Category category =
-          new Category()
-              .setId(record.get().getId())
-              .setPath(record.get().getPath())
-              .setDisplayName(record.get().getDisplayName())
-              .setCreatedBy(record.get().getCreatedBy())
-              .setLastUpdatedBy(record.get().getLastUpdatedBy())
-              .setCreatedTs(record.get().getCreatedTs())
-              .setLastUpdatedTs(record.get().getLastUpdatedTs());
+          Category.builder()
+              .id(record.get().getId())
+              .path(record.get().getPath())
+              .displayName(record.get().getDisplayName())
+              .createdBy(record.get().getCreatedBy())
+              .lastUpdatedBy(record.get().getLastUpdatedBy())
+              .createdTs(record.get().getCreatedTs())
+              .lastUpdatedTs(record.get().getLastUpdatedTs())
+              .build();
       return Optional.of(category);
     }
 

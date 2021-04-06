@@ -18,9 +18,17 @@ package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import javax.validation.constraints.NotBlank;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 /** Represents a category. */
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
 public class Category {
 
   /** Unique identifier for a category. */
@@ -41,67 +49,4 @@ public class Category {
   private String createdBy;
 
   private String lastUpdatedBy;
-
-  public String getId() {
-    return id;
-  }
-
-  public Category setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getDisplayName() {
-    return displayName;
-  }
-
-  public Category setDisplayName(String displayName) {
-    this.displayName = displayName;
-    return this;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public Category setPath(String path) {
-    this.path = path;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public Category setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public Category setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public Category setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public Category setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
 }
