@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -55,17 +54,6 @@ public class OktaApiClientHelperTest {
   /////////////////////////
   // Test Methods
   /////////////////////////
-  @Test
-  public void oktaApiClientHelper() {
-    OktaConfigurationProperties oktaConfigurationProperties =
-        mock(OktaConfigurationProperties.class);
-    when(oktaConfigurationProperties.getBaseUrl()).thenReturn("url");
-    when(oktaConfigurationProperties.getApiKey()).thenReturn("api_key");
-    this.oktaApiClientHelper = new OktaApiClientHelper(oktaConfigurationProperties);
-    assertNotNull(oktaApiClientHelper);
-    assertNotNull(oktaConfigurationProperties.getBaseUrl());
-    assertNotNull(oktaConfigurationProperties.getApiKey());
-  }
 
   @Test
   public void getUserGroupsHappy() throws Exception {

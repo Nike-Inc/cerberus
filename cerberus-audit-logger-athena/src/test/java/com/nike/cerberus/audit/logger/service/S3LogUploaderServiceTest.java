@@ -17,15 +17,17 @@
 package com.nike.cerberus.audit.logger.service;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import com.nike.cerberus.audit.logger.S3ClientFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 public class S3LogUploaderServiceTest {
 
@@ -62,30 +64,28 @@ public class S3LogUploaderServiceTest {
   }
 
   @Test
-  public void test_ingest_log_works() {
-    String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
-    s3LogUploader.ingestLog(fileName);
-    String fileName1 = "localhost-audit.2019-01-29_12-58.log.gz";
-    s3LogUploader.ingestLog(fileName);
-    s3LogUploader.ingestLog(fileName1);
-    //    try {
-    //      String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
-    //      // File f = new File(fileName);
-    //      s3LogUploader.ingestLog(fileName);
-    //      Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(60));
-    //      assertTrue(true);
-    //    } catch (Exception e) {
-    //      assertTrue(false);
-    //    }
+  public void test_executor_shutdown_works() throws InterruptedException {
+
+    ExecutorService executorService = Mockito.mock(ExecutorService.class);
+    s3LogUploader.setExecutor(executorService);
+    s3LogUploader.executeServerShutdownHook();
+
+    Mockito.verify(executorService).shutdown();
+    Mockito.verify(executorService).awaitTermination(10, TimeUnit.MINUTES);
   }
 
   @Test
-  public void test_executor_shutdown_works() {
-    try {
-      s3LogUploader.executeServerShutdownHook();
-      assertTrue(true);
-    } catch (Exception e) {
-      assertTrue(false);
-    }
+  public void test_executor_shutdown_works_when_awaits_termination_throws_exception()
+      throws InterruptedException {
+
+    ExecutorService executorService = Mockito.mock(ExecutorService.class);
+    Mockito.when(executorService.awaitTermination(10, TimeUnit.MINUTES))
+        .thenThrow(new InterruptedException());
+    s3LogUploader.setExecutor(executorService);
+    s3LogUploader.executeServerShutdownHook();
+
+    Mockito.verify(executorService).shutdown();
+    Mockito.verify(executorService).shutdownNow();
+    Mockito.verify(executorService).awaitTermination(10, TimeUnit.MINUTES);
   }
 }
