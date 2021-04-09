@@ -22,7 +22,7 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import AddButton from '../AddButton/AddButton';
 import * as mSDBActions from '../../actions/manageSafetyDepositBoxActions';
 import './SecureDataForm.scss';
-const { DOM: { textarea } } = React;
+//const { DOM: { textarea } } = React;
 
 const fields = [
     'path',
