@@ -37,7 +37,7 @@ public class S3LogUploaderServiceTest {
 
   private S3LogUploaderService s3LogUploader;
 
-  private Logger logger = new LoggerContext().getLogger("test-logger");
+  private final Logger logger = new LoggerContext().getLogger("test-logger");
 
   @Before
   public void before() {
@@ -52,14 +52,6 @@ public class S3LogUploaderServiceTest {
     String fileName = "localhost-audit.2018-01-29_12-58.log.gz";
     String actual = s3LogUploader.getPartition(fileName);
     String expected = "partitioned/year=2018/month=01/day=29/hour=12";
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void test_that_getPartition_fails() {
-    String fileName = "dummy";
-    String actual = s3LogUploader.getPartition(fileName);
-    String expected = "un-partitioned";
     assertEquals(expected, actual);
   }
 
