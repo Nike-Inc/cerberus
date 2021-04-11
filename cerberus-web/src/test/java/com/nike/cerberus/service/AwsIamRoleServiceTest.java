@@ -1,44 +1,37 @@
 package com.nike.cerberus.service;
 
-import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.mock;
 
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.UuidSupplier;
-import java.time.OffsetDateTime;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 public class AwsIamRoleServiceTest {
 
-  @Mock private AwsIamRoleDao awsIamRoleDao;
-  @Mock private UuidSupplier uuidSupplier;
-  @Mock private DateTimeSupplier dateTimeSupplier;
-
-  @InjectMocks private AwsIamRoleService awsIamRoleService;
+  private AwsIamRoleService awsIamRoleService;
+  private AwsIamRoleDao awsIamRoleDao;
+  private UuidSupplier uuidSupplier;
+  private DateTimeSupplier dateTimeSupplier;
 
   @Before
-  public void setup() {
-    MockitoAnnotations.initMocks(this);
+  public void setUp() {
+    awsIamRoleDao = mock(AwsIamRoleDao.class);
+    uuidSupplier = new UuidSupplier();
+    dateTimeSupplier = new DateTimeSupplier();
+    awsIamRoleService = new AwsIamRoleService(awsIamRoleDao, uuidSupplier, dateTimeSupplier);
   }
 
+  // To test create Iam Role
   @Test
-  public void checkCreateIamRole() {
-    Mockito.when(dateTimeSupplier.get()).thenReturn(OffsetDateTime.MAX);
-    Mockito.when(uuidSupplier.get()).thenReturn("UUID");
+  public void test_createIamRole() {
+    Mockito.when(awsIamRoleDao.createIamRole(anyObject())).thenReturn(1);
     AwsIamRoleRecord awsIamRoleRecord = awsIamRoleService.createIamRole("iamPrincipalArn");
-    Mockito.verify(awsIamRoleDao).createIamRole(awsIamRoleRecord);
-    Assert.assertEquals("UUID", awsIamRoleRecord.getId());
-    Assert.assertEquals("iamPrincipalArn", awsIamRoleRecord.getAwsIamRoleArn());
-    Assert.assertEquals(SYSTEM_USER, awsIamRoleRecord.getCreatedBy());
-    Assert.assertEquals(SYSTEM_USER, awsIamRoleRecord.getLastUpdatedBy());
-    Assert.assertEquals(OffsetDateTime.MAX, awsIamRoleRecord.getCreatedTs());
-    Assert.assertEquals(OffsetDateTime.MAX, awsIamRoleRecord.getLastUpdatedTs());
+    assertEquals(awsIamRoleRecord.getAwsIamRoleArn(), "iamPrincipalArn");
   }
 }

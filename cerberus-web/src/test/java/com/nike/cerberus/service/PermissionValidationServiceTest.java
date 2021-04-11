@@ -1,21 +1,27 @@
 package com.nike.cerberus.service;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.SecureDataAction;
 import com.nike.cerberus.dao.PermissionsDao;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
+import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.SdbAccessRequest;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class PermissionValidationServiceTest {
 
@@ -229,8 +235,6 @@ public class PermissionValidationServiceTest {
   public void testDoesPrincipalHavePermissionForSdbWithPrincipalTypeIAMAndRoleIsAssumed() {
     PermissionValidationService permissionValidationService =
         createPermissionValidationServiceWithGroupCaseSensitive(true);
-    Set<String> userGroups = new HashSet<>();
-    userGroups.add("userGroup1");
     CerberusPrincipal cerberusPrincipal =
         mockCerberusPrincipalWithPrincipalTypeAndName(PrincipalType.IAM, IAM_PRINCIPAL_ARN);
     String iamRootArn = "iamRootArn";
@@ -242,7 +246,7 @@ public class PermissionValidationServiceTest {
         .thenReturn(iamRoleArn);
     Mockito.when(
             permissionsDao.doesAssumedRoleHaveRoleForSdb(
-                Mockito.eq("id"),
+                Mockito.eq("sdbId"),
                 Mockito.eq(IAM_PRINCIPAL_ARN),
                 Mockito.eq(iamRoleArn),
                 Mockito.eq(iamRootArn),
@@ -265,8 +269,6 @@ public class PermissionValidationServiceTest {
   public void testDoesPrincipalHavePermissionForSdbWithPrincipalTypeIAMAndRoleIsNotAssumed() {
     PermissionValidationService permissionValidationService =
         createPermissionValidationServiceWithGroupCaseSensitive(true);
-    Set<String> userGroups = new HashSet<>();
-    userGroups.add("userGroup1");
     CerberusPrincipal cerberusPrincipal =
         mockCerberusPrincipalWithPrincipalTypeAndName(PrincipalType.IAM, IAM_PRINCIPAL_ARN);
     String iamRootArn = "iamRootArn";
@@ -278,7 +280,7 @@ public class PermissionValidationServiceTest {
         .thenReturn(iamRoleArn);
     Mockito.when(
             permissionsDao.doesIamPrincipalHaveRoleForSdb(
-                Mockito.eq("id"),
+                Mockito.eq("sdbId"),
                 Mockito.eq(IAM_PRINCIPAL_ARN),
                 Mockito.eq(iamRootArn),
                 Mockito.anySet()))
@@ -291,7 +293,231 @@ public class PermissionValidationServiceTest {
         .doesUserHavePermsForRoleAndSdbCaseInsensitive(
             Mockito.eq("sdbId"), Mockito.anySet(), Mockito.anySet());
     Mockito.verify(permissionsDao)
-        .doesUserPrincipalHaveRoleForSdb(Mockito.anyString(), Mockito.anySet(), Mockito.anySet());
+        .doesIamPrincipalHaveRoleForSdb(
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anySet());
+  }
+
+  @Test
+  public void testDoesPrincipalHaveReadPermissionWithPrincipalTypeAndGroupsCaseSensitive() {
+    PermissionValidationService permissionValidationService =
+        createPermissionValidationServiceWithGroupCaseSensitive(true);
+    Set<String> userGroups = new HashSet<>();
+    userGroups.add("userGroup1");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndUserGroups(PrincipalType.USER, userGroups);
+    Set<UserGroupPermission> userGroupPermissions = mockUserGroupPermissionWithName();
+    Mockito.when(userGroupPermissionService.getUserGroupPermissions("sdbId"))
+        .thenReturn(userGroupPermissions);
+    boolean hasPermission =
+        permissionValidationService.doesPrincipalHaveReadPermission(cerberusPrincipal, "sdbId");
+    Assert.assertTrue(hasPermission);
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveReadPermissionWithPrincipalTypeAndGroupsCaseSensitiveHavingUserGroupsInUpperCase() {
+    PermissionValidationService permissionValidationService =
+        createPermissionValidationServiceWithGroupCaseSensitive(true);
+    Set<String> userGroups = new HashSet<>();
+    userGroups.add("USERGROUP1");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndUserGroups(PrincipalType.USER, userGroups);
+    Set<UserGroupPermission> userGroupPermissions = mockUserGroupPermissionWithName();
+    Mockito.when(userGroupPermissionService.getUserGroupPermissions("sdbId"))
+        .thenReturn(userGroupPermissions);
+    boolean hasPermission =
+        permissionValidationService.doesPrincipalHaveReadPermission(cerberusPrincipal, "sdbId");
+    Assert.assertFalse(hasPermission);
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveReadPermissionWithPrincipalTypeAndGroupsCaseInSensitiveHavingUserGroupsInUpperCase() {
+    PermissionValidationService permissionValidationService =
+        createPermissionValidationServiceWithGroupCaseSensitive(false);
+    Set<String> userGroups = new HashSet<>();
+    userGroups.add("USERGROUP1");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndUserGroups(PrincipalType.USER, userGroups);
+    Set<UserGroupPermission> userGroupPermissions = mockUserGroupPermissionWithName();
+    Mockito.when(userGroupPermissionService.getUserGroupPermissions("sdbId"))
+        .thenReturn(userGroupPermissions);
+    boolean hasPermission =
+        permissionValidationService.doesPrincipalHaveReadPermission(cerberusPrincipal, "sdbId");
+    Assert.assertTrue(hasPermission);
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveReadPermissionWithPrincipalTypeAndGroupsCaseInSensitiveHavingUserGroupsInLowerCase() {
+    PermissionValidationService permissionValidationService =
+        createPermissionValidationServiceWithGroupCaseSensitive(false);
+    Set<String> userGroups = new HashSet<>();
+    userGroups.add("usergroup1");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndUserGroups(PrincipalType.USER, userGroups);
+    Set<UserGroupPermission> userGroupPermissions = mockUserGroupPermissionWithName();
+    Mockito.when(userGroupPermissionService.getUserGroupPermissions("sdbId"))
+        .thenReturn(userGroupPermissions);
+    boolean hasPermission =
+        permissionValidationService.doesPrincipalHaveReadPermission(cerberusPrincipal, "sdbId");
+    Assert.assertTrue(hasPermission);
+  }
+
+  @Test
+  public void testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesFromContextIsNull() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext()).thenReturn(null);
+    String exceptionMessage = "";
+    try {
+      permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("action");
+    } catch (RuntimeException e) {
+      exceptionMessage = e.getMessage();
+    }
+    Assert.assertTrue("Failed to get request from context".equals(exceptionMessage));
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsNotSecured() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    RequestAttributes requestAttributes =
+        mockServletRequestAttributesWithRequestWithServletPath("/v1/sample");
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext())
+        .thenReturn(requestAttributes);
+    String exceptionMessage = "";
+    try {
+      permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("action");
+    } catch (RuntimeException e) {
+      exceptionMessage = e.getMessage();
+    }
+    Assert.assertTrue(
+        "Only secure data endpoints can use this perms checking method".equals(exceptionMessage));
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndVerifyPathIsInvalid() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    RequestAttributes requestAttributes =
+        mockServletRequestAttributesWithRequestWithServletPath("/v1/secret/1/2/3/4");
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext())
+        .thenReturn(requestAttributes);
+    String exceptionMessage = "";
+    try {
+      permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("action");
+    } catch (ApiException apiException) {
+      exceptionMessage = apiException.getMessage();
+    }
+    Mockito.verify(sdbAccessRequest).setSdbSlug("2");
+    Mockito.verify(sdbAccessRequest).setCategory("1");
+    Mockito.verify(sdbAccessRequest).setSubPath("3/4");
+    Assert.assertTrue("Request path is invalid.".equals(exceptionMessage));
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndVerifyPathIsValid() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    RequestAttributes requestAttributes =
+        mockServletRequestAttributesWithRequestWithServletPath("/v1/secret/1/2/3/4");
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext())
+        .thenReturn(requestAttributes);
+    Mockito.when(sdbAccessRequest.getCategory()).thenReturn("category");
+    Mockito.when(sdbAccessRequest.getSdbSlug()).thenReturn("slug");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndName(PrincipalType.USER, "name");
+    Mockito.when(permissionValidationService.getCerberusPrincipalFromContext())
+        .thenReturn(cerberusPrincipal);
+    Mockito.when(safeDepositBoxService.getSafeDepositBoxIdByPath("category/slug/"))
+        .thenReturn(Optional.empty());
+    String exceptionMessage = "";
+    try {
+      permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("READ");
+    } catch (ApiException apiException) {
+      exceptionMessage = apiException.getMessage();
+    }
+    Assert.assertTrue(
+        "The SDB for the path: category/slug/ was not found.".equals(exceptionMessage));
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndVerifySdbidPresent() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    RequestAttributes requestAttributes =
+        mockServletRequestAttributesWithRequestWithServletPath("/v1/secret/1/2/3/4");
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext())
+        .thenReturn(requestAttributes);
+    Mockito.when(sdbAccessRequest.getCategory()).thenReturn("category");
+    Mockito.when(sdbAccessRequest.getSdbSlug()).thenReturn("slug");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndName(PrincipalType.USER, "name");
+    Mockito.when(permissionValidationService.getCerberusPrincipalFromContext())
+        .thenReturn(cerberusPrincipal);
+    Mockito.when(safeDepositBoxService.getSafeDepositBoxIdByPath("category/slug/"))
+        .thenReturn(Optional.of("sdbId"));
+    String exceptionMessage = "";
+    try {
+      permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("READ");
+    } catch (ApiException apiException) {
+      exceptionMessage = apiException.getMessage();
+    }
+    Assert.assertEquals(
+        "Permission was not granted for principal: name for path: category/slug/",
+        exceptionMessage);
+  }
+
+  @Test
+  public void
+      testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndHasPermission() {
+    PermissionValidationService permissionValidationService =
+        Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
+    RequestAttributes requestAttributes =
+        mockServletRequestAttributesWithRequestWithServletPath("/v1/secret/1/2/3/4");
+    Mockito.when(permissionValidationService.getRequestAttributesFromContext())
+        .thenReturn(requestAttributes);
+    Mockito.when(sdbAccessRequest.getCategory()).thenReturn("category");
+    Mockito.when(sdbAccessRequest.getSdbSlug()).thenReturn("slug");
+    Set<String> userGroups = new HashSet<>();
+    userGroups.add("userGroup1");
+    CerberusPrincipal cerberusPrincipal =
+        mockCerberusPrincipalWithPrincipalTypeAndUserGroups(PrincipalType.USER, userGroups);
+    Mockito.when(permissionValidationService.getCerberusPrincipalFromContext())
+        .thenReturn(cerberusPrincipal);
+    Mockito.when(safeDepositBoxService.getSafeDepositBoxIdByPath("category/slug/"))
+        .thenReturn(Optional.of("sdbId"));
+    Mockito.when(
+            permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(
+                Mockito.eq("sdbId"), Mockito.anySet(), Mockito.anySet()))
+        .thenReturn(true);
+    boolean hasPermission =
+        permissionValidationService.doesPrincipalHaveSdbPermissionsForAction("READ");
+    Assert.assertTrue(hasPermission);
+    Mockito.verify(sdbAccessRequest).setPrincipal(Mockito.any(CerberusPrincipal.class));
+    Mockito.verify(sdbAccessRequest).setSdbId("sdbId");
+  }
+
+  private ServletRequestAttributes mockServletRequestAttributesWithRequestWithServletPath(
+      String servletRequestPath) {
+    HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+    ServletRequestAttributes servletRequestAttributes =
+        new ServletRequestAttributes(httpServletRequest);
+    Mockito.when(httpServletRequest.getServletPath()).thenReturn(servletRequestPath);
+    return servletRequestAttributes;
+  }
+
+  private Set<UserGroupPermission> mockUserGroupPermissionWithName() {
+    UserGroupPermission userGroupPermission = Mockito.mock(UserGroupPermission.class);
+    Mockito.when(userGroupPermission.getName()).thenReturn("userGroup1");
+    Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
+    userGroupPermissions.add(userGroupPermission);
+    return userGroupPermissions;
   }
 
   private SafeDepositBoxV2 mockSafeDepositBoxV2WithId(String id) {
