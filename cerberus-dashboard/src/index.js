@@ -16,7 +16,9 @@
 
 import React from "react";
 import { render } from "react-dom";
-import { Router, Route, IndexRoute, hashHistory } from "react-router";
+// import { Router, Route, IndexRoute, hashHistory } from "react-router";
+import { Route, Router, Switch } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 import { Provider } from "react-redux";
 import { syncHistoryWithStore } from "react-router-redux";
 
@@ -34,7 +36,7 @@ import {
 import * as workerTimers from "worker-timers";
 import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
-
+import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
 var log = getLogger("main");
 
 /**
@@ -42,7 +44,20 @@ var log = getLogger("main");
  * to be maintained.
  */
 const store = configureStore(window.__INITIAL_STATE__);
-
+const authService = new AuthService({
+  issuer: window.REACT_APP_AUTH_ENDPOINT
+      ? window.REACT_APP_AUTH_ENDPOINT
+      : 'https://okta.com/oauth2/default',
+  client_id: 'clientid',
+  redirect_uri: `http://localhost:3000/dashboard/implicit/callback`,
+  postLogoutRedirectUri: `${window.location.origin}`,
+  scope: ['openid', 'email', 'profile'],
+  pkce: true,
+  tokenManager: {
+    autoRenew: true,
+    storage: 'sessionStorage',
+  },
+});
 /**
  * Grab token from session storage
  */
@@ -79,8 +94,8 @@ if (token !== null && token !== "") {
 }
 
 // Create an enhanced history that syncs navigation events with the store
-const history = syncHistoryWithStore(hashHistory, store);
-
+// const history = syncHistoryWithStore(hashHistory, store);
+const history = createBrowserHistory();
 /**
  * The Provider makes the dispatch method available to children components that connect to it.
  * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.
@@ -97,16 +112,12 @@ render(
     <Provider store={store}>
       <div>
         <Router history={history}>
-          <Route path="/" component={App}>
-            <IndexRoute component={LandingView} />
-            <Route
-              path="manage-safe-deposit-box/:id"
-              component={ManageSafeDepositBox}
-            />
-            <Route path="admin/sdb-metadata" component={SDBMetadataList} />
-            <Route path="*" component={NotFound} />
-          </Route>
-          <Route path="*" component={NotFound} />
+          <Security authService={authService}>
+            <Switch>
+              <SecureRoute path="/" exact component={App} />
+              <Route path="/dashboard/implicit/callback" component={LoginCallback} />
+            </Switch>
+          </Security>
         </Router>
       </div>
     </Provider>
