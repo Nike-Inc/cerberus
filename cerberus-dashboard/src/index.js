@@ -28,7 +28,7 @@ import {
 import * as workerTimers from "worker-timers";
 import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
-
+import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
 var log = getLogger("main");
 
 /**
@@ -36,7 +36,20 @@ var log = getLogger("main");
  * to be maintained.
  */
 const store = configureStore(window.__INITIAL_STATE__);
-
+const authService = new AuthService({
+  issuer: window.REACT_APP_AUTH_ENDPOINT
+      ? window.REACT_APP_AUTH_ENDPOINT
+      : 'https://okta.com/oauth2/default',
+  client_id: 'clientid',
+  redirect_uri: `http://localhost:3000/dashboard/implicit/callback`,
+  postLogoutRedirectUri: `${window.location.origin}`,
+  scope: ['openid', 'email', 'profile'],
+  pkce: true,
+  tokenManager: {
+    autoRenew: true,
+    storage: 'sessionStorage',
+  },
+});
 /**
  * Grab token from session storage
  */
@@ -87,5 +100,17 @@ render(
     <Provider store={store}>
       <App />
     </Provider>,
+      <div>
+        <Router history={history}>
+          <Security authService={authService}>
+            <Switch>
+              <SecureRoute path="/" exact component={App} />
+              <Route path="/dashboard/implicit/callback" component={LoginCallback} />
+            </Switch>
+          </Security>
+        </Router>
+      </div>
+    </Provider>
+  </div>,
   document.getElementById("root")
 );

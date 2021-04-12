@@ -18,6 +18,7 @@
   "author": "Justin Field <justin.field@nike.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "@okta/okta-react": "^3.0.4",
     "axios": "^0.21.1",
     "connected-react-router": "^6.9.1",
     "cookie": "0.4.1",
