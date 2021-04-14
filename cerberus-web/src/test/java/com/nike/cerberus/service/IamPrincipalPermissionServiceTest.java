@@ -1,5 +1,7 @@
 package com.nike.cerberus.service;
 
+import static org.junit.Assert.assertNull;
+
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.AwsIamRoleDao;
 import com.nike.cerberus.domain.IamPrincipalPermission;
@@ -48,15 +50,19 @@ public class IamPrincipalPermissionServiceTest {
 
   @Test
   public void testRevokePermissionWhenIamRoleIsPresent() {
-    IamPrincipalPermission iamPrincipalPermission = Mockito.mock(IamPrincipalPermission.class);
+    try {
+      IamPrincipalPermission iamPrincipalPermission = Mockito.mock(IamPrincipalPermission.class);
 
-    Mockito.when(iamPrincipalPermission.getIamPrincipalArn()).thenReturn("arn");
-    AwsIamRoleRecord awsIamRoleRecord = Mockito.mock(AwsIamRoleRecord.class);
-    Mockito.when(awsIamRoleRecord.getId()).thenReturn("id");
-    Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
+      Mockito.when(iamPrincipalPermission.getIamPrincipalArn()).thenReturn("arn");
+      AwsIamRoleRecord awsIamRoleRecord = Mockito.mock(AwsIamRoleRecord.class);
+      Mockito.when(awsIamRoleRecord.getId()).thenReturn("id");
+      Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
 
-    iamPrincipalPermissionService.revokeIamPrincipalPermission("boxId", iamPrincipalPermission);
-    awsIamRoleDao.deleteIamRolePermission("boxId", "id");
+      iamPrincipalPermissionService.revokeIamPrincipalPermission("boxId", iamPrincipalPermission);
+      awsIamRoleDao.deleteIamRolePermission("boxId", "id");
+    } catch (Exception e) {
+      assertNull(e);
+    }
   }
 
   @Test(expected = ApiException.class)
@@ -71,16 +77,20 @@ public class IamPrincipalPermissionServiceTest {
 
   @Test
   public void testRevokePermissionsWhenIamRoleIsPresent() {
-    IamPrincipalPermission iamPrincipalPermission = Mockito.mock(IamPrincipalPermission.class);
+    try {
+      IamPrincipalPermission iamPrincipalPermission = Mockito.mock(IamPrincipalPermission.class);
 
-    Mockito.when(iamPrincipalPermission.getIamPrincipalArn()).thenReturn("arn");
-    AwsIamRoleRecord awsIamRoleRecord = Mockito.mock(AwsIamRoleRecord.class);
-    Mockito.when(awsIamRoleRecord.getId()).thenReturn("id");
-    Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
-    Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
-    iamPrincipalPermissions.add(iamPrincipalPermission);
-    iamPrincipalPermissionService.revokeIamPrincipalPermissions("boxId", iamPrincipalPermissions);
-    awsIamRoleDao.deleteIamRolePermission("boxId", "id");
+      Mockito.when(iamPrincipalPermission.getIamPrincipalArn()).thenReturn("arn");
+      AwsIamRoleRecord awsIamRoleRecord = Mockito.mock(AwsIamRoleRecord.class);
+      Mockito.when(awsIamRoleRecord.getId()).thenReturn("id");
+      Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
+      Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
+      iamPrincipalPermissions.add(iamPrincipalPermission);
+      iamPrincipalPermissionService.revokeIamPrincipalPermissions("boxId", iamPrincipalPermissions);
+      awsIamRoleDao.deleteIamRolePermission("boxId", "id");
+    } catch (Exception e) {
+      assertNull(e);
+    }
   }
 
   @Test
@@ -102,7 +112,6 @@ public class IamPrincipalPermissionServiceTest {
             .setRoleId("roleId")
             .setCreatedTs(OffsetDateTime.MAX)
             .setLastUpdatedTs(OffsetDateTime.MAX);
-    ;
     awsIamRolePermissionRecords.add(awsIamRolePermissionRecord);
     AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord().setAwsIamRoleArn("awsIamRoleArn");
     Mockito.when(awsIamRoleDao.getIamRolePermissions("boxId"))

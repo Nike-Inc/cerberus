@@ -74,13 +74,6 @@ public class AuditLoggingFilterTest {
     }
   }
 
-  private void mockxFwdAndVersion() {
-    Mockito.when(response.getStatus()).thenReturn(200);
-    Mockito.when(request.getHeader("X-Forwarded-For")).thenReturn("102.0.0.1");
-    Mockito.when(request.getHeader("X-Cerberus-Client")).thenReturn("1.0");
-    Mockito.when(buildProperties.getVersion()).thenReturn("1.0");
-  }
-
   @Test
   public void testDoFilterInternal_pass_sdbslug_sdbAccessRequest() {
     try {
@@ -116,5 +109,12 @@ public class AuditLoggingFilterTest {
   @After
   public void clearContext() {
     SecurityContextHolder.clearContext();
+  }
+
+  private void mockxFwdAndVersion() {
+    Mockito.when(response.getStatus()).thenReturn(200);
+    Mockito.when(request.getHeader("X-Forwarded-For")).thenReturn("102.0.0.1");
+    Mockito.when(request.getHeader("X-Cerberus-Client")).thenReturn("1.0");
+    Mockito.when(buildProperties.getVersion()).thenReturn("1.0");
   }
 }
