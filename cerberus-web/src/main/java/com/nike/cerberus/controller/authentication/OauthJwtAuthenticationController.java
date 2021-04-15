@@ -19,15 +19,18 @@ package com.nike.cerberus.controller.authentication;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
-import com.nike.cerberus.domain.UserCredentials;
+import com.nike.cerberus.domain.OauthJwtExchangeRequest;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.InvalidClaimException;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,22 +51,32 @@ public class OauthJwtAuthenticationController {
   }
 
   @RequestMapping(value = "/user/oauth/exchange", method = POST, consumes = APPLICATION_JSON_VALUE)
-  public AuthResponse handleCerberusTokenExchange(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+  public AuthResponse handleCerberusTokenExchange(@RequestBody OauthJwtExchangeRequest request) {
 
-    // TODO request payload, token
-
-    final UserCredentials credentials = extractCredentials(authHeader);
-
-    AuthResponse authResponse;
+    Jws<Claims> claimsJws;
     try {
-      authResponse = authenticationService.authenticate(credentials);
-    } catch (ApiException e) {
-      auditLoggingFilterDetails.setAction("Failed to authenticate");
-      throw e;
+      claimsJws =
+          Jwts.parser()
+              //                      .requireIssuer("")
+              .setSigningKeyResolver(signingKeyResolver)
+              .parseClaimsJws(request.getToken());
+    } catch (InvalidClaimException e) {
+      //      log.warn("Invalid claim when parsing token: {}", token, e);
+      //      return Optional.empty();
+    } catch (JwtException e) {
+      //      log.warn("Error parsing JWT token: {}", token, e);
+      //      return Optional.empty();
+    } catch (IllegalArgumentException e) {
+      //      log.warn("Error parsing JWT token: {}", token, e);
+      //      return Optional.empty();
     }
-
-    auditLoggingFilterDetails.setAction("Authenticated");
+    Claims claims = claimsJws.getBody();
+    //    if (blocklist.contains(claims.getId())) {
+    //      log.warn("This JWT token is blocklisted. ID: {}", claims.getId());
+    //      return Optional.empty();
+    //    }
+    String email = claims.get("email", String.class);
+    AuthResponse authResponse = authenticationService.authenticate(email);
 
     return authResponse;
 
