@@ -8,7 +8,6 @@ import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.service.AuthTokenService;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -28,13 +27,11 @@ public class DatabaseTokenAuthenticationProcessingFilterTest {
   @Mock private AuthTokenService authTokenService;
   @Mock private RequestMatcher requiresAuthenticationRequestMatcher;
   private HttpServletRequest request;
-  private HttpServletResponse response;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     request = mock(HttpServletRequest.class);
-    response = mock(HttpServletResponse.class);
     databaseTokenAuthenticationProcessingFilter =
         new DatabaseTokenAuthenticationProcessingFilter(
             authTokenService, requiresAuthenticationRequestMatcher);
