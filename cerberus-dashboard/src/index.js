@@ -81,6 +81,9 @@ let handleUserLoginAfterTokenExchange = (response) => {
     handleUserLogin(response, store.dispatch, true);
 }
 
+// Create an enhanced history that syncs navigation events with the store
+// const history = syncHistoryWithStore(hashHistory, store);
+const history = createBrowserHistory();
 /**
  * The Provider makes the dispatch method available to children components that connect to it.
  * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.

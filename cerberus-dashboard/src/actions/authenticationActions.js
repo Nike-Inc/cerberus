@@ -49,7 +49,8 @@ export function loginUserSuccess(response, sessionExpirationCheckIntervalId) {
     return {
         type: constants.LOGIN_USER_SUCCESS,
         payload: {
-            tokenData: response.data.client_token,
+            // tokenData: response.data.client_token,
+            tokenData: response["value"],
             sessionExpirationCheckIntervalId: sessionExpirationCheckIntervalId
         }
     };
