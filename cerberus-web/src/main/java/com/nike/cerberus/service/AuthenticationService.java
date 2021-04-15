@@ -172,6 +172,23 @@ public class AuthenticationService {
     return authResponse;
   }
 
+  public AuthResponse authenticate(final String username) {
+    final AuthResponse authResponse = new AuthResponse();
+    authResponse.setData(new AuthData());
+    Set<String> groups = Collections.singleton("Lst-digital.cloud.acceleration.all");
+    authResponse
+        .getData()
+        .setClientToken(
+            generateToken(
+                username,
+                //
+                // authServiceConnector.getGroups(authResponse.getData()),
+                groups,
+                0));
+
+    return authResponse;
+  }
+
   /**
    * Enables a user to trigger a factor challenge.
    *
