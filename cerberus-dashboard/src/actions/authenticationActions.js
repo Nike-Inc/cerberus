@@ -49,11 +49,13 @@ export function loginUserSuccess(response, sessionExpirationCheckIntervalId) {
     return {
         type: constants.LOGIN_USER_SUCCESS,
         payload: {
-            tokenData: response.data.client_token,
+            // tokenData: response.data.client_token,
+            tokenData: response["value"],
             sessionExpirationCheckIntervalId: sessionExpirationCheckIntervalId
         }
     };
 }
+
 /**
  * This action is dispatched to let the app state know that the auth request is in progress.
  * @returns {{type: string}} The object to dispatch to trigger the reducer to update the auth state
