@@ -45,39 +45,52 @@ var log = getLogger("main");
  */
 const store = configureStore(window.__INITIAL_STATE__);
 const authService = new AuthService({
-  issuer: window.REACT_APP_AUTH_ENDPOINT
-      ? window.REACT_APP_AUTH_ENDPOINT
-      : 'https://okta.com/oauth2/default',
-  client_id: 'clientid',
-  redirect_uri: `http://localhost:3000/dashboard/implicit/callback`,
+  issuer: process.env.REACT_APP_AUTH_ENDPOINT,
+  client_id: process.env.REACT_APP_CLIENT_ID,
+  redirect_uri: `${window.location.origin}/dashboard/login/callback`,
   postLogoutRedirectUri: `${window.location.origin}`,
-  scope: ['openid', 'email', 'profile'],
+  scope: ['openid', 'email'],
   pkce: true,
   tokenManager: {
     autoRenew: true,
     storage: 'sessionStorage',
   },
 });
+
 /**
  * Grab token from session storage
  */
-let token = JSON.parse(sessionStorage.getItem("token"));
+// let token = JSON.parse(sessionStorage.getItem("token"));
+let oktaTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
+let token
+if (oktaTokenStorage !== null && oktaTokenStorage !== "") {
+  token = oktaTokenStorage.idToken
+  console.log(token)
+}
 
 // use session token to register user as logged in
-if (token !== null && token !== "") {
-  let dateString = sessionStorage.getItem("tokenExpiresDate");
-  let tokenExpiresDate = new Date(dateString);
+if (token !== null && token !== "" && token !== undefined) {
+  // let dateString = sessionStorage.getItem("tokenExpiresDate");
+  let dateStringInEpochSec = token["expiresAt"]
+  let dateStringInEpochMs = dateStringInEpochSec * 1000
+
+  let tokenExpiresDate = new Date(dateStringInEpochMs);
   let now = new Date();
 
   log.debug(`Token expires on ${tokenExpiresDate}`);
+  console.log(`Token expires on ${tokenExpiresDate}`)
 
   let dateTokenExpiresInMillis = tokenExpiresDate.getTime() - now.getTime();
+  console.log(`Token expires in ${dateTokenExpiresInMillis} ms`)
 
+  console.log(token["value"])
   // warn two minutes before token expiration
   store.dispatch(
     setSessionWarningTimeout(
       dateTokenExpiresInMillis - 120000,
-      token.data.client_token.client_token
+      // TODO need to set to actual token string
+      // token.data.client_token.client_token
+        token["value"]
     )
   );
 
@@ -115,7 +128,7 @@ render(
           <Security authService={authService}>
             <Switch>
               <SecureRoute path="/" exact component={App} />
-              <Route path="/dashboard/implicit/callback" component={LoginCallback} />
+              <Route path="/dashboard/login/callback" component={LoginCallback} />
             </Switch>
           </Security>
         </Router>
