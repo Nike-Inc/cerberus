@@ -16,9 +16,9 @@ public class AuthTokenGeneratorTest {
       exceptionMessage = e.getMessage();
       exception = e;
     }
+    Assert.assertNotNull(exception);
     Assert.assertEquals(
         "${cerberus.auth.token.generate.length} must be at least 64 but was 0", exceptionMessage);
-    Assert.assertTrue(exception instanceof IllegalArgumentException);
   }
 
   @Test
