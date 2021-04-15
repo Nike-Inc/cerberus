@@ -57,40 +57,44 @@ const authService = new AuthService({
   },
 });
 
+let oktaTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
+// TODO add call to new authentication action
+//
+// we will send oktaTokenStorage in a post using axios
+// to hit the Cerberus API exchange endpoint
+// we will receive a Cerberus token in response
+
 /**
  * Grab token from session storage
  */
-// let token = JSON.parse(sessionStorage.getItem("token"));
-let oktaTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
-let token
-if (oktaTokenStorage !== null && oktaTokenStorage !== "") {
-  token = oktaTokenStorage.idToken
-  console.log(token)
-}
+let token = JSON.parse(sessionStorage.getItem("token"));
+
+// let token
+// if (oktaTokenStorage !== null && oktaTokenStorage !== "") {
+//   token = oktaTokenStorage.idToken
+//   console.log(token)
+// }
 
 // use session token to register user as logged in
 if (token !== null && token !== "" && token !== undefined) {
-  // let dateString = sessionStorage.getItem("tokenExpiresDate");
-  let dateStringInEpochSec = token["expiresAt"]
-  let dateStringInEpochMs = dateStringInEpochSec * 1000
+  let dateString = sessionStorage.getItem("tokenExpiresDate");
+  // let dateStringInEpochSec = token["expiresAt"]
+  // let dateStringInEpochMs = dateStringInEpochSec * 1000
 
-  let tokenExpiresDate = new Date(dateStringInEpochMs);
+  let tokenExpiresDate = new Date(dateString);
+  // let tokenExpiresDate = new Date(dateStringInEpochMs);
   let now = new Date();
 
   log.debug(`Token expires on ${tokenExpiresDate}`);
-  console.log(`Token expires on ${tokenExpiresDate}`)
 
   let dateTokenExpiresInMillis = tokenExpiresDate.getTime() - now.getTime();
-  console.log(`Token expires in ${dateTokenExpiresInMillis} ms`)
 
-  console.log(token["value"])
   // warn two minutes before token expiration
   store.dispatch(
     setSessionWarningTimeout(
       dateTokenExpiresInMillis - 120000,
-      // TODO need to set to actual token string
-      // token.data.client_token.client_token
-        token["value"]
+      token.data.client_token.client_token
+        // token["value"]
     )
   );
 
