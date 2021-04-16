@@ -24,12 +24,21 @@ import com.nike.cerberus.domain.OauthJwtExchangeRequest;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,42 +50,69 @@ public class OauthJwtAuthenticationController {
 
   private final AuthenticationService authenticationService;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
+  private final OkHttpClient httpClient;
+  private final String modulus;
+  private final String exponent;
+  private static final int DEFAULT_TIMEOUT = 15;
+  private static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
   @Autowired
   public OauthJwtAuthenticationController(
       AuthenticationService authenticationService,
-      AuditLoggingFilterDetails auditLoggingFilterDetails) {
+      AuditLoggingFilterDetails auditLoggingFilterDetails,
+      @Value("${cerberus.auth.oauth.jwk.e}") String exponent,
+      @Value("${cerberus.auth.oauth.jwk.m}") String modulus) {
+    this.modulus = modulus;
+    this.exponent = exponent;
     this.authenticationService = authenticationService;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
+    httpClient =
+        new OkHttpClient.Builder()
+            .connectTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+            .writeTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+            .readTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+            .build();
   }
 
   @RequestMapping(value = "/user/oauth/exchange", method = POST, consumes = APPLICATION_JSON_VALUE)
   public AuthResponse handleCerberusTokenExchange(@RequestBody OauthJwtExchangeRequest request) {
-
-    Jws<Claims> claimsJws;
+    Jws<Claims> claimsJws = null;
+    String email = null;
     try {
+
+      BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(this.modulus));
+      BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(this.exponent));
+
+      PublicKey rsa =
+          KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
       claimsJws =
           Jwts.parser()
+              .setSigningKey(rsa)
               //                      .requireIssuer("")
-              .setSigningKeyResolver(signingKeyResolver)
+              //              .setSigningKeyResolver(signingKeyResolver)
               .parseClaimsJws(request.getToken());
+      email = claimsJws.getBody().get("email", String.class);
     } catch (InvalidClaimException e) {
       //      log.warn("Invalid claim when parsing token: {}", token, e);
       //      return Optional.empty();
+    } catch (ExpiredJwtException e) {
+      email = e.getClaims().get("email", String.class);
     } catch (JwtException e) {
       //      log.warn("Error parsing JWT token: {}", token, e);
       //      return Optional.empty();
     } catch (IllegalArgumentException e) {
       //      log.warn("Error parsing JWT token: {}", token, e);
       //      return Optional.empty();
+    } catch (Exception e) {
+      // todo ignore
     }
-    Claims claims = claimsJws.getBody();
     //    if (blocklist.contains(claims.getId())) {
     //      log.warn("This JWT token is blocklisted. ID: {}", claims.getId());
     //      return Optional.empty();
     //    }
-    String email = claims.get("email", String.class);
-    AuthResponse authResponse = authenticationService.authenticate(email);
+    AuthResponse authResponse = null;
+    //    String email = claims.get("email", String.class);
+    authResponse = authenticationService.authenticate(email);
 
     return authResponse;
 
