@@ -57,18 +57,6 @@ export default createReducer(initialState, {
             policies: payload.tokenData.policies,
             sessionExpirationCheckIntervalId: payload.sessionExpirationCheckIntervalId,
         })
-        // TODO replace with calls for groups
-        // return Object.assign({}, state, {
-        //     isAuthenticating: false,
-        //     isAuthenticated: true,
-        //     isSessionExpired: false,
-        //     isAdmin: true,
-        //     cerberusAuthToken: payload.tokenData.client_token,
-        //     userName: "test user", // payload.tokenData.metadata.username,
-        //     groups: "no groups", //payload.tokenData.metadata.groups.split(/,/),
-        //     policies: "none", // payload.tokenData.policies,
-        //     sessionExpirationCheckIntervalId: payload.sessionExpirationCheckIntervalId,
-        // })
     },
     // logs the user out and resets user data
     [constants.RESET_USER_AUTH_STATE]: () => {

@@ -29,7 +29,11 @@ import * as workerTimers from "worker-timers";
 import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
 import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
+import axios from "axios";
+import environmentService from "./service/EnvironmentService";
+import * as cms from "./constants/cms";
 var log = getLogger("main");
+const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
 
 /**
  * This is our redux data store for storing all data retrieved from API Calls and any other state that needs
@@ -50,31 +54,39 @@ const authService = new AuthService({
 });
 
 let oktaTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
-// TODO add call to new authentication action
-//
-// we will send oktaTokenStorage in a post using axios
-// to hit the Cerberus API exchange endpoint
-// we will receive a Cerberus token in response
+
+axios({
+    // method: 'post',
+    method: 'get',
+    // url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
+    url: environmentService.getDomain() + '/healthcheck',
+    // data: {
+    //   token: oktaTokenStorage,
+    // },
+    // timeout: AUTH_ACTION_TIMEOUT
+  })
+    .then(function (response) {
+    // TODO set token here
+      console.log("exchange token successful")
+      console.log(response.status)
+  })
+    .catch(function ({ response }) {
+    //  TODO catch errors
+      console.log("Failed to exchange OAuth token")
+      console.log(response)
+    });
 
 /**
  * Grab token from session storage
  */
 let token = JSON.parse(sessionStorage.getItem("token"));
 
-// let token
-// if (oktaTokenStorage !== null && oktaTokenStorage !== "") {
-//   token = oktaTokenStorage.idToken
-//   console.log(token)
-// }
 
 // use session token to register user as logged in
 if (token !== null && token !== "" && token !== undefined) {
   let dateString = sessionStorage.getItem("tokenExpiresDate");
-  // let dateStringInEpochSec = token["expiresAt"]
-  // let dateStringInEpochMs = dateStringInEpochSec * 1000
 
   let tokenExpiresDate = new Date(dateString);
-  // let tokenExpiresDate = new Date(dateStringInEpochMs);
   let now = new Date();
 
   log.debug(`Token expires on ${tokenExpiresDate}`);
@@ -86,7 +98,6 @@ if (token !== null && token !== "" && token !== undefined) {
     setSessionWarningTimeout(
       dateTokenExpiresInMillis - 120000,
       token.data.client_token.client_token
-        // token["value"]
     )
   );
 
