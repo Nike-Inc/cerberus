@@ -56,7 +56,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
           "/v2/auth/iam-principal",
           "/v1/auth/iam-role",
           "/v2/auth/user",
-          "/v2/auth/mfa_check");
+          "/v2/auth/mfa_check",
+          "/v2/auth/user/oauth/exchange");
 
   @Autowired private AuthTokenService authTokenService;
 
