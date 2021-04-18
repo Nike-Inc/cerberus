@@ -51,11 +51,13 @@ public class CategoryController {
   @RequestMapping(method = POST, consumes = APPLICATION_JSON_VALUE)
   public ResponseEntity<Category> createCategory(
       @Valid @RequestBody Category category, UriComponentsBuilder b) {
-    String id =
-        categoryService.createCategory(
-            category, SecurityContextHolder.getContext().getAuthentication().getName());
+    String id = categoryService.createCategory(category, getAuthenticationName());
     UriComponents uriComponents = b.path("/v1/category/{id}").buildAndExpand(id);
     return ResponseEntity.created(uriComponents.toUri()).build();
+  }
+
+  String getAuthenticationName() {
+    return SecurityContextHolder.getContext().getAuthentication().getName();
   }
 
   @RolesAllowed(ROLE_ADMIN)
