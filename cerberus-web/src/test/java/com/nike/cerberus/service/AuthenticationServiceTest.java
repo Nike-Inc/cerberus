@@ -35,6 +35,7 @@ import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
+import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.ApplicationConfiguration;
 import com.nike.cerberus.dao.AwsIamRoleDao;
@@ -42,6 +43,7 @@ import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.domain.CerberusAuthToken;
 import com.nike.cerberus.domain.MfaCheckRequest;
+import com.nike.cerberus.domain.UserCredentials;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.AwsIamRoleKmsKeyRecord;
 import com.nike.cerberus.record.AwsIamRoleRecord;
@@ -54,13 +56,17 @@ import java.util.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /** Tests the AuthenticationService class */
 public class AuthenticationServiceTest {
 
   @Mock private SafeDepositBoxDao safeDepositBoxDao;
+
+  @Mock private AuthConnector authServiceConnector;
 
   @Mock private AwsIamRoleDao awsIamRoleDao;
 
@@ -487,5 +493,17 @@ public class AuthenticationServiceTest {
         ((ApiException) e)
             .getApiErrors()
             .contains(DefaultApiError.MAXIMUM_TOKEN_REFRESH_COUNT_REACHED));
+  }
+
+  @Ignore
+  @Test
+  public void testAuthenticate() {
+    byte[] password = new byte[0];
+    AuthResponse authResponse = new AuthResponse();
+    authResponse.setStatus(AuthStatus.SUCCESS);
+    UserCredentials credentials = new UserCredentials("username", password);
+    Mockito.when(authServiceConnector.authenticate(anyString(), anyObject()))
+        .thenReturn(authResponse);
+    authenticationService.authenticate(credentials);
   }
 }
