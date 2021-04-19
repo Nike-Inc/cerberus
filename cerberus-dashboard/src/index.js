@@ -61,7 +61,7 @@ let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"))
 let oauthToken = oauthTokenStorage?.idToken?.value;
 console.log(oauthToken)
 
-let token = async () => axios({
+axios({
     method: 'post',
     url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
     data: {
@@ -76,50 +76,51 @@ let token = async () => axios({
     // TODO set token here, how to handle timing, coming from a promise?
       console.log("exchange token successful")
       console.log(response.status)
-      // token = response;
-        return response;
+      sessionStorage.setItem("token", JSON.stringify(response))
+      login()
   })
     .catch(function ({ response }) {
     //  TODO catch errors and handle timeout
       console.log("Failed to exchange OAuth token")
       console.log(response)
-        return null;
     });
 
-console.log("got token: " + token)
-/**
- * Grab token from session storage
- */
-// let token = JSON.parse(sessionStorage.getItem("token"));
+let login = () => {
+  /**
+   * Grab token from session storage
+   */
+  let token = JSON.parse(sessionStorage.getItem("token"));
+  console.log("got token: " + token)
 
-if (await token !== null && await token !== "" && await token !== undefined) {
-  let dateString = sessionStorage.getItem("tokenExpiresDate");
+  if (await token !== null && await token !== "" && await token !== undefined) {
+    let dateString = sessionStorage.getItem("tokenExpiresDate");
 
-  let tokenExpiresDate = new Date(dateString);
-  let now = new Date();
+    let tokenExpiresDate = new Date(dateString);
+    let now = new Date();
 
-  log.debug(`Token expires on ${tokenExpiresDate}`);
+    log.debug(`Token expires on ${tokenExpiresDate}`);
 
-  let dateTokenExpiresInMillis = tokenExpiresDate.getTime() - now.getTime();
+    let dateTokenExpiresInMillis = tokenExpiresDate.getTime() - now.getTime();
 
-  // warn two minutes before token expiration
-  store.dispatch(
-    setSessionWarningTimeout(
-      dateTokenExpiresInMillis - 120000,
-      token.data.client_token.client_token
-    )
-  );
+    // warn two minutes before token expiration
+    store.dispatch(
+      setSessionWarningTimeout(
+        dateTokenExpiresInMillis - 120000,
+        token.data.client_token.client_token
+      )
+    );
 
-  let sessionExpirationCheckIntervalInMillis = 2000;
-  let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
-    let currentTimeInMillis = new Date().getTime();
-    let sessionExpirationTimeInMillis = tokenExpiresDate.getTime();
-    if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
-      store.dispatch(handleSessionExpiration());
-    }
-  }, sessionExpirationCheckIntervalInMillis);
+    let sessionExpirationCheckIntervalInMillis = 2000;
+    let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
+      let currentTimeInMillis = new Date().getTime();
+      let sessionExpirationTimeInMillis = tokenExpiresDate.getTime();
+      if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
+        store.dispatch(handleSessionExpiration());
+      }
+    }, sessionExpirationCheckIntervalInMillis);
 
-  store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId));
+    store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId));
+  }
 }
 
 // Create an enhanced history that syncs navigation events with the store
