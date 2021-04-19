@@ -57,37 +57,42 @@ const authService = new AuthService({
   },
 });
 
-let oktaTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
+let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
+let oauthToken = oauthTokenStorage?.idToken?.value;
+console.log(oauthToken)
 
-axios({
-    // method: 'post',
-    method: 'get',
-    // url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
-    url: environmentService.getDomain() + '/healthcheck',
-    // data: {
-    //   token: oktaTokenStorage,
-    // },
-    // timeout: AUTH_ACTION_TIMEOUT
+let token = async () => axios({
+    method: 'post',
+    url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
+    data: {
+      token: oauthToken,
+    },
+    timeout: AUTH_ACTION_TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json',
+    }
   })
     .then(function (response) {
-    // TODO set token here
+    // TODO set token here, how to handle timing, coming from a promise?
       console.log("exchange token successful")
       console.log(response.status)
+      // token = response;
+        return response;
   })
     .catch(function ({ response }) {
-    //  TODO catch errors
+    //  TODO catch errors and handle timeout
       console.log("Failed to exchange OAuth token")
       console.log(response)
+        return null;
     });
 
+console.log("got token: " + token)
 /**
  * Grab token from session storage
  */
-let token = JSON.parse(sessionStorage.getItem("token"));
+// let token = JSON.parse(sessionStorage.getItem("token"));
 
-
-// use session token to register user as logged in
-if (token !== null && token !== "" && token !== undefined) {
+if (await token !== null && await token !== "" && await token !== undefined) {
   let dateString = sessionStorage.getItem("tokenExpiresDate");
 
   let tokenExpiresDate = new Date(dateString);
@@ -148,3 +153,4 @@ render(
   </div>,
   document.getElementById("root")
 );
+
