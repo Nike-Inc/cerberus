@@ -35,7 +35,6 @@ import org.mockito.Mock;
 public class DatabaseCacheTest {
 
   @Mock private MetricsService metricsService;
-  @Mock private MetricReportingCache<Object, Object> dataCache;
 
   @Before
   public void before() {
@@ -179,11 +178,5 @@ public class DatabaseCacheTest {
     assertNull(
         "The key/value should have purged itself from the cache from idle activity",
         databaseCache.getObject(key));
-  }
-
-  @Test
-  public void testGetSize() {
-    DatabaseCache databaseCache = new DatabaseCache("it", metricsService, 1, 1, 1);
-    databaseCache.getSize();
   }
 }
