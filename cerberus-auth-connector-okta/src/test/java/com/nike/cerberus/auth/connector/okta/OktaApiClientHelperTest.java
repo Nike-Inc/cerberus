@@ -72,6 +72,23 @@ public class OktaApiClientHelperTest {
     assertTrue(result.contains(group));
   }
 
+  @Test
+  public void getUserGroupsWithLimit() throws Exception {
+
+    String id = "id";
+    UserGroup group = mock(UserGroup.class);
+    PagedResults res = mock(PagedResults.class);
+    when(res.getResult()).thenReturn(Lists.newArrayList(group));
+    when(res.isLastPage()).thenReturn(true);
+    when(userGroupApiClient.getUserGroupsPagedResultsByUrl(anyString())).thenReturn(res);
+
+    // do the call
+    List<UserGroup> result = this.oktaApiClientHelper.getUserGroups(id, 1);
+
+    // verify results
+    assertTrue(result.contains(group));
+  }
+
   @Test(expected = ApiException.class)
   public void getUserGroupsFails() throws Exception {
 
