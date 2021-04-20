@@ -92,7 +92,7 @@ let login = () => {
   let token = JSON.parse(sessionStorage.getItem("token"));
   console.log("got token: " + token)
 
-  if (await token !== null && await token !== "" && await token !== undefined) {
+  if (token !== null && token !== "" && token !== undefined) {
     let dateString = sessionStorage.getItem("tokenExpiresDate");
 
     let tokenExpiresDate = new Date(dateString);
