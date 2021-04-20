@@ -25,11 +25,8 @@ import { syncHistoryWithStore } from "react-router-redux";
 import App from "./components/App/App";
 import configureStore from "./store/configureStore";
 import {
-  loginUserSuccess,
-  handleSessionExpiration,
-  setSessionWarningTimeout
+    handleUserLogin
 } from "./actions/authenticationActions";
-import * as workerTimers from "worker-timers";
 import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
 import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
@@ -73,11 +70,9 @@ axios({
     }
   })
     .then(function (response) {
-    // TODO set token here, how to handle timing, coming from a promise?
       console.log("exchange token successful")
       console.log(response.status)
-      sessionStorage.setItem("token", JSON.stringify(response))
-      login()
+      handleUserLoginAfterTokenExchange(response)
   })
     .catch(function ({ response }) {
     //  TODO catch errors and handle timeout
@@ -85,42 +80,9 @@ axios({
       console.log(response)
     });
 
-let login = () => {
-  /**
-   * Grab token from session storage
-   */
-  let token = JSON.parse(sessionStorage.getItem("token"));
-  console.log("got token: " + token)
-
-  if (await token !== null && await token !== "" && await token !== undefined) {
-    let dateString = sessionStorage.getItem("tokenExpiresDate");
-
-    let tokenExpiresDate = new Date(dateString);
-    let now = new Date();
-
-    log.debug(`Token expires on ${tokenExpiresDate}`);
-
-    let dateTokenExpiresInMillis = tokenExpiresDate.getTime() - now.getTime();
-
-    // warn two minutes before token expiration
-    store.dispatch(
-      setSessionWarningTimeout(
-        dateTokenExpiresInMillis - 120000,
-        token.data.client_token.client_token
-      )
-    );
-
-    let sessionExpirationCheckIntervalInMillis = 2000;
-    let sessionExpirationCheckIntervalId = workerTimers.setInterval(() => {
-      let currentTimeInMillis = new Date().getTime();
-      let sessionExpirationTimeInMillis = tokenExpiresDate.getTime();
-      if (currentTimeInMillis >= sessionExpirationTimeInMillis) {
-        store.dispatch(handleSessionExpiration());
-      }
-    }, sessionExpirationCheckIntervalInMillis);
-
-    store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId));
-  }
+let handleUserLoginAfterTokenExchange = (response) => {
+    console.log("calling handle user login")
+    handleUserLogin(response, store.dispatch, true);
 }
 
 // Create an enhanced history that syncs navigation events with the store

@@ -92,7 +92,7 @@ export function loginMfaRequired(response) {
 /**
  * Updates the state to indicate that the user is successfully authenticated.
  */
-function handleUserLogin(response, dispatch, redirectToWelcome = true) {
+export function handleUserLogin(response, dispatch, redirectToWelcome = true) {
     let leaseDurationInSeconds = response.data.data.client_token.lease_duration;
     const millisecondsPerSecond = 1000;
     const bestGuessOfRequestLatencyInMilliseconds = 120 * millisecondsPerSecond; // take 2 minutes off of duration to account for latency
