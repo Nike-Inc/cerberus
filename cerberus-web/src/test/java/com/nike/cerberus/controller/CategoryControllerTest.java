@@ -15,6 +15,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class CategoryControllerTest {
@@ -32,7 +34,9 @@ public class CategoryControllerTest {
   @Test
   public void testCreateCategory() {
     Category category = Mockito.mock(Category.class);
-    Mockito.doReturn("name").when(categoryController).getAuthenticationName();
+    Authentication authentication = Mockito.mock(Authentication.class);
+    Mockito.when(authentication.getName()).thenReturn("name");
+    SecurityContextHolder.getContext().setAuthentication(authentication);
     Mockito.when(categoryService.createCategory(Mockito.eq(category), Mockito.anyString()))
         .thenReturn("value");
     UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.newInstance();
