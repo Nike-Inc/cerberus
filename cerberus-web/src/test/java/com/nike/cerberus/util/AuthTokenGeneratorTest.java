@@ -22,10 +22,14 @@ public class AuthTokenGeneratorTest {
   }
 
   @Test
-  public void testAuthTokenGenerateShouldGenerateNewToken() throws NoSuchAlgorithmException {
-    AuthTokenGenerator authTokenGenerator = new AuthTokenGenerator(64);
-    String secureToken = authTokenGenerator.generateSecureToken();
-    Assert.assertNotNull(secureToken);
-    Assert.assertEquals(64, secureToken.length());
+  public void testAuthTokenGenerateShouldGenerateNewToken() {
+    try {
+      AuthTokenGenerator authTokenGenerator = new AuthTokenGenerator(64);
+      String secureToken = authTokenGenerator.generateSecureToken();
+      Assert.assertNotNull(secureToken);
+      Assert.assertEquals(64, secureToken.length());
+    } catch (NoSuchAlgorithmException e) {
+
+    }
   }
 }
