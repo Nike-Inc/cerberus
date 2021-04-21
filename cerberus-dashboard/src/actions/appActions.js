@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import { hashHistory } from 'react-router';
 import axios from 'axios';
 import * as constants from '../constants/actions';
 import * as cms from '../constants/cms';
@@ -149,7 +148,7 @@ export function loadManageSDBPage(id, path, cerberusAuthToken) {
         dispatch(mSDBActions.resetToInitialState());
         dispatch(mSDBActions.fetchSDBDataFromCMS(id, cerberusAuthToken));
         dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken));
-        hashHistory.push(`/manage-safe-deposit-box/${id}`);
+        history.push(`/manage-safe-deposit-box/${id}`);
     };
 }
 

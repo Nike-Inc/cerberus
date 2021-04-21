@@ -17,6 +17,7 @@
 import React from 'react';
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import * as appActions from '../../actions/appActions';
 import Login from '../Login/Login';
@@ -26,6 +27,10 @@ import Messenger from '../Messenger/Messenger';
 import SideBar from '../SideBar/SideBar';
 import Footer from '../Footer/Footer';
 import './App.scss';
+import LandingView from "../LandingView/LandingView";
+import ManageSafeDepositBox from "../ManageSafeDepositBox/ManageSafeDepositBox";
+import SDBMetadataList from "../SDBMetadataList/SDBMetadataList";
+import NotFound from "../NotFound/NotFound";
 
 /**
  * This is the main Component that loads the header, content div and footer
@@ -45,6 +50,15 @@ class App extends Component {
 
         return (
             <div id='main-wrapper'>
+                <Switch>
+                    <Route exact path="/" component={LandingView} />
+                    <Route
+                        path="manage-safe-deposit-box/:id"
+                        component={ManageSafeDepositBox}
+                    />
+                    <Route path="admin/sdb-metadata" component={SDBMetadataList} />
+                    <Route path="*" component={NotFound} />
+                </Switch>
                 <Modal modalStack={modalStack} />
 
                 {!isAuthenticated && <Login />}

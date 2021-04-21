@@ -16,16 +16,13 @@
 
 import React from "react";
 import { render } from "react-dom";
-import { Router, Route, IndexRoute, hashHistory } from "react-router";
 import { Provider } from "react-redux";
-import { syncHistoryWithStore } from "react-router-redux";
+import { Route, Router, Switch } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 
 import App from "./components/App/App";
-import LandingView from "./components/LandingView/LandingView";
-import SDBMetadataList from "./components/SDBMetadataList/SDBMetadataList";
-import ManageSafeDepositBox from "./components/ManageSafeDepositBox/ManageSafeDepositBox";
 import NotFound from "./components/NotFound/NotFound";
-import configureStore from "./store/configureStore";
+import configureStore, { history } from "./store/configureStore";
 import {
   loginUserSuccess,
   handleSessionExpiration,
@@ -34,6 +31,7 @@ import {
 import * as workerTimers from "worker-timers";
 import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
+import {ConnectedRouter} from "connected-react-router";
 
 var log = getLogger("main");
 
@@ -78,9 +76,6 @@ if (token !== null && token !== "") {
   store.dispatch(loginUserSuccess(token, sessionExpirationCheckIntervalId));
 }
 
-// Create an enhanced history that syncs navigation events with the store
-const history = syncHistoryWithStore(hashHistory, store);
-
 /**
  * The Provider makes the dispatch method available to children components that connect to it.
  * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.
@@ -96,18 +91,12 @@ render(
   <div>
     <Provider store={store}>
       <div>
-        <Router history={history}>
-          <Route path="/" component={App}>
-            <IndexRoute component={LandingView} />
-            <Route
-              path="manage-safe-deposit-box/:id"
-              component={ManageSafeDepositBox}
-            />
-            <Route path="admin/sdb-metadata" component={SDBMetadataList} />
+        <ConnectedRouter history={history}>
+          <Switch>
+            <Route path="/" component={App}/>
             <Route path="*" component={NotFound} />
-          </Route>
-          <Route path="*" component={NotFound} />
-        </Router>
+          </Switch>
+        </ConnectedRouter>
       </div>
     </Provider>
   </div>,

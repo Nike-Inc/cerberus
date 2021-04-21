@@ -16,7 +16,6 @@
 
 import React from 'react'
 import { Component } from 'react'
-import { hashHistory } from 'react-router'
 import * as headerActions from '../../actions/headerActions'
 import * as authActions from '../../actions/authenticationActions'
 import './Header.scss'
@@ -31,7 +30,7 @@ export default class Header extends Component {
             <header id='header'>
                 <div id='bottom-header'>
                     <div id='header-logo' onClick={ function(dispatch) {
-                        hashHistory.push('/')
+                        history.push('/')
                     }.bind(this, this.props.dispatch)
                     }></div>
                     <div id='header-title' className='ncss-brand u-uppercase un-selectable'>Cerberus</div>
