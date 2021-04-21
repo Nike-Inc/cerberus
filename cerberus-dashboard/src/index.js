@@ -17,11 +17,13 @@
 import React from "react";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
-import { Route, Router, Switch } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
+import { Route, Switch } from 'react-router-dom';
 
 import App from "./components/App/App";
 import NotFound from "./components/NotFound/NotFound";
+import LandingView from './components/LandingView/LandingView';
+import ManageSafeDepositBox from './components/ManageSafeDepositBox/ManageSafeDepositBox';
+import SDBMetadataList from './components/SDBMetadataList/SDBMetadataList';
 import configureStore, { history } from "./store/configureStore";
 import {
   loginUserSuccess,
@@ -93,6 +95,13 @@ render(
       <div>
         <ConnectedRouter history={history}>
           <Switch>
+            <Route
+                path="manage-safe-deposit-box/:id"
+                component={ManageSafeDepositBox}
+                exact
+            />
+            <Route path="admin/sdb-metadata" component={SDBMetadataList} />
+            {/* <Route exact path="/" component={LandingView} /> */}
             <Route path="/" component={App}/>
             <Route path="*" component={NotFound} />
           </Switch>
