@@ -16,7 +16,6 @@
 
 import React from 'react';
 import environmentService from '../service/EnvironmentService';
-import { hashHistory } from 'react-router';
 import axios from 'axios';
 import * as constants from '../constants/actions';
 import * as appActions from './appActions';
@@ -129,7 +128,7 @@ function handleUserLogin(response, dispatch, redirectToWelcome = true) {
     dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId));
     dispatch(appActions.fetchSideBarData(token));
     if (redirectToWelcome) {
-        hashHistory.push("/");
+        history.push("/");
     }
 }
 
@@ -305,7 +304,7 @@ export function refreshAuth(token, redirectPath = '/', redirect = true) {
                 workerTimers.setTimeout(function () {
                     handleUserLogin(response, dispatch, false);
                     if (redirect) {
-                        hashHistory.push(redirectPath);
+                        history.push(redirectPath);
                     }
                 }, 2000);
 
@@ -315,7 +314,7 @@ export function refreshAuth(token, redirectPath = '/', redirect = true) {
                 dispatch(modalActions.clearAllModals());
                 log.error('Failed to login user', response);
                 dispatch(resetAuthState());
-                hashHistory.push('dashboard/#/login');
+                history.push('dashboard/#/login');
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to refresh user token" response={response} />));
             });
     };
@@ -340,7 +339,7 @@ export function logoutUser(token) {
                 dispatch(removeSessionWarningTimeout());
                 dispatch(resetAuthState());
                 dispatch(headerActions.mouseOutUsername());
-                hashHistory.push('/login');
+                history.push('/login');
             })
             .catch(function ({ response }) {
                 log.error('Failed to logout user', response);

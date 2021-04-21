@@ -18,7 +18,6 @@ import React from 'react';
 import axios from 'axios';
 import * as constants from '../constants/actions';
 import * as cms from '../constants/cms';
-import { hashHistory } from 'react-router';
 import environmentService from '../service/EnvironmentService';
 import * as messengerActions from './messengerActions';
 import * as modalActions from './modalActions';
@@ -49,7 +48,7 @@ export function submitCreateNewSDB(data, token) {
                 dispatch(clearSecureData());
                 dispatch(resetVersionBrowserState());
                 dispatch(appActions.fetchSideBarData(token));
-                hashHistory.push(`/manage-safe-deposit-box/${response.data.id}`);
+                history.push(`/manage-safe-deposit-box/${response.data.id}`);
             })
             .catch(function ({ response }) {
                 log.error('Failed to create new SDB', response);
