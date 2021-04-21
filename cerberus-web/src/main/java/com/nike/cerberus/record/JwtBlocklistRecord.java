@@ -17,27 +17,17 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
 public class JwtBlocklistRecord {
 
-  private String id;
-
-  private OffsetDateTime expiresTs;
-
-  //  public String getId() {
-  //    return id;
-  //  }
+  @Getter private String id;
+  @Getter private OffsetDateTime expiresTs;
 
   public JwtBlocklistRecord setId(String id) {
     this.id = id;
     return this;
   }
-
-  //  public OffsetDateTime getExpiresTs() {
-  //    return expiresTs;
-  //  }
 
   public JwtBlocklistRecord setExpiresTs(OffsetDateTime expiresTs) {
     this.expiresTs = expiresTs;

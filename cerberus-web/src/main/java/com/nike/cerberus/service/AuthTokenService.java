@@ -26,11 +26,13 @@ import com.nike.cerberus.domain.AuthTokenAcceptType;
 import com.nike.cerberus.domain.AuthTokenInfo;
 import com.nike.cerberus.domain.AuthTokenIssueType;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.error.AuthTokenTooLongException;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.record.AuthTokenRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AuthTokenGenerator;
+import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.DateTimeSupplier;
 import com.nike.cerberus.util.TokenHasher;
 import com.nike.cerberus.util.UuidSupplier;
@@ -106,16 +108,19 @@ public class AuthTokenService {
         try {
           return getCerberusAuthTokenFromJwt(
               principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
-        } catch (ApiException e) {
-          String tooLongName = DefaultApiError.AUTH_TOKEN_TOO_LONG.getName();
-          boolean isTooLong =
-              e.getApiErrors().stream().anyMatch(err -> err.getName().equals(tooLongName));
+        } catch (AuthTokenTooLongException e) {
+          final String msg = e.getMessage();
+          logger.info(msg);
 
-          if ((tokenFlag.getAcceptType() == AuthTokenAcceptType.ALL) && isTooLong) {
+          if (tokenFlag.getAcceptType() == AuthTokenAcceptType.ALL) {
             return getCerberusAuthTokenFromSession(
                 principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount, id, now);
           }
-          throw (e);
+          throw ApiException.newBuilder()
+              .withApiErrors(
+                  CustomApiError.createCustomApiError(DefaultApiError.AUTH_TOKEN_TOO_LONG, msg))
+              .withExceptionMessage(msg)
+              .build();
         }
       case SESSION:
         return getCerberusAuthTokenFromSession(
@@ -135,7 +140,8 @@ public class AuthTokenService {
       long ttlInMinutes,
       int refreshCount,
       String id,
-      OffsetDateTime now) {
+      OffsetDateTime now)
+      throws AuthTokenTooLongException {
 
     AuthTokenInfo authTokenInfo;
     String token;

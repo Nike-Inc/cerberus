@@ -238,12 +238,12 @@ cerberus:
       # Every minute
       cronExpression: "0 * * ? * *"
 
-    jwtBlacklistCleanUpJob:
+    jwtBlocklistCleanUpJob:
       enabled: true
       # Every 5 seconds
       cronExpression: "0/5 * * ? * *"
 
-    jwtBlacklistRefreshJob:
+    jwtBlocklistRefreshJob:
       enabled: true
       # Every minute
       cronExpression: "0 * * ? * *"
