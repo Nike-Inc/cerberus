@@ -15,22 +15,26 @@
  */
 
 import rootReducer from '../reducers/rootReducer';
+import {createBrowserHistory, createHashHistory} from 'history'
 import { applyMiddleware, createStore, compose } from 'redux';
-import { routerMiddleware } from 'react-router-redux';
-import { browserHistory } from 'react-router';
+import { routerMiddleware } from 'connected-react-router'
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
+
+// TODO decide between browser and hash history
+// export const history = createBrowserHistory()
+export const history = createHashHistory()
 
 export default function configureStore() {
 
     // Apply the middleware to the store
-    const middleware = routerMiddleware(browserHistory);
+    const middleware = routerMiddleware(history);
 
     let store;
     if (localStorage.getItem('redux-logger-enabled') === 'true') {
         const logger = createLogger();
         store = createStore(
-            rootReducer,
+            rootReducer(history),
             compose(
                 applyMiddleware(middleware, thunk, logger),
                 window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
@@ -38,7 +42,7 @@ export default function configureStore() {
         );
     } else {
         store = createStore(
-            rootReducer,
+            rootReducer(history),
             compose(
                 applyMiddleware(middleware, thunk),
                 window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f

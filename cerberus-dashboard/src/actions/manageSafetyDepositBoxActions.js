@@ -22,7 +22,6 @@ import * as actions from '../constants/actions';
 import * as cms from '../constants/cms';
 import * as appActions from './appActions';
 import * as messengerActions from './messengerActions';
-import { hashHistory } from 'react-router';
 import * as modalActions from './modalActions';
 import ApiError from '../components/ApiError/ApiError';
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
@@ -521,7 +520,7 @@ export function deleteSDB(sdbId, token) {
                 dispatch(resetToInitialState());
                 dispatch(resetVersionBrowserState());
                 dispatch(appActions.fetchSideBarData(token));
-                hashHistory.push('/');
+                history.push('/');
             })
             .catch(({ response }) => {
                 log.error("Failed to delete SDB", response);
