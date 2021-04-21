@@ -24,6 +24,7 @@ import * as modalActions from './modalActions';
 import * as appActions from './appActions';
 import ApiError from '../components/ApiError/ApiError';
 import * as humps from 'humps';
+import { history } from '../store/configureStore';
 
 import { getLogger } from "../utils/logger";
 var log = getLogger('create-new-sdb-actions');

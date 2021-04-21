@@ -16,6 +16,7 @@
 
 import React from "react";
 import { Component } from "react";
+import { history } from '../../store/configureStore';
 
 export default class NotFound extends Component {
   componentDidMount() {
