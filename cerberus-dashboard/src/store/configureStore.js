@@ -22,8 +22,8 @@ import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 
 // TODO decide between browser and hash history
-// export const history = createBrowserHistory()
-export const history = createHashHistory()
+export const history = createBrowserHistory()
+// export const history = createHashHistory()
 
 export default function configureStore() {
 
