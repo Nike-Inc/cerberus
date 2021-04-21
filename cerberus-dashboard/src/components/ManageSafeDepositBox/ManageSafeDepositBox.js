@@ -29,6 +29,12 @@ import './ManageSafeDepositBox.scss';
 
 class ManageSafeDepositBox extends Component {
 
+    constructor(props) {
+        super(props);
+
+        this.handleNavItemClicked = this.handleNavItemClicked.bind(this);
+    }
+
     componentWillReceiveProps(nextProps) {
         // Fetch and load SDB details based on id in uri
         if (nextProps.routeParams.id !== this.props.routeParams.id) {
@@ -40,6 +46,7 @@ class ManageSafeDepositBox extends Component {
      * Fetch the data about the SDB from CMS
      */
     componentDidMount() {
+        console.log("ManageSafeDepositBox Mounted!");
         if (!this.props.hasDomainDataLoaded) {
             this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken));
         }

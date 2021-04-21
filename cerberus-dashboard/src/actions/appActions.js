@@ -25,6 +25,7 @@ import CreateSDBoxForm from '../components/CreateSDBoxForm/CreateSDBoxForm';
 import { initCreateNewSDB } from './createSDBoxActions';
 import ApiError from '../components/ApiError/ApiError';
 import * as messengerActions from './messengerActions';
+import { history } from '../store/configureStore';
 
 import { getLogger } from "../utils/logger";
 var log = getLogger('application-actions');

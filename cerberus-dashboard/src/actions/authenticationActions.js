@@ -28,6 +28,7 @@ import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
 import * as modalActions from './modalActions';
 import * as manageSDBActions from './manageSafetyDepositBoxActions';
 import * as workerTimers from 'worker-timers';
+import { history } from '../store/configureStore';
 import { getLogger } from "../utils/logger";
 
 var log = getLogger('authentication-actions');

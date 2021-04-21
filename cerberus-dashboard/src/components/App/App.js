@@ -50,15 +50,6 @@ class App extends Component {
 
         return (
             <div id='main-wrapper'>
-                <Switch>
-                    <Route exact path="/" component={LandingView} />
-                    <Route
-                        path="manage-safe-deposit-box/:id"
-                        component={ManageSafeDepositBox}
-                    />
-                    <Route path="admin/sdb-metadata" component={SDBMetadataList} />
-                    <Route path="*" component={NotFound} />
-                </Switch>
                 <Modal modalStack={modalStack} />
 
                 {!isAuthenticated && <Login />}
