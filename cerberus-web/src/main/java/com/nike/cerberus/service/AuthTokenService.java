@@ -170,11 +170,8 @@ public class AuthTokenService {
       String id,
       OffsetDateTime now) {
 
-    String token;
-    AuthTokenInfo authTokenInfo;
-
-    token = authTokenGenerator.generateSecureToken();
-    authTokenInfo =
+    String token = authTokenGenerator.generateSecureToken();
+    AuthTokenRecord authTokenRecord =
         new AuthTokenRecord()
             .setId(id)
             .setTokenHash(tokenHasher.hashToken(token))
@@ -185,8 +182,8 @@ public class AuthTokenService {
             .setIsAdmin(isAdmin)
             .setGroups(groups)
             .setRefreshCount(refreshCount);
-    authTokenDao.createAuthToken((AuthTokenRecord) authTokenInfo);
-    return getCerberusAuthTokenFromRecord(token, authTokenInfo);
+    authTokenDao.createAuthToken(authTokenRecord);
+    return getCerberusAuthTokenFromRecord(token, authTokenRecord);
   }
 
   private CerberusAuthToken getCerberusAuthTokenFromRecord(
@@ -222,7 +219,6 @@ public class AuthTokenService {
     }
 
     OffsetDateTime now = OffsetDateTime.now();
-    // TODO: break up this if for two different messages (if present vs expired)
     if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {
       logger.warn(
           "Returning empty optional, because token was expired, expired: {}, now: {}",

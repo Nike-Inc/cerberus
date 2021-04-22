@@ -56,16 +56,6 @@ public class CerberusJwtClaims implements AuthTokenInfo {
     return this;
   }
 
-  @Override
-  public String getTokenHash() {
-    return null;
-  }
-
-  @Override
-  public CerberusJwtClaims setTokenHash(String tokenHash) {
-    return null;
-  }
-
   public CerberusJwtClaims setIsAdmin(Boolean admin) {
     isAdmin = admin;
     return this;

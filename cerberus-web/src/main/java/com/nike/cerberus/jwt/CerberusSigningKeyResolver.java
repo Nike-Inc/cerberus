@@ -39,9 +39,10 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
   private long nextRotationTs;
   private String nextKeyId;
 
+  // Hardcoding these for now
   private static final String DEFAULT_ALGORITHM = "HmacSHA512";
   private static final String DEFAULT_JWT_ALG_HEADER = "HS512";
-  private static final int DEFAULT_MINIMUM_KEY_LENGTH = 512 / 8; // hardcoding these for now
+  private static final int DEFAULT_MINIMUM_KEY_LENGTH_IN_BYTES = 512 / 8;
 
   protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -145,7 +146,7 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
       validateJwtSecretData(jwtSecretData);
       return jwtSecretData;
     } catch (IOException e) {
-      log.error("IOException encountered during deserialization");
+      log.error("IOException encountered during deserialization of jwt secret data");
       throw new RuntimeException(e);
     }
   }
@@ -169,9 +170,11 @@ public class CerberusSigningKeyResolver extends SigningKeyResolverAdapter {
       if (jwtSecret.getSecret() == null) {
         throw new IllegalArgumentException("JWT secret cannot be null");
       }
-      if (Base64.getDecoder().decode(jwtSecret.getSecret()).length < DEFAULT_MINIMUM_KEY_LENGTH) {
+      if (Base64.getDecoder().decode(jwtSecret.getSecret()).length
+          < DEFAULT_MINIMUM_KEY_LENGTH_IN_BYTES) {
         throw new IllegalArgumentException(
-            "JWT secret does NOT meet minimum length requirement of " + DEFAULT_MINIMUM_KEY_LENGTH);
+            "JWT secret does NOT meet minimum length requirement of "
+                + DEFAULT_MINIMUM_KEY_LENGTH_IN_BYTES);
       }
       if (StringUtils.isBlank(jwtSecret.getId())) {
         throw new IllegalArgumentException("JWT secret key ID cannot be empty");

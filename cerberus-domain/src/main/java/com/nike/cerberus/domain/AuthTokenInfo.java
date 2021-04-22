@@ -7,10 +7,6 @@ public interface AuthTokenInfo {
 
   AuthTokenInfo setId(String id);
 
-  String getTokenHash();
-
-  AuthTokenInfo setTokenHash(String tokenHash);
-
   OffsetDateTime getCreatedTs();
 
   AuthTokenInfo setCreatedTs(OffsetDateTime createdTs);
