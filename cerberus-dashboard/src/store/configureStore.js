@@ -15,14 +15,12 @@
  */
 
 import rootReducer from '../reducers/rootReducer';
-import {createBrowserHistory, createHashHistory} from 'history'
+import { createHashHistory } from 'history'
 import { applyMiddleware, createStore, compose } from 'redux';
 import { routerMiddleware } from 'connected-react-router'
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 
-// TODO decide between browser and hash history
-// export const history = createBrowserHistory()
 export const history = createHashHistory()
 
 export default function configureStore() {
