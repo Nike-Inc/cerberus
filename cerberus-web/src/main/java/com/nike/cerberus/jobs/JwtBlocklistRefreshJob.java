@@ -39,6 +39,7 @@ public class JwtBlocklistRefreshJob {
 
   @Scheduled(cron = "${cerberus.jobs.jwtBlocklistRefreshJob.cronExpression}")
   public void execute() {
+    // This would be too spammy as an info message
     log.debug("Running JWT blocklist refresh job");
     jwtService.refreshBlocklist();
   }

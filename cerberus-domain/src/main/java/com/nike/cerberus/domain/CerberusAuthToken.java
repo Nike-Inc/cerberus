@@ -19,56 +19,21 @@ package com.nike.cerberus.domain;
 import com.nike.cerberus.PrincipalType;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
+import lombok.Getter;
 
 public class CerberusAuthToken implements Serializable {
 
   private static final long serialVersionUID = 703097175899198451L;
 
-  private String token;
-  private OffsetDateTime created;
-  private OffsetDateTime expires;
-  private String principal;
-  private PrincipalType principalType;
-  private boolean isAdmin;
-  private String groups;
-  private int refreshCount;
-  private String id;
-
-  public String getToken() {
-    return token;
-  }
-
-  public OffsetDateTime getCreated() {
-    return created;
-  }
-
-  public OffsetDateTime getExpires() {
-    return expires;
-  }
-
-  public String getPrincipal() {
-    return principal;
-  }
-
-  public PrincipalType getPrincipalType() {
-    return principalType;
-  }
-
-  public boolean isAdmin() {
-    return isAdmin;
-  }
-
-  public String getGroups() {
-    return groups;
-  }
-
-  public int getRefreshCount() {
-    return refreshCount;
-  }
-
-  public String getId() {
-    return id;
-  }
+  @Getter private String token;
+  @Getter private OffsetDateTime created;
+  @Getter private OffsetDateTime expires;
+  @Getter private String principal;
+  @Getter private PrincipalType principalType;
+  @Getter private boolean isAdmin;
+  @Getter private String groups;
+  @Getter private int refreshCount;
+  @Getter private String id;
 
   public static final class Builder {
     private String token;

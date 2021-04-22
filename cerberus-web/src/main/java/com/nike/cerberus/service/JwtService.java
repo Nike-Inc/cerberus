@@ -19,14 +19,12 @@ package com.nike.cerberus.service;
 import static io.jsonwebtoken.JwtParser.SEPARATOR_CHAR;
 import static org.springframework.transaction.annotation.Isolation.READ_UNCOMMITTED;
 
-import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.JwtBlocklistDao;
-import com.nike.cerberus.error.DefaultApiError;
+import com.nike.cerberus.error.AuthTokenTooLongException;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
 import com.nike.cerberus.record.JwtBlocklistRecord;
-import com.nike.cerberus.util.CustomApiError;
 import io.jsonwebtoken.*;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -52,6 +50,7 @@ public class JwtService {
   private static final String GROUP_CLAIM_NAME = "groups";
   private static final String IS_ADMIN_CLAIM_NAME = "isAdmin";
   private static final String REFRESH_COUNT_CLAIM_NAME = "refreshCount";
+  private static final int NUM_SEPARATORS_IN_JWT_TOKEN = 2;
 
   // Max header line length for an AWS ALB is 16k, so it needs to be less
   @Value("${cerberus.auth.jwt.maxTokenLength:#{16000}}")
@@ -80,7 +79,8 @@ public class JwtService {
    * @param cerberusJwtClaims Cerberus JWT claims
    * @return JWT token
    */
-  public String generateJwtToken(CerberusJwtClaims cerberusJwtClaims) {
+  public String generateJwtToken(CerberusJwtClaims cerberusJwtClaims)
+      throws AuthTokenTooLongException {
     CerberusJwtKeySpec cerberusJwtKeySpec = signingKeyResolver.resolveSigningKey();
     String principal = cerberusJwtClaims.getPrincipal();
 
@@ -107,11 +107,7 @@ public class JwtService {
           String.format(
               "Token for %s is %d characters long. The max is %d bytes.",
               principal, tokenLength, maxTokenLength);
-      throw ApiException.newBuilder()
-          .withApiErrors(
-              CustomApiError.createCustomApiError(DefaultApiError.AUTH_TOKEN_TOO_LONG, msg))
-          .withExceptionMessage(msg)
-          .build();
+      throw new AuthTokenTooLongException(msg);
     }
     return jwtToken;
   }
@@ -206,6 +202,6 @@ public class JwtService {
    * @return Does the token look like a JWT
    */
   public boolean isJwt(String token) {
-    return StringUtils.countMatches(token, SEPARATOR_CHAR) == 2;
+    return StringUtils.countMatches(token, SEPARATOR_CHAR) == NUM_SEPARATORS_IN_JWT_TOKEN;
   }
 }

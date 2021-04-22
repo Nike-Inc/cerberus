@@ -18,36 +18,22 @@ package com.nike.cerberus.jwt;
 
 import com.nike.cerberus.domain.AuthTokenInfo;
 import java.time.OffsetDateTime;
+import lombok.Getter;
 
 public class CerberusJwtClaims implements AuthTokenInfo {
 
-  private String id;
-
-  private OffsetDateTime createdTs;
-
-  private OffsetDateTime expiresTs;
-
-  private String principal;
-
-  private String principalType;
-
-  private Boolean isAdmin;
-
-  private String groups;
-
-  private Integer refreshCount;
-
-  public String getId() {
-    return id;
-  }
+  @Getter private String id;
+  @Getter private OffsetDateTime createdTs;
+  @Getter private OffsetDateTime expiresTs;
+  @Getter private String principal;
+  @Getter private String principalType;
+  @Getter private Boolean isAdmin;
+  @Getter private String groups;
+  @Getter private Integer refreshCount;
 
   public CerberusJwtClaims setId(String id) {
     this.id = id;
     return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
   }
 
   public CerberusJwtClaims setCreatedTs(OffsetDateTime createdTs) {
@@ -55,17 +41,9 @@ public class CerberusJwtClaims implements AuthTokenInfo {
     return this;
   }
 
-  public OffsetDateTime getExpiresTs() {
-    return expiresTs;
-  }
-
   public CerberusJwtClaims setExpiresTs(OffsetDateTime expiresTs) {
     this.expiresTs = expiresTs;
     return this;
-  }
-
-  public String getPrincipal() {
-    return principal;
   }
 
   public CerberusJwtClaims setPrincipal(String principal) {
@@ -73,27 +51,9 @@ public class CerberusJwtClaims implements AuthTokenInfo {
     return this;
   }
 
-  public String getPrincipalType() {
-    return principalType;
-  }
-
   public CerberusJwtClaims setPrincipalType(String principalType) {
     this.principalType = principalType;
     return this;
-  }
-
-  @Override
-  public String getTokenHash() {
-    return null;
-  }
-
-  @Override
-  public CerberusJwtClaims setTokenHash(String tokenHash) {
-    return null;
-  }
-
-  public Boolean getIsAdmin() {
-    return isAdmin;
   }
 
   public CerberusJwtClaims setIsAdmin(Boolean admin) {
@@ -101,17 +61,9 @@ public class CerberusJwtClaims implements AuthTokenInfo {
     return this;
   }
 
-  public String getGroups() {
-    return groups;
-  }
-
   public CerberusJwtClaims setGroups(String groups) {
     this.groups = groups;
     return this;
-  }
-
-  public Integer getRefreshCount() {
-    return refreshCount;
   }
 
   public CerberusJwtClaims setRefreshCount(Integer refreshCount) {

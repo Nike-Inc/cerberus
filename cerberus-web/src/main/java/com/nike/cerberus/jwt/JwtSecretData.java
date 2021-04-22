@@ -17,16 +17,10 @@
 package com.nike.cerberus.jwt;
 
 import java.util.LinkedList;
+import lombok.Data;
 
 /** A POJO that represents the JWT config */
+@Data
 public class JwtSecretData {
   private LinkedList<JwtSecret> jwtSecrets = new LinkedList<>();
-
-  public LinkedList<JwtSecret> getJwtSecrets() {
-    return jwtSecrets;
-  }
-
-  public void setJwtSecrets(LinkedList<JwtSecret> jwtSecrets) {
-    this.jwtSecrets = jwtSecrets;
-  }
 }
