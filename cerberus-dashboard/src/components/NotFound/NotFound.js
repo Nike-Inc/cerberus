@@ -16,11 +16,12 @@
 
 import React from "react";
 import { Component } from "react";
-import { history } from '../../store/configureStore';
+import store from '../../store/configureStore';
+import { push } from 'connected-react-router';
 
 export default class NotFound extends Component {
   componentDidMount() {
-    history.push("/");
+    store.dispatch(push("/"));
   }
 
   render() {
