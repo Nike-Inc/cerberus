@@ -25,7 +25,7 @@ import CreateSDBoxForm from '../components/CreateSDBoxForm/CreateSDBoxForm';
 import { initCreateNewSDB } from './createSDBoxActions';
 import ApiError from '../components/ApiError/ApiError';
 import * as messengerActions from './messengerActions';
-import { history } from '../store/configureStore';
+import { push } from 'connected-react-router';
 
 import { getLogger } from "../utils/logger";
 var log = getLogger('application-actions');
@@ -149,7 +149,7 @@ export function loadManageSDBPage(id, path, cerberusAuthToken) {
         dispatch(mSDBActions.resetToInitialState());
         dispatch(mSDBActions.fetchSDBDataFromCMS(id, cerberusAuthToken));
         dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken));
-        history.push(`/manage-safe-deposit-box/${id}`);
+        dispatch(push(`/manage-safe-deposit-box/${id}`));
     };
 }
 

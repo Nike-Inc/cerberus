@@ -28,8 +28,8 @@ import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
 import * as modalActions from './modalActions';
 import * as manageSDBActions from './manageSafetyDepositBoxActions';
 import * as workerTimers from 'worker-timers';
-import { history } from '../store/configureStore';
 import { getLogger } from "../utils/logger";
+import { push } from 'connected-react-router';
 
 var log = getLogger('authentication-actions');
 
@@ -129,7 +129,7 @@ function handleUserLogin(response, dispatch, redirectToWelcome = true) {
     dispatch(loginUserSuccess(response.data, sessionExpirationCheckIntervalId));
     dispatch(appActions.fetchSideBarData(token));
     if (redirectToWelcome) {
-        history.push("/");
+        dispatch(push("/"));
     }
 }
 
@@ -305,7 +305,7 @@ export function refreshAuth(token, redirectPath = '/', redirect = true) {
                 workerTimers.setTimeout(function () {
                     handleUserLogin(response, dispatch, false);
                     if (redirect) {
-                        history.push(redirectPath);
+                        dispatch(push(redirectPath));
                     }
                 }, 2000);
 
@@ -315,7 +315,7 @@ export function refreshAuth(token, redirectPath = '/', redirect = true) {
                 dispatch(modalActions.clearAllModals());
                 log.error('Failed to login user', response);
                 dispatch(resetAuthState());
-                history.push('dashboard/#/login');
+                dispatch(push('dashboard/#/login'));
                 dispatch(messengerActions.addNewMessage(<ApiError message="Failed to refresh user token" response={response} />));
             });
     };
@@ -340,7 +340,7 @@ export function logoutUser(token) {
                 dispatch(removeSessionWarningTimeout());
                 dispatch(resetAuthState());
                 dispatch(headerActions.mouseOutUsername());
-                history.push('/login');
+                dispatch(push('/login'));
             })
             .catch(function ({ response }) {
                 log.error('Failed to logout user', response);
