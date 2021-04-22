@@ -23,7 +23,7 @@ import * as cms from '../constants/cms';
 import * as appActions from './appActions';
 import * as messengerActions from './messengerActions';
 import * as modalActions from './modalActions';
-import { history } from '../store/configureStore';
+import { push } from 'connected-react-router';
 import ApiError from '../components/ApiError/ApiError';
 import ConfirmationBox from '../components/ConfirmationBox/ConfirmationBox';
 import downloadjs from 'downloadjs';
@@ -521,7 +521,7 @@ export function deleteSDB(sdbId, token) {
                 dispatch(resetToInitialState());
                 dispatch(resetVersionBrowserState());
                 dispatch(appActions.fetchSideBarData(token));
-                history.push('/');
+                dispatch(push('/'));
             })
             .catch(({ response }) => {
                 log.error("Failed to delete SDB", response);

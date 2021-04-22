@@ -24,7 +24,7 @@ import * as modalActions from './modalActions';
 import * as appActions from './appActions';
 import ApiError from '../components/ApiError/ApiError';
 import * as humps from 'humps';
-import { history } from '../store/configureStore';
+import { push } from 'connected-react-router';
 
 import { getLogger } from "../utils/logger";
 var log = getLogger('create-new-sdb-actions');
@@ -49,7 +49,7 @@ export function submitCreateNewSDB(data, token) {
                 dispatch(clearSecureData());
                 dispatch(resetVersionBrowserState());
                 dispatch(appActions.fetchSideBarData(token));
-                history.push(`/manage-safe-deposit-box/${response.data.id}`);
+                dispatch(push(`/manage-safe-deposit-box/${response.data.id}`));
             })
             .catch(function ({ response }) {
                 log.error('Failed to create new SDB', response);
