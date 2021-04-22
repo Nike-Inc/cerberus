@@ -29,10 +29,10 @@ import './ManageSafeDepositBox.scss';
 
 class ManageSafeDepositBox extends Component {
 
-    componentWillReceiveProps(nextProps) {
+    componentDidUpdate(prevProps) {
         // Fetch and load SDB details based on id in uri
-        if (nextProps.match.params.id !== this.props.match.params.id) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.match.params.id, this.props.cerberusAuthToken));
+        if (prevProps.match.params.id !== this.props.match.params.id) {
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.match.params.id, this.props.cerberusAuthToken));
         }
     }
 
