@@ -29,16 +29,10 @@ import './ManageSafeDepositBox.scss';
 
 class ManageSafeDepositBox extends Component {
 
-    constructor(props) {
-        super(props);
-
-        this.handleNavItemClicked = this.handleNavItemClicked.bind(this);
-    }
-
     componentWillReceiveProps(nextProps) {
         // Fetch and load SDB details based on id in uri
-        if (nextProps.routeParams.id !== this.props.routeParams.id) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.routeParams.id, this.props.cerberusAuthToken));
+        if (nextProps.match.id !== this.props.match.id) {
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.match.id, this.props.cerberusAuthToken));
         }
     }
 
@@ -47,11 +41,12 @@ class ManageSafeDepositBox extends Component {
      */
     componentDidMount() {
         console.log("ManageSafeDepositBox Mounted!");
+        console.log(this.props);
         if (!this.props.hasDomainDataLoaded) {
             this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken));
         }
         if (!this.props.hasFetchedSDBData) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.routeParams.id, this.props.cerberusAuthToken));
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.match.id, this.props.cerberusAuthToken));
         }
     }
 
@@ -85,7 +80,7 @@ class ManageSafeDepositBox extends Component {
         } = this.props;
 
         if (!hasDomainDataLoaded || !hasFetchedSDBData) {
-            return (<div></div>);
+            return (<div>SDBS</div>);
         }
 
         return (
