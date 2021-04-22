@@ -221,3 +221,4 @@ package-lock.json
 /.proxy-dash.pid.lock
 
 .vscode
+cerberus-dashboard/.eslintcache
