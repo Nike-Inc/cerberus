@@ -31,8 +31,8 @@ class ManageSafeDepositBox extends Component {
 
     componentWillReceiveProps(nextProps) {
         // Fetch and load SDB details based on id in uri
-        if (nextProps.match.id !== this.props.match.id) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.match.id, this.props.cerberusAuthToken));
+        if (nextProps.match.params.id !== this.props.match.params.id) {
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(nextProps.match.params.id, this.props.cerberusAuthToken));
         }
     }
 
@@ -40,13 +40,11 @@ class ManageSafeDepositBox extends Component {
      * Fetch the data about the SDB from CMS
      */
     componentDidMount() {
-        console.log("ManageSafeDepositBox Mounted!");
-        console.log(this.props);
         if (!this.props.hasDomainDataLoaded) {
             this.props.dispatch(appActions.fetchCmsDomainData(this.props.cerberusAuthToken));
         }
         if (!this.props.hasFetchedSDBData) {
-            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.match.id, this.props.cerberusAuthToken));
+            this.props.dispatch(sdbMActions.fetchSDBDataFromCMS(this.props.match.params.id, this.props.cerberusAuthToken));
         }
     }
 
@@ -80,7 +78,7 @@ class ManageSafeDepositBox extends Component {
         } = this.props;
 
         if (!hasDomainDataLoaded || !hasFetchedSDBData) {
-            return (<div>SDBS</div>);
+            return (<div></div>);
         }
 
         return (
