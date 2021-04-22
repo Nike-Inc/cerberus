@@ -149,7 +149,6 @@ export function loadManageSDBPage(id, path, cerberusAuthToken) {
         dispatch(mSDBActions.resetToInitialState());
         dispatch(mSDBActions.fetchSDBDataFromCMS(id, cerberusAuthToken));
         dispatch(mSDBActions.updateNavigatedPath(path, cerberusAuthToken));
-        console.log("pushing to sdb")
         history.push(`/manage-safe-deposit-box/${id}`);
     };
 }
