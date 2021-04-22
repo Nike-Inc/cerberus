@@ -39,7 +39,7 @@ public class JwtSecretRefreshJob {
 
   @Scheduled(cron = "${cerberus.jobs.jwtSecretRefreshJob.cronExpression}")
   public void execute() {
-    log.info("Running JWT secret refresh job");
+    log.debug("Running JWT secret refresh job");
     jwtService.refreshKeys();
   }
 }
