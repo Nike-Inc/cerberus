@@ -32,9 +32,6 @@ import ManageSafeDepositBox from "../ManageSafeDepositBox/ManageSafeDepositBox";
 import SDBMetadataList from "../SDBMetadataList/SDBMetadataList";
 import NotFound from "../NotFound/NotFound";
 
-import {ConnectedRouter} from "connected-react-router";
-import { history } from '../../store/configureStore';
-
 /**
  * This is the main Component that loads the header, content div and footer
  */
@@ -49,47 +46,45 @@ class App extends Component {
     render() {
         const { isAdmin, userName, displayUserContextMenu, dispatch, cerberusAuthToken, modalStack, children, isSessionExpired, isAuthenticated, dashboardVersion } = this.props;
 
+
         axios.defaults.headers.common['X-Cerberus-Client'] = `Dashboard/${dashboardVersion}`;
 
         return (
-            <ConnectedRouter history={history}>
-                <div id='main-wrapper'>
-                    <Modal modalStack={modalStack} />
-
-                    {!isAuthenticated && <Login />}
-                    {(isAuthenticated || isSessionExpired) &&
-                        <div id='content-wrapper'>
-                            <Header userName={userName}
-                                displayUserContextMenu={displayUserContextMenu}
-                                dispatch={dispatch}
-                                cerberusAuthToken={cerberusAuthToken}
-                                isAdmin={isAdmin} />
-                            {isAuthenticated &&
-                                <div id="app-messenger-wrapper">
-                                    <Messenger />
-                                </div>
-                            }
-                            <div id='content'>
-                                <SideBar />
-                                <div id='workspace'>
-                                    <div id='workspace-wrapper'>
-                                        <Switch>
-                                            <Route
-                                                path="/manage-safe-deposit-box/:id"
-                                                component={ManageSafeDepositBox}
-                                            />
-                                            <Route path="/admin/sdb-metadata" component={SDBMetadataList} />
-                                            <Route path="/" exact component={LandingView} />
-                                            <Route path="*" component={NotFound} />
-                                        </Switch>
-                                    </div>
+            <div id='main-wrapper'>
+                <Modal modalStack={modalStack} />
+                {!isAuthenticated && <Login />}
+                {(isAuthenticated || isSessionExpired) &&
+                    <div id='content-wrapper'>
+                        <Header userName={userName}
+                            displayUserContextMenu={displayUserContextMenu}
+                            dispatch={dispatch}
+                            cerberusAuthToken={cerberusAuthToken}
+                            isAdmin={isAdmin} />
+                        {isAuthenticated &&
+                            <div id="app-messenger-wrapper">
+                                <Messenger />
+                            </div>
+                        }
+                        <div id='content'>
+                            <SideBar />
+                            <div id='workspace'>
+                                <div id='workspace-wrapper'>
+                                    <Switch>
+                                        <Route
+                                            path="/manage-safe-deposit-box/:id"
+                                            component={ManageSafeDepositBox}
+                                        />
+                                        <Route path="/admin/sdb-metadata" component={SDBMetadataList} />
+                                        <Route path="/" exact component={LandingView} />
+                                        <Route path="*" component={NotFound} />
+                                    </Switch>
                                 </div>
                             </div>
-                            <Footer />
                         </div>
-                    }
-                </div>
-            </ConnectedRouter>
+                        <Footer />
+                    </div>
+                }
+            </div>
         );
     }
 }
