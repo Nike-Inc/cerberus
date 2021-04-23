@@ -7,6 +7,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.common.collect.Sets;
 import com.nike.cerberus.dao.JwtBlocklistDao;
+import com.nike.cerberus.error.AuthTokenTooLongException;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.jwt.CerberusJwtKeySpec;
 import com.nike.cerberus.jwt.CerberusSigningKeyResolver;
@@ -55,7 +56,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_generate_jwt_token_parse_and_validate_claim() {
+  public void test_generate_jwt_token_parse_and_validate_claim() throws AuthTokenTooLongException {
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     assertEquals(3, token.split("\\.").length);
     Optional<CerberusJwtClaims> cerberusJwtClaimsOptional = jwtService.parseAndValidateToken(token);
@@ -77,7 +78,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_expired_token_returns_empty() {
+  public void test_expired_token_returns_empty() throws AuthTokenTooLongException {
     cerberusJwtClaims.setExpiresTs(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC));
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
@@ -94,8 +95,16 @@ public class JwtServiceTest {
     assertFalse(cerberusJwtClaims.isPresent());
   }
 
+  @Test(expected = AuthTokenTooLongException.class)
+  public void test_that_auth_token_too_long_error_is_thrown_correctly_for_JWT()
+      throws AuthTokenTooLongException {
+    ReflectionTestUtils.setField(jwtService, "maxTokenLength", 0);
+    jwtService.generateJwtToken(cerberusJwtClaims);
+  }
+
   @Test
-  public void test_parseAndValidateToken_returns_empty_for_blocklisted_token() {
+  public void test_parseAndValidateToken_returns_empty_for_blocklisted_token()
+      throws AuthTokenTooLongException {
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     when(jwtBlocklistDao.getBlocklist()).thenReturn(Sets.newHashSet("id"));
     jwtService.refreshBlocklist();

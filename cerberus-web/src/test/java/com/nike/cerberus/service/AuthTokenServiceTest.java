@@ -24,11 +24,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.AuthTokenDao;
 import com.nike.cerberus.domain.AuthTokenAcceptType;
 import com.nike.cerberus.domain.AuthTokenIssueType;
 import com.nike.cerberus.domain.CerberusAuthToken;
+import com.nike.cerberus.error.AuthTokenTooLongException;
 import com.nike.cerberus.jwt.CerberusJwtClaims;
 import com.nike.cerberus.record.AuthTokenRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -122,7 +124,8 @@ public class AuthTokenServiceTest {
   }
 
   @Test
-  public void test_that_generateToken_attempts_to_write_a_jwt_and_returns_proper_object() {
+  public void test_that_generateToken_attempts_to_write_a_jwt_and_returns_proper_object()
+      throws AuthTokenTooLongException {
     String id = UUID.randomUUID().toString();
     String expectedTokenId = "abc-123-def-456";
     OffsetDateTime now = OffsetDateTime.now();
@@ -175,6 +178,20 @@ public class AuthTokenServiceTest {
 
     Optional<CerberusAuthToken> tokenOptional = authTokenService.getCerberusAuthToken(tokenId);
     assertTrue("optional should be empty", !tokenOptional.isPresent());
+  }
+
+  @Test(expected = ApiException.class)
+  public void test_that_auth_token_too_long_error_is_caught_correctly_for_JWT()
+      throws AuthTokenTooLongException {
+    String principal = "test-user@domain.com";
+    String groups = "group1,group2,group3";
+    OffsetDateTime now = OffsetDateTime.now();
+    when(dateTimeSupplier.get()).thenReturn(now);
+    when(tokenFlag.getIssueType()).thenReturn(AuthTokenIssueType.JWT);
+    when(tokenFlag.getAcceptType()).thenReturn(AuthTokenAcceptType.JWT);
+    when(jwtService.generateJwtToken(any()))
+        .thenThrow(new AuthTokenTooLongException("auth token too long"));
+    authTokenService.generateToken(principal, PrincipalType.USER, false, groups, 5, 0);
   }
 
   @Test
