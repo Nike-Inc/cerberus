@@ -19,7 +19,7 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 
 import App from "./components/App/App";
-import configureStore from "./store/configureStore";
+import configureStore, {history} from "./store/configureStore";
 import {
     handleUserLogin
 } from "./actions/authenticationActions";
@@ -29,6 +29,8 @@ import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-re
 import axios from "axios";
 import environmentService from "./service/EnvironmentService";
 import * as cms from "./constants/cms";
+import {ConnectedRouter} from "connected-react-router";
+import {Route, Switch} from "react-router-dom";
 var log = getLogger("main");
 const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
 
@@ -37,18 +39,20 @@ const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
  * to be maintained.
  */
 const store = configureStore(window.__INITIAL_STATE__);
+
 const authService = new AuthService({
-  issuer: process.env.REACT_APP_AUTH_ENDPOINT,
-  client_id: process.env.REACT_APP_CLIENT_ID,
-  redirect_uri: `${window.location.origin}/dashboard/login/callback`,
-  postLogoutRedirectUri: `${window.location.origin}`,
-  scope: ['openid', 'email'],
-  pkce: true,
-  tokenManager: {
-    autoRenew: true,
-    storage: 'sessionStorage',
-  },
+    issuer: process.env.REACT_APP_AUTH_ENDPOINT,
+    client_id: process.env.REACT_APP_CLIENT_ID,
+    redirect_uri: `${window.location.origin}/dashboard/login/callback`,
+    postLogoutRedirectUri: `${window.location.origin}`,
+    scope: ['openid', 'email'],
+    pkce: true,
+    tokenManager: {
+        autoRenew: true,
+        storage: 'sessionStorage',
+    },
 });
+
 
 let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
 let oauthToken = oauthTokenStorage?.idToken?.value;
@@ -81,9 +85,6 @@ let handleUserLoginAfterTokenExchange = (response) => {
     handleUserLogin(response, store.dispatch, true);
 }
 
-// Create an enhanced history that syncs navigation events with the store
-// const history = syncHistoryWithStore(hashHistory, store);
-const history = createBrowserHistory();
 /**
  * The Provider makes the dispatch method available to children components that connect to it.
  * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.
@@ -97,20 +98,15 @@ const history = createBrowserHistory();
  */
 render(
     <Provider store={store}>
-      <App />
+        <ConnectedRouter history={history}>
+            <Security authService={authService}>
+                <Switch>
+                    <Route path="/dashboard/login/callback" component={LoginCallback} />
+                    <SecureRoute path="/" exact component={App} />
+                </Switch>
+            </Security>
+        </ConnectedRouter>
     </Provider>,
-      <div>
-        <Router history={history}>
-          <Security authService={authService}>
-            <Switch>
-              <SecureRoute path="/" exact component={App} />
-              <Route path="/dashboard/login/callback" component={LoginCallback} />
-            </Switch>
-          </Security>
-        </Router>
-      </div>
-    </Provider>
-  </div>,
   document.getElementById("root")
 );
 
