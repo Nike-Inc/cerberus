@@ -31,7 +31,7 @@ export default class Header extends Component {
             <header id='header'>
                 <div id='bottom-header'>
                     <div id='header-logo' onClick={ function(dispatch) {
-                        push('/')
+                        dispatch(push('/'))
                     }.bind(this, this.props.dispatch)
                     }></div>
                     <div id='header-title' className='ncss-brand u-uppercase un-selectable'>Cerberus</div>
@@ -70,7 +70,7 @@ class UserBox extends Component {
     }
 
     render() {
-        let isAdmin = this.props.isAdmin
+        let { isAdmin, dispatch } = this.props
 
         return (
             <div id='user-box' className='ncss-brand u-uppercase'>
@@ -83,7 +83,7 @@ class UserBox extends Component {
                 <div id='u-b-context-menu' className={this.props.displayUserContextMenu ? 'show-me-block' : 'hide-me'}
                      onMouseEnter={this.handleMouseClickUserName}
                      onMouseLeave={this.handleMouseLeaveUserMenuContext} >
-                    {isAdmin && <div className='context-menu-button' onClick={() => {push('/admin/sdb-metadata')}}>SDB Summary</div>}
+                    {isAdmin && <div className='context-menu-button' onClick={() => {dispatch(push('/admin/sdb-metadata'))}}>SDB Summary</div>}
                     <div className='context-menu-button' onClick={this.handleMouseClickViewToken}>View Token</div>
                     <div className='context-menu-button' onClick={this.handleMouseClickLogout}>Logout</div>
                 </div>
