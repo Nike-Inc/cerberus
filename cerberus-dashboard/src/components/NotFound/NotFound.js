@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-import React from "react";
-import { Component } from "react";
-import store from '../../store/configureStore';
+import React, { Component } from "react";
+import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
-export default class NotFound extends Component {
+class NotFound extends Component {
+
   componentDidMount() {
-    store.dispatch(push("/"));
+    this.props.dispatch(push("/"));
   }
 
   render() {
     return <h1>Not found</h1>;
   }
 }
+
+const mapStateToProps = () => {};
+
+export default connect(mapStateToProps)(NotFound);
