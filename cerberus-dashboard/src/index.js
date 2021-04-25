@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
+import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
+import axios from "axios";
+import { ConnectedRouter } from "connected-react-router";
 import React from "react";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
-
-import App from "./components/App/App";
-import configureStore, {history} from "./store/configureStore";
+import { Route, Switch } from "react-router";
 import {
-    handleUserLogin
+  handleUserLogin
 } from "./actions/authenticationActions";
-import { getLogger } from "./utils/logger";
 import "./assets/styles/reactSelect.scss";
-import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
-import axios from "axios";
-import environmentService from "./service/EnvironmentService";
+import App from "./components/App/App";
 import * as cms from "./constants/cms";
-import {ConnectedRouter} from "connected-react-router";
-import {Route, Switch} from "react-router-dom";
+import environmentService from "./service/EnvironmentService";
+import configureStore, { history } from "./store/configureStore";
+import { getLogger } from "./utils/logger";
+
 var log = getLogger("main");
 const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
 
@@ -102,7 +102,7 @@ render(
             <Security authService={authService}>
                 <Switch>
                     <Route path="/dashboard/login/callback" component={LoginCallback} />
-                    <SecureRoute path="/" exact component={App} />
+                    <SecureRoute path="/" component={App} />
                 </Switch>
             </Security>
         </ConnectedRouter>
