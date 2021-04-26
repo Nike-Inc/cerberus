@@ -488,15 +488,18 @@ public class AuthenticationService {
     }
 
     revoke(authPrincipal.getToken());
+    final AuthData authData =
+        AuthData.builder()
+            .username(authPrincipal.getName())
+            .clientToken(
+                generateToken(
+                    authPrincipal.getName(),
+                    authPrincipal.getUserGroups(),
+                    currentTokenRefreshCount + 1))
+            .build();
 
-    final AuthResponse authResponse = new AuthResponse();
-    authResponse.setStatus(AuthStatus.SUCCESS);
-    final AuthData authData = new AuthData();
-    authResponse.setData(authData);
-    authData.setUsername(authPrincipal.getName());
-    authData.setClientToken(
-        generateToken(
-            authPrincipal.getName(), authPrincipal.getUserGroups(), currentTokenRefreshCount + 1));
+    final AuthResponse authResponse =
+        AuthResponse.builder().status(AuthStatus.SUCCESS).data(authData).build();
 
     return authResponse;
   }

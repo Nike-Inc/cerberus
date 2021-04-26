@@ -178,8 +178,9 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
     final String userId = successResponse.getUser().getId();
     final String userLogin = successResponse.getUser().getLogin();
 
-    final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
-    AuthResponse authResponse = new AuthResponse().setData(authData).setStatus(AuthStatus.SUCCESS);
+    final AuthData authData = AuthData.builder().userId(userId).username(userLogin).build();
+    AuthResponse authResponse =
+        AuthResponse.builder().data(authData).status(AuthStatus.SUCCESS).build();
 
     authenticationResponseFuture.complete(authResponse);
   }

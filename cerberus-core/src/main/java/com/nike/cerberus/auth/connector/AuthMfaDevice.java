@@ -16,7 +16,12 @@
 
 package com.nike.cerberus.auth.connector;
 
+import lombok.Builder;
+import lombok.Data;
+
 /** Represents a MFA device returned by the auth connector. */
+@Data
+@Builder
 public class AuthMfaDevice {
 
   private String id;
@@ -26,40 +31,4 @@ public class AuthMfaDevice {
   private boolean requiresTrigger;
 
   private boolean isPush;
-
-  public String getId() {
-    return id;
-  }
-
-  public AuthMfaDevice setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public AuthMfaDevice setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public boolean getRequiresTrigger() {
-    return requiresTrigger;
-  }
-
-  public AuthMfaDevice setRequiresTrigger(boolean requiresTrigger) {
-    this.requiresTrigger = requiresTrigger;
-    return this;
-  }
-
-  public boolean getIsPush() {
-    return isPush;
-  }
-
-  public AuthMfaDevice setIsPush(boolean isPush) {
-    this.isPush = isPush;
-    return this;
-  }
 }

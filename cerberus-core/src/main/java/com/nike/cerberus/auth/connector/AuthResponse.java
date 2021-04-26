@@ -16,28 +16,15 @@
 
 package com.nike.cerberus.auth.connector;
 
+import lombok.Builder;
+import lombok.Data;
+
 /** Authentication response from the auth connector. */
+@Data
+@Builder
 public class AuthResponse {
 
   private AuthStatus status;
 
   private AuthData data;
-
-  public AuthStatus getStatus() {
-    return status;
-  }
-
-  public AuthResponse setStatus(AuthStatus status) {
-    this.status = status;
-    return this;
-  }
-
-  public AuthData getData() {
-    return data;
-  }
-
-  public AuthResponse setData(AuthData data) {
-    this.data = data;
-    return this;
-  }
 }
