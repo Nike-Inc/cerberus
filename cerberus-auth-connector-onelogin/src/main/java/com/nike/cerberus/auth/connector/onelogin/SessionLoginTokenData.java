@@ -17,8 +17,12 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO representing the payload of a create login session token response. */
+@Builder
+@Data
 class SessionLoginTokenData {
 
   private String status;
@@ -34,67 +38,4 @@ class SessionLoginTokenData {
   private String callBackUrl;
 
   private List<MfaDevice> devices;
-
-  public String getStatus() {
-    return status;
-  }
-
-  public SessionLoginTokenData setStatus(String status) {
-    this.status = status;
-    return this;
-  }
-
-  public SessionUser getUser() {
-    return user;
-  }
-
-  public SessionLoginTokenData setUser(SessionUser user) {
-    this.user = user;
-    return this;
-  }
-
-  public String getReturnToUrl() {
-    return returnToUrl;
-  }
-
-  public SessionLoginTokenData setReturnToUrl(String returnToUrl) {
-    this.returnToUrl = returnToUrl;
-    return this;
-  }
-
-  public String getSessionToken() {
-    return sessionToken;
-  }
-
-  public SessionLoginTokenData setSessionToken(String sessionToken) {
-    this.sessionToken = sessionToken;
-    return this;
-  }
-
-  public String getStateToken() {
-    return stateToken;
-  }
-
-  public SessionLoginTokenData setStateToken(String stateToken) {
-    this.stateToken = stateToken;
-    return this;
-  }
-
-  public String getCallBackUrl() {
-    return callBackUrl;
-  }
-
-  public SessionLoginTokenData setCallBackUrl(String callBackUrl) {
-    this.callBackUrl = callBackUrl;
-    return this;
-  }
-
-  public List<MfaDevice> getDevices() {
-    return devices;
-  }
-
-  public SessionLoginTokenData setDevices(List<MfaDevice> devices) {
-    this.devices = devices;
-    return this;
-  }
 }

@@ -49,10 +49,11 @@ class OneLoginClient {
   public CreateSessionLoginTokenResponse createSessionLoginToken(
       final String username, final String password) {
     CreateSessionLoginTokenRequest request =
-        new CreateSessionLoginTokenRequest()
-            .setUsernameOrEmail(username)
-            .setPassword(password)
-            .setSubdomain(subdomain);
+        CreateSessionLoginTokenRequest.builder()
+            .usernameOrEmail(username)
+            .password(password)
+            .subdomain(subdomain)
+            .build();
 
     return httpClient.execute(
         "api/1/login/auth",
@@ -66,10 +67,11 @@ class OneLoginClient {
   public VerifyFactorResponse verifyFactor(
       final String deviceId, final String stateToken, final String otpToken) {
     VerifyFactorRequest request =
-        new VerifyFactorRequest()
-            .setDeviceId(deviceId)
-            .setStateToken(stateToken)
-            .setOtpToken(otpToken);
+        VerifyFactorRequest.builder()
+            .deviceId(deviceId)
+            .stateToken(stateToken)
+            .otpToken(otpToken)
+            .build();
 
     return httpClient.execute(
         "api/1/login/verify_factor",

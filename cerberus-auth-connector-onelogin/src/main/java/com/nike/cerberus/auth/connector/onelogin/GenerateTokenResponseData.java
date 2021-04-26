@@ -17,8 +17,12 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO representing the payload of a generate token response. */
+@Data
+@Builder
 class GenerateTokenResponseData {
 
   private String accessToken;
@@ -32,58 +36,4 @@ class GenerateTokenResponseData {
   private String tokenType;
 
   private long accountId;
-
-  public String getAccessToken() {
-    return accessToken;
-  }
-
-  public GenerateTokenResponseData setAccessToken(String accessToken) {
-    this.accessToken = accessToken;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedAt() {
-    return createdAt;
-  }
-
-  public GenerateTokenResponseData setCreatedAt(OffsetDateTime createdAt) {
-    this.createdAt = createdAt;
-    return this;
-  }
-
-  public int getExpiresIn() {
-    return expiresIn;
-  }
-
-  public GenerateTokenResponseData setExpiresIn(int expiresIn) {
-    this.expiresIn = expiresIn;
-    return this;
-  }
-
-  public String getRefreshToken() {
-    return refreshToken;
-  }
-
-  public GenerateTokenResponseData setRefreshToken(String refreshToken) {
-    this.refreshToken = refreshToken;
-    return this;
-  }
-
-  public String getTokenType() {
-    return tokenType;
-  }
-
-  public GenerateTokenResponseData setTokenType(String tokenType) {
-    this.tokenType = tokenType;
-    return this;
-  }
-
-  public long getAccountId() {
-    return accountId;
-  }
-
-  public GenerateTokenResponseData setAccountId(long accountId) {
-    this.accountId = accountId;
-    return this;
-  }
 }

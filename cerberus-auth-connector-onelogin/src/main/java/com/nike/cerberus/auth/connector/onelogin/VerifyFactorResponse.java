@@ -17,29 +17,15 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO representing the payload of a verify factor response. */
+@Data
+@Builder
 class VerifyFactorResponse {
 
   private ResponseStatus status;
 
   private List<SessionLoginTokenData> data;
-
-  public ResponseStatus getStatus() {
-    return status;
-  }
-
-  public VerifyFactorResponse setStatus(ResponseStatus status) {
-    this.status = status;
-    return this;
-  }
-
-  public List<SessionLoginTokenData> getData() {
-    return data;
-  }
-
-  public VerifyFactorResponse setData(List<SessionLoginTokenData> data) {
-    this.data = data;
-    return this;
-  }
 }

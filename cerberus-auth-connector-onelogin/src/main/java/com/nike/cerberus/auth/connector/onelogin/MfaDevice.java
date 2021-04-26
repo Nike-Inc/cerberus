@@ -16,28 +16,15 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.Builder;
+import lombok.Data;
+
 /** POJO representing a MFA device. */
+@Data
+@Builder
 class MfaDevice {
 
   private String deviceType;
 
   private long deviceId;
-
-  public String getDeviceType() {
-    return deviceType;
-  }
-
-  public MfaDevice setDeviceType(String deviceType) {
-    this.deviceType = deviceType;
-    return this;
-  }
-
-  public long getDeviceId() {
-    return deviceId;
-  }
-
-  public MfaDevice setDeviceId(long deviceId) {
-    this.deviceId = deviceId;
-    return this;
-  }
 }

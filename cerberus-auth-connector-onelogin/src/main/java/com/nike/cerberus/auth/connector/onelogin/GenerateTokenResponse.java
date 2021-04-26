@@ -18,29 +18,15 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.LinkedList;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO representing a generate token response. */
+@Data
+@Builder
 class GenerateTokenResponse {
 
   private ResponseStatus status;
 
-  private List<GenerateTokenResponseData> data = new LinkedList<>();
-
-  public ResponseStatus getStatus() {
-    return status;
-  }
-
-  public GenerateTokenResponse setStatus(ResponseStatus status) {
-    this.status = status;
-    return this;
-  }
-
-  public List<GenerateTokenResponseData> getData() {
-    return data;
-  }
-
-  public GenerateTokenResponse setData(List<GenerateTokenResponseData> data) {
-    this.data = data;
-    return this;
-  }
+  @Builder.Default private List<GenerateTokenResponseData> data = new LinkedList<>();
 }

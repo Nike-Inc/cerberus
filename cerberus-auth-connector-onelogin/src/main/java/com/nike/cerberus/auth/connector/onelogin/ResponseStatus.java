@@ -16,7 +16,12 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.Builder;
+import lombok.Data;
+
 /** POJO representing the response status for all API calls. */
+@Data
+@Builder
 class ResponseStatus {
 
   private String type;
@@ -26,40 +31,4 @@ class ResponseStatus {
   private long code;
 
   private boolean error;
-
-  public String getType() {
-    return type;
-  }
-
-  public ResponseStatus setType(String type) {
-    this.type = type;
-    return this;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public ResponseStatus setMessage(String message) {
-    this.message = message;
-    return this;
-  }
-
-  public long getCode() {
-    return code;
-  }
-
-  public ResponseStatus setCode(long code) {
-    this.code = code;
-    return this;
-  }
-
-  public boolean isError() {
-    return error;
-  }
-
-  public ResponseStatus setError(boolean error) {
-    this.error = error;
-    return this;
-  }
 }
