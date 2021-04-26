@@ -52,16 +52,17 @@ public class SecureDataVersionDaoTest {
   private final OffsetDateTime versionCreatedTs = actionTs;
 
   private final SecureDataVersionRecord secureDataVersionRecord =
-      new SecureDataVersionRecord()
-          .setId(versionId)
-          .setSdboxId(sdbId)
-          .setAction(action.name())
-          .setPath(path)
-          .setEncryptedBlob(encryptedBlob.getBytes(Charset.forName("UTF-8")))
-          .setVersionCreatedBy(versionCreatedBy)
-          .setActionPrincipal(actionPrincipal)
-          .setVersionCreatedTs(versionCreatedTs)
-          .setActionTs(actionTs);
+      SecureDataVersionRecord.builder()
+          .id(versionId)
+          .sdboxId(sdbId)
+          .action(action.name())
+          .path(path)
+          .encryptedBlob(encryptedBlob.getBytes(Charset.forName("UTF-8")))
+          .versionCreatedBy(versionCreatedBy)
+          .actionPrincipal(actionPrincipal)
+          .versionCreatedTs(versionCreatedTs)
+          .actionTs(actionTs)
+          .build();
 
   private final List<SecureDataVersionRecord> secureDataVersionRecords =
       Lists.newArrayList(secureDataVersionRecord);

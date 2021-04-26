@@ -47,13 +47,15 @@ public class AwsIamRoleService {
   public AwsIamRoleRecord createIamRole(String iamPrincipalArn) {
     String iamRoleId = uuidSupplier.get();
     OffsetDateTime dateTime = dateTimeSupplier.get();
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
-    awsIamRoleRecord.setId(iamRoleId);
-    awsIamRoleRecord.setAwsIamRoleArn(iamPrincipalArn);
-    awsIamRoleRecord.setCreatedBy(SYSTEM_USER);
-    awsIamRoleRecord.setLastUpdatedBy(SYSTEM_USER);
-    awsIamRoleRecord.setCreatedTs(dateTime);
-    awsIamRoleRecord.setLastUpdatedTs(dateTime);
+    AwsIamRoleRecord awsIamRoleRecord =
+        AwsIamRoleRecord.builder()
+            .id(iamRoleId)
+            .awsIamRoleArn(iamPrincipalArn)
+            .createdBy(SYSTEM_USER)
+            .lastUpdatedBy(SYSTEM_USER)
+            .createdTs(dateTime)
+            .lastUpdatedTs(dateTime)
+            .build();
     awsIamRoleDao.createIamRole(awsIamRoleRecord);
 
     return awsIamRoleRecord;

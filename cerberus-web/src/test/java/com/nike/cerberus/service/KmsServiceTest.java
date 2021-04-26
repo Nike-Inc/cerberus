@@ -152,7 +152,7 @@ public class KmsServiceTest {
     aliasRequest.setTargetKeyId(arn);
     verify(client).createAlias(aliasRequest);
 
-    AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+    AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = AwsIamRoleKmsKeyRecord.builder().build();
     awsIamRoleKmsKeyRecord.setId(awsIamRoleKmsKeyId);
     awsIamRoleKmsKeyRecord.setAwsIamRoleId(iamRoleId);
     awsIamRoleKmsKeyRecord.setAwsKmsKeyId(arn);
@@ -288,7 +288,7 @@ public class KmsServiceTest {
     String user = "user";
     OffsetDateTime dateTime = OffsetDateTime.now();
 
-    AwsIamRoleKmsKeyRecord dbRecord = new AwsIamRoleKmsKeyRecord();
+    AwsIamRoleKmsKeyRecord dbRecord = AwsIamRoleKmsKeyRecord.builder().build();
     dbRecord.setAwsRegion(awsRegion);
     dbRecord.setAwsIamRoleId(iamRoleId);
     dbRecord.setLastValidatedTs(OffsetDateTime.now());
@@ -296,7 +296,7 @@ public class KmsServiceTest {
 
     kmsService.updateKmsKey(iamRoleId, awsRegion, user, dateTime, dateTime);
 
-    AwsIamRoleKmsKeyRecord expected = new AwsIamRoleKmsKeyRecord();
+    AwsIamRoleKmsKeyRecord expected = AwsIamRoleKmsKeyRecord.builder().build();
     expected.setAwsIamRoleId(iamRoleId);
     expected.setLastUpdatedBy(user);
     expected.setLastUpdatedTs(dateTime);
@@ -358,27 +358,29 @@ public class KmsServiceTest {
     OffsetDateTime validate = OffsetDateTime.now().plus(7, ChronoUnit.MINUTES);
     List<AwsIamRoleKmsKeyRecord> keyRecords =
         ImmutableList.of(
-            new AwsIamRoleKmsKeyRecord()
-                .setAwsIamRoleId("iam-role-id")
-                .setAwsKmsKeyId("key-id")
-                .setAwsRegion("us-west-2")
-                .setCreatedTs(create)
-                .setLastUpdatedTs(update)
-                .setLastValidatedTs(validate));
+            AwsIamRoleKmsKeyRecord.builder()
+                .awsIamRoleId("iam-role-id")
+                .awsKmsKeyId("key-id")
+                .awsRegion("us-west-2")
+                .createdTs(create)
+                .lastUpdatedTs(update)
+                .lastValidatedTs(validate)
+                .build());
 
     List<AuthKmsKeyMetadata> expected =
         ImmutableList.of(
-            new AuthKmsKeyMetadata()
-                .setAwsIamRoleArn("iam-role-arn")
-                .setAwsKmsKeyId("key-id")
-                .setAwsRegion("us-west-2")
-                .setCreatedTs(create)
-                .setLastUpdatedTs(update)
-                .setLastValidatedTs(validate));
+            AuthKmsKeyMetadata.builder()
+                .awsIamRoleArn("iam-role-arn")
+                .awsKmsKeyId("key-id")
+                .awsRegion("us-west-2")
+                .createdTs(create)
+                .lastUpdatedTs(update)
+                .lastValidatedTs(validate)
+                .build());
 
     when(awsIamRoleDao.getAllKmsKeys()).thenReturn(Optional.ofNullable(keyRecords));
     when(awsIamRoleDao.getIamRoleById("iam-role-id"))
-        .thenReturn(Optional.of(new AwsIamRoleRecord().setAwsIamRoleArn("iam-role-arn")));
+        .thenReturn(Optional.of(AwsIamRoleRecord.builder().awsIamRoleArn("iam-role-arn").build()));
 
     assertArrayEquals(expected.toArray(), kmsService.getAuthenticationKmsMetadata().toArray());
   }

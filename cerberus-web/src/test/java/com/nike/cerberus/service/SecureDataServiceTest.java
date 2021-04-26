@@ -142,8 +142,9 @@ public class SecureDataServiceTest {
     when(secureDataDao.readSecureDataByPathAndType(sdbId, path, SecureDataType.OBJECT))
         .thenReturn(
             Optional.of(
-                new SecureDataRecord()
-                    .setEncryptedBlob(ciphertext.getBytes(Charset.forName("UTF-8")))));
+                SecureDataRecord.builder()
+                    .encryptedBlob(ciphertext.getBytes(Charset.forName("UTF-8")))
+                    .build()));
 
     when(encryptionService.decrypt(ciphertext, path)).thenReturn(secret);
 
@@ -325,25 +326,28 @@ public class SecureDataServiceTest {
   public void test_that_secureDataHasBeenUpdated_returns_true_when_updated() {
     OffsetDateTime now = OffsetDateTime.now();
     SecureDataRecord differentPrincipals =
-        new SecureDataRecord()
-            .setCreatedBy("principal")
-            .setCreatedTs(now)
-            .setLastUpdatedBy("different principal")
-            .setLastUpdatedTs(now);
+        SecureDataRecord.builder()
+            .createdBy("principal")
+            .createdTs(now)
+            .lastUpdatedBy("different principal")
+            .lastUpdatedTs(now)
+            .build();
 
     SecureDataRecord differentTs =
-        new SecureDataRecord()
-            .setCreatedBy("principal")
-            .setCreatedTs(now)
-            .setLastUpdatedBy("principal")
-            .setLastUpdatedTs(OffsetDateTime.now());
+        SecureDataRecord.builder()
+            .createdBy("principal")
+            .createdTs(now)
+            .lastUpdatedBy("principal")
+            .lastUpdatedTs(OffsetDateTime.now())
+            .build();
 
     SecureDataRecord differentPrincipalsAndTs =
-        new SecureDataRecord()
-            .setCreatedBy("principal")
-            .setCreatedTs(now)
-            .setLastUpdatedBy("different principal")
-            .setLastUpdatedTs(OffsetDateTime.now());
+        SecureDataRecord.builder()
+            .createdBy("principal")
+            .createdTs(now)
+            .lastUpdatedBy("different principal")
+            .lastUpdatedTs(OffsetDateTime.now())
+            .build();
 
     assertTrue(secureDataService.secureDataHasBeenUpdated(differentPrincipals));
     assertTrue(secureDataService.secureDataHasBeenUpdated(differentTs));
@@ -355,11 +359,12 @@ public class SecureDataServiceTest {
     String principal = "principal";
     OffsetDateTime now = OffsetDateTime.now();
     SecureDataRecord secureDataRecord =
-        new SecureDataRecord()
-            .setCreatedBy(principal)
-            .setCreatedTs(now)
-            .setLastUpdatedBy(principal)
-            .setLastUpdatedTs(now);
+        SecureDataRecord.builder()
+            .createdBy(principal)
+            .createdTs(now)
+            .lastUpdatedBy(principal)
+            .lastUpdatedTs(now)
+            .build();
 
     assertFalse(secureDataService.secureDataHasBeenUpdated(secureDataRecord));
   }
@@ -367,7 +372,7 @@ public class SecureDataServiceTest {
   @Test(expected = ApiException.class)
   public void test_that_writeSecret_does_now_allow_other_types_to_be_overwritten() {
     String pathToFile = "app/sdb/file.pem";
-    SecureDataRecord fileRecord = new SecureDataRecord().setType(SecureDataType.FILE);
+    SecureDataRecord fileRecord = SecureDataRecord.builder().type(SecureDataType.FILE).build();
     when(encryptionService.encrypt(secret, pathToFile)).thenReturn(ciphertext);
     when(secureDataDao.readSecureDataByPath(sdbId, pathToFile)).thenReturn(Optional.of(fileRecord));
 
@@ -377,7 +382,7 @@ public class SecureDataServiceTest {
   @Test(expected = ApiException.class)
   public void test_that_writeFile_does_now_allow_other_types_to_be_overwritten() {
     String pathToObject = "app/sdb/object";
-    SecureDataRecord objectRecord = new SecureDataRecord().setType(SecureDataType.OBJECT);
+    SecureDataRecord objectRecord = SecureDataRecord.builder().type(SecureDataType.OBJECT).build();
     when(secureDataDao.readSecureDataByPath(sdbId, pathToObject))
         .thenReturn(Optional.of(objectRecord));
 
@@ -388,9 +393,10 @@ public class SecureDataServiceTest {
   public void test_that_readSecret_reads_secrets_by_the_correct_type() {
     String pathToObject = "app/sdb/object";
     SecureDataRecord record =
-        new SecureDataRecord()
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataRecord.builder()
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.decrypt(ciphertextBytes, pathToObject)).thenReturn(plaintextBytes);
     when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToObject, SecureDataType.OBJECT))
         .thenReturn(Optional.of(record));
@@ -404,11 +410,12 @@ public class SecureDataServiceTest {
   public void test_that_readFile_reads_secrets_by_the_correct_type() {
     String pathToFile = "app/sdb/file.pem";
     SecureDataRecord record =
-        new SecureDataRecord()
-            .setType(SecureDataType.FILE)
-            .setPath(pathToFile)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataRecord.builder()
+            .type(SecureDataType.FILE)
+            .path(pathToFile)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.decrypt(ciphertextBytes, pathToFile)).thenReturn(plaintextBytes);
     when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToFile, SecureDataType.FILE))
         .thenReturn(Optional.of(record));
@@ -427,11 +434,12 @@ public class SecureDataServiceTest {
     OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
     when(dateTimeSupplier.get()).thenReturn(now);
     SecureDataRecord record =
-        new SecureDataRecord()
-            .setType(SecureDataType.FILE)
-            .setPath(pathToFile)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataRecord.builder()
+            .type(SecureDataType.FILE)
+            .path(pathToFile)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.reencrypt(ciphertextBytes, pathToFile)).thenReturn(newCiphertextBytes);
     when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
 
@@ -453,11 +461,12 @@ public class SecureDataServiceTest {
     OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
     when(dateTimeSupplier.get()).thenReturn(now);
     SecureDataRecord record =
-        new SecureDataRecord()
-            .setType(SecureDataType.OBJECT)
-            .setPath(pathToObject)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataRecord.builder()
+            .type(SecureDataType.OBJECT)
+            .path(pathToObject)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.reencrypt(ciphertext, pathToObject)).thenReturn(newCiphertext);
     when(secureDataDao.readSecureDataByIdLocking(id)).thenReturn(Optional.of(record));
 
@@ -479,11 +488,12 @@ public class SecureDataServiceTest {
     OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
     when(dateTimeSupplier.get()).thenReturn(now);
     SecureDataVersionRecord record =
-        new SecureDataVersionRecord()
-            .setType(SecureDataType.FILE)
-            .setPath(pathToFile)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataVersionRecord.builder()
+            .type(SecureDataType.FILE)
+            .path(pathToFile)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.reencrypt(ciphertextBytes, pathToFile)).thenReturn(newCiphertextBytes);
     when(secureDataVersionDao.readSecureDataVersionByIdLocking(versionId))
         .thenReturn(Optional.of(record));
@@ -507,11 +517,12 @@ public class SecureDataServiceTest {
     OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
     when(dateTimeSupplier.get()).thenReturn(now);
     SecureDataVersionRecord record =
-        new SecureDataVersionRecord()
-            .setType(SecureDataType.OBJECT)
-            .setPath(pathToObject)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataVersionRecord.builder()
+            .type(SecureDataType.OBJECT)
+            .path(pathToObject)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(encryptionService.reencrypt(ciphertext, pathToObject)).thenReturn(newCiphertext);
     when(secureDataVersionDao.readSecureDataVersionByIdLocking(versionId))
         .thenReturn(Optional.of(record));
@@ -532,11 +543,12 @@ public class SecureDataServiceTest {
     SecureDataType type = SecureDataType.FILE;
     String principal = "principal";
     SecureDataRecord record =
-        new SecureDataRecord()
-            .setType(type)
-            .setPath(pathToFile)
-            .setEncryptedBlob(ciphertextBytes)
-            .setSizeInBytes(ciphertextBytes.length);
+        SecureDataRecord.builder()
+            .type(type)
+            .path(pathToFile)
+            .encryptedBlob(ciphertextBytes)
+            .sizeInBytes(ciphertextBytes.length)
+            .build();
     when(secureDataDao.readSecureDataByPathAndType(sdbId, pathToFile, type))
         .thenReturn(Optional.of(record));
 

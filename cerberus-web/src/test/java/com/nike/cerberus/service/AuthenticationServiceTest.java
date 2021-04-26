@@ -208,12 +208,13 @@ public class AuthenticationServiceTest {
     OffsetDateTime dateTime = OffsetDateTime.of(2016, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
     OffsetDateTime now = OffsetDateTime.now();
 
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord().setAwsIamRoleArn(principalArn);
+    AwsIamRoleRecord awsIamRoleRecord =
+        AwsIamRoleRecord.builder().awsIamRoleArn(principalArn).build();
     awsIamRoleRecord.setAwsIamRoleArn(principalArn);
     awsIamRoleRecord.setId(iamRoleId);
     when(awsIamRoleDao.getIamRole(principalArn)).thenReturn(Optional.of(awsIamRoleRecord));
 
-    AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
+    AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = AwsIamRoleKmsKeyRecord.builder().build();
     awsIamRoleKmsKeyRecord.setId(kmsKeyId);
     awsIamRoleKmsKeyRecord.setAwsKmsKeyId(cmkId);
     awsIamRoleKmsKeyRecord.setLastValidatedTs(dateTime);

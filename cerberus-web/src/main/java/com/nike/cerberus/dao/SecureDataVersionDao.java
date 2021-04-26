@@ -54,18 +54,19 @@ public class SecureDataVersionDao {
       OffsetDateTime actionTs) {
 
     secureDataVersionMapper.writeSecureDataVersion(
-        new SecureDataVersionRecord()
-            .setId(uuidSupplier.get())
-            .setPath(path)
-            .setSdboxId(sdbId)
-            .setEncryptedBlob(encryptedPayload)
-            .setType(type)
-            .setSizeInBytes(sizeInBytes)
-            .setAction(action.name())
-            .setActionPrincipal(actionPrincipal)
-            .setActionTs(actionTs)
-            .setVersionCreatedBy(versionCreatedBy)
-            .setVersionCreatedTs(versionCreatedTs));
+        SecureDataVersionRecord.builder()
+            .id(uuidSupplier.get())
+            .path(path)
+            .sdboxId(sdbId)
+            .encryptedBlob(encryptedPayload)
+            .type(type)
+            .sizeInBytes(sizeInBytes)
+            .action(action.name())
+            .actionPrincipal(actionPrincipal)
+            .actionTs(actionTs)
+            .versionCreatedBy(versionCreatedBy)
+            .versionCreatedTs(versionCreatedTs)
+            .build());
   }
 
   public int updateSecureDataVersion(SecureDataVersionRecord secureDataVersionRecord) {

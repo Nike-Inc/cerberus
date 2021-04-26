@@ -134,18 +134,18 @@ public class KmsService {
       final String awsRegion,
       final String user,
       final OffsetDateTime dateTime) {
-    final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-
-    awsIamRoleKmsKeyRecord
-        .setId(kmsKeyRecordId)
-        .setAwsIamRoleId(iamRoleRecordId)
-        .setAwsKmsKeyId(awsKmsKeyArn)
-        .setAwsRegion(awsRegion)
-        .setCreatedBy(user)
-        .setLastUpdatedBy(user)
-        .setCreatedTs(dateTime)
-        .setLastUpdatedTs(dateTime)
-        .setLastValidatedTs(dateTime);
+    final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord =
+        AwsIamRoleKmsKeyRecord.builder()
+            .id(kmsKeyRecordId)
+            .awsIamRoleId(iamRoleRecordId)
+            .awsKmsKeyId(awsKmsKeyArn)
+            .awsRegion(awsRegion)
+            .createdBy(user)
+            .lastUpdatedBy(user)
+            .createdTs(dateTime)
+            .lastUpdatedTs(dateTime)
+            .lastValidatedTs(dateTime)
+            .build();
 
     awsIamRoleDao.createIamRoleKmsKey(awsIamRoleKmsKeyRecord);
 
@@ -234,12 +234,14 @@ public class KmsService {
 
     AwsIamRoleKmsKeyRecord kmsKeyRecord = kmsKey.get();
 
-    AwsIamRoleKmsKeyRecord updatedKmsKeyRecord = new AwsIamRoleKmsKeyRecord();
-    updatedKmsKeyRecord.setAwsIamRoleId(kmsKeyRecord.getAwsIamRoleId());
-    updatedKmsKeyRecord.setLastUpdatedBy(user);
-    updatedKmsKeyRecord.setLastUpdatedTs(lastedUpdatedTs);
-    updatedKmsKeyRecord.setLastValidatedTs(lastValidatedTs);
-    updatedKmsKeyRecord.setAwsRegion(kmsKeyRecord.getAwsRegion());
+    AwsIamRoleKmsKeyRecord updatedKmsKeyRecord =
+        AwsIamRoleKmsKeyRecord.builder()
+            .awsIamRoleId(kmsKeyRecord.getAwsIamRoleId())
+            .lastUpdatedBy(user)
+            .lastUpdatedTs(lastedUpdatedTs)
+            .lastValidatedTs(lastValidatedTs)
+            .awsRegion(kmsKeyRecord.getAwsRegion())
+            .build();
     awsIamRoleDao.updateIamRoleKmsKey(updatedKmsKeyRecord);
   }
 

@@ -17,8 +17,12 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO for representing a USER_GROUP_PERMISSION record. */
+@Data
+@Builder
 public class UserGroupPermissionRecord {
 
   private String id;
@@ -36,76 +40,4 @@ public class UserGroupPermissionRecord {
   private OffsetDateTime createdTs;
 
   private OffsetDateTime lastUpdatedTs;
-
-  public String getId() {
-    return id;
-  }
-
-  public UserGroupPermissionRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getUserGroupId() {
-    return userGroupId;
-  }
-
-  public UserGroupPermissionRecord setUserGroupId(String userGroupId) {
-    this.userGroupId = userGroupId;
-    return this;
-  }
-
-  public String getRoleId() {
-    return roleId;
-  }
-
-  public UserGroupPermissionRecord setRoleId(String roleId) {
-    this.roleId = roleId;
-    return this;
-  }
-
-  public String getSdboxId() {
-    return sdboxId;
-  }
-
-  public UserGroupPermissionRecord setSdboxId(String sdboxId) {
-    this.sdboxId = sdboxId;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public UserGroupPermissionRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public UserGroupPermissionRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public UserGroupPermissionRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public UserGroupPermissionRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
 }

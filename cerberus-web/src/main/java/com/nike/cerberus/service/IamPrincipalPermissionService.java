@@ -103,7 +103,7 @@ public class IamPrincipalPermissionService {
       iamRoleId = possibleIamRoleRecord.get().getId();
     } else {
       iamRoleId = uuidSupplier.get();
-      AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
+      AwsIamRoleRecord awsIamRoleRecord = AwsIamRoleRecord.builder().build();
       awsIamRoleRecord.setId(iamRoleId);
       awsIamRoleRecord.setAwsIamRoleArn(iamPrincipalPermission.getIamPrincipalArn());
       awsIamRoleRecord.setCreatedBy(user);

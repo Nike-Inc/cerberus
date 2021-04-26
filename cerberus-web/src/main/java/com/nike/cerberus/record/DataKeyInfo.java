@@ -18,37 +18,14 @@ package com.nike.cerberus.record;
 
 import com.nike.cerberus.domain.Source;
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class DataKeyInfo {
 
   private String id;
   private Source source;
   private OffsetDateTime lastRotatedTs;
-
-  public String getId() {
-    return id;
-  }
-
-  public DataKeyInfo setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public Source getSource() {
-    return source;
-  }
-
-  public DataKeyInfo setSource(Source source) {
-    this.source = source;
-    return this;
-  }
-
-  public OffsetDateTime getLastRotatedTs() {
-    return lastRotatedTs;
-  }
-
-  public DataKeyInfo setLastRotatedTs(OffsetDateTime lastRotatedTs) {
-    this.lastRotatedTs = lastRotatedTs;
-    return this;
-  }
 }

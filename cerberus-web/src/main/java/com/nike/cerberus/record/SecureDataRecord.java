@@ -19,7 +19,11 @@ package com.nike.cerberus.record;
 import com.nike.cerberus.domain.SecureDataType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SecureDataRecord {
 
   private Integer id;
@@ -35,33 +39,6 @@ public class SecureDataRecord {
   private String lastUpdatedBy;
   private OffsetDateTime lastRotatedTs;
 
-  public Integer getId() {
-    return id;
-  }
-
-  public SecureDataRecord setId(Integer id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getSdboxId() {
-    return sdboxId;
-  }
-
-  public SecureDataRecord setSdboxId(String sdboxId) {
-    this.sdboxId = sdboxId;
-    return this;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public SecureDataRecord setPath(String path) {
-    this.path = path;
-    return this;
-  }
-
   public byte[] getEncryptedBlob() {
     return encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
   }
@@ -72,75 +49,12 @@ public class SecureDataRecord {
     return this;
   }
 
-  public SecureDataType getType() {
-    return type;
-  }
+  public static class SecureDataRecordBuilder {
+    private byte[] encryptedBlob;
 
-  public SecureDataRecord setType(SecureDataType type) {
-    this.type = type;
-    return this;
-  }
-
-  public int getSizeInBytes() {
-    return sizeInBytes;
-  }
-
-  public SecureDataRecord setSizeInBytes(int sizeInBytes) {
-    this.sizeInBytes = sizeInBytes;
-    return this;
-  }
-
-  public Integer getTopLevelKVCount() {
-    return topLevelKVCount;
-  }
-
-  public SecureDataRecord setTopLevelKVCount(Integer topLevelKVCount) {
-    this.topLevelKVCount = topLevelKVCount;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public SecureDataRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public SecureDataRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public SecureDataRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public SecureDataRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getLastRotatedTs() {
-    return lastRotatedTs;
-  }
-
-  public SecureDataRecord setLastRotatedTs(OffsetDateTime lastRotatedTs) {
-    this.lastRotatedTs = lastRotatedTs;
-    return this;
+    public SecureDataRecordBuilder encryptedBlob(byte[] blob) {
+      this.encryptedBlob = blob != null ? Arrays.copyOf(blob, blob.length) : null;
+      return this;
+    }
   }
 }

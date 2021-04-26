@@ -17,9 +17,12 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO for representing a AWS_IAM_ROLE record. */
+@Data
+@Builder
 public class AwsIamRoleRecord {
 
   private String id;
@@ -33,76 +36,4 @@ public class AwsIamRoleRecord {
   private OffsetDateTime lastUpdatedTs;
 
   private String awsIamRoleArn;
-
-  public String getId() {
-    return id;
-  }
-
-  public AwsIamRoleRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public AwsIamRoleRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public AwsIamRoleRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public AwsIamRoleRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public AwsIamRoleRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getAwsIamRoleArn() {
-    return awsIamRoleArn;
-  }
-
-  public AwsIamRoleRecord setAwsIamRoleArn(String awsIamRoleArn) {
-    this.awsIamRoleArn = awsIamRoleArn;
-    return this;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    AwsIamRoleRecord that = (AwsIamRoleRecord) o;
-    return Objects.equals(id, that.id)
-        && Objects.equals(createdBy, that.createdBy)
-        && Objects.equals(lastUpdatedBy, that.lastUpdatedBy)
-        && Objects.equals(createdTs, that.createdTs)
-        && Objects.equals(lastUpdatedTs, that.lastUpdatedTs)
-        && Objects.equals(awsIamRoleArn, that.awsIamRoleArn);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, createdBy, lastUpdatedBy, createdTs, lastUpdatedTs);
-  }
 }

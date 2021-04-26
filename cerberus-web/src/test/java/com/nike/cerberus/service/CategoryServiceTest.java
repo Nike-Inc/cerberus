@@ -56,7 +56,7 @@ public class CategoryServiceTest {
     expected.put("abc", "foo");
 
     when(categoryDao.getAllCategories())
-        .thenReturn(Arrays.asList(new CategoryRecord().setId("abc").setDisplayName("foo")));
+        .thenReturn(Arrays.asList(CategoryRecord.builder().id("abc").displayName("foo").build()));
 
     Map<String, String> actual = categoryService.getCategoryIdToCategoryNameMap();
     assertEquals(expected, actual);

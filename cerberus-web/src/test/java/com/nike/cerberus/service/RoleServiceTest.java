@@ -47,7 +47,7 @@ public class RoleServiceTest {
     expected.put("abc", "foo");
 
     when(roleDao.getAllRoles())
-        .thenReturn(Arrays.asList(new RoleRecord().setId("abc").setName("foo")));
+        .thenReturn(Arrays.asList(RoleRecord.builder().id("abc").name("foo").build()));
 
     Map<String, String> actual = roleService.getRoleIdToStringMap();
     assertEquals(expected, actual);

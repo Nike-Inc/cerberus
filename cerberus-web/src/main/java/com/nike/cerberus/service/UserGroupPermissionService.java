@@ -106,7 +106,7 @@ public class UserGroupPermissionService {
       userGroupId = possibleUserGroupRecord.get().getId();
     } else {
       userGroupId = uuidSupplier.get();
-      UserGroupRecord userGroupRecord = new UserGroupRecord();
+      UserGroupRecord userGroupRecord = UserGroupRecord.builder().build();
       userGroupRecord.setId(userGroupId);
       userGroupRecord.setName(userGroupPermission.getName());
       userGroupRecord.setCreatedBy(user);
@@ -116,7 +116,7 @@ public class UserGroupPermissionService {
       userGroupDao.createUserGroup(userGroupRecord);
     }
 
-    UserGroupPermissionRecord permissionsRecord = new UserGroupPermissionRecord();
+    UserGroupPermissionRecord permissionsRecord = UserGroupPermissionRecord.builder().build();
     permissionsRecord.setId(uuidSupplier.get());
     permissionsRecord.setUserGroupId(userGroupId);
     permissionsRecord.setRoleId(userGroupPermission.getRoleId());
@@ -173,7 +173,7 @@ public class UserGroupPermissionService {
           .build();
     }
 
-    UserGroupPermissionRecord record = new UserGroupPermissionRecord();
+    UserGroupPermissionRecord record = UserGroupPermissionRecord.builder().build();
     record.setSdboxId(safeDepositBoxId);
     record.setUserGroupId(possibleUserGroupRecord.get().getId());
     record.setRoleId(userGroupPermission.getRoleId());

@@ -45,13 +45,14 @@ public class RoleDaoTest {
   private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
   private final RoleRecord roleRecord =
-      new RoleRecord()
-          .setId(roleId)
-          .setName(name)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      RoleRecord.builder()
+          .id(roleId)
+          .name(name)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final List<RoleRecord> roleRecordList = Lists.newArrayList(roleRecord);
 

@@ -17,7 +17,11 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class RoleRecord {
 
   public static final String ROLE_OWNER = "owner";
@@ -37,58 +41,4 @@ public class RoleRecord {
   private String createdBy;
 
   private String lastUpdatedBy;
-
-  public String getId() {
-    return id;
-  }
-
-  public RoleRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public RoleRecord setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public RoleRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public RoleRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public RoleRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public RoleRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
 }

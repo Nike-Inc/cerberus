@@ -79,16 +79,17 @@ public class AuthTokenService {
     OffsetDateTime now = dateTimeSupplier.get();
 
     AuthTokenRecord tokenRecord =
-        new AuthTokenRecord()
-            .setId(id)
-            .setTokenHash(tokenHasher.hashToken(token))
-            .setCreatedTs(now)
-            .setExpiresTs(now.plusMinutes(ttlInMinutes))
-            .setPrincipal(principal)
-            .setPrincipalType(principalType.getName())
-            .setIsAdmin(isAdmin)
-            .setGroups(groups)
-            .setRefreshCount(refreshCount);
+        AuthTokenRecord.builder()
+            .id(id)
+            .tokenHash(tokenHasher.hashToken(token))
+            .createdTs(now)
+            .expiresTs(now.plusMinutes(ttlInMinutes))
+            .principal(principal)
+            .principalType(principalType.getName())
+            .isAdmin(isAdmin)
+            .groups(groups)
+            .refreshCount(refreshCount)
+            .build();
 
     authTokenDao.createAuthToken(tokenRecord);
 

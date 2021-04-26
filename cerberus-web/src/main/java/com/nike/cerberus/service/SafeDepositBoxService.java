@@ -411,7 +411,7 @@ public class SafeDepositBoxService {
    */
   private SafeDepositBoxRecord buildBoxToStore(
       final SafeDepositBoxV2 requestedBox, final String user, final OffsetDateTime dateTime) {
-    final SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
+    final SafeDepositBoxRecord boxToStore = SafeDepositBoxRecord.builder().build();
 
     final Optional<Category> category = categoryService.getCategory(requestedBox.getCategoryId());
 
@@ -448,7 +448,7 @@ public class SafeDepositBoxService {
       final SafeDepositBoxV2 safeDepositBox,
       final String user,
       final OffsetDateTime now) {
-    final SafeDepositBoxRecord boxToUpdate = new SafeDepositBoxRecord();
+    final SafeDepositBoxRecord boxToUpdate = SafeDepositBoxRecord.builder().build();
     boxToUpdate.setId(id);
     boxToUpdate.setDescription(safeDepositBox.getDescription());
     boxToUpdate.setLastUpdatedBy(user);
@@ -709,7 +709,7 @@ public class SafeDepositBoxService {
   @Transactional
   public void restoreSafeDepositBox(SafeDepositBoxV2 safeDepositBox, String adminUser) {
 
-    SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord boxToStore = SafeDepositBoxRecord.builder().build();
     boxToStore.setId(safeDepositBox.getId());
     boxToStore.setPath(safeDepositBox.getPath());
     boxToStore.setCategoryId(safeDepositBox.getCategoryId());

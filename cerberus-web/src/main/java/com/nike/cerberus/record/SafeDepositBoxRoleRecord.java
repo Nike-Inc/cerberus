@@ -16,31 +16,18 @@
 
 package com.nike.cerberus.record;
 
+import lombok.Builder;
+import lombok.Data;
+
 /**
  * POJO for representing the safe deposit box to role association. This is used to generate a list
  * of records showing what safe deposit boxes a user has access to and with what role.
  */
+@Data
+@Builder
 public class SafeDepositBoxRoleRecord {
 
   private String safeDepositBoxName;
 
   private String roleName;
-
-  public String getSafeDepositBoxName() {
-    return safeDepositBoxName;
-  }
-
-  public SafeDepositBoxRoleRecord setSafeDepositBoxName(String safeDepositBoxName) {
-    this.safeDepositBoxName = safeDepositBoxName;
-    return this;
-  }
-
-  public String getRoleName() {
-    return roleName;
-  }
-
-  public SafeDepositBoxRoleRecord setRoleName(String roleName) {
-    this.roleName = roleName;
-    return this;
-  }
 }

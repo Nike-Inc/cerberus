@@ -47,14 +47,15 @@ public class CategoryDaoTest {
   private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
   private final CategoryRecord categoryRecord =
-      new CategoryRecord()
-          .setId(categoryId)
-          .setDisplayName(displayName)
-          .setPath(path)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      CategoryRecord.builder()
+          .id(categoryId)
+          .displayName(displayName)
+          .path(path)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final List<CategoryRecord> categoryRecordList = Lists.newArrayList(categoryRecord);
 

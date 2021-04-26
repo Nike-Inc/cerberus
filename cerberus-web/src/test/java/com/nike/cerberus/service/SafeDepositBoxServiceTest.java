@@ -131,7 +131,7 @@ public class SafeDepositBoxServiceTest {
     sdbObject.setUserGroupPermissions(userPerms);
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
-    SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord boxToStore = SafeDepositBoxRecord.builder().build();
     boxToStore.setId(sdbObject.getId());
     boxToStore.setPath(sdbObject.getPath());
     boxToStore.setCategoryId(sdbObject.getCategoryId());
@@ -187,7 +187,7 @@ public class SafeDepositBoxServiceTest {
     sdbObject.setUserGroupPermissions(userPerms);
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
-    SafeDepositBoxRecord boxToStore = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord boxToStore = SafeDepositBoxRecord.builder().build();
     boxToStore.setId(sdbObject.getId());
     boxToStore.setPath(sdbObject.getPath());
     boxToStore.setCategoryId(sdbObject.getCategoryId());
@@ -198,7 +198,7 @@ public class SafeDepositBoxServiceTest {
     boxToStore.setCreatedBy(sdbObject.getCreatedBy());
     boxToStore.setLastUpdatedBy(sdbObject.getLastUpdatedBy());
 
-    SafeDepositBoxRecord existingRecord = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord existingRecord = SafeDepositBoxRecord.builder().build();
     existingRecord.setId(sdbId);
     when(safeDepositBoxDao.getSafeDepositBox(sdbObject.getId()))
         .thenReturn(Optional.of(existingRecord));
@@ -361,7 +361,8 @@ public class SafeDepositBoxServiceTest {
     String sdbPath = "category/" + sdbPathNoCategory;
 
     String sdbId = "sdb id";
-    SafeDepositBoxRecord safeDepositBox = new SafeDepositBoxRecord().setId(sdbId).setPath(sdbPath);
+    SafeDepositBoxRecord safeDepositBox =
+        SafeDepositBoxRecord.builder().id(sdbId).path(sdbPath).build();
 
     when(safeDepositBoxDao.getSafeDepositBox(sdbId)).thenReturn(Optional.of(safeDepositBox));
     when(roleService.getRoleByName(RoleRecord.ROLE_OWNER)).thenReturn(Optional.of(new Role()));
@@ -403,8 +404,8 @@ public class SafeDepositBoxServiceTest {
     when(awsIamRoleArnParser.convertPrincipalArnToRoleArn(assumedRoleArn)).thenReturn(iamRoleArn);
     when(awsIamRoleArnParser.convertPrincipalArnToRootArn(assumedRoleArn)).thenReturn(rootArn);
 
-    SafeDepositBoxRecord safeDepositBoxRecord1 = new SafeDepositBoxRecord();
-    SafeDepositBoxRecord safeDepositBoxRecord2 = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord safeDepositBoxRecord1 = SafeDepositBoxRecord.builder().build();
+    SafeDepositBoxRecord safeDepositBoxRecord2 = SafeDepositBoxRecord.builder().build();
     List<SafeDepositBoxRecord> assumedRoleArnRecords =
         Lists.newArrayList(safeDepositBoxRecord1, safeDepositBoxRecord2);
     when(safeDepositBoxDao.getAssumedRoleAssociatedSafeDepositBoxes(
@@ -422,7 +423,7 @@ public class SafeDepositBoxServiceTest {
     String iamRoleArn = "arn:aws:iam::123456789012:role/Accounting-Role";
     String rootArn = "arn:aws:iam::123456789012:root";
 
-    SafeDepositBoxRecord safeDepositBoxRecord1 = new SafeDepositBoxRecord();
+    SafeDepositBoxRecord safeDepositBoxRecord1 = SafeDepositBoxRecord.builder().build();
 
     List<SafeDepositBoxRecord> roleArnRecords = Lists.newArrayList(safeDepositBoxRecord1);
     when(safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(iamRoleArn, rootArn))

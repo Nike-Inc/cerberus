@@ -17,9 +17,12 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
+import lombok.Builder;
+import lombok.Data;
 
 /** Represents a category. */
+@Data
+@Builder
 public class CategoryRecord {
 
   private String id;
@@ -35,86 +38,4 @@ public class CategoryRecord {
   private String createdBy;
 
   private String lastUpdatedBy;
-
-  public String getId() {
-    return id;
-  }
-
-  public CategoryRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getDisplayName() {
-    return displayName;
-  }
-
-  public CategoryRecord setDisplayName(String displayName) {
-    this.displayName = displayName;
-    return this;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public CategoryRecord setPath(String path) {
-    this.path = path;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public CategoryRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public CategoryRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public CategoryRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public CategoryRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CategoryRecord that = (CategoryRecord) o;
-    return Objects.equals(id, that.id)
-        && Objects.equals(displayName, that.displayName)
-        && Objects.equals(path, that.path)
-        && Objects.equals(createdTs, that.createdTs)
-        && Objects.equals(lastUpdatedTs, that.lastUpdatedTs)
-        && Objects.equals(createdBy, that.createdBy)
-        && Objects.equals(lastUpdatedBy, that.lastUpdatedBy);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(id, displayName, path, createdTs, lastUpdatedTs, createdBy, lastUpdatedBy);
-  }
 }

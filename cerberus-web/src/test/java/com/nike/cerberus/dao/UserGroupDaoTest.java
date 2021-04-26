@@ -52,26 +52,28 @@ public class UserGroupDaoTest {
   private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
   private final UserGroupRecord userGroupRecord =
-      new UserGroupRecord()
-          .setId(userGroupId)
-          .setName(userGroupName)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      UserGroupRecord.builder()
+          .id(userGroupId)
+          .name(userGroupName)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final List<UserGroupRecord> userGroupRecordList = Lists.newArrayList(userGroupRecord);
 
   private final UserGroupPermissionRecord userGroupPermissionRecord =
-      new UserGroupPermissionRecord()
-          .setId(userGroupPermissionId)
-          .setUserGroupId(userGroupId)
-          .setSdboxId(safeDepositBoxId)
-          .setRoleId(roleId)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      UserGroupPermissionRecord.builder()
+          .id(userGroupPermissionId)
+          .userGroupId(userGroupId)
+          .sdboxId(safeDepositBoxId)
+          .roleId(roleId)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final List<UserGroupPermissionRecord> userGroupPermissionRecordList =
       Lists.newArrayList(userGroupPermissionRecord);

@@ -49,20 +49,20 @@ public class SecureDataDao {
       String lastUpdatedBy,
       OffsetDateTime lastUpdatedTs) {
     secureDataMapper.writeSecureData(
-        new SecureDataRecord()
-            .setId(path.hashCode())
-            .setPath(path)
-            .setSdboxId(sdbId)
-            .setEncryptedBlob(encryptedPayload)
-            .setTopLevelKVCount(topLevelKVPairCount)
-            .setSizeInBytes(sizeInBytes)
-            .setType(type)
-            .setCreatedBy(createdBy)
-            .setCreatedTs(createdTs)
-            .setLastUpdatedBy(lastUpdatedBy)
-            .setLastUpdatedTs(lastUpdatedTs)
-            .setLastRotatedTs(lastUpdatedTs) // This is intentional
-        );
+        SecureDataRecord.builder()
+            .id(path.hashCode())
+            .path(path)
+            .sdboxId(sdbId)
+            .encryptedBlob(encryptedPayload)
+            .topLevelKVCount(topLevelKVPairCount)
+            .sizeInBytes(sizeInBytes)
+            .type(type)
+            .createdBy(createdBy)
+            .createdTs(createdTs)
+            .lastUpdatedBy(lastUpdatedBy)
+            .lastUpdatedTs(lastUpdatedTs)
+            .lastRotatedTs(lastUpdatedTs)
+            .build());
   }
 
   public void updateSecureData(
@@ -79,19 +79,19 @@ public class SecureDataDao {
       OffsetDateTime lastRotatedTs) {
 
     secureDataMapper.updateSecureData(
-        new SecureDataRecord()
-            .setId(path.hashCode())
-            .setPath(path)
-            .setSdboxId(sdbId)
-            .setEncryptedBlob(encryptedPayload)
-            .setTopLevelKVCount(topLevelKVPairCount)
-            .setType(type)
-            .setSizeInBytes(sizeInBytes)
-            .setCreatedBy(createdBy)
-            .setCreatedTs(createdTs)
-            .setLastUpdatedTs(lastUpdatedTs)
-            .setLastUpdatedBy(lastUpdatedBy)
-            .setLastRotatedTs(lastRotatedTs));
+        SecureDataRecord.builder()
+            .id(path.hashCode())
+            .path(path)
+            .sdboxId(sdbId)
+            .encryptedBlob(encryptedPayload)
+            .type(type)
+            .sizeInBytes(sizeInBytes)
+            .createdBy(createdBy)
+            .createdTs(createdTs)
+            .lastUpdatedTs(lastUpdatedTs)
+            .lastUpdatedBy(lastUpdatedBy)
+            .lastRotatedTs(lastRotatedTs)
+            .build());
   }
 
   public int updateSecureData(SecureDataRecord secureDataRecord) {

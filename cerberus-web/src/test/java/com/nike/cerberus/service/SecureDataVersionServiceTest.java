@@ -63,16 +63,17 @@ public class SecureDataVersionServiceTest {
     String fullPath = String.format("%s/%s", sdbCategory, pathToSecureData);
 
     SecureDataVersionRecord record =
-        new SecureDataVersionRecord()
-            .setId(versionId)
-            .setEncryptedBlob("encrypted blob".getBytes(Charset.forName("UTF-8")))
-            .setActionPrincipal(actionPrincipal)
-            .setSdboxId(sdbId)
-            .setActionTs(actionTs)
-            .setPath(pathToSecureData)
-            .setVersionCreatedBy(versionCreatedBy)
-            .setVersionCreatedTs(versionCreatedTs)
-            .setAction(action);
+        SecureDataVersionRecord.builder()
+            .id(versionId)
+            .encryptedBlob("encrypted blob".getBytes(Charset.forName("UTF-8")))
+            .actionPrincipal(actionPrincipal)
+            .sdboxId(sdbId)
+            .actionTs(actionTs)
+            .path(pathToSecureData)
+            .versionCreatedBy(versionCreatedBy)
+            .versionCreatedTs(versionCreatedTs)
+            .action(action)
+            .build();
 
     List<SecureDataVersionRecord> versions = Lists.newArrayList(record);
 

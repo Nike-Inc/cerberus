@@ -117,15 +117,16 @@ public class CategoryService {
   @Transactional
   public String createCategory(final Category category, final String user) {
     final OffsetDateTime now = dateTimeSupplier.get();
-    final CategoryRecord record = new CategoryRecord();
-    record
-        .setId(uuidSupplier.get())
-        .setPath(slugger.toSlug(category.getDisplayName()))
-        .setDisplayName(category.getDisplayName())
-        .setCreatedBy(user)
-        .setLastUpdatedBy(user)
-        .setCreatedTs(now)
-        .setLastUpdatedTs(now);
+    final CategoryRecord record =
+        CategoryRecord.builder()
+            .id(uuidSupplier.get())
+            .path(slugger.toSlug(category.getDisplayName()))
+            .displayName(category.getDisplayName())
+            .createdBy(user)
+            .lastUpdatedBy(user)
+            .createdTs(now)
+            .lastUpdatedTs(now)
+            .build();
     categoryDao.createCategory(record);
     return record.getId();
   }

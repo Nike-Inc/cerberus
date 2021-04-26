@@ -19,7 +19,11 @@ package com.nike.cerberus.record;
 import com.nike.cerberus.domain.SecureDataType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SecureDataVersionRecord {
 
   private String id;
@@ -35,104 +39,13 @@ public class SecureDataVersionRecord {
   private OffsetDateTime actionTs;
   private OffsetDateTime lastRotatedTs;
 
-  public String getId() {
-    return id;
-  }
-
-  public SecureDataVersionRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getSdboxId() {
-    return sdboxId;
-  }
-
-  public SecureDataVersionRecord setSdboxId(String sdboxId) {
-    this.sdboxId = sdboxId;
-    return this;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public SecureDataVersionRecord setPath(String path) {
-    this.path = path;
-    return this;
-  }
-
   public byte[] getEncryptedBlob() {
     return encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
   }
 
-  public SecureDataVersionRecord setEncryptedBlob(byte[] encryptedBlob) {
+  public void setEncryptedBlob(byte[] encryptedBlob) {
     this.encryptedBlob =
         encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
-    return this;
-  }
-
-  public SecureDataType getType() {
-    return type;
-  }
-
-  public SecureDataVersionRecord setType(SecureDataType type) {
-    this.type = type;
-    return this;
-  }
-
-  public int getSizeInBytes() {
-    return sizeInBytes;
-  }
-
-  public SecureDataVersionRecord setSizeInBytes(int sizeInBytes) {
-    this.sizeInBytes = sizeInBytes;
-    return this;
-  }
-
-  public String getAction() {
-    return action;
-  }
-
-  public SecureDataVersionRecord setAction(String action) {
-    this.action = action;
-    return this;
-  }
-
-  public String getVersionCreatedBy() {
-    return versionCreatedBy;
-  }
-
-  public SecureDataVersionRecord setVersionCreatedBy(String versionCreatedBy) {
-    this.versionCreatedBy = versionCreatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getVersionCreatedTs() {
-    return versionCreatedTs;
-  }
-
-  public SecureDataVersionRecord setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
-    this.versionCreatedTs = versionCreatedTs;
-    return this;
-  }
-
-  public String getActionPrincipal() {
-    return actionPrincipal;
-  }
-
-  public SecureDataVersionRecord setActionPrincipal(String actionPrincipal) {
-    this.actionPrincipal = actionPrincipal;
-    return this;
-  }
-
-  public OffsetDateTime getActionTs() {
-    return actionTs;
-  }
-
-  public SecureDataVersionRecord setActionTs(OffsetDateTime actionTs) {
-    this.actionTs = actionTs;
-    return this;
   }
 
   public enum SecretsAction {
@@ -141,12 +54,13 @@ public class SecureDataVersionRecord {
     DELETE
   }
 
-  public OffsetDateTime getLastRotatedTs() {
-    return lastRotatedTs;
-  }
+  public static class SecureDataVersionRecordBuilder {
+    private byte[] encryptedBlob;
 
-  public SecureDataVersionRecord setLastRotatedTs(OffsetDateTime lastRotatedTs) {
-    this.lastRotatedTs = lastRotatedTs;
-    return this;
+    public SecureDataVersionRecordBuilder encryptedBlob(byte[] encryptedBlob) {
+      this.encryptedBlob =
+          encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
+      return this;
+    }
   }
 }

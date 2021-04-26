@@ -64,22 +64,23 @@ public class SafeDepositBoxDaoTest {
   private static final String iamRootArn = "IAM_ROOT_ARN";
 
   private final SafeDepositBoxRecord safeDepositBoxRecord =
-      new SafeDepositBoxRecord()
-          .setId(safeDepositBoxId)
-          .setCategoryId(categoryId)
-          .setName(name)
-          .setDescription(description)
-          .setPath(path)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      SafeDepositBoxRecord.builder()
+          .id(safeDepositBoxId)
+          .categoryId(categoryId)
+          .name(name)
+          .description(description)
+          .path(path)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final List<SafeDepositBoxRecord> safeDepositBoxRecordList =
       Lists.newArrayList(safeDepositBoxRecord);
 
   private final SafeDepositBoxRoleRecord safeDepositBoxRoleRecord =
-      new SafeDepositBoxRoleRecord().setSafeDepositBoxName(name).setRoleName(roleName);
+      SafeDepositBoxRoleRecord.builder().safeDepositBoxName(name).roleName(roleName).build();
 
   private final List<SafeDepositBoxRoleRecord> safeDepositBoxRoleRecordList =
       Lists.newArrayList(safeDepositBoxRoleRecord);

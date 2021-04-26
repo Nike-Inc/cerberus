@@ -59,13 +59,14 @@ public class AwsIamRoleDaoTest {
   private final OffsetDateTime lastUpdatedTs = OffsetDateTime.now(ZoneId.of("UTC"));
 
   private final AwsIamRoleRecord awsIamRoleRecord =
-      new AwsIamRoleRecord()
-          .setId(iamRoleId)
-          .setAwsIamRoleArn(awsIamRoleArn)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      AwsIamRoleRecord.builder()
+          .id(iamRoleId)
+          .awsIamRoleArn(awsIamRoleArn)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private final AwsIamRolePermissionRecord awsIamRolePermissionRecord =
       new AwsIamRolePermissionRecord()
@@ -82,15 +83,16 @@ public class AwsIamRoleDaoTest {
       Lists.newArrayList(awsIamRolePermissionRecord);
 
   private final AwsIamRoleKmsKeyRecord awsIamRoleKmsKeyRecord =
-      new AwsIamRoleKmsKeyRecord()
-          .setId(iamRoleKmsKeyId)
-          .setAwsIamRoleId(iamRoleId)
-          .setAwsRegion(awsRegion)
-          .setAwsKmsKeyId(awsKmsKeyId)
-          .setCreatedBy(createdBy)
-          .setLastUpdatedBy(lastUpdatedBy)
-          .setCreatedTs(createdTs)
-          .setLastUpdatedTs(lastUpdatedTs);
+      AwsIamRoleKmsKeyRecord.builder()
+          .id(iamRoleKmsKeyId)
+          .awsIamRoleId(iamRoleId)
+          .awsRegion(awsRegion)
+          .awsKmsKeyId(awsKmsKeyId)
+          .createdBy(createdBy)
+          .lastUpdatedBy(lastUpdatedBy)
+          .createdTs(createdTs)
+          .lastUpdatedTs(lastUpdatedTs)
+          .build();
 
   private AwsIamRoleMapper awsIamRoleMapper;
 

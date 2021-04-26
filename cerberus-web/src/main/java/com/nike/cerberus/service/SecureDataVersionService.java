@@ -208,18 +208,19 @@ public class SecureDataVersionService {
               : SecureDataVersionRecord.SecretsAction.CREATE;
 
       newSecureDataVersionRecord =
-          new SecureDataVersionRecord()
-              .setId(DEFAULT_ID_FOR_CURRENT_VERSIONS)
-              .setAction(action.name())
-              .setEncryptedBlob(currentSecureDataRecord.getEncryptedBlob())
-              .setType(currentSecureDataRecord.getType())
-              .setSizeInBytes(currentSecureDataRecord.getSizeInBytes())
-              .setVersionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
-              .setVersionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
-              .setActionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
-              .setActionTs(currentSecureDataRecord.getLastUpdatedTs())
-              .setSdboxId(currentSecureDataRecord.getSdboxId())
-              .setPath(currentSecureDataRecord.getPath());
+          SecureDataVersionRecord.builder()
+              .id(DEFAULT_ID_FOR_CURRENT_VERSIONS)
+              .action(action.name())
+              .encryptedBlob(currentSecureDataRecord.getEncryptedBlob())
+              .type(currentSecureDataRecord.getType())
+              .sizeInBytes(currentSecureDataRecord.getSizeInBytes())
+              .versionCreatedBy(currentSecureDataRecord.getLastUpdatedBy())
+              .versionCreatedTs(currentSecureDataRecord.getLastUpdatedTs())
+              .actionPrincipal(currentSecureDataRecord.getLastUpdatedBy())
+              .actionTs(currentSecureDataRecord.getLastUpdatedTs())
+              .sdboxId(currentSecureDataRecord.getSdboxId())
+              .path(currentSecureDataRecord.getPath())
+              .build();
     }
 
     return Optional.ofNullable(newSecureDataVersionRecord);

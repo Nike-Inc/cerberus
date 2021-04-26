@@ -17,8 +17,12 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 /** POJO for representing a USER_GROUP record. */
+@Data
+@Builder
 public class UserGroupRecord {
 
   private String id;
@@ -32,58 +36,4 @@ public class UserGroupRecord {
   private OffsetDateTime createdTs;
 
   private OffsetDateTime lastUpdatedTs;
-
-  public String getId() {
-    return id;
-  }
-
-  public UserGroupRecord setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public UserGroupRecord setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public UserGroupRecord setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public UserGroupRecord setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public UserGroupRecord setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public UserGroupRecord setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
 }

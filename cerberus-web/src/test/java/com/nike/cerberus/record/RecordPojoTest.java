@@ -17,6 +17,7 @@
 package com.nike.cerberus.record;
 
 import com.openpojo.reflection.PojoClass;
+import com.openpojo.reflection.PojoClassFilter;
 import com.openpojo.reflection.impl.PojoClassFactory;
 import com.openpojo.validation.Validator;
 import com.openpojo.validation.ValidatorBuilder;
@@ -33,7 +34,11 @@ public class RecordPojoTest {
   @Test
   public void test_pojo_structure_and_behavior() {
 
-    List<PojoClass> pojoClasses = PojoClassFactory.getPojoClasses("com.nike.cerberus.record");
+    PojoClassFilter pojoClassFilter =
+        pojoClass ->
+            !pojoClass.isNestedClass() || (pojoClass.isNestedClass() && pojoClass.isEnum());
+    List<PojoClass> pojoClasses =
+        PojoClassFactory.getPojoClasses("com.nike.cerberus.record", pojoClassFilter);
 
     Assert.assertEquals(15, pojoClasses.size());
 
