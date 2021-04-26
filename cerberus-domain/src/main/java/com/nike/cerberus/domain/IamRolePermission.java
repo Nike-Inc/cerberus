@@ -23,9 +23,13 @@ import com.nike.cerberus.validation.group.Updatable;
 import java.time.OffsetDateTime;
 import javax.validation.constraints.Pattern;
 import javax.validation.groups.Default;
+import lombok.Builder;
+import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 /** Represents a permission granted to an IAM role with regards to a safe deposit box */
+@Data
+@Builder
 public class IamRolePermission {
 
   private String id;
@@ -54,102 +58,4 @@ public class IamRolePermission {
   private String createdBy;
 
   private String lastUpdatedBy;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getAccountId() {
-    return accountId;
-  }
-
-  public void setAccountId(String accountId) {
-    this.accountId = accountId;
-  }
-
-  public IamRolePermission withAccountId(String accountId) {
-    this.accountId = accountId;
-    return this;
-  }
-
-  public String getIamRoleName() {
-    return iamRoleName;
-  }
-
-  public void setIamRoleName(String iamRoleName) {
-    this.iamRoleName = iamRoleName;
-  }
-
-  public IamRolePermission withIamRoleName(String iamRoleName) {
-    this.iamRoleName = iamRoleName;
-    return this;
-  }
-
-  public String getRoleId() {
-    return roleId;
-  }
-
-  public void setRoleId(String roleId) {
-    this.roleId = roleId;
-  }
-
-  public IamRolePermission withRoleId(String roleId) {
-    this.roleId = roleId;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public void setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    IamRolePermission that = (IamRolePermission) o;
-
-    if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null)
-      return false;
-    return iamRoleName != null ? iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = accountId != null ? accountId.hashCode() : 0;
-    result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
-    return result;
-  }
 }

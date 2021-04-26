@@ -18,7 +18,11 @@ package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SDBMetadata {
 
   private String id;
@@ -34,108 +38,4 @@ public class SDBMetadata {
   private Map<String, String> userGroupPermissions;
   private Map<String, String> iamRolePermissions;
   private Map<String, Map<String, Object>> data;
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  public String getCategory() {
-    return category;
-  }
-
-  public void setCategory(String category) {
-    this.category = category;
-  }
-
-  public String getOwner() {
-    return owner;
-  }
-
-  public void setOwner(String owner) {
-    this.owner = owner;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public void setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
-
-  public Map<String, String> getUserGroupPermissions() {
-    return userGroupPermissions;
-  }
-
-  public void setUserGroupPermissions(Map<String, String> userGroupPermissions) {
-    this.userGroupPermissions = userGroupPermissions;
-  }
-
-  public Map<String, String> getIamRolePermissions() {
-    return iamRolePermissions;
-  }
-
-  public void setIamRolePermissions(Map<String, String> iamRolePermissions) {
-    this.iamRolePermissions = iamRolePermissions;
-  }
-
-  public Map<String, Map<String, Object>> getData() {
-    return data;
-  }
-
-  public void setData(Map<String, Map<String, Object>> data) {
-    this.data = data;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getId() {
-    return id;
-  }
 }

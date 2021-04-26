@@ -17,7 +17,11 @@
 package com.nike.cerberus.domain;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SecureFileSummaryResult {
 
   private boolean hasNext = false;
@@ -27,68 +31,4 @@ public class SecureFileSummaryResult {
   private int fileCountInResult;
   private int totalFileCount;
   private List<SecureFileSummary> secureFileSummaries;
-
-  public boolean isHasNext() {
-    return hasNext;
-  }
-
-  public SecureFileSummaryResult setHasNext(boolean hasNext) {
-    this.hasNext = hasNext;
-    return this;
-  }
-
-  public Integer getNextOffset() {
-    return nextOffset;
-  }
-
-  public SecureFileSummaryResult setNextOffset(Integer nextOffset) {
-    this.nextOffset = nextOffset;
-    return this;
-  }
-
-  public int getLimit() {
-    return limit;
-  }
-
-  public SecureFileSummaryResult setLimit(int limit) {
-    this.limit = limit;
-    return this;
-  }
-
-  public int getOffset() {
-    return offset;
-  }
-
-  public SecureFileSummaryResult setOffset(int offset) {
-    this.offset = offset;
-    return this;
-  }
-
-  public int getFileCountInResult() {
-    return fileCountInResult;
-  }
-
-  public SecureFileSummaryResult setFileCountInResult(int fileCountInResult) {
-    this.fileCountInResult = fileCountInResult;
-    return this;
-  }
-
-  public int getTotalFileCount() {
-    return totalFileCount;
-  }
-
-  public SecureFileSummaryResult setTotalFileCount(int totalFileCount) {
-    this.totalFileCount = totalFileCount;
-    return this;
-  }
-
-  public List<SecureFileSummary> getSecureFileSummaries() {
-    return secureFileSummaries;
-  }
-
-  public SecureFileSummaryResult setSecureFileSummaries(
-      List<SecureFileSummary> secureFileSummaries) {
-    this.secureFileSummaries = secureFileSummaries;
-    return this;
-  }
 }

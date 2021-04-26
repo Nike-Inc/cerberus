@@ -18,8 +18,11 @@ package com.nike.cerberus.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SecureFileCurrent implements SecureFile {
 
   @JsonIgnore private String id;
@@ -32,94 +35,4 @@ public class SecureFileCurrent implements SecureFile {
   private OffsetDateTime createdTs;
   private String lastUpdatedBy;
   private OffsetDateTime lastUpdatedTs;
-
-  public String getId() {
-    return id;
-  }
-
-  public SecureFileCurrent setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getSdboxId() {
-    return sdboxId;
-  }
-
-  public SecureFileCurrent setSdboxId(String sdboxId) {
-    this.sdboxId = sdboxId;
-    return this;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public SecureFileCurrent setPath(String path) {
-    this.path = path;
-    return this;
-  }
-
-  public byte[] getData() {
-    return data != null ? Arrays.copyOf(data, data.length) : null;
-  }
-
-  public SecureFileCurrent setData(byte[] data) {
-    this.data = data != null ? Arrays.copyOf(data, data.length) : null;
-    return this;
-  }
-
-  public int getSizeInBytes() {
-    return sizeInBytes;
-  }
-
-  public SecureFileCurrent setSizeInBytes(int sizeInBytes) {
-    this.sizeInBytes = sizeInBytes;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public SecureFileCurrent setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public SecureFileCurrent setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public SecureFileCurrent setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public SecureFileCurrent setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public SecureFileCurrent setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
 }

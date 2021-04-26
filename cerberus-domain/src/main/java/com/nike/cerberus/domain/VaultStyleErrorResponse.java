@@ -16,39 +16,14 @@
 
 package com.nike.cerberus.domain;
 
-import java.util.LinkedList;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
 
+@Data
+@Builder
 public class VaultStyleErrorResponse {
 
-  private List<String> errors;
-
-  public List<String> getErrors() {
-    return errors;
-  }
-
-  public void setErrors(List<String> errors) {
-    this.errors = errors;
-  }
-
-  public static final class Builder {
-    List<String> errors = new LinkedList<>();
-
-    private Builder() {}
-
-    public static Builder create() {
-      return new Builder();
-    }
-
-    public Builder withError(String error) {
-      errors.add(error);
-      return this;
-    }
-
-    public VaultStyleErrorResponse build() {
-      VaultStyleErrorResponse vaultStyleErrorResponse = new VaultStyleErrorResponse();
-      vaultStyleErrorResponse.setErrors(errors);
-      return vaultStyleErrorResponse;
-    }
-  }
+  @Singular private List<String> errors;
 }

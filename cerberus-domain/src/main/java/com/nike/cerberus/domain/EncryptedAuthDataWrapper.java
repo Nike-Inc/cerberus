@@ -16,16 +16,13 @@
 
 package com.nike.cerberus.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /** Wraps the KMS encrypted IAM role auth response. */
+@Getter
+@Setter
 public class EncryptedAuthDataWrapper {
-
-  public String getAuthData() {
-    return authData;
-  }
-
-  public void setAuthData(String authData) {
-    this.authData = authData;
-  }
 
   private String authData;
 }

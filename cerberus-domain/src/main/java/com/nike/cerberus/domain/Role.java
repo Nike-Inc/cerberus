@@ -17,8 +17,12 @@
 package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 /** Represents a specific role that can be assigned. */
+@Data
+@Builder
 public class Role {
 
   private String id;
@@ -32,58 +36,4 @@ public class Role {
   private String createdBy;
 
   private String lastUpdatedBy;
-
-  public String getId() {
-    return id;
-  }
-
-  public Role setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public Role setName(String name) {
-    this.name = name;
-    return this;
-  }
-
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
-
-  public Role setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public Role setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public Role setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public Role setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
 }

@@ -16,7 +16,12 @@
 
 package com.nike.cerberus.domain;
 
+import lombok.Builder;
+import lombok.Data;
+
 /** MFA check request. */
+@Data
+@Builder
 public class MfaCheckRequest {
 
   private String stateToken;
@@ -26,40 +31,4 @@ public class MfaCheckRequest {
   private String otpToken;
 
   private boolean isPush;
-
-  public String getStateToken() {
-    return stateToken;
-  }
-
-  public MfaCheckRequest setStateToken(String stateToken) {
-    this.stateToken = stateToken;
-    return this;
-  }
-
-  public String getDeviceId() {
-    return deviceId;
-  }
-
-  public MfaCheckRequest setDeviceId(String deviceId) {
-    this.deviceId = deviceId;
-    return this;
-  }
-
-  public String getOtpToken() {
-    return otpToken;
-  }
-
-  public MfaCheckRequest setOtpToken(String otpToken) {
-    this.otpToken = otpToken;
-    return this;
-  }
-
-  public boolean isPush() {
-    return isPush;
-  }
-
-  public MfaCheckRequest setIsPush(boolean isPush) {
-    this.isPush = isPush;
-    return this;
-  }
 }

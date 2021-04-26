@@ -17,7 +17,11 @@
 package com.nike.cerberus.domain;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SDBMetadataResult {
 
   private boolean hasNext = false;
@@ -27,60 +31,4 @@ public class SDBMetadataResult {
   private int sdbCountInResult;
   private int totalSDBCount;
   private List<SDBMetadata> safeDepositBoxMetadata;
-
-  public boolean isHasNext() {
-    return hasNext;
-  }
-
-  public void setHasNext(boolean hasNext) {
-    this.hasNext = hasNext;
-  }
-
-  public int getNextOffset() {
-    return nextOffset;
-  }
-
-  public void setNextOffset(int nextOffset) {
-    this.nextOffset = nextOffset;
-  }
-
-  public int getLimit() {
-    return limit;
-  }
-
-  public void setLimit(int limit) {
-    this.limit = limit;
-  }
-
-  public int getOffset() {
-    return offset;
-  }
-
-  public void setOffset(int offset) {
-    this.offset = offset;
-  }
-
-  public int getSdbCountInResult() {
-    return sdbCountInResult;
-  }
-
-  public void setSdbCountInResult(int sdbCountInResult) {
-    this.sdbCountInResult = sdbCountInResult;
-  }
-
-  public int getTotalSDBCount() {
-    return totalSDBCount;
-  }
-
-  public void setTotalSDBCount(int totalSDBCount) {
-    this.totalSDBCount = totalSDBCount;
-  }
-
-  public List<SDBMetadata> getSafeDepositBoxMetadata() {
-    return safeDepositBoxMetadata;
-  }
-
-  public void setSafeDepositBoxMetadata(List<SDBMetadata> safeDepositBoxMetadata) {
-    this.safeDepositBoxMetadata = safeDepositBoxMetadata;
-  }
 }

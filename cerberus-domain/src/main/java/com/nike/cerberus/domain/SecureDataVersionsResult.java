@@ -17,7 +17,11 @@
 package com.nike.cerberus.domain;
 
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
 public class SecureDataVersionsResult {
 
   private boolean hasNext = false;
@@ -27,68 +31,4 @@ public class SecureDataVersionsResult {
   private int versionCountInResult;
   private int totalVersionCount;
   private List<SecureDataVersionSummary> secureDataVersionSummaries;
-
-  public boolean isHasNext() {
-    return hasNext;
-  }
-
-  public SecureDataVersionsResult setHasNext(boolean hasNext) {
-    this.hasNext = hasNext;
-    return this;
-  }
-
-  public Integer getNextOffset() {
-    return nextOffset;
-  }
-
-  public SecureDataVersionsResult setNextOffset(Integer nextOffset) {
-    this.nextOffset = nextOffset;
-    return this;
-  }
-
-  public int getLimit() {
-    return limit;
-  }
-
-  public SecureDataVersionsResult setLimit(int limit) {
-    this.limit = limit;
-    return this;
-  }
-
-  public int getOffset() {
-    return offset;
-  }
-
-  public SecureDataVersionsResult setOffset(int offset) {
-    this.offset = offset;
-    return this;
-  }
-
-  public int getVersionCountInResult() {
-    return versionCountInResult;
-  }
-
-  public SecureDataVersionsResult setVersionCountInResult(int versionCountInResult) {
-    this.versionCountInResult = versionCountInResult;
-    return this;
-  }
-
-  public int getTotalVersionCount() {
-    return totalVersionCount;
-  }
-
-  public SecureDataVersionsResult setTotalVersionCount(int totalVersionCount) {
-    this.totalVersionCount = totalVersionCount;
-    return this;
-  }
-
-  public List<SecureDataVersionSummary> getSecureDataVersionSummaries() {
-    return secureDataVersionSummaries;
-  }
-
-  public SecureDataVersionsResult setSecureDataVersionSummaries(
-      List<SecureDataVersionSummary> secureDataVersionSummaries) {
-    this.secureDataVersionSummaries = secureDataVersionSummaries;
-    return this;
-  }
 }
