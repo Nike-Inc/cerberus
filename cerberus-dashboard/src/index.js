@@ -30,6 +30,7 @@ import * as cms from "./constants/cms";
 import environmentService from "./service/EnvironmentService";
 import configureStore, { history } from "./store/configureStore";
 import { getLogger } from "./utils/logger";
+import NotFound from './components/NotFound/NotFound';
 
 var log = getLogger("main");
 const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
