@@ -35,7 +35,7 @@ public class AuthData {
 
   private String factorResult;
 
-  private List<AuthMfaDevice> devices = new LinkedList<>();
+  @Builder.Default private List<AuthMfaDevice> devices = new LinkedList<>();
 
   private AuthTokenResponse clientToken;
 }
