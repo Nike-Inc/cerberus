@@ -58,6 +58,12 @@ public enum DefaultApiError implements ApiError {
   AUTH_TOKEN_TOO_LONG(
       99107, "X-Cerberus-Token header would be too long.", SC_INTERNAL_SERVER_ERROR),
 
+  /** The user supplied OAuth JWT is invalid. */
+  OAUTH_JWT_INVALID(99108, "OAuth JWT is invalid.", SC_BAD_REQUEST),
+
+  /** The user supplied OAuth JWT contains invalid email. */
+  OAUTH_JWT_EMAIL_INVALID(99109, "OAuth JWT is invalid.", SC_BAD_REQUEST),
+
   /** Category display name is blank. */
   CATEGORY_DISPLAY_NAME_BLANK(99200, "Display name may not be blank.", SC_BAD_REQUEST),
 
