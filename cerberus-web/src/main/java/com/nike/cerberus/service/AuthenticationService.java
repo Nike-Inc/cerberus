@@ -178,12 +178,7 @@ public class AuthenticationService {
     authResponse
         .getData()
         .setClientToken(
-            generateToken(
-                username,
-                //
-                authServiceConnector.getGroups(authResponse.getData()),
-                //                groups,
-                0));
+            generateToken(username, authServiceConnector.getGroups(authResponse.getData()), 0));
 
     return authResponse;
   }

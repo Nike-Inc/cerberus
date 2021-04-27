@@ -259,6 +259,11 @@ cerberus:
       # Every 10 seconds
       cronExpression: "0/10 * * ? * *"
 
+    oauthJwksRefreshJob:
+      enabled: true
+      # Every hour
+      cronExpression: "0 0 * ? * *"
+
     ################################################################################################
     # This Job require auth.iam.kms.rootUserArn,adminRoleArn,cmsRoleArn to be configured
     # This job is now disabled by default since kms auth is disabled by default
