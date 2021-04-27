@@ -26,10 +26,11 @@ node {
 task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
 
   doFirst {
-    assert System.getenv("ENV_FILE")
-    String file_path = System.getenv("ENV_FILE")
-    assert file(file_path).exists()
-    new File("${project.projectDir.absolutePath}", ".env").text = file(file_path).text
+    if (System.getenv("ENV_FILE")) {
+      String file_path = System.getenv("ENV_FILE")
+      assert file(file_path).exists()
+      new File("${project.projectDir.absolutePath}", ".env").text = file(file_path).text
+    }
   }
 
   group 'build'

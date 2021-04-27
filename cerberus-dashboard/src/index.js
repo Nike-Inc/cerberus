@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { AuthService, LoginCallback, SecureRoute, Security } from '@okta/okta-react';
+import { LoginCallback, SecureRoute, Security } from '@okta/okta-react';
+import { OktaAuth, toRelativeUrl } from '@okta/okta-auth-js';
 import axios from "axios";
 import { ConnectedRouter } from "connected-react-router";
 import React from "react";
@@ -33,7 +34,7 @@ import { getLogger } from "./utils/logger";
 import NotFound from './components/NotFound/NotFound';
 
 var log = getLogger("main");
-const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
+const AUTH_ACTION_TIMEOUT = 6000; // 60 seconds in milliseconds
 
 /**
  * This is our redux data store for storing all data retrieved from API Calls and any other state that needs
@@ -41,10 +42,10 @@ const AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
  */
 const store = configureStore(window.__INITIAL_STATE__);
 
-const authService = new AuthService({
+const oktaAuth = new OktaAuth({
     issuer: process.env.REACT_APP_AUTH_ENDPOINT,
-    client_id: process.env.REACT_APP_CLIENT_ID,
-    redirect_uri: `${window.location.origin}/dashboard/login/callback`,
+    clientId: process.env.REACT_APP_CLIENT_ID,
+    redirectUri: `${window.location.origin}/dashboard/login/callback`,
     postLogoutRedirectUri: `${window.location.origin}`,
     scope: ['openid', 'email'],
     pkce: true,
@@ -53,6 +54,11 @@ const authService = new AuthService({
         storage: 'sessionStorage',
     },
 });
+
+const restoreOriginalUri = async (_oktaAuth, originalUri) => {
+  console.log("Restoring URI to: ", originalUri)
+  history.replace(toRelativeUrl(originalUri, window.location.origin));
+}
 
 
 let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
@@ -71,14 +77,13 @@ axios({
     }
   })
     .then(function (response) {
-      console.log("exchange token successful")
-      console.log(response.status)
+      console.log(`${environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH} Response: `, response)
       handleUserLoginAfterTokenExchange(response)
+      console.log("exchange token successful")
   })
-    .catch(function ({ response }) {
-    //  TODO catch errors and handle timeout
+    .catch((error) => {
       console.log("Failed to exchange OAuth token")
-      console.log(response)
+      console.log(error)
     });
 
 let handleUserLoginAfterTokenExchange = (response) => {
@@ -100,7 +105,7 @@ let handleUserLoginAfterTokenExchange = (response) => {
 render(
     <Provider store={store}>
         <ConnectedRouter history={history}>
-            <Security authService={authService}>
+            <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
                 <Switch>
                     <Route path="/dashboard/login/callback" component={LoginCallback} />
                     <SecureRoute path="/" component={App} />

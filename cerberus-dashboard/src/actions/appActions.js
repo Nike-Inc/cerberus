@@ -172,14 +172,14 @@ export function loadDashboardMetadata() {
                 dispatch(storeDashboardMetadata(response.data));
             })
             .catch(function ({ response }) {
-                log.error(JSON.stringify(response, null, 2));
+                log.error(JSON.stringify(response));
                 dispatch(modalActions.popModal());
                 dispatch(messengerActions.addNewMessage(
                     <div className="login-error-msg-container">
                         <div className="login-error-msg-header">Failed to load dashboard metadata</div>
                         <div className="login-error-msg-content-wrapper">
                             <div className="login-error-msg-label">Status Code:</div>
-                            <div className="login-error-msg-cms-msg">{response.status}</div>
+                            <div className="login-error-msg-cms-msg">{response.status || 'No status received'}</div>
                         </div>
                     </div>
                 ));
