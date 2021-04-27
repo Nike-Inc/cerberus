@@ -18,7 +18,8 @@
   "author": "Justin Field <justin.field@nike.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@okta/okta-react": "^3.0.10",
+    "@okta/okta-auth-js": "^4.9.0",
+    "@okta/okta-react": "^5.1.1",
     "axios": "^0.21.1",
     "connected-react-router": "^6.9.1",
     "cookie": "0.4.1",
@@ -46,9 +47,12 @@
     "redux": "3.7.2",
     "redux-form": "5.3.6",
     "redux-logger": "3.0.6",
-    "redux-thunk": "2.3.0"
+    "redux-thunk": "2.3.0",
+    "worker-timers": "^7.0.25"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.16",
+    "@types/react-router-dom": "^5.1.7",
     "babel-core": "6.26.3",
     "babel-preset-stage-1": "6.24.1",
     "bufferutil": "^4.0.3",
@@ -64,6 +68,7 @@
     "sockjs-client": "^1.5.1",
     "ts-node": "^9.1.1",
     "type-fest": "~0.21.3",
+    "typescript": "^4.2.4",
     "utf-8-validate": "^5.0.4",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-plugin-serve": "^1.4.1"

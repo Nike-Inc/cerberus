@@ -15,13 +15,12 @@
  */
 
 import rootReducer from '../reducers/rootReducer';
-import { createBrowserHistory, createHashHistory } from 'history'
+import { createBrowserHistory } from 'history'
 import { applyMiddleware, createStore, compose } from 'redux';
 import { routerMiddleware } from 'connected-react-router'
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 
-// export const history = createHashHistory()
 export const history = createBrowserHistory();
 
 export default function configureStore() {
