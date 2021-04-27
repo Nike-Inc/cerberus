@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * A subclass of {@link SigningKeyResolverAdapter} that resolves the key used for JWT signing and
- * signature validation
+ * signature validation of OAuth JWT
  */
 @Component
 public class OauthJwksKeyResolver extends SigningKeyResolverAdapter {
@@ -43,11 +43,11 @@ public class OauthJwksKeyResolver extends SigningKeyResolverAdapter {
     try {
       return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
     } catch (InvalidKeySpecException e) {
-      e.printStackTrace();
+      throw new RuntimeException(
+          "The key is invalid. Maybe check the JWKS endpoint to see if the keys are valid.", e);
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      throw new RuntimeException("Well this is not supposed to happen.", e);
     }
-    return null;
   }
 
   @Autowired
@@ -68,7 +68,6 @@ public class OauthJwksKeyResolver extends SigningKeyResolverAdapter {
 
   @Override
   public Key resolveSigningKey(JwsHeader jwsHeader, Claims claims) {
-    // Rejects non HS512 token
     String keyId = jwsHeader.getKeyId();
     Key key = lookupVerificationKey(keyId);
 

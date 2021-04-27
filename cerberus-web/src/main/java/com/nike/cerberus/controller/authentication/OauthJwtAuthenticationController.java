@@ -19,19 +19,17 @@ package com.nike.cerberus.controller.authentication;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.domain.OauthJwtExchangeRequest;
-import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.jwt.OauthJwksKeyResolver;
 import com.nike.cerberus.service.AuthenticationService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.InvalidClaimException;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,62 +37,36 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/v2/auth")
+@RequestMapping("/v2/auth/user/oauth")
 public class OauthJwtAuthenticationController {
 
   private final AuthenticationService authenticationService;
-  private final AuditLoggingFilterDetails auditLoggingFilterDetails;
-  private static final int DEFAULT_TIMEOUT = 15;
-  private static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
   private OauthJwksKeyResolver oauthJwksKeyResolver;
 
   @Autowired
   public OauthJwtAuthenticationController(
-      AuthenticationService authenticationService,
-      AuditLoggingFilterDetails auditLoggingFilterDetails,
-      OauthJwksKeyResolver oauthJwksKeyResolver) {
+      AuthenticationService authenticationService, OauthJwksKeyResolver oauthJwksKeyResolver) {
     this.oauthJwksKeyResolver = oauthJwksKeyResolver;
     this.authenticationService = authenticationService;
-    this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
-  @RequestMapping(value = "/user/oauth/exchange", method = POST, consumes = APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/exchange", method = POST, consumes = APPLICATION_JSON_VALUE)
   public AuthResponse handleCerberusTokenExchange(@RequestBody OauthJwtExchangeRequest request) {
-    Jws<Claims> claimsJws = null;
-    String email = null;
+    final String email;
     try {
-
-      claimsJws =
+      Jws<Claims> claimsJws =
           Jwts.parser()
-              //                                    .requireIssuer("")
               .setSigningKeyResolver(oauthJwksKeyResolver)
               .parseClaimsJws(request.getToken());
       email = claimsJws.getBody().get("email", String.class);
-    } catch (InvalidClaimException e) {
-      //      log.warn("Invalid claim when parsing token: {}", token, e);
-      //      return Optional.empty();
-    } catch (ExpiredJwtException e) {
-      email = e.getClaims().get("email", String.class);
-    } catch (JwtException e) {
-      //      log.warn("Error parsing JWT token: {}", token, e);
-      //      return Optional.empty();
-    } catch (IllegalArgumentException e) {
-      //      log.warn("Error parsing JWT token: {}", token, e);
-      //      return Optional.empty();
     } catch (Exception e) {
-      // todo ignore
+      throw ApiException.newBuilder().withApiErrors(DefaultApiError.OAUTH_JWT_INVALID).build();
     }
-    //    if (blocklist.contains(claims.getId())) {
-    //      log.warn("This JWT token is blocklisted. ID: {}", claims.getId());
-    //      return Optional.empty();
-    //    }
-    AuthResponse authResponse = null;
-    //    String email = claims.get("email", String.class);
-    authResponse = authenticationService.authenticate(email);
-
-    return authResponse;
-
-    //    return JWT if JWT is enabled
-    //    return session token if
+    if (StringUtils.isBlank(email)) {
+      throw ApiException.newBuilder()
+          .withApiErrors(DefaultApiError.OAUTH_JWT_EMAIL_INVALID)
+          .build();
+    }
+    return authenticationService.authenticate(email);
   }
 }
