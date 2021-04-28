@@ -25,4 +25,9 @@ public class DashboardController {
   public String root() {
     return "redirect:/dashboard/index.html";
   }
+
+  @GetMapping(value = {"/dashboard/callback"})
+  public String callback() {
+    return "forward:/dashboard/index.html";
+  }
 }
