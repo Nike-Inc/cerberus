@@ -45,7 +45,7 @@ const store = configureStore(window.__INITIAL_STATE__);
 const oktaAuth = new OktaAuth({
     issuer: process.env.REACT_APP_AUTH_ENDPOINT,
     clientId: process.env.REACT_APP_CLIENT_ID,
-    redirectUri: `${window.location.origin}/dashboard/login/callback`,
+    redirectUri: `${window.location.origin}/dashboard/callback`,
     postLogoutRedirectUri: `${window.location.origin}`,
     scope: ['openid', 'email'],
     pkce: true,
@@ -107,7 +107,7 @@ render(
         <ConnectedRouter history={history}>
             <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
                 <Switch>
-                    <Route path="/dashboard/login/callback" component={LoginCallback} />
+                    <Route path="/dashboard/callback" component={LoginCallback} />
                     <SecureRoute path="/" component={App} />
                 </Switch>
             </Security>
