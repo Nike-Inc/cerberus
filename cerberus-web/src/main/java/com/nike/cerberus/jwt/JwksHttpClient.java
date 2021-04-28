@@ -62,14 +62,12 @@ public class JwksHttpClient {
   }
 
   public JsonWebKeySet getJsonWebKeySet(final String jwksEndpoint) {
-
     return execute(jwksEndpoint, JsonWebKeySet.class);
   }
   /**
    * Executes the HTTP request based on the input parameters.
    *
-   * @param region The region to call sts get caller identity in.
-   * @param headers HTTP Headers to include in the request
+   * @param jwksEndpoint Custom JSON Web Key Set (JWKS) endpoint
    * @param responseClass The class of the response object
    * @return Response from the server
    */
