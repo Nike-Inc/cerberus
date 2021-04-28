@@ -16,18 +16,25 @@
 
 package com.nike.cerberus.controller;
 
+import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@Slf4j
 @Controller
 public class DashboardController {
   @GetMapping(value = {"/", "/dashboard", "/dashboard/"})
-  public String root() {
+  public String root(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    log.info("*** Redirecting to index.html from " + uri + " ***");
     return "redirect:/dashboard/index.html";
   }
 
   @GetMapping(value = {"/dashboard/callback"})
-  public String callback() {
+  public String callback(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    log.info("*** Forwarding to index.html from " + uri + " ***");
     return "forward:/dashboard/index.html";
   }
 }
