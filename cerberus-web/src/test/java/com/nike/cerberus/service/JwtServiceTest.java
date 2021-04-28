@@ -55,7 +55,8 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_generate_jwt_token_parse_and_validate_claim() {
+  //  TODO change how exception is handled
+  public void test_generate_jwt_token_parse_and_validate_claim() throws Exception {
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     assertEquals(3, token.split("\\.").length);
     Optional<CerberusJwtClaims> cerberusJwtClaimsOptional = jwtService.parseAndValidateToken(token);
@@ -77,7 +78,8 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_expired_token_returns_empty() {
+  //  TODO change how exception is handled
+  public void test_expired_token_returns_empty() throws Exception {
     cerberusJwtClaims.setExpiresTs(OffsetDateTime.of(2000, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC));
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     Optional<CerberusJwtClaims> cerberusJwtClaims = jwtService.parseAndValidateToken(token);
@@ -95,7 +97,8 @@ public class JwtServiceTest {
   }
 
   @Test
-  public void test_parseAndValidateToken_returns_empty_for_blocklisted_token() {
+  //  TODO change how exception is handled
+  public void test_parseAndValidateToken_returns_empty_for_blocklisted_token() throws Exception {
     String token = jwtService.generateJwtToken(cerberusJwtClaims);
     when(jwtBlocklistDao.getBlocklist()).thenReturn(Sets.newHashSet("id"));
     jwtService.refreshBlocklist();

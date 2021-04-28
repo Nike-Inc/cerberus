@@ -122,7 +122,9 @@ public class AuthTokenServiceTest {
   }
 
   @Test
-  public void test_that_generateToken_attempts_to_write_a_jwt_and_returns_proper_object() {
+  //  TODO change how exception is handled
+  public void test_that_generateToken_attempts_to_write_a_jwt_and_returns_proper_object()
+      throws Exception {
     String id = UUID.randomUUID().toString();
     String expectedTokenId = "abc-123-def-456";
     OffsetDateTime now = OffsetDateTime.now();
