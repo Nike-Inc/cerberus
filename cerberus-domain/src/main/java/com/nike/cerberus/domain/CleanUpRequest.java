@@ -16,12 +16,12 @@
 
 package com.nike.cerberus.domain;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /** Clean up KMS key request. */
-@Data
-@Builder
+@Getter
+@Setter
 public class CleanUpRequest {
 
   private Integer kmsExpirationPeriodInDays;

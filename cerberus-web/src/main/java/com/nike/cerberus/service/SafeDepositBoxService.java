@@ -144,11 +144,12 @@ public class SafeDepositBoxService {
     sdbRecords.forEach(
         r ->
             summaries.add(
-                new SafeDepositBoxSummary()
-                    .setId(r.getId())
-                    .setName(r.getName())
-                    .setCategoryId(r.getCategoryId())
-                    .setPath(r.getPath())));
+                SafeDepositBoxSummary.builder()
+                    .id(r.getId())
+                    .name(r.getName())
+                    .categoryId(r.getCategoryId())
+                    .path(r.getPath())
+                    .build()));
 
     return summaries;
   }
@@ -198,19 +199,21 @@ public class SafeDepositBoxService {
     final Set<IamPrincipalPermission> iamRolePermissions =
         iamPrincipalPermissionService.getIamPrincipalPermissions(id);
 
-    SafeDepositBoxV2 safeDepositBox = new SafeDepositBoxV2();
-    safeDepositBox.setId(safeDepositBoxRecord.getId());
-    safeDepositBox.setName(safeDepositBoxRecord.getName());
-    safeDepositBox.setDescription(safeDepositBoxRecord.getDescription());
-    safeDepositBox.setPath(safeDepositBoxRecord.getPath());
-    safeDepositBox.setCategoryId(safeDepositBoxRecord.getCategoryId());
-    safeDepositBox.setCreatedBy(safeDepositBoxRecord.getCreatedBy());
-    safeDepositBox.setLastUpdatedBy(safeDepositBoxRecord.getLastUpdatedBy());
-    safeDepositBox.setCreatedTs(safeDepositBoxRecord.getCreatedTs());
-    safeDepositBox.setLastUpdatedTs(safeDepositBoxRecord.getLastUpdatedTs());
-    safeDepositBox.setOwner(owner);
-    safeDepositBox.setUserGroupPermissions(userGroupPermissions);
-    safeDepositBox.setIamPrincipalPermissions(iamRolePermissions);
+    SafeDepositBoxV2 safeDepositBox =
+        SafeDepositBoxV2.builder()
+            .id(safeDepositBoxRecord.getId())
+            .name(safeDepositBoxRecord.getName())
+            .description(safeDepositBoxRecord.getDescription())
+            .path(safeDepositBoxRecord.getPath())
+            .categoryId(safeDepositBoxRecord.getCategoryId())
+            .createdBy(safeDepositBoxRecord.getCreatedBy())
+            .lastUpdatedBy(safeDepositBoxRecord.getLastUpdatedBy())
+            .createdTs(safeDepositBoxRecord.getCreatedTs())
+            .lastUpdatedTs(safeDepositBoxRecord.getLastUpdatedTs())
+            .owner(owner)
+            .userGroupPermissions(userGroupPermissions)
+            .iamPrincipalPermissions(iamRolePermissions)
+            .build();
 
     return safeDepositBox;
   }
@@ -384,9 +387,8 @@ public class SafeDepositBoxService {
    */
   protected void addOwnerPermission(
       final Set<UserGroupPermission> userGroupPermissionSet, final String owner) {
-    UserGroupPermission ownerPermission = new UserGroupPermission();
-    ownerPermission.setId(uuidSupplier.get());
-    ownerPermission.setName(owner);
+    UserGroupPermission ownerPermission =
+        UserGroupPermission.builder().id(uuidSupplier.get()).name(owner).build();
 
     Optional<Role> ownerRole = roleService.getRoleByName(RoleRecord.ROLE_OWNER);
 
@@ -496,13 +498,14 @@ public class SafeDepositBoxService {
     }
 
     if (!StringUtils.equals(userGroupOwnerRecords.get(0).getName(), newOwner)) {
-      UserGroupPermission oldOwnerPermission = new UserGroupPermission();
-      oldOwnerPermission.setName(userGroupOwnerRecords.get(0).getName());
-      oldOwnerPermission.setRoleId(ownerRole.get().getId());
+      UserGroupPermission oldOwnerPermission =
+          UserGroupPermission.builder()
+              .name(userGroupOwnerRecords.get(0).getName())
+              .roleId(ownerRole.get().getId())
+              .build();
 
-      UserGroupPermission newOwnerPermission = new UserGroupPermission();
-      newOwnerPermission.setName(newOwner);
-      newOwnerPermission.setRoleId(ownerRole.get().getId());
+      UserGroupPermission newOwnerPermission =
+          UserGroupPermission.builder().name(newOwner).roleId(ownerRole.get().getId()).build();
 
       userGroupPermissionService.grantUserGroupPermission(
           safeDepositBoxId, newOwnerPermission, user, dateTime);
@@ -587,30 +590,34 @@ public class SafeDepositBoxService {
    */
   protected SafeDepositBoxV1 convertSafeDepositBoxV2ToV1(SafeDepositBoxV2 safeDepositBoxV2) {
 
-    final SafeDepositBoxV1 safeDepositBoxV1 = new SafeDepositBoxV1();
-    safeDepositBoxV1.setId(safeDepositBoxV2.getId());
-    safeDepositBoxV1.setName(safeDepositBoxV2.getName());
-    safeDepositBoxV1.setDescription(safeDepositBoxV2.getDescription());
-    safeDepositBoxV1.setPath(safeDepositBoxV2.getPath());
-    safeDepositBoxV1.setCategoryId(safeDepositBoxV2.getCategoryId());
-    safeDepositBoxV1.setCreatedBy(safeDepositBoxV2.getCreatedBy());
-    safeDepositBoxV1.setLastUpdatedBy(safeDepositBoxV2.getLastUpdatedBy());
-    safeDepositBoxV1.setCreatedTs(safeDepositBoxV2.getCreatedTs());
-    safeDepositBoxV1.setLastUpdatedTs(safeDepositBoxV2.getLastUpdatedTs());
-    safeDepositBoxV1.setOwner(safeDepositBoxV2.getOwner());
-    safeDepositBoxV1.setUserGroupPermissions(safeDepositBoxV2.getUserGroupPermissions());
-    safeDepositBoxV1.setIamRolePermissions(
-        safeDepositBoxV2.getIamPrincipalPermissions().stream()
-            .map(
-                iamRolePermission ->
-                    new IamRolePermission()
-                        .withAccountId(
-                            awsIamRoleArnParser.getAccountId(
-                                iamRolePermission.getIamPrincipalArn()))
-                        .withIamRoleName(
-                            awsIamRoleArnParser.getRoleName(iamRolePermission.getIamPrincipalArn()))
-                        .withRoleId(iamRolePermission.getRoleId()))
-            .collect(Collectors.toSet()));
+    final SafeDepositBoxV1 safeDepositBoxV1 =
+        SafeDepositBoxV1.builder()
+            .id(safeDepositBoxV2.getId())
+            .name(safeDepositBoxV2.getName())
+            .description(safeDepositBoxV2.getDescription())
+            .path(safeDepositBoxV2.getPath())
+            .categoryId(safeDepositBoxV2.getCategoryId())
+            .createdBy(safeDepositBoxV2.getCreatedBy())
+            .lastUpdatedBy(safeDepositBoxV2.getLastUpdatedBy())
+            .createdTs(safeDepositBoxV2.getCreatedTs())
+            .lastUpdatedTs(safeDepositBoxV2.getLastUpdatedTs())
+            .owner(safeDepositBoxV2.getOwner())
+            .userGroupPermissions(safeDepositBoxV2.getUserGroupPermissions())
+            .iamRolePermissions(
+                safeDepositBoxV2.getIamPrincipalPermissions().stream()
+                    .map(
+                        iamRolePermission ->
+                            IamRolePermission.builder()
+                                .accountId(
+                                    awsIamRoleArnParser.getAccountId(
+                                        iamRolePermission.getIamPrincipalArn()))
+                                .iamRoleName(
+                                    awsIamRoleArnParser.getRoleName(
+                                        iamRolePermission.getIamPrincipalArn()))
+                                .roleId(iamRolePermission.getRoleId())
+                                .build())
+                    .collect(Collectors.toSet()))
+            .build();
 
     return safeDepositBoxV1;
   }
@@ -623,33 +630,37 @@ public class SafeDepositBoxService {
    */
   protected SafeDepositBoxV2 convertSafeDepositBoxV1ToV2(SafeDepositBoxV1 safeDepositBoxV1) {
 
-    final SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
-    safeDepositBoxV2.setId(safeDepositBoxV1.getId());
-    safeDepositBoxV2.setName(safeDepositBoxV1.getName());
-    safeDepositBoxV2.setDescription(safeDepositBoxV1.getDescription());
-    safeDepositBoxV2.setPath(safeDepositBoxV1.getPath());
-    safeDepositBoxV2.setCategoryId(safeDepositBoxV1.getCategoryId());
-    safeDepositBoxV2.setCreatedBy(safeDepositBoxV1.getCreatedBy());
-    safeDepositBoxV2.setLastUpdatedBy(safeDepositBoxV1.getLastUpdatedBy());
-    safeDepositBoxV2.setCreatedTs(safeDepositBoxV1.getCreatedTs());
-    safeDepositBoxV2.setLastUpdatedTs(safeDepositBoxV1.getLastUpdatedTs());
-    safeDepositBoxV2.setOwner(safeDepositBoxV1.getOwner());
-    safeDepositBoxV2.setUserGroupPermissions(safeDepositBoxV1.getUserGroupPermissions());
-    safeDepositBoxV2.setIamPrincipalPermissions(
-        safeDepositBoxV1.getIamRolePermissions().stream()
-            .map(
-                iamRolePermission ->
-                    new IamPrincipalPermission()
-                        .withIamPrincipalArn(
-                            String.format(
-                                DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
-                                DomainConstants
-                                    .AWS_GLOBAL_PARTITION_NAME, // hardcoding this to AWS Global for
-                                // backwards compatibility
-                                iamRolePermission.getAccountId(),
-                                iamRolePermission.getIamRoleName()))
-                        .withRoleId(iamRolePermission.getRoleId()))
-            .collect(Collectors.toSet()));
+    final SafeDepositBoxV2 safeDepositBoxV2 =
+        SafeDepositBoxV2.builder()
+            .id(safeDepositBoxV1.getId())
+            .name(safeDepositBoxV1.getName())
+            .description(safeDepositBoxV1.getDescription())
+            .path(safeDepositBoxV1.getPath())
+            .categoryId(safeDepositBoxV1.getCategoryId())
+            .createdBy(safeDepositBoxV1.getCreatedBy())
+            .lastUpdatedBy(safeDepositBoxV1.getLastUpdatedBy())
+            .createdTs(safeDepositBoxV1.getCreatedTs())
+            .lastUpdatedTs(safeDepositBoxV1.getLastUpdatedTs())
+            .owner(safeDepositBoxV1.getOwner())
+            .userGroupPermissions(safeDepositBoxV1.getUserGroupPermissions())
+            .iamPrincipalPermissions(
+                safeDepositBoxV1.getIamRolePermissions().stream()
+                    .map(
+                        iamRolePermission ->
+                            IamPrincipalPermission.builder()
+                                .iamPrincipalArn(
+                                    String.format(
+                                        DomainConstants.AWS_IAM_ROLE_ARN_TEMPLATE,
+                                        DomainConstants
+                                            .AWS_GLOBAL_PARTITION_NAME, // hardcoding this to AWS
+                                        // Global for
+                                        // backwards compatibility
+                                        iamRolePermission.getAccountId(),
+                                        iamRolePermission.getIamRoleName()))
+                                .roleId(iamRolePermission.getRoleId())
+                                .build())
+                    .collect(Collectors.toSet()))
+            .build();
 
     return safeDepositBoxV2;
   }

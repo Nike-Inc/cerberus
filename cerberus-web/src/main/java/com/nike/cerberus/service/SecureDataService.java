@@ -235,14 +235,15 @@ public class SecureDataService {
     String ciphertext = new String(ciphertextBytes, StandardCharsets.UTF_8);
     String plaintext = encryptionService.decrypt(ciphertext, path);
     SecureData secureData =
-        new SecureData()
-            .setCreatedBy(secureDataRecord.getCreatedBy())
-            .setCreatedTs(secureDataRecord.getCreatedTs())
-            .setData(plaintext)
-            .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
-            .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
-            .setPath(secureDataRecord.getPath())
-            .setSdboxId(secureDataRecord.getSdboxId());
+        SecureData.builder()
+            .createdBy(secureDataRecord.getCreatedBy())
+            .createdTs(secureDataRecord.getCreatedTs())
+            .data(plaintext)
+            .lastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+            .lastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+            .path(secureDataRecord.getPath())
+            .sdboxId(secureDataRecord.getSdboxId())
+            .build();
 
     return Optional.of(secureData);
   }
@@ -260,16 +261,17 @@ public class SecureDataService {
         encryptionService.decrypt(secureDataRecord.getEncryptedBlob(), secureDataRecord.getPath());
 
     SecureFileCurrent secureFile =
-        new SecureFileCurrent()
-            .setCreatedBy(secureDataRecord.getCreatedBy())
-            .setCreatedTs(secureDataRecord.getCreatedTs())
-            .setData(plaintextBytes)
-            .setSizeInBytes(plaintextBytes.length)
-            .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
-            .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
-            .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
-            .setPath(secureDataRecord.getPath())
-            .setSdboxId(secureDataRecord.getSdboxId());
+        SecureFileCurrent.builder()
+            .createdBy(secureDataRecord.getCreatedBy())
+            .createdTs(secureDataRecord.getCreatedTs())
+            .data(plaintextBytes)
+            .sizeInBytes(plaintextBytes.length)
+            .name(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+            .lastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+            .lastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+            .path(secureDataRecord.getPath())
+            .sdboxId(secureDataRecord.getSdboxId())
+            .build();
 
     return Optional.of(secureFile);
   }
@@ -284,15 +286,16 @@ public class SecureDataService {
 
     SecureDataRecord secureDataRecord = secureDataRecordOpt.get();
     SecureFileSummary secureFile =
-        new SecureFileSummary()
-            .setCreatedBy(secureDataRecord.getCreatedBy())
-            .setCreatedTs(secureDataRecord.getCreatedTs())
-            .setSizeInBytes(secureDataRecord.getSizeInBytes())
-            .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
-            .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
-            .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
-            .setPath(secureDataRecord.getPath())
-            .setSdboxId(secureDataRecord.getSdboxId());
+        SecureFileSummary.builder()
+            .createdBy(secureDataRecord.getCreatedBy())
+            .createdTs(secureDataRecord.getCreatedTs())
+            .sizeInBytes(secureDataRecord.getSizeInBytes())
+            .name(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+            .lastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+            .lastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+            .path(secureDataRecord.getPath())
+            .sdboxId(secureDataRecord.getSdboxId())
+            .build();
 
     return Optional.of(secureFile);
   }
@@ -368,23 +371,26 @@ public class SecureDataService {
     secureDataRecords.forEach(
         secureDataRecord -> {
           fileSummaries.add(
-              new SecureFileSummary()
-                  .setCreatedBy(secureDataRecord.getCreatedBy())
-                  .setCreatedTs(secureDataRecord.getCreatedTs())
-                  .setSizeInBytes(secureDataRecord.getSizeInBytes())
-                  .setName(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
-                  .setLastUpdatedBy(secureDataRecord.getLastUpdatedBy())
-                  .setLastUpdatedTs(secureDataRecord.getLastUpdatedTs())
-                  .setPath(secureDataRecord.getPath())
-                  .setSdboxId(secureDataRecord.getSdboxId()));
+              SecureFileSummary.builder()
+                  .createdBy(secureDataRecord.getCreatedBy())
+                  .createdTs(secureDataRecord.getCreatedTs())
+                  .sizeInBytes(secureDataRecord.getSizeInBytes())
+                  .name(StringUtils.substringAfterLast(secureDataRecord.getPath(), "/"))
+                  .lastUpdatedBy(secureDataRecord.getLastUpdatedBy())
+                  .lastUpdatedTs(secureDataRecord.getLastUpdatedTs())
+                  .path(secureDataRecord.getPath())
+                  .sdboxId(secureDataRecord.getSdboxId())
+                  .build());
         });
 
-    SecureFileSummaryResult result = new SecureFileSummaryResult();
-    result.setLimit(limit);
-    result.setOffset(offset);
-    result.setSecureFileSummaries(fileSummaries);
-    result.setFileCountInResult(fileSummaries.size());
-    result.setTotalFileCount(totalNumFiles);
+    SecureFileSummaryResult result =
+        SecureFileSummaryResult.builder()
+            .limit(limit)
+            .offset(offset)
+            .secureFileSummaries(fileSummaries)
+            .fileCountInResult(fileSummaries.size())
+            .totalFileCount(totalNumFiles)
+            .build();
     result.setHasNext(result.getTotalFileCount() > (offset + limit));
     if (result.isHasNext()) {
       result.setNextOffset(offset + limit);

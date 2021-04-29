@@ -77,16 +77,17 @@ public class SecureDataVersionService {
     String plainText = encryptionService.decrypt(ciphertext, secureDataVersion.getPath());
 
     return Optional.of(
-        new SecureDataVersion()
-            .setAction(secureDataVersion.getAction())
-            .setActionPrincipal(secureDataVersion.getActionPrincipal())
-            .setActionTs(secureDataVersion.getActionTs())
-            .setData(plainText)
-            .setId(secureDataVersion.getId())
-            .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
-            .setSdboxId(secureDataVersion.getSdboxId())
-            .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
-            .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+        SecureDataVersion.builder()
+            .action(secureDataVersion.getAction())
+            .actionPrincipal(secureDataVersion.getActionPrincipal())
+            .actionTs(secureDataVersion.getActionTs())
+            .data(plainText)
+            .id(secureDataVersion.getId())
+            .path(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+            .sdboxId(secureDataVersion.getSdboxId())
+            .versionCreatedBy(secureDataVersion.getVersionCreatedBy())
+            .versionCreatedTs(secureDataVersion.getVersionCreatedTs())
+            .build());
   }
 
   public Optional<SecureFileVersion> getSecureFileVersionById(
@@ -108,18 +109,19 @@ public class SecureDataVersionService {
     byte[] unencryptedBlob = encryptionService.decrypt(encryptedBlob, secureDataVersion.getPath());
 
     return Optional.of(
-        new SecureFileVersion()
-            .setAction(secureDataVersion.getAction())
-            .setActionPrincipal(secureDataVersion.getActionPrincipal())
-            .setActionTs(secureDataVersion.getActionTs())
-            .setData(unencryptedBlob)
-            .setName(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
-            .setSizeInBytes(secureDataVersion.getSizeInBytes())
-            .setId(secureDataVersion.getId())
-            .setPath(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
-            .setSdboxId(secureDataVersion.getSdboxId())
-            .setVersionCreatedBy(secureDataVersion.getVersionCreatedBy())
-            .setVersionCreatedTs(secureDataVersion.getVersionCreatedTs()));
+        SecureFileVersion.builder()
+            .action(secureDataVersion.getAction())
+            .actionPrincipal(secureDataVersion.getActionPrincipal())
+            .actionTs(secureDataVersion.getActionTs())
+            .data(unencryptedBlob)
+            .name(StringUtils.substringAfterLast(secureDataVersion.getPath(), "/"))
+            .sizeInBytes(secureDataVersion.getSizeInBytes())
+            .id(secureDataVersion.getId())
+            .path(String.format("%s/%s", sdbCategory, secureDataVersion.getPath()))
+            .sdboxId(secureDataVersion.getSdboxId())
+            .versionCreatedBy(secureDataVersion.getVersionCreatedBy())
+            .versionCreatedTs(secureDataVersion.getVersionCreatedTs())
+            .build());
   }
 
   public SecureDataVersionsResult getSecureDataVersionSummariesByPath(
@@ -153,17 +155,18 @@ public class SecureDataVersionService {
     secureDataVersions.forEach(
         versionRecord ->
             secureDataVersionSummaries.add(
-                new SecureDataVersionSummary()
-                    .setAction(versionRecord.getAction())
-                    .setActionPrincipal(versionRecord.getActionPrincipal())
-                    .setActionTs(versionRecord.getActionTs())
-                    .setType(versionRecord.getType())
-                    .setSizeInBytes(versionRecord.getSizeInBytes())
-                    .setId(versionRecord.getId())
-                    .setPath(String.format("%s/%s", sdbCategory, versionRecord.getPath()))
-                    .setSdboxId(versionRecord.getSdboxId())
-                    .setVersionCreatedBy(versionRecord.getVersionCreatedBy())
-                    .setVersionCreatedTs(versionRecord.getVersionCreatedTs())));
+                SecureDataVersionSummary.builder()
+                    .action(versionRecord.getAction())
+                    .actionPrincipal(versionRecord.getActionPrincipal())
+                    .actionTs(versionRecord.getActionTs())
+                    .type(versionRecord.getType())
+                    .sizeInBytes(versionRecord.getSizeInBytes())
+                    .id(versionRecord.getId())
+                    .path(String.format("%s/%s", sdbCategory, versionRecord.getPath()))
+                    .sdboxId(versionRecord.getSdboxId())
+                    .versionCreatedBy(versionRecord.getVersionCreatedBy())
+                    .versionCreatedTs(versionRecord.getVersionCreatedTs())
+                    .build()));
 
     return generateSecureDataVersionsResult(
         secureDataVersionSummaries, totalNumVersionsForPath, limit, offset);
@@ -179,13 +182,14 @@ public class SecureDataVersionService {
     boolean hasNext = totalNumVersionsForPath > nextOffset;
 
     SecureDataVersionsResult result =
-        new SecureDataVersionsResult()
-            .setLimit(limit)
-            .setOffset(offset)
-            .setTotalVersionCount(totalNumVersionsForPath)
-            .setVersionCountInResult(summaries.size())
-            .setHasNext(hasNext)
-            .setSecureDataVersionSummaries(summaries);
+        SecureDataVersionsResult.builder()
+            .limit(limit)
+            .offset(offset)
+            .totalVersionCount(totalNumVersionsForPath)
+            .versionCountInResult(summaries.size())
+            .hasNext(hasNext)
+            .secureDataVersionSummaries(summaries)
+            .build();
 
     if (hasNext) {
       result.setNextOffset(nextOffset);

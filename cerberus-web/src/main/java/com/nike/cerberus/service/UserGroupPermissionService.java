@@ -230,14 +230,16 @@ public class UserGroupPermissionService {
               userGroupDao.getUserGroup(r.getUserGroupId());
 
           if (userGroupRecord.isPresent()) {
-            UserGroupPermission permission = new UserGroupPermission();
-            permission.setId(r.getId());
-            permission.setRoleId(r.getRoleId());
-            permission.setName(userGroupRecord.get().getName());
-            permission.setCreatedBy(r.getCreatedBy());
-            permission.setCreatedTs(r.getCreatedTs());
-            permission.setLastUpdatedBy(r.getLastUpdatedBy());
-            permission.setLastUpdatedTs(r.getLastUpdatedTs());
+            UserGroupPermission permission =
+                UserGroupPermission.builder()
+                    .id(r.getId())
+                    .roleId(r.getRoleId())
+                    .name(userGroupRecord.get().getName())
+                    .createdBy(r.getCreatedBy())
+                    .createdTs(r.getCreatedTs())
+                    .lastUpdatedBy(r.getLastUpdatedBy())
+                    .lastUpdatedTs(r.getLastUpdatedTs())
+                    .build();
             permissionsSet.add(permission);
           }
         });

@@ -104,28 +104,32 @@ public class SafeDepositBoxServiceTest {
     String readId = "333";
     String sdbName = "HEALTH CHECK BUCKET";
 
-    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
-    sdbObject.setId(id);
-    sdbObject.setPath("app/health-check-bucket/");
-    sdbObject.setCategoryId(categoryId);
-    sdbObject.setName(sdbName);
-    sdbObject.setOwner("Lst-Squad.Carebears");
-    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
-    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
-    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
-    sdbObject.setCreatedBy("justin.field@nike.com");
-    sdbObject.setLastUpdatedBy("todd.lisonbee@nike.com");
+    SafeDepositBoxV2 sdbObject =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .path("app/health-check-bucket/")
+            .categoryId(categoryId)
+            .name(sdbName)
+            .owner("Lst-Squad.Carebears")
+            .description("This SDB is read by the Health Check Lambda...")
+            .createdTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"))
+            .lastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"))
+            .createdBy("justin.field@nike.com")
+            .lastUpdatedBy("todd.lisonbee@nike.com")
+            .build();
 
     Set<UserGroupPermission> userPerms = new HashSet<>();
-    userPerms.add(new UserGroupPermission().withName("Foundation.Prod.Support").withRoleId(readId));
-    userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
+    userPerms.add(
+        UserGroupPermission.builder().name("Foundation.Prod.Support").roleId(readId).build());
+    userPerms.add(UserGroupPermission.builder().name("Lst-NIKE.FOO.ISL").roleId(readId).build());
     sdbObject.setUserGroupPermissions(userPerms);
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
     iamPerms.add(
-        new IamPrincipalPermission()
-            .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
-            .withRoleId(readId));
+        IamPrincipalPermission.builder()
+            .iamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
+            .roleId(readId)
+            .build());
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
     sdbObject.setUserGroupPermissions(userPerms);
@@ -160,28 +164,32 @@ public class SafeDepositBoxServiceTest {
     String sdbName = "HEALTH CHECK BUCKET";
     String sdbId = "asdf-1231-23sad-asd";
 
-    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
-    sdbObject.setId(id);
-    sdbObject.setPath("app/health-check-bucket/");
-    sdbObject.setCategoryId(categoryId);
-    sdbObject.setName(sdbName);
-    sdbObject.setOwner("Lst-Squad.Carebears");
-    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
-    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
-    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
-    sdbObject.setCreatedBy("justin.field@nike.com");
-    sdbObject.setLastUpdatedBy("todd.lisonbee@nike.com");
+    SafeDepositBoxV2 sdbObject =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .path("app/health-check-bucket/")
+            .categoryId(categoryId)
+            .name(sdbName)
+            .owner("Lst-Squad.Carebears")
+            .description("This SDB is read by the Health Check Lambda...")
+            .createdTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"))
+            .lastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"))
+            .createdBy("justin.field@nike.com")
+            .lastUpdatedBy("todd.lisonbee@nike.com")
+            .build();
 
     Set<UserGroupPermission> userPerms = new HashSet<>();
-    userPerms.add(new UserGroupPermission().withName("Foundation.Prod.Support").withRoleId(readId));
-    userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
+    userPerms.add(
+        UserGroupPermission.builder().name("Foundation.Prod.Support").roleId(readId).build());
+    userPerms.add(UserGroupPermission.builder().name("Lst-NIKE.FOO.ISL").roleId(readId).build());
     sdbObject.setUserGroupPermissions(userPerms);
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
     iamPerms.add(
-        new IamPrincipalPermission()
-            .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
-            .withRoleId(readId));
+        IamPrincipalPermission.builder()
+            .iamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
+            .roleId(readId)
+            .build());
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
     sdbObject.setUserGroupPermissions(userPerms);
@@ -235,27 +243,29 @@ public class SafeDepositBoxServiceTest {
     String roleId = "role id";
 
     Set<UserGroupPermission> userGroupPermissions = Sets.newHashSet();
-    UserGroupPermission userGroupPermission = new UserGroupPermission();
+    UserGroupPermission userGroupPermission = UserGroupPermission.builder().build();
     userGroupPermissions.add(userGroupPermission);
 
     Set<IamPrincipalPermission> iamRolePermissions = Sets.newHashSet();
     IamPrincipalPermission iamRolePermission =
-        new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
+        IamPrincipalPermission.builder().iamPrincipalArn(arn).roleId(roleId).build();
     iamRolePermissions.add(iamRolePermission);
 
-    SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
-    safeDepositBoxV2.setId(id);
-    safeDepositBoxV2.setName(name);
-    safeDepositBoxV2.setDescription(description);
-    safeDepositBoxV2.setPath(path);
-    safeDepositBoxV2.setCategoryId(categoryId);
-    safeDepositBoxV2.setCreatedBy(createdBy);
-    safeDepositBoxV2.setLastUpdatedBy(lastUpdatedBy);
-    safeDepositBoxV2.setCreatedTs(createdTs);
-    safeDepositBoxV2.setLastUpdatedTs(lastUpdatedTs);
-    safeDepositBoxV2.setOwner(owner);
-    safeDepositBoxV2.setUserGroupPermissions(userGroupPermissions);
-    safeDepositBoxV2.setIamPrincipalPermissions(iamRolePermissions);
+    SafeDepositBoxV2 safeDepositBoxV2 =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .name(name)
+            .description(description)
+            .path(path)
+            .categoryId(categoryId)
+            .createdBy(createdBy)
+            .lastUpdatedBy(lastUpdatedBy)
+            .createdTs(createdTs)
+            .lastUpdatedTs(lastUpdatedTs)
+            .owner(owner)
+            .userGroupPermissions(userGroupPermissions)
+            .iamPrincipalPermissions(iamRolePermissions)
+            .build();
 
     when(awsIamRoleArnParser.getAccountId(arn)).thenReturn(accountId);
     when(awsIamRoleArnParser.getRoleName(arn)).thenReturn(roleName);
@@ -263,24 +273,27 @@ public class SafeDepositBoxServiceTest {
     SafeDepositBoxV1 resultantSDBV1 =
         safeDepositBoxService.convertSafeDepositBoxV2ToV1(safeDepositBoxV2);
 
-    SafeDepositBoxV1 expectedSdbV1 = new SafeDepositBoxV1();
-    expectedSdbV1.setId(id);
-    expectedSdbV1.setName(name);
-    expectedSdbV1.setDescription(description);
-    expectedSdbV1.setPath(path);
-    expectedSdbV1.setCategoryId(categoryId);
-    expectedSdbV1.setCreatedBy(createdBy);
-    expectedSdbV1.setLastUpdatedBy(lastUpdatedBy);
-    expectedSdbV1.setCreatedTs(createdTs);
-    expectedSdbV1.setLastUpdatedTs(lastUpdatedTs);
-    expectedSdbV1.setOwner(owner);
-    expectedSdbV1.setUserGroupPermissions(userGroupPermissions);
+    SafeDepositBoxV1 expectedSdbV1 =
+        SafeDepositBoxV1.builder()
+            .id(id)
+            .name(name)
+            .description(description)
+            .path(path)
+            .categoryId(categoryId)
+            .createdBy(createdBy)
+            .lastUpdatedBy(lastUpdatedBy)
+            .createdTs(createdTs)
+            .lastUpdatedTs(lastUpdatedTs)
+            .owner(owner)
+            .userGroupPermissions(userGroupPermissions)
+            .build();
     Set<IamRolePermission> expectedIamRolePermissionsV1 = Sets.newHashSet();
     IamRolePermission expectedIamRolePermission =
-        new IamRolePermission()
-            .withAccountId(accountId)
-            .withIamRoleName(roleName)
-            .withRoleId(roleId);
+        IamRolePermission.builder()
+            .accountId(accountId)
+            .iamRoleName(roleName)
+            .roleId(roleId)
+            .build();
     expectedIamRolePermissionsV1.add(expectedIamRolePermission);
     expectedSdbV1.setIamRolePermissions(expectedIamRolePermissionsV1);
 
@@ -306,49 +319,54 @@ public class SafeDepositBoxServiceTest {
     String roleId = "role id";
 
     Set<UserGroupPermission> userGroupPermissions = Sets.newHashSet();
-    UserGroupPermission userGroupPermission = new UserGroupPermission();
+    UserGroupPermission userGroupPermission = UserGroupPermission.builder().build();
     userGroupPermissions.add(userGroupPermission);
 
     Set<IamRolePermission> iamRolePermissions = Sets.newHashSet();
     IamRolePermission iamRolePermission =
-        new IamRolePermission()
-            .withAccountId(accountId)
-            .withIamRoleName(roleName)
-            .withRoleId(roleId);
+        IamRolePermission.builder()
+            .accountId(accountId)
+            .iamRoleName(roleName)
+            .roleId(roleId)
+            .build();
     iamRolePermissions.add(iamRolePermission);
 
-    SafeDepositBoxV1 safeDepositBoxV1 = new SafeDepositBoxV1();
-    safeDepositBoxV1.setId(id);
-    safeDepositBoxV1.setName(name);
-    safeDepositBoxV1.setDescription(description);
-    safeDepositBoxV1.setPath(path);
-    safeDepositBoxV1.setCategoryId(categoryId);
-    safeDepositBoxV1.setCreatedBy(createdBy);
-    safeDepositBoxV1.setLastUpdatedBy(lastUpdatedBy);
-    safeDepositBoxV1.setCreatedTs(createdTs);
-    safeDepositBoxV1.setLastUpdatedTs(lastUpdatedTs);
-    safeDepositBoxV1.setOwner(owner);
-    safeDepositBoxV1.setUserGroupPermissions(userGroupPermissions);
-    safeDepositBoxV1.setIamRolePermissions(iamRolePermissions);
+    SafeDepositBoxV1 safeDepositBoxV1 =
+        SafeDepositBoxV1.builder()
+            .id(id)
+            .name(name)
+            .description(description)
+            .path(path)
+            .categoryId(categoryId)
+            .createdBy(createdBy)
+            .lastUpdatedBy(lastUpdatedBy)
+            .createdTs(createdTs)
+            .lastUpdatedTs(lastUpdatedTs)
+            .owner(owner)
+            .userGroupPermissions(userGroupPermissions)
+            .iamRolePermissions(iamRolePermissions)
+            .build();
 
     SafeDepositBoxV2 resultantSDBV1 =
         safeDepositBoxService.convertSafeDepositBoxV1ToV2(safeDepositBoxV1);
 
-    SafeDepositBoxV2 expectedSdbV2 = new SafeDepositBoxV2();
-    expectedSdbV2.setId(id);
-    expectedSdbV2.setName(name);
-    expectedSdbV2.setDescription(description);
-    expectedSdbV2.setPath(path);
-    expectedSdbV2.setCategoryId(categoryId);
-    expectedSdbV2.setCreatedBy(createdBy);
-    expectedSdbV2.setLastUpdatedBy(lastUpdatedBy);
-    expectedSdbV2.setCreatedTs(createdTs);
-    expectedSdbV2.setLastUpdatedTs(lastUpdatedTs);
-    expectedSdbV2.setOwner(owner);
-    expectedSdbV2.setUserGroupPermissions(userGroupPermissions);
+    SafeDepositBoxV2 expectedSdbV2 =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .name(name)
+            .description(description)
+            .path(path)
+            .categoryId(categoryId)
+            .createdBy(createdBy)
+            .lastUpdatedBy(lastUpdatedBy)
+            .createdTs(createdTs)
+            .lastUpdatedTs(lastUpdatedTs)
+            .owner(owner)
+            .userGroupPermissions(userGroupPermissions)
+            .build();
     Set<IamPrincipalPermission> expectedIamRolePermissionsV2 = Sets.newHashSet();
     IamPrincipalPermission expectedIamPrincipalPermission =
-        new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
+        IamPrincipalPermission.builder().iamPrincipalArn(arn).roleId(roleId).build();
     expectedIamRolePermissionsV2.add(expectedIamPrincipalPermission);
     expectedSdbV2.setIamPrincipalPermissions(expectedIamRolePermissionsV2);
 
@@ -364,7 +382,8 @@ public class SafeDepositBoxServiceTest {
     SafeDepositBoxRecord safeDepositBox = new SafeDepositBoxRecord().setId(sdbId).setPath(sdbPath);
 
     when(safeDepositBoxDao.getSafeDepositBox(sdbId)).thenReturn(Optional.of(safeDepositBox));
-    when(roleService.getRoleByName(RoleRecord.ROLE_OWNER)).thenReturn(Optional.of(new Role()));
+    when(roleService.getRoleByName(RoleRecord.ROLE_OWNER))
+        .thenReturn(Optional.of(Role.builder().build()));
 
     safeDepositBoxService.deleteSafeDepositBox(sdbId);
 

@@ -226,14 +226,16 @@ public class IamPrincipalPermissionService {
               awsIamRoleDao.getIamRoleById(r.getAwsIamRoleId());
 
           if (iamRoleRecord.isPresent()) {
-            final IamPrincipalPermission permission = new IamPrincipalPermission();
-            permission.setId(r.getId());
-            permission.setIamPrincipalArn(iamRoleRecord.get().getAwsIamRoleArn());
-            permission.setRoleId(r.getRoleId());
-            permission.setCreatedBy(r.getCreatedBy());
-            permission.setLastUpdatedBy(r.getLastUpdatedBy());
-            permission.setCreatedTs(r.getCreatedTs());
-            permission.setLastUpdatedTs(r.getLastUpdatedTs());
+            final IamPrincipalPermission permission =
+                IamPrincipalPermission.builder()
+                    .id(r.getId())
+                    .iamPrincipalArn(iamRoleRecord.get().getAwsIamRoleArn())
+                    .roleId(r.getRoleId())
+                    .createdBy(r.getCreatedBy())
+                    .lastUpdatedBy(r.getLastUpdatedBy())
+                    .createdTs(r.getCreatedTs())
+                    .lastUpdatedTs(r.getLastUpdatedTs())
+                    .build();
             iamPrincipalPermissionSet.add(permission);
           }
         });

@@ -73,19 +73,21 @@ public class MetadataService {
     Set<IamPrincipalPermission> iamPrincipalPermissionSet =
         getIamPrincipalPermissionSet(sdbMetadata);
 
-    SafeDepositBoxV2 sdb = new SafeDepositBoxV2();
-    sdb.setId(id);
-    sdb.setPath(sdbMetadata.getPath());
-    sdb.setCategoryId(categoryId);
-    sdb.setName(sdbMetadata.getName());
-    sdb.setOwner(sdbMetadata.getOwner());
-    sdb.setDescription(sdbMetadata.getDescription());
-    sdb.setCreatedTs(sdbMetadata.getCreatedTs());
-    sdb.setLastUpdatedTs(sdbMetadata.getLastUpdatedTs());
-    sdb.setCreatedBy(sdbMetadata.getCreatedBy());
-    sdb.setLastUpdatedBy(sdbMetadata.getLastUpdatedBy());
-    sdb.setUserGroupPermissions(userGroupPermissionSet);
-    sdb.setIamPrincipalPermissions(iamPrincipalPermissionSet);
+    SafeDepositBoxV2 sdb =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .path(sdbMetadata.getPath())
+            .categoryId(categoryId)
+            .name(sdbMetadata.getName())
+            .owner(sdbMetadata.getOwner())
+            .description(sdbMetadata.getDescription())
+            .createdTs(sdbMetadata.getCreatedTs())
+            .lastUpdatedTs(sdbMetadata.getLastUpdatedTs())
+            .createdBy(sdbMetadata.getCreatedBy())
+            .lastUpdatedBy(sdbMetadata.getLastUpdatedBy())
+            .userGroupPermissions(userGroupPermissionSet)
+            .iamPrincipalPermissions(iamPrincipalPermissionSet)
+            .build();
 
     safeDepositBoxService.restoreSafeDepositBox(sdb, adminUser);
   }
@@ -103,9 +105,10 @@ public class MetadataService {
         .forEach(
             (iamPrincipalArn, roleName) -> {
               iamPrincipalPermissionSet.add(
-                  new IamPrincipalPermission()
-                      .withIamPrincipalArn(iamPrincipalArn.trim())
-                      .withRoleId(getRoleIdFromName(roleName)));
+                  IamPrincipalPermission.builder()
+                      .iamPrincipalArn(iamPrincipalArn.trim())
+                      .roleId(getRoleIdFromName(roleName))
+                      .build());
             });
     return iamPrincipalPermissionSet;
   }
@@ -123,9 +126,10 @@ public class MetadataService {
         .forEach(
             (groupName, roleName) -> {
               userGroupPermissionSet.add(
-                  new UserGroupPermission()
-                      .withName(groupName)
-                      .withRoleId(getRoleIdFromName(roleName)));
+                  UserGroupPermission.builder()
+                      .name(groupName)
+                      .roleId(getRoleIdFromName(roleName))
+                      .build());
             });
     return userGroupPermissionSet;
   }
@@ -175,13 +179,15 @@ public class MetadataService {
    * @return SDBMetadataResult of meta data.
    */
   public SDBMetadataResult getSDBMetadata(int limit, int offset, String sdbNameFilter) {
-    SDBMetadataResult result = new SDBMetadataResult();
-    result.setLimit(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(limit));
-    result.setOffset(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(offset));
-    result.setTotalSDBCount(
-        Optional.ofNullable(sdbNameFilter)
-            .map(it -> 1)
-            .orElseGet(safeDepositBoxService::getTotalNumberOfSafeDepositBoxes));
+    SDBMetadataResult result =
+        SDBMetadataResult.builder()
+            .limit(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(limit))
+            .offset(Optional.ofNullable(sdbNameFilter).map(it -> 1).orElse(offset))
+            .totalSDBCount(
+                Optional.ofNullable(sdbNameFilter)
+                    .map(it -> 1)
+                    .orElseGet(safeDepositBoxService::getTotalNumberOfSafeDepositBoxes))
+            .build();
     result.setHasNext(result.getTotalSDBCount() > (offset + limit));
     if (result.isHasNext()) {
       result.setNextOffset(offset + limit);
@@ -227,19 +233,21 @@ public class MetadataService {
     // for each SDB collect the user and iam permissions and add to result
     safeDepositBoxes.forEach(
         sdb -> {
-          SDBMetadata data = new SDBMetadata();
-          data.setName(sdb.getName());
-          data.setId(sdb.getId());
-          data.setPath(sdb.getPath());
-          data.setDescription(sdb.getDescription());
-          data.setCategory(catIdToStringMap.get(sdb.getCategoryId()));
-          data.setCreatedBy(sdb.getCreatedBy());
-          data.setCreatedTs(sdb.getCreatedTs());
-          data.setLastUpdatedBy(sdb.getLastUpdatedBy());
-          data.setLastUpdatedTs(sdb.getLastUpdatedTs());
-          data.setOwner(sdb.getOwner());
-          data.setUserGroupPermissions(
-              getUserGroupPermissionsMap(roleIdToStringMap, sdb.getUserGroupPermissions()));
+          SDBMetadata data =
+              SDBMetadata.builder()
+                  .name(sdb.getName())
+                  .id(sdb.getId())
+                  .path(sdb.getPath())
+                  .description(sdb.getDescription())
+                  .category(catIdToStringMap.get(sdb.getCategoryId()))
+                  .createdBy(sdb.getCreatedBy())
+                  .createdTs(sdb.getCreatedTs())
+                  .lastUpdatedBy(sdb.getLastUpdatedBy())
+                  .lastUpdatedTs(sdb.getLastUpdatedTs())
+                  .owner(sdb.getOwner())
+                  .userGroupPermissions(
+                      getUserGroupPermissionsMap(roleIdToStringMap, sdb.getUserGroupPermissions()))
+                  .build();
           data.setIamRolePermissions(
               getIamPrincipalPermissionMap(roleIdToStringMap, sdb.getIamPrincipalPermissions()));
           sdbs.add(data);

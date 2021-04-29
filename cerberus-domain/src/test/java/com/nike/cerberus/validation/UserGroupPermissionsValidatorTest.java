@@ -51,10 +51,8 @@ public class UserGroupPermissionsValidatorTest {
 
   @Test
   public void unique_set_is_valid() {
-    UserGroupPermission a = new UserGroupPermission();
-    a.setName("abc");
-    UserGroupPermission b = new UserGroupPermission();
-    b.setName("def");
+    UserGroupPermission a = UserGroupPermission.builder().name("abc").build();
+    UserGroupPermission b = UserGroupPermission.builder().name("def").build();
 
     Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
   }

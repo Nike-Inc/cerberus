@@ -35,9 +35,10 @@ public class IamPrincipalPermissionTest {
     assertTrue(
         validator
             .validate(
-                new IamPrincipalPermission()
-                    .withIamPrincipalArn("arn:aws:iam::123456789012:user/Bob")
-                    .withRoleId("role id"))
+                IamPrincipalPermission.builder()
+                    .iamPrincipalArn("arn:aws:iam::123456789012:user/Bob")
+                    .roleId("role id")
+                    .build())
             .isEmpty());
   }
 
@@ -47,9 +48,10 @@ public class IamPrincipalPermissionTest {
     assertFalse(
         validator
             .validate(
-                new IamPrincipalPermission()
-                    .withIamPrincipalArn("arn:aws:foo::123456789012:user/Bob")
-                    .withRoleId("role id"))
+                IamPrincipalPermission.builder()
+                    .iamPrincipalArn("arn:aws:foo::123456789012:user/Bob")
+                    .roleId("role id")
+                    .build())
             .isEmpty());
   }
 
@@ -60,9 +62,10 @@ public class IamPrincipalPermissionTest {
     assertTrue(
         validator
             .validate(
-                new IamPrincipalPermission()
-                    .withIamPrincipalArn("arn:aws:sts::123456789012:federated-user/Bob")
-                    .withRoleId("role id"))
+                IamPrincipalPermission.builder()
+                    .iamPrincipalArn("arn:aws:sts::123456789012:federated-user/Bob")
+                    .roleId("role id")
+                    .build())
             .isEmpty());
   }
 
@@ -73,10 +76,10 @@ public class IamPrincipalPermissionTest {
     assertTrue(
         validator
             .validate(
-                new IamPrincipalPermission()
-                    .withIamPrincipalArn(
-                        "arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary")
-                    .withRoleId("role id"))
+                IamPrincipalPermission.builder()
+                    .iamPrincipalArn("arn:aws:sts::123456789012:assumed-role/Accounting-Role/Mary")
+                    .roleId("role id")
+                    .build())
             .isEmpty());
   }
 }

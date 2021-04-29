@@ -52,10 +52,10 @@ public class IamPrincipalPermissionsValidatorTest {
   @Test
   public void unique_set_is_valid() {
 
-    IamPrincipalPermission a = new IamPrincipalPermission();
-    a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
-    IamPrincipalPermission b = new IamPrincipalPermission();
-    b.withIamPrincipalArn("arn:aws:iam::123:role/def");
+    IamPrincipalPermission a =
+        IamPrincipalPermission.builder().iamPrincipalArn("arn:aws:iam::123:role/abc").build();
+    IamPrincipalPermission b =
+        IamPrincipalPermission.builder().iamPrincipalArn("arn:aws:iam::123:role/def").build();
 
     Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
   }
@@ -63,10 +63,10 @@ public class IamPrincipalPermissionsValidatorTest {
   @Test
   public void set_can_handle_case_sensitivity() {
 
-    IamPrincipalPermission a = new IamPrincipalPermission();
-    a.withIamPrincipalArn("arn:aws:iam::123:role/abc");
-    IamPrincipalPermission b = new IamPrincipalPermission();
-    b.withIamPrincipalArn("arn:aws:iam::123:role/ABC");
+    IamPrincipalPermission a =
+        IamPrincipalPermission.builder().iamPrincipalArn("arn:aws:iam::123:role/abc").build();
+    IamPrincipalPermission b =
+        IamPrincipalPermission.builder().iamPrincipalArn("arn:aws:iam::123:role/ABC").build();
 
     Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
   }

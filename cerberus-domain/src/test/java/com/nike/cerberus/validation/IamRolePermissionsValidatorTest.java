@@ -51,24 +51,16 @@ public class IamRolePermissionsValidatorTest {
 
   @Test
   public void unique_set_is_valid() {
-    IamRolePermission a = new IamRolePermission();
-    a.setAccountId("123");
-    a.setIamRoleName("abc");
-    IamRolePermission b = new IamRolePermission();
-    b.setAccountId("123");
-    b.setIamRoleName("def");
+    IamRolePermission a = IamRolePermission.builder().accountId("123").iamRoleName("abc").build();
+    IamRolePermission b = IamRolePermission.builder().accountId("123").iamRoleName("def").build();
 
     Assert.assertTrue(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
   }
 
   @Test
   public void duplicate_set_is_invalid() {
-    IamRolePermission a = new IamRolePermission();
-    a.setAccountId("123");
-    a.setIamRoleName("abc");
-    IamRolePermission b = new IamRolePermission();
-    b.setAccountId("123");
-    b.setIamRoleName("ABC");
+    IamRolePermission a = IamRolePermission.builder().accountId("123").iamRoleName("abc").build();
+    IamRolePermission b = IamRolePermission.builder().accountId("123").iamRoleName("ABC").build();
 
     Assert.assertFalse(subject.isValid(Sets.newSet(a, b), mockConstraintValidatorContext));
   }

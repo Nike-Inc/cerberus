@@ -78,7 +78,7 @@ public class MetadataServiceTest {
 
     when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
 
-    SDBMetadata sdbMD = new SDBMetadata();
+    SDBMetadata sdbMD = SDBMetadata.builder().build();
     doReturn(Arrays.asList(sdbMD)).when(metadataServiceSpy).getSDBMetadataList(limit, offset, null);
 
     SDBMetadataResult actual = metadataServiceSpy.getSDBMetadata(limit, offset, null);
@@ -100,7 +100,7 @@ public class MetadataServiceTest {
     int totalSDBs = 20;
 
     when(safeDepositBoxService.getTotalNumberOfSafeDepositBoxes()).thenReturn(totalSDBs);
-    doReturn(Arrays.asList(new SDBMetadata()))
+    doReturn(Arrays.asList(SDBMetadata.builder().build()))
         .when(metadataServiceSpy)
         .getSDBMetadataList(limit, offset, null);
 
@@ -144,24 +144,26 @@ public class MetadataServiceTest {
     when(roleService.getRoleIdToStringMap()).thenReturn(roleIdToStringMap);
     when(categoryService.getCategoryIdToCategoryNameMap()).thenReturn(catMap);
 
-    SafeDepositBoxV2 box = new SafeDepositBoxV2();
-    box.setId(sdbId);
-    box.setName(name);
-    box.setPath(path);
-    box.setDescription(desc);
-    box.setCategoryId(categoryId);
-    box.setCreatedBy(by);
-    box.setLastUpdatedBy(by);
-    box.setCreatedTs(offsetDateTime);
-    box.setLastUpdatedTs(offsetDateTime);
-    box.setOwner(careBearsGroup);
+    SafeDepositBoxV2 box =
+        SafeDepositBoxV2.builder()
+            .id(sdbId)
+            .name(name)
+            .path(path)
+            .description(desc)
+            .categoryId(categoryId)
+            .createdBy(by)
+            .lastUpdatedBy(by)
+            .createdTs(offsetDateTime)
+            .lastUpdatedTs(offsetDateTime)
+            .owner(careBearsGroup)
+            .build();
 
     Set<UserGroupPermission> userPerms = new HashSet<>();
-    userPerms.add(new UserGroupPermission().withName(grumpyBearsGroup).withRoleId(readId));
+    userPerms.add(UserGroupPermission.builder().name(grumpyBearsGroup).roleId(readId).build());
     box.setUserGroupPermissions(userPerms);
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
-    iamPerms.add(new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(readId));
+    iamPerms.add(IamPrincipalPermission.builder().iamPrincipalArn(arn).roleId(readId).build());
     box.setIamPrincipalPermissions(iamPerms);
 
     when(safeDepositBoxService.getSafeDepositBoxes(1, 0)).thenReturn(Arrays.asList(box));
@@ -216,32 +218,34 @@ public class MetadataServiceTest {
         .thenReturn(Optional.ofNullable(null));
     when(uuidSupplier.get()).thenReturn(id);
     when(categoryService.getCategoryIdByName(categoryName)).thenReturn(Optional.of(categoryId));
-    Role readRole = new Role();
-    readRole.setId(readId);
+    Role readRole = Role.builder().id(readId).build();
     when(roleService.getRoleByName(RoleRecord.ROLE_READ)).thenReturn(Optional.of(readRole));
 
     metadataService.restoreMetadata(sdbMetadata, user);
 
-    SafeDepositBoxV2 expectedSdb = new SafeDepositBoxV2();
-    expectedSdb.setId(id);
-    expectedSdb.setPath("app/health-check-bucket/");
-    expectedSdb.setCategoryId(categoryId);
-    expectedSdb.setName(sdbName);
-    expectedSdb.setOwner("Lst-Squad.Carebears");
-    expectedSdb.setDescription("This SDB is read by the Health Check Lambda...");
-    expectedSdb.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
-    expectedSdb.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
-    expectedSdb.setCreatedBy("justin.field@nike.com");
-    expectedSdb.setLastUpdatedBy("todd.lisonbee@nike.com");
+    SafeDepositBoxV2 expectedSdb =
+        SafeDepositBoxV2.builder()
+            .id(id)
+            .path("app/health-check-bucket/")
+            .categoryId(categoryId)
+            .name(sdbName)
+            .owner("Lst-Squad.Carebears")
+            .description("This SDB is read by the Health Check Lambda...")
+            .createdTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"))
+            .lastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"))
+            .createdBy("justin.field@nike.com")
+            .lastUpdatedBy("todd.lisonbee@nike.com")
+            .build();
 
     Set<UserGroupPermission> userPerms = new HashSet<>();
-    userPerms.add(new UserGroupPermission().withName("Foundation.Prod.Support").withRoleId(readId));
-    userPerms.add(new UserGroupPermission().withName("Lst-NIKE.FOO.ISL").withRoleId(readId));
+    userPerms.add(
+        UserGroupPermission.builder().name("Foundation.Prod.Support").roleId(readId).build());
+    userPerms.add(UserGroupPermission.builder().name("Lst-NIKE.FOO.ISL").roleId(readId).build());
     expectedSdb.setUserGroupPermissions(userPerms);
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
     String arn = "arn:aws:iam::1111111111:role/lambda_prod_healthcheck";
-    iamPerms.add(new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(readId));
+    iamPerms.add(IamPrincipalPermission.builder().iamPrincipalArn(arn).roleId(readId).build());
     expectedSdb.setIamPrincipalPermissions(iamPerms);
 
     expectedSdb.setUserGroupPermissions(userPerms);

@@ -17,6 +17,7 @@
 package com.nike.cerberus.domain;
 
 import com.openpojo.reflection.PojoClass;
+import com.openpojo.reflection.PojoClassFilter;
 import com.openpojo.reflection.impl.PojoClassFactory;
 import com.openpojo.validation.Validator;
 import com.openpojo.validation.ValidatorBuilder;
@@ -33,17 +34,13 @@ public class DomainPojoTest {
   @Test
   public void test_pojo_structure_and_behavior() {
 
-    List<PojoClass> pojoClasses = PojoClassFactory.getPojoClasses("com.nike.cerberus.domain");
+    PojoClassFilter pojoClassFilter =
+        pojoClass -> !(pojoClass.isNestedClass() && pojoClass.getName().endsWith("Builder"));
+
+    List<PojoClass> pojoClasses =
+        PojoClassFactory.getPojoClasses("com.nike.cerberus.domain", pojoClassFilter);
 
     pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.class));
-    pojoClasses.remove(
-        PojoClassFactory.getPojoClass(CerberusAuthToken.CerberusAuthTokenBuilder.class));
-    pojoClasses.remove(PojoClassFactory.getPojoClass(VaultStyleErrorResponse.Builder.class));
-    pojoClasses.remove(PojoClassFactory.getPojoClass(IamPrincipalPermission.Builder.class));
-    pojoClasses.remove(PojoClassFactory.getPojoClass(UserGroupPermission.Builder.class));
-    pojoClasses.remove(PojoClassFactory.getPojoClass(SafeDepositBoxV2.Builder.class));
-    pojoClasses.remove(
-        PojoClassFactory.getPojoClass(SecureDataResponse.SecureDataResponseBuilder.class));
 
     Assert.assertTrue(pojoClasses.size() > 1);
 

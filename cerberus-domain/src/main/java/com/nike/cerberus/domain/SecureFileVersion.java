@@ -17,6 +17,7 @@
 package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import lombok.Builder;
 import lombok.Data;
 
@@ -35,6 +36,24 @@ public class SecureFileVersion implements SecureFile {
   private OffsetDateTime versionCreatedTs;
   private String actionPrincipal;
   private OffsetDateTime actionTs;
+
+  public byte[] getData() {
+    return Arrays.copyOf(data, data.length);
+  }
+
+  public void setData(byte[] data) {
+    this.data = Arrays.copyOf(data, data.length);
+  }
+
+  public static class SecureFileVersionBuilder {
+    private byte[] data;
+
+    public SecureFileVersionBuilder data(byte[] data) {
+      this.data = Arrays.copyOf(data, data.length);
+      ;
+      return this;
+    }
+  }
 
   public enum SecretsAction {
     CREATE,

@@ -27,7 +27,7 @@ public class VaultStyleErrorResponseTest {
   @Test
   public void test_that_the_builder_adds_all_the_errors() {
     VaultStyleErrorResponse res =
-        VaultStyleErrorResponse.Builder.create().withError("error1").withError("error2").build();
+        VaultStyleErrorResponse.builder().error("error1").error("error2").build();
 
     assertEquals("The response should have 2 errosr", 2, res.getErrors().size());
     assertTrue(

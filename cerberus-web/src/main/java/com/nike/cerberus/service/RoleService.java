@@ -50,13 +50,14 @@ public class RoleService {
     roleRecords.forEach(
         r ->
             roles.add(
-                new Role()
-                    .setId(r.getId())
-                    .setName(r.getName())
-                    .setCreatedBy(r.getCreatedBy())
-                    .setLastUpdatedBy(r.getLastUpdatedBy())
-                    .setCreatedTs(r.getCreatedTs())
-                    .setLastUpdatedTs(r.getLastUpdatedTs())));
+                Role.builder()
+                    .id(r.getId())
+                    .name(r.getName())
+                    .createdBy(r.getCreatedBy())
+                    .lastUpdatedBy(r.getLastUpdatedBy())
+                    .createdTs(r.getCreatedTs())
+                    .lastUpdatedTs(r.getLastUpdatedTs())
+                    .build()));
 
     return roles;
   }
@@ -72,13 +73,14 @@ public class RoleService {
 
     if (record.isPresent()) {
       return Optional.of(
-          new Role()
-              .setId(record.get().getId())
-              .setName(record.get().getName())
-              .setCreatedBy(record.get().getCreatedBy())
-              .setLastUpdatedBy(record.get().getLastUpdatedBy())
-              .setCreatedTs(record.get().getCreatedTs())
-              .setLastUpdatedTs(record.get().getLastUpdatedTs()));
+          Role.builder()
+              .id(record.get().getId())
+              .name(record.get().getName())
+              .createdBy(record.get().getCreatedBy())
+              .lastUpdatedBy(record.get().getLastUpdatedBy())
+              .createdTs(record.get().getCreatedTs())
+              .lastUpdatedTs(record.get().getLastUpdatedTs())
+              .build());
     }
 
     return Optional.empty();
@@ -95,13 +97,14 @@ public class RoleService {
 
     if (record.isPresent()) {
       return Optional.of(
-          new Role()
-              .setId(record.get().getId())
-              .setName(record.get().getName())
-              .setCreatedBy(record.get().getCreatedBy())
-              .setLastUpdatedBy(record.get().getLastUpdatedBy())
-              .setCreatedTs(record.get().getCreatedTs())
-              .setLastUpdatedTs(record.get().getLastUpdatedTs()));
+          Role.builder()
+              .id(record.get().getId())
+              .name(record.get().getName())
+              .createdBy(record.get().getCreatedBy())
+              .lastUpdatedBy(record.get().getLastUpdatedBy())
+              .createdTs(record.get().getCreatedTs())
+              .lastUpdatedTs(record.get().getLastUpdatedTs())
+              .build());
     }
 
     return Optional.empty();
