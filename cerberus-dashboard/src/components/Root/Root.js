@@ -49,8 +49,6 @@ class Root extends Component {
         });
 
         this.restoreOriginalUri = async (_oktaAuth, originalUri) => {
-            console.log("Restoring URI to: ", originalUri, window.location.origin);
-            console.log("Relative URL: ", toRelativeUrl(originalUri, window.location.origin));
             this.props.dispatch(replace(toRelativeUrl(originalUri, window.location.origin)));
             this.authenticate();
         }
@@ -110,7 +108,7 @@ class Root extends Component {
         return (
             <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
                 <Switch>
-                    <Route path="/dashboard/callback" component={LoginCallback} />
+                    <Route path="/callback" component={LoginCallback} />
                     <SecureRoute path="/" component={App} />
                     <Route path="*" component={NotFound} />
                 </Switch>
