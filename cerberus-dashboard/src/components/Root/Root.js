@@ -52,16 +52,21 @@ class Root extends Component {
             console.log("Restoring URI to: ", originalUri, window.location.origin);
             console.log("Relative URL: ", toRelativeUrl(originalUri, window.location.origin));
             this.props.dispatch(replace(toRelativeUrl(originalUri, window.location.origin)));
-            // this.props.dispatch(replace('/dashboard'));
+            this.authenticate();
         }
         
         this.AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
 
         this.getToken = this.getToken.bind(this);
         this.handleUserLoginAfterTokenExchange = this.handleUserLoginAfterTokenExchange.bind(this);
+        this.authenticate = this.authenticate.bind(this);
     }
 
     componentDidMount() {
+        this.authenticate();
+    }
+
+    authenticate() {
         let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
         let oauthToken = oauthTokenStorage?.idToken?.value;
         console.log(oauthToken)
