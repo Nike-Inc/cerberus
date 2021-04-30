@@ -37,4 +37,17 @@ public class DashboardController {
     log.info("*** Forwarding to index.html from " + uri + " ***");
     return "forward:/dashboard/index.html";
   }
+
+  @GetMapping(value = {"/dashboard/manage-safe-deposit-box/static/**"})
+  public String staticMapping(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    String[] path = uri.split("/", 4);
+    log.info("*** Redirecting *static* to: /dashboard/" + path[path.length - 1] + " ***");
+    return "redirect:/dashboard/" + path[path.length - 1];
+  }
+
+  @GetMapping(value = {"/dashboard/manage-safe-deposit-box/**"})
+  public String sdbMapping() {
+    return "forward:/dashboard/index.html";
+  }
 }

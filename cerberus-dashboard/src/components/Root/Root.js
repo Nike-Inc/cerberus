@@ -49,8 +49,8 @@ class Root extends Component {
         });
 
         this.restoreOriginalUri = async (_oktaAuth, originalUri) => {
+            this.authenticate(false);
             this.props.dispatch(replace(toRelativeUrl(originalUri, window.location.origin)));
-            this.authenticate();
         }
         
         this.AUTH_ACTION_TIMEOUT = 60000; // 60 seconds in milliseconds
@@ -61,26 +61,27 @@ class Root extends Component {
     }
 
     componentDidMount() {
-        this.authenticate();
+        console.log(this.props);
+        this.authenticate(false);
     }
 
-    authenticate() {
+    authenticate(redirect) {
         let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
         let oauthToken = oauthTokenStorage?.idToken?.value;
         console.log(oauthToken)
 
         if (oauthToken) {
-            this.getToken(oauthToken);
+            this.getToken(oauthToken, redirect);
         }
     }
 
-    handleUserLoginAfterTokenExchange(response) {
+    handleUserLoginAfterTokenExchange(response, redirect) {
         console.log("calling handle user login")
         console.log(this.props);
-        handleUserLogin(response, this.props.dispatch, true);
+        handleUserLogin(response, this.props.dispatch, redirect);
     }
 
-    async getToken(oauthToken) {
+    async getToken(oauthToken, redirect) {
         await axios({
             method: 'post',
             url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
@@ -93,7 +94,7 @@ class Root extends Component {
             }
         }).then((response) => {
             console.log(`${environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH} Response: `, response)
-            this.handleUserLoginAfterTokenExchange(response)
+            this.handleUserLoginAfterTokenExchange(response, redirect)
             console.log("exchange token successful")
         }).catch((error) => {
             console.log("Failed to exchange OAuth token")
@@ -108,7 +109,7 @@ class Root extends Component {
         return (
             <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
                 <Switch>
-                    <Route path="/callback" component={LoginCallback} />
+                    <Route path="/callback" exact component={LoginCallback} />
                     <SecureRoute path="/" component={App} />
                     <Route path="*" component={NotFound} />
                 </Switch>
@@ -117,6 +118,8 @@ class Root extends Component {
     }
 }
 
-const mapStateToProps = state => ({});
+const mapStateToProps = state => ({
+    location: state.router.location
+});
 
 export default connect(mapStateToProps)(Root);
