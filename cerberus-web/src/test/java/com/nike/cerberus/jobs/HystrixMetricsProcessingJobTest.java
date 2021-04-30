@@ -3,6 +3,7 @@ package com.nike.cerberus.jobs;
 import com.google.common.collect.ImmutableMap;
 import com.netflix.hystrix.*;
 import com.nike.cerberus.metric.MetricsService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class HystrixMetricsProcessingJobTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testExecute() {
     HystrixMetricsProcessingJob hystrixMetricsProcessingJobSpy =
         Mockito.spy(hystrixMetricsProcessingJob);
