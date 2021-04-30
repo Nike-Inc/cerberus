@@ -18,9 +18,11 @@ package com.nike.cerberus.jobs;
 
 import com.google.common.collect.ImmutableMap;
 import com.netflix.hystrix.HystrixCircuitBreaker;
+import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandMetrics;
 import com.netflix.hystrix.HystrixThreadPoolMetrics;
 import com.nike.cerberus.metric.MetricsService;
+import java.util.Collection;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,13 +54,12 @@ public class HystrixMetricsProcessingJob {
   }
 
   public void processHystrixCommandMetrics() {
-    for (HystrixCommandMetrics metrics : HystrixCommandMetrics.getInstances()) {
+    for (HystrixCommandMetrics metrics : getHystrixCommandMetrics()) {
       Map<String, String> dimensions =
           ImmutableMap.of(
               "key", metrics.getCommandKey().name(),
               "group", metrics.getCommandGroup().name());
-      boolean isCircuitOpen =
-          HystrixCircuitBreaker.Factory.getInstance(metrics.getCommandKey()).isOpen();
+      boolean isCircuitOpen = getHystrixCircuitBreaker(metrics.getCommandKey()).isOpen();
 
       log.debug(
           "group:{}, commandKey:{}, CircuitOpen:{}, Mean:{}, 95%:{}, 99%:{}, 99.5%:{}, {}",
@@ -99,7 +100,7 @@ public class HystrixMetricsProcessingJob {
   }
 
   public void processHystrixThreadPoolMetrics() {
-    for (HystrixThreadPoolMetrics metrics : HystrixThreadPoolMetrics.getInstances()) {
+    for (HystrixThreadPoolMetrics metrics : getHystrixThreadPoolMetrics()) {
       Map<String, String> dimensions = ImmutableMap.of("name", metrics.getThreadPoolKey().name());
       log.debug(
           "threadPool:{}, rollingCounts[rejected:{}, executed:{}, maxActiveThreads:{}], cumulativeCounts[rejected:{}, executed:{}], {}",
@@ -140,5 +141,17 @@ public class HystrixMetricsProcessingJob {
           () -> metrics.getThreadPool().getCompletedTaskCount(),
           dimensions);
     }
+  }
+
+  Collection<HystrixCommandMetrics> getHystrixCommandMetrics() {
+    return HystrixCommandMetrics.getInstances();
+  }
+
+  Collection<HystrixThreadPoolMetrics> getHystrixThreadPoolMetrics() {
+    return HystrixThreadPoolMetrics.getInstances();
+  }
+
+  HystrixCircuitBreaker getHystrixCircuitBreaker(HystrixCommandKey hystrixCommandKey) {
+    return HystrixCircuitBreaker.Factory.getInstance(hystrixCommandKey);
   }
 }
