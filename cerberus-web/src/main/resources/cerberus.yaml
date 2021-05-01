@@ -138,6 +138,14 @@ cerberus:
 #        clientId: yourClientId
 #        clientSecret: yourClientSecret
 #        subdomain: yourSubDomain
+  auth:
+    token:
+      issue-type: session # Can be session or jwt
+      accept-type: session # Can be session, jwt or all (which is both)
+#  auth.jwt:
+#    secret.local.autoGenerate: false # generate jwt secret for local development
+#    secret.local.enabled: false # set this to true when doing local development
+#    secret.bucket: jwt-secret-bucket # s3 bucket containing secret material
 
 
   # With Cerberus 4.+ (Phoenix) We now have officially deprecated and turned off by default KMS Auth
@@ -232,6 +240,21 @@ cerberus:
       # Every hour
       cronExpression: "0 0 * ? * *"
 
+    # JWT
+    jwtSecretRefreshJob:
+      enabled: false
+      # Every minute
+      cronExpression: "0 * * ? * *"
+
+    jwtBlocklistCleanUpJob:
+      enabled: false
+      # Every 5 minutes
+      cronExpression: "30 0/5 * ? * *"
+
+    jwtBlocklistRefreshJob:
+      enabled: false
+      # Every 10 seconds
+      cronExpression: "0/10 * * ? * *"
 
     ################################################################################################
     # This Job require auth.iam.kms.rootUserArn,adminRoleArn,cmsRoleArn to be configured
