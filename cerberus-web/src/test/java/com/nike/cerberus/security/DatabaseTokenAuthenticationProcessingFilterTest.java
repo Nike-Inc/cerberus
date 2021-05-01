@@ -39,8 +39,8 @@ public class DatabaseTokenAuthenticationProcessingFilterTest {
 
   @Test
   public void testExtractCerberusPrincipalFromRequest() {
-    CerberusAuthToken cerberusAuthToken1 = new CerberusAuthToken();
-    cerberusAuthToken1.setPrincipal("principal");
+    CerberusAuthToken cerberusAuthToken1 =
+        CerberusAuthToken.Builder.create().withPrincipal("principal").build();
     Optional<CerberusAuthToken> cerberusAuthToken = Optional.of(cerberusAuthToken1);
     Mockito.when(authTokenService.getCerberusAuthToken(anyString())).thenReturn(cerberusAuthToken);
     Mockito.when(request.getHeader(HEADER_X_CERBERUS_TOKEN)).thenReturn("token");
@@ -50,8 +50,8 @@ public class DatabaseTokenAuthenticationProcessingFilterTest {
 
   @Test
   public void testExtractCerberusPrincipalFromRequestWithAuthToken() {
-    CerberusAuthToken cerberusAuthToken1 = new CerberusAuthToken();
-    cerberusAuthToken1.setPrincipal("principal");
+    CerberusAuthToken cerberusAuthToken1 =
+        CerberusAuthToken.Builder.create().withPrincipal("principal").build();
     Optional<CerberusAuthToken> cerberusAuthToken = Optional.of(cerberusAuthToken1);
     Mockito.when(authTokenService.getCerberusAuthToken(anyString())).thenReturn(cerberusAuthToken);
     Mockito.when(request.getHeader(LEGACY_AUTH_TOKN_HEADER)).thenReturn("token");
