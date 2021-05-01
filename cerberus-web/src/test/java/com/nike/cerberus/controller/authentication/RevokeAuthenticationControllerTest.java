@@ -2,6 +2,7 @@ package com.nike.cerberus.controller.authentication;
 
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
+import java.time.OffsetDateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -22,9 +23,10 @@ public class RevokeAuthenticationControllerTest {
 
   @Test
   public void testRevokeAuthentication() {
+    OffsetDateTime now = OffsetDateTime.now();
     CerberusPrincipal cerberusPrincipal = Mockito.mock(CerberusPrincipal.class);
-    Mockito.when(cerberusPrincipal.getToken()).thenReturn("token");
+    Mockito.when(cerberusPrincipal.getTokenExpires()).thenReturn(now);
     revokeAuthenticationController.revokeAuthentication(cerberusPrincipal);
-    Mockito.verify(authenticationService).revoke("token");
+    Mockito.verify(authenticationService).revoke(cerberusPrincipal, now);
   }
 }
