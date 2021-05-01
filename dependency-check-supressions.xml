@@ -137,4 +137,11 @@
         <packageUrl regex="true">^pkg:npm/faye\-websocket@.*$</packageUrl>
         <cve>CVE-2020-15133</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: postcss:7.0.21
+        ]]></notes>
+        <packageUrl regex="true">^pkg:npm/postcss@.*$</packageUrl>
+        <cve>CVE-2021-23368</cve>
+    </suppress>
 </suppressions>
