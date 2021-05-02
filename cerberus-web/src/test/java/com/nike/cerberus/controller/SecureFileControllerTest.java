@@ -11,6 +11,7 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.cerberus.util.SdbAccessRequest;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -55,6 +56,7 @@ public class SecureFileControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testHeadSecureFile() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");
@@ -86,6 +88,7 @@ public class SecureFileControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testGetSecureFile() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");
@@ -121,6 +124,7 @@ public class SecureFileControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testGetSecureFileVersion() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");
@@ -167,6 +171,7 @@ public class SecureFileControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testWriteSecureFileThrowsException() throws IOException {
 
     MultipartFile multipartFile = Mockito.mock(MultipartFile.class);

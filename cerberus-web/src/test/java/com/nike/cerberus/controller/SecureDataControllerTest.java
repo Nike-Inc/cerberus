@@ -10,6 +10,7 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.SecureDataService;
 import com.nike.cerberus.service.SecureDataVersionService;
 import com.nike.cerberus.util.SdbAccessRequest;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,6 +46,7 @@ public class SecureDataControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testReadSecureData() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");
@@ -64,6 +66,7 @@ public class SecureDataControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testListKeys() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");
@@ -101,6 +104,7 @@ public class SecureDataControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testReadSecureDataVersion() {
     Mockito.when(sdbAccessRequest.getSdbId()).thenReturn("sdbId");
     Mockito.when(sdbAccessRequest.getPath()).thenReturn("path");

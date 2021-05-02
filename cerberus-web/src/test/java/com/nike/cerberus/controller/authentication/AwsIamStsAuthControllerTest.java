@@ -9,6 +9,7 @@ import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,7 @@ public class AwsIamStsAuthControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateIfHeaderAmzDateIsNull() {
     ApiException apiException = null;
     try {
@@ -42,6 +44,7 @@ public class AwsIamStsAuthControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateIfHeaderAmzSecurityTokenIsNull() {
     ApiException apiException = null;
     try {

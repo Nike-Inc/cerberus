@@ -8,6 +8,7 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.junit.Assert;
@@ -31,6 +32,7 @@ public class UserAuthenticationControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateWhenAuthHeaderIsNull() {
     ApiException apiException = null;
     try {
@@ -42,6 +44,7 @@ public class UserAuthenticationControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateWhenAuthHeaderIsEmpty() {
     ApiException apiException = null;
     try {
@@ -53,6 +56,7 @@ public class UserAuthenticationControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateWhenAuthHeaderIsDoesNotStartWithBasic() {
     ApiException apiException = null;
     try {
@@ -64,6 +68,7 @@ public class UserAuthenticationControllerTest {
   }
 
   @Test
+  @SuppressFBWarnings
   public void testAuthenticateWhenAuthenticationServiceAuthenticateThrowsException() {
     ApiException apiException = null;
     byte[] encodedBytes =
