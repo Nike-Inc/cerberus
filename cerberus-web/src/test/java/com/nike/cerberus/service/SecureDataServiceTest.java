@@ -660,8 +660,6 @@ public class SecureDataServiceTest {
         .thenReturn(secureDataRecords);
     SecureFileSummaryResult secureFileSummaryResult =
         secureDataService.listSecureFilesSummaries("sdbId", "partialPath", 10, 10);
-    String expectedListSecureFilesSummaryResult =
-        "{\"hasNext\":true,\"nextOffset\":20,\"limit\":10,\"offset\":10,\"fileCountInResult\":1,\"totalFileCount\":50,\"secureFileSummaries\":[{\"sdboxId\":\"sdbBoxId\",\"path\":\"path\",\"sizeInBytes\":10,\"name\":\"\",\"createdBy\":\"user\",\"createdTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{ \"transitions\":[],\"transitionRules\":[],\"fixedOffset\":true}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365},\"lastUpdatedBy\":\"user\",\"lastUpdatedTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{ \"transitions\":[],\"transitionRules\":[],\"fixedOffset\":true}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365}}]}";
 
     List<SecureFileSummary> secureFileSummariesExpected = new ArrayList<>();
     SecureFileSummary secureFileSummaryExpected = new SecureFileSummary();
