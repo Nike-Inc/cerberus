@@ -65,7 +65,7 @@ public class JwtService {
   @Autowired
   public JwtService(
       CerberusSigningKeyResolver signingKeyResolver,
-      @Value("cerberus.environmentName") String environmentName,
+      @Value("${cerberus.environmentName}") String environmentName,
       JwtBlocklistDao jwtBlocklistDao) {
     this.signingKeyResolver = signingKeyResolver;
     this.environmentName = environmentName;
