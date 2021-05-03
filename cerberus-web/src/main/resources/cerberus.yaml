@@ -43,6 +43,9 @@ c3p0:
   maxConnectionAge: 300
   preferredTestQuery: SELECT 1
 
+server:
+  max-http-header-size: 65536
+
 cerberus:
   partitions:
     awsGlobal:
