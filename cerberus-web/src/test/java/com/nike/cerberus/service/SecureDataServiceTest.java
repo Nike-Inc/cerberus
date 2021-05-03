@@ -648,7 +648,7 @@ public class SecureDataServiceTest {
   }
 
   @Test
-  public void testListSecureFilesSummaries() {
+  public void testListSecureFilesSummaries() throws JsonProcessingException {
     Mockito.when(secureDataDao.countByPartialPathAndType("partialPath/", SecureDataType.FILE))
         .thenReturn(50);
     SecureDataRecord secureDataRecord = getSecureDataRecord();
@@ -660,13 +660,16 @@ public class SecureDataServiceTest {
         .thenReturn(secureDataRecords);
     SecureFileSummaryResult secureFileSummaryResult =
         secureDataService.listSecureFilesSummaries("sdbId", "partialPath", 10, 10);
+    String expectedListSecureFilesSummaryResult =
+        "{\"hasNext\":true,\"nextOffset\":20,\"limit\":10,\"offset\":10,\"fileCountInResult\":1,\"totalFileCount\":50,\"secureFileSummaries\":[{\"sdboxId\":\"sdbBoxId\",\"path\":\"path\",\"sizeInBytes\":10,\"name\":\"\",\"createdBy\":\"user\",\"createdTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{\"fixedOffset\":true,\"transitions\":[],\"transitionRules\":[]}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365},\"lastUpdatedBy\":\"user\",\"lastUpdatedTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{\"fixedOffset\":true,\"transitions\":[],\"transitionRules\":[]}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365}}]}";
     List<SecureFileSummary> secureFileSummaries = secureFileSummaryResult.getSecureFileSummaries();
     Assert.assertEquals(1, secureFileSummaries.size());
-    SecureFileSummary secureFileSummary = secureFileSummaries.get(0);
     Assert.assertEquals(10, secureFileSummaryResult.getLimit());
     Assert.assertEquals(10, secureFileSummaryResult.getOffset());
     Assert.assertEquals(50, secureFileSummaryResult.getTotalFileCount());
-    Assert.assertTrue(secureFileSummaryResult.isHasNext());
+    Assert.assertEquals(
+        expectedListSecureFilesSummaryResult,
+        new ObjectMapper().writeValueAsString(secureFileSummaryResult));
     Assert.assertEquals(Integer.valueOf(20), secureFileSummaryResult.getNextOffset());
   }
 
