@@ -661,15 +661,34 @@ public class SecureDataServiceTest {
     SecureFileSummaryResult secureFileSummaryResult =
         secureDataService.listSecureFilesSummaries("sdbId", "partialPath", 10, 10);
     String expectedListSecureFilesSummaryResult =
-        "{\"hasNext\":true,\"nextOffset\":20,\"limit\":10,\"offset\":10,\"fileCountInResult\":1,\"totalFileCount\":50,\"secureFileSummaries\":[{\"sdboxId\":\"sdbBoxId\",\"path\":\"path\",\"sizeInBytes\":10,\"name\":\"\",\"createdBy\":\"user\",\"createdTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{\"fixedOffset\":true,\"transitions\":[],\"transitionRules\":[]}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365},\"lastUpdatedBy\":\"user\",\"lastUpdatedTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{\"fixedOffset\":true,\"transitions\":[],\"transitionRules\":[]}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365}}]}";
+        "{\"hasNext\":true,\"nextOffset\":20,\"limit\":10,\"offset\":10,\"fileCountInResult\":1,\"totalFileCount\":50,\"secureFileSummaries\":[{\"sdboxId\":\"sdbBoxId\",\"path\":\"path\",\"sizeInBytes\":10,\"name\":\"\",\"createdBy\":\"user\",\"createdTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{ \"transitions\":[],\"transitionRules\":[],\"fixedOffset\":true}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365},\"lastUpdatedBy\":\"user\",\"lastUpdatedTs\":{\"offset\":{\"totalSeconds\":-64800,\"id\":\"-18:00\",\"rules\":{ \"transitions\":[],\"transitionRules\":[],\"fixedOffset\":true}},\"nano\":999999999,\"year\":999999999,\"monthValue\":12,\"dayOfMonth\":31,\"hour\":23,\"minute\":59,\"second\":59,\"month\":\"DECEMBER\",\"dayOfWeek\":\"FRIDAY\",\"dayOfYear\":365}}]}";
+
+    List<SecureFileSummary> secureFileSummariesExpected = new ArrayList<>();
+    SecureFileSummary secureFileSummaryExpected = new SecureFileSummary();
+    secureFileSummaryExpected.setSdboxId("sdbBoxId");
+    secureFileSummaryExpected.setPath(path);
+    secureFileSummaryExpected.setSizeInBytes(10);
+    secureFileSummaryExpected.setName("");
+    secureFileSummaryExpected.setCreatedBy("user");
+    secureFileSummaryExpected.setCreatedTs(OffsetDateTime.now());
+    secureFileSummaryExpected.setLastUpdatedBy("user");
+    secureFileSummaryExpected.setLastUpdatedTs(OffsetDateTime.now());
+    secureFileSummariesExpected.add(secureFileSummaryExpected);
+
+    SecureFileSummaryResult expected = new SecureFileSummaryResult();
+    expected.setHasNext(true);
+    expected.setNextOffset(20);
+    expected.setLimit(10);
+    expected.setOffset(10);
+    expected.setFileCountInResult(1);
+    expected.setTotalFileCount(50);
+    expected.setSecureFileSummaries(secureFileSummariesExpected);
+
     List<SecureFileSummary> secureFileSummaries = secureFileSummaryResult.getSecureFileSummaries();
     Assert.assertEquals(1, secureFileSummaries.size());
     Assert.assertEquals(10, secureFileSummaryResult.getLimit());
     Assert.assertEquals(10, secureFileSummaryResult.getOffset());
     Assert.assertEquals(50, secureFileSummaryResult.getTotalFileCount());
-    Assert.assertEquals(
-        expectedListSecureFilesSummaryResult,
-        new ObjectMapper().writeValueAsString(secureFileSummaryResult));
     Assert.assertEquals(Integer.valueOf(20), secureFileSummaryResult.getNextOffset());
   }
 
