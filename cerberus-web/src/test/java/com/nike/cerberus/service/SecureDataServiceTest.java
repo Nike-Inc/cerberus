@@ -661,32 +661,19 @@ public class SecureDataServiceTest {
     SecureFileSummaryResult secureFileSummaryResult =
         secureDataService.listSecureFilesSummaries("sdbId", "partialPath", 10, 10);
 
-    List<SecureFileSummary> secureFileSummariesExpected = new ArrayList<>();
-    SecureFileSummary secureFileSummaryExpected = new SecureFileSummary();
-    secureFileSummaryExpected.setSdboxId("sdbBoxId");
-    secureFileSummaryExpected.setPath(path);
-    secureFileSummaryExpected.setSizeInBytes(10);
-    secureFileSummaryExpected.setName("");
-    secureFileSummaryExpected.setCreatedBy("user");
-    secureFileSummaryExpected.setCreatedTs(OffsetDateTime.now());
-    secureFileSummaryExpected.setLastUpdatedBy("user");
-    secureFileSummaryExpected.setLastUpdatedTs(OffsetDateTime.now());
-    secureFileSummariesExpected.add(secureFileSummaryExpected);
-
-    SecureFileSummaryResult expected = new SecureFileSummaryResult();
-    expected.setHasNext(true);
-    expected.setNextOffset(20);
-    expected.setLimit(10);
-    expected.setOffset(10);
-    expected.setFileCountInResult(1);
-    expected.setTotalFileCount(50);
-    expected.setSecureFileSummaries(secureFileSummariesExpected);
-
     List<SecureFileSummary> secureFileSummaries = secureFileSummaryResult.getSecureFileSummaries();
     Assert.assertEquals(1, secureFileSummaries.size());
     Assert.assertEquals(10, secureFileSummaryResult.getLimit());
     Assert.assertEquals(10, secureFileSummaryResult.getOffset());
     Assert.assertEquals(50, secureFileSummaryResult.getTotalFileCount());
+    Assert.assertEquals(
+        "sdbBoxId", secureFileSummaryResult.getSecureFileSummaries().get(0).getSdboxId());
+    Assert.assertEquals("", secureFileSummaryResult.getSecureFileSummaries().get(0).getName());
+    Assert.assertEquals(
+        10, secureFileSummaryResult.getSecureFileSummaries().get(0).getSizeInBytes());
+    Assert.assertEquals("path", secureFileSummaryResult.getSecureFileSummaries().get(0).getPath());
+    Assert.assertEquals(
+        "user", secureFileSummaryResult.getSecureFileSummaries().get(0).getCreatedBy());
     Assert.assertEquals(Integer.valueOf(20), secureFileSummaryResult.getNextOffset());
   }
 
