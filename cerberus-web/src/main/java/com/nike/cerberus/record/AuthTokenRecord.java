@@ -18,6 +18,8 @@ package com.nike.cerberus.record;
 
 import com.nike.cerberus.domain.AuthTokenInfo;
 import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.Data;
 
 @Builder
 @Data
