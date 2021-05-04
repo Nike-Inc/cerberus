@@ -18,7 +18,10 @@ package com.nike.cerberus.jwt;
 
 import com.nike.cerberus.domain.AuthTokenInfo;
 import java.time.OffsetDateTime;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder

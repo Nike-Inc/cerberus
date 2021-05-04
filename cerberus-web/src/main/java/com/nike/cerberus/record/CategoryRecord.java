@@ -17,12 +17,16 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents a category. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CategoryRecord {
 
   private String id;

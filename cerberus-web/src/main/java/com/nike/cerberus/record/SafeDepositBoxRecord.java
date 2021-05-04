@@ -17,12 +17,16 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO for representing a SAFE_DEPOSIT_BOX record. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SafeDepositBoxRecord {
 
   private String id;

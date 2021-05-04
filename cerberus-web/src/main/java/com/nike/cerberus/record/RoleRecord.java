@@ -17,11 +17,15 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoleRecord {
 
   public static final String ROLE_OWNER = "owner";

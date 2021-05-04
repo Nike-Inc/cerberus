@@ -16,8 +16,10 @@
 
 package com.nike.cerberus.record;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * POJO for representing the safe deposit box to role association. This is used to generate a list
@@ -25,6 +27,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SafeDepositBoxRoleRecord {
 
   private String safeDepositBoxName;

@@ -17,12 +17,16 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO for representing a USER_GROUP record. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserGroupRecord {
 
   private String id;

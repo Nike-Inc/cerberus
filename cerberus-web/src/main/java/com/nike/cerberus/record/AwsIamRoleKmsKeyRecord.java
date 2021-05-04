@@ -17,11 +17,16 @@
 package com.nike.cerberus.record;
 
 import java.time.OffsetDateTime;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO for representing a AWS_IAM_ROLE_KMS_KEY record. */
 @Builder
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AwsIamRoleKmsKeyRecord {
 
   private String id;

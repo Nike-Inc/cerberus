@@ -18,12 +18,17 @@ package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import javax.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 /** Represents a category. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category {
 
   /** Unique identifier for a category. */

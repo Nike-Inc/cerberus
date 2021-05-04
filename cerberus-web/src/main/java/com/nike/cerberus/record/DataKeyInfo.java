@@ -18,11 +18,15 @@ package com.nike.cerberus.record;
 
 import com.nike.cerberus.domain.Source;
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DataKeyInfo {
 
   private String id;
