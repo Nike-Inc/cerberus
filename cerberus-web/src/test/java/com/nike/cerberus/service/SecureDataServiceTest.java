@@ -739,43 +739,45 @@ public class SecureDataServiceTest {
 
   private SecureDataVersionRecord getSecureVersionRecord() {
     SecureDataVersionRecord secureDataVersionRecord =
-        new SecureDataVersionRecord()
-            .setPath("path")
-            .setType(SecureDataType.FILE)
-            .setVersionCreatedTs(OffsetDateTime.MAX)
-            .setVersionCreatedBy("user")
-            .setActionTs(OffsetDateTime.MAX)
-            .setAction("action")
-            .setSizeInBytes(0)
-            .setSdboxId("sdbBoId")
-            .setLastRotatedTs(OffsetDateTime.MAX)
-            .setEncryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
-            .setActionPrincipal("principal")
-            .setId("id");
+        SecureDataVersionRecord.builder()
+            .path("path")
+            .type(SecureDataType.FILE)
+            .versionCreatedTs(OffsetDateTime.MAX)
+            .versionCreatedBy("user")
+            .actionTs(OffsetDateTime.MAX)
+            .action("action")
+            .sizeInBytes(0)
+            .sdboxId("sdbBoId")
+            .lastRotatedTs(OffsetDateTime.MAX)
+            .encryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
+            .actionPrincipal("principal")
+            .id("id")
+            .build();
     return secureDataVersionRecord;
   }
 
   private SecureDataRecord getSecureDataRecord() {
     SecureDataRecord secureDataRecord =
-        new SecureDataRecord()
-            .setCreatedBy("user")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setId(0)
-            .setPath("path")
-            .setEncryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
-            .setLastRotatedTs(OffsetDateTime.MAX)
-            .setLastUpdatedBy("user")
-            .setLastUpdatedTs(OffsetDateTime.MAX)
-            .setSdboxId("sdbBoxId")
-            .setSizeInBytes(10)
-            .setTopLevelKVCount(9)
-            .setType(SecureDataType.FILE);
+        SecureDataRecord.builder()
+            .createdBy("user")
+            .createdTs(OffsetDateTime.MAX)
+            .id(0)
+            .path("path")
+            .encryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
+            .lastRotatedTs(OffsetDateTime.MAX)
+            .lastUpdatedBy("user")
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .sdboxId("sdbBoxId")
+            .sizeInBytes(10)
+            .topLevelKVCount(9)
+            .type(SecureDataType.FILE)
+            .build();
     return secureDataRecord;
   }
 
   private DataKeyInfo getDataKeyInfo(Source source) {
     DataKeyInfo dataKeyInfo =
-        new DataKeyInfo().setId("id").setLastRotatedTs(OffsetDateTime.MAX).setSource(source);
+        DataKeyInfo.builder().id("id").lastRotatedTs(OffsetDateTime.MAX).source(source).build();
     return dataKeyInfo;
   }
 }

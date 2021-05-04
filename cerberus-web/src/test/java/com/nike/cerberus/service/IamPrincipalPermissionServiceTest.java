@@ -108,7 +108,8 @@ public class IamPrincipalPermissionServiceTest {
             .setCreatedTs(OffsetDateTime.MAX)
             .setLastUpdatedTs(OffsetDateTime.MAX);
     awsIamRolePermissionRecords.add(awsIamRolePermissionRecord);
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord().setAwsIamRoleArn("awsIamRoleArn");
+    AwsIamRoleRecord awsIamRoleRecord =
+        AwsIamRoleRecord.builder().awsIamRoleArn("awsIamRoleArn").build();
     Mockito.when(awsIamRoleDao.getIamRolePermissions("boxId"))
         .thenReturn(awsIamRolePermissionRecords);
     Mockito.when(awsIamRoleDao.getIamRoleById(Mockito.anyString()))
@@ -141,7 +142,7 @@ public class IamPrincipalPermissionServiceTest {
   public void testIamPrincipalPermissionUpdateWhenIamRoleIsPresent() {
     IamPrincipalPermission iamPrincipalPermission = new IamPrincipalPermission();
     iamPrincipalPermission.setIamPrincipalArn("arn");
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
+    AwsIamRoleRecord awsIamRoleRecord = AwsIamRoleRecord.builder().build();
     Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
     iamPrincipalPermissionService.updateIamPrincipalPermission(
         "boxId", iamPrincipalPermission, "user", OffsetDateTime.MAX);
@@ -164,7 +165,7 @@ public class IamPrincipalPermissionServiceTest {
   public void testIamPrincipalPermissionsUpdateWhenIamRoleIsPresent() {
     IamPrincipalPermission iamPrincipalPermission = new IamPrincipalPermission();
     iamPrincipalPermission.setIamPrincipalArn("arn");
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
+    AwsIamRoleRecord awsIamRoleRecord = AwsIamRoleRecord.builder().build();
     Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
     iamPrincipalPermissions.add(iamPrincipalPermission);
     Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
@@ -207,7 +208,7 @@ public class IamPrincipalPermissionServiceTest {
     iamPrincipalPermission.setIamPrincipalArn("arn");
     iamPrincipalPermission.setRoleId("roleId");
     Role role = new Role();
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
+    AwsIamRoleRecord awsIamRoleRecord = AwsIamRoleRecord.builder().build();
     Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
     Mockito.when(roleService.getRoleById("roleId")).thenReturn(Optional.of(role));
     Mockito.when(uuidSupplier.get()).thenReturn("uuid");
@@ -258,7 +259,7 @@ public class IamPrincipalPermissionServiceTest {
     Set<IamPrincipalPermission> iamPrincipalPermissions = new HashSet<>();
     iamPrincipalPermissions.add(iamPrincipalPermission);
     Role role = new Role();
-    AwsIamRoleRecord awsIamRoleRecord = new AwsIamRoleRecord();
+    AwsIamRoleRecord awsIamRoleRecord = AwsIamRoleRecord.builder().build();
     Mockito.when(awsIamRoleDao.getIamRole("arn")).thenReturn(Optional.of(awsIamRoleRecord));
     Mockito.when(roleService.getRoleById("roleId")).thenReturn(Optional.of(role));
     Mockito.when(uuidSupplier.get()).thenReturn("uuid");

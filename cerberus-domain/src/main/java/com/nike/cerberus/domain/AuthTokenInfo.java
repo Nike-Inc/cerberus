@@ -5,33 +5,33 @@ import java.time.OffsetDateTime;
 public interface AuthTokenInfo {
   String getId();
 
-  AuthTokenInfo setId(String id);
+  void setId(String id);
 
   OffsetDateTime getCreatedTs();
 
-  AuthTokenInfo setCreatedTs(OffsetDateTime createdTs);
+  void setCreatedTs(OffsetDateTime createdTs);
 
   OffsetDateTime getExpiresTs();
 
-  AuthTokenInfo setExpiresTs(OffsetDateTime expiresTs);
+  void setExpiresTs(OffsetDateTime expiresTs);
 
   String getPrincipal();
 
-  AuthTokenInfo setPrincipal(String principal);
+  void setPrincipal(String principal);
 
   String getPrincipalType();
 
-  AuthTokenInfo setPrincipalType(String principalType);
+  void setPrincipalType(String principalType);
 
   Boolean getIsAdmin();
 
-  AuthTokenInfo setIsAdmin(Boolean admin);
+  void setIsAdmin(Boolean admin);
 
   String getGroups();
 
-  AuthTokenInfo setGroups(String groups);
+  void setGroups(String groups);
 
   Integer getRefreshCount();
 
-  AuthTokenInfo setRefreshCount(Integer refreshCount);
+  void setRefreshCount(Integer refreshCount);
 }

@@ -18,56 +18,20 @@ package com.nike.cerberus.jwt;
 
 import com.nike.cerberus.domain.AuthTokenInfo;
 import java.time.OffsetDateTime;
-import lombok.Getter;
+import lombok.*;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CerberusJwtClaims implements AuthTokenInfo {
 
-  @Getter private String id;
-  @Getter private OffsetDateTime createdTs;
-  @Getter private OffsetDateTime expiresTs;
-  @Getter private String principal;
-  @Getter private String principalType;
-  @Getter private Boolean isAdmin;
-  @Getter private String groups;
-  @Getter private Integer refreshCount;
-
-  public CerberusJwtClaims setId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public CerberusJwtClaims setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public CerberusJwtClaims setExpiresTs(OffsetDateTime expiresTs) {
-    this.expiresTs = expiresTs;
-    return this;
-  }
-
-  public CerberusJwtClaims setPrincipal(String principal) {
-    this.principal = principal;
-    return this;
-  }
-
-  public CerberusJwtClaims setPrincipalType(String principalType) {
-    this.principalType = principalType;
-    return this;
-  }
-
-  public CerberusJwtClaims setIsAdmin(Boolean admin) {
-    isAdmin = admin;
-    return this;
-  }
-
-  public CerberusJwtClaims setGroups(String groups) {
-    this.groups = groups;
-    return this;
-  }
-
-  public CerberusJwtClaims setRefreshCount(Integer refreshCount) {
-    this.refreshCount = refreshCount;
-    return this;
-  }
+  private String id;
+  private OffsetDateTime createdTs;
+  private OffsetDateTime expiresTs;
+  private String principal;
+  private String principalType;
+  private Boolean isAdmin;
+  private String groups;
+  private Integer refreshCount;
 }

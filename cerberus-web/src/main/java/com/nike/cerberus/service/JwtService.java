@@ -143,18 +143,19 @@ public class JwtService {
     }
     String subject = claims.getSubject();
     CerberusJwtClaims cerberusJwtClaims =
-        new CerberusJwtClaims()
-            .setId(claims.getId())
-            .setPrincipal(subject)
-            .setExpiresTs(
+        CerberusJwtClaims.builder()
+            .id(claims.getId())
+            .principal(subject)
+            .expiresTs(
                 OffsetDateTime.ofInstant(
                     claims.getExpiration().toInstant(), ZoneId.systemDefault()))
-            .setCreatedTs(
+            .createdTs(
                 OffsetDateTime.ofInstant(claims.getIssuedAt().toInstant(), ZoneId.systemDefault()))
-            .setPrincipalType(claims.get(PRINCIPAL_TYPE_CLAIM_NAME, String.class))
-            .setGroups(claims.get(GROUP_CLAIM_NAME, String.class))
-            .setIsAdmin(claims.get(IS_ADMIN_CLAIM_NAME, Boolean.class))
-            .setRefreshCount(claims.get(REFRESH_COUNT_CLAIM_NAME, Integer.class));
+            .principalType(claims.get(PRINCIPAL_TYPE_CLAIM_NAME, String.class))
+            .groups(claims.get(GROUP_CLAIM_NAME, String.class))
+            .isAdmin(claims.get(IS_ADMIN_CLAIM_NAME, Boolean.class))
+            .refreshCount(claims.get(REFRESH_COUNT_CLAIM_NAME, Integer.class))
+            .build();
 
     return Optional.of(cerberusJwtClaims);
   }

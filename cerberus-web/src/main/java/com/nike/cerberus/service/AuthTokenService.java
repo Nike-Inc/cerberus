@@ -147,15 +147,16 @@ public class AuthTokenService {
     String token;
 
     authTokenInfo =
-        new CerberusJwtClaims()
-            .setId(id)
-            .setCreatedTs(now)
-            .setExpiresTs(now.plusMinutes(ttlInMinutes))
-            .setPrincipal(principal)
-            .setPrincipalType(principalType.getName())
-            .setIsAdmin(isAdmin)
-            .setGroups(groups)
-            .setRefreshCount(refreshCount);
+        CerberusJwtClaims.builder()
+            .id(id)
+            .createdTs(now)
+            .expiresTs(now.plusMinutes(ttlInMinutes))
+            .principal(principal)
+            .principalType(principalType.getName())
+            .isAdmin(isAdmin)
+            .groups(groups)
+            .refreshCount(refreshCount)
+            .build();
     token = jwtService.generateJwtToken((CerberusJwtClaims) authTokenInfo);
     return getCerberusAuthTokenFromRecord(token, authTokenInfo);
   }
@@ -171,8 +172,6 @@ public class AuthTokenService {
       OffsetDateTime now) {
 
     String token = authTokenGenerator.generateSecureToken();
-    OffsetDateTime now = dateTimeSupplier.get();
-
     AuthTokenRecord tokenRecord =
         AuthTokenRecord.builder()
             .id(id)
@@ -192,16 +191,17 @@ public class AuthTokenService {
   }
 
   private CerberusAuthToken getCerberusAuthTokenFromRecord(
-      String token, AuthTokenRecord tokenRecord) {
-    return CerberusAuthToken.builder()
-        .token(token)
-        .created(tokenRecord.getCreatedTs())
-        .expires(tokenRecord.getExpiresTs())
-        .principal(tokenRecord.getPrincipal())
-        .principalType(PrincipalType.fromName(tokenRecord.getPrincipalType()))
-        .isAdmin(tokenRecord.getIsAdmin())
-        .groups(tokenRecord.getGroups())
-        .refreshCount(tokenRecord.getRefreshCount())
+      String token, AuthTokenInfo authTokenInfo) {
+    return CerberusAuthToken.Builder.create()
+        .withToken(token)
+        .withCreated(authTokenInfo.getCreatedTs())
+        .withExpires(authTokenInfo.getExpiresTs())
+        .withPrincipal(authTokenInfo.getPrincipal())
+        .withPrincipalType(PrincipalType.fromName(authTokenInfo.getPrincipalType()))
+        .withIsAdmin(authTokenInfo.getIsAdmin())
+        .withGroups(authTokenInfo.getGroups())
+        .withRefreshCount(authTokenInfo.getRefreshCount())
+        .withId(authTokenInfo.getId())
         .build();
   }
 
