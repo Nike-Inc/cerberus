@@ -488,7 +488,7 @@ public class AuthenticationService {
           .build();
     }
 
-    revoke(authPrincipal.getToken());
+    revoke(authPrincipal, authPrincipal.getTokenExpires());
 
     final AuthResponse authResponse = new AuthResponse();
     authResponse.setStatus(AuthStatus.SUCCESS);
@@ -502,9 +502,12 @@ public class AuthenticationService {
     return authResponse;
   }
 
-  /** @param authToken Auth Token to be revoked */
-  public void revoke(final String authToken) {
-    authTokenService.revokeToken(authToken);
+  /**
+   * @param cerberusPrincipal Auth principal to be revoked
+   * @param tokenExpires Token expire timestamp
+   */
+  public void revoke(final CerberusPrincipal cerberusPrincipal, OffsetDateTime tokenExpires) {
+    authTokenService.revokeToken(cerberusPrincipal, tokenExpires);
   }
 
   /**

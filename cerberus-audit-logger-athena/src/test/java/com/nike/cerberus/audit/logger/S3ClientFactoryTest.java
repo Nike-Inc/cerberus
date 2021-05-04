@@ -13,4 +13,16 @@ public class S3ClientFactoryTest {
     AmazonS3 s3Instance2 = s3ClientFactory.getClient("region-1");
     Assert.assertSame(s3Instance1, s3Instance2);
   }
+
+  @Test
+  public void testS3ClientFactoryDoesNotThrowsNPEWhenEmptyStringIsPassedAsRegion() {
+    S3ClientFactory s3ClientFactory = new S3ClientFactory();
+    s3ClientFactory.getClient("");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testS3ClientFactoryThrowsNPEWhenNullRegionIsPassed() {
+    S3ClientFactory s3ClientFactory = new S3ClientFactory();
+    s3ClientFactory.getClient(null);
+  }
 }

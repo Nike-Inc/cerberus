@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.service;
 
+import static java.util.Optional.ofNullable;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.nike.cerberus.dao.SecureDataVersionDao;
@@ -23,6 +25,7 @@ import com.nike.cerberus.domain.*;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -223,7 +226,7 @@ public class SecureDataVersionService {
               .build();
     }
 
-    return Optional.ofNullable(newSecureDataVersionRecord);
+    return ofNullable(newSecureDataVersionRecord);
   }
 
   public Map<String, String> parseVersionMetadata(SecureDataVersion secureDataVersion) {
@@ -235,10 +238,16 @@ public class SecureDataVersionService {
 
     metadata.put("version_id", secureDataVersion.getId());
     metadata.put("action", secureDataVersion.getAction());
-    metadata.put("action_ts", secureDataVersion.getActionTs().toString());
+    metadata.put(
+        "action_ts",
+        ofNullable(secureDataVersion.getActionTs()).map(OffsetDateTime::toString).orElse(null));
     metadata.put("action_principal", secureDataVersion.getActionPrincipal());
     metadata.put("version_created_by", secureDataVersion.getVersionCreatedBy());
-    metadata.put("version_created_ts", secureDataVersion.getVersionCreatedTs().toString());
+    metadata.put(
+        "version_created_ts",
+        ofNullable(secureDataVersion.getVersionCreatedTs())
+            .map(OffsetDateTime::toString)
+            .orElse(null));
 
     return metadata;
   }

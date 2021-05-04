@@ -17,24 +17,21 @@
 package com.nike.cerberus.service;
 
 import static com.nike.cerberus.service.AuthenticationService.SYSTEM_USER;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.codahale.metrics.Counter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.dao.SecureDataDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
-import com.nike.cerberus.domain.SecureData;
-import com.nike.cerberus.domain.SecureDataType;
+import com.nike.cerberus.domain.*;
 import com.nike.cerberus.metric.MetricsService;
+import com.nike.cerberus.record.DataKeyInfo;
 import com.nike.cerberus.record.SecureDataRecord;
 import com.nike.cerberus.record.SecureDataVersionRecord;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -42,17 +39,15 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 public class SecureDataServiceTest {
 
@@ -79,11 +74,17 @@ public class SecureDataServiceTest {
   private ObjectMapper objectMapper;
 
   private SecureDataService secureDataService;
+  @Mock private Counter successCounter;
+  @Mock private Counter failureCounter;
 
   @Before
   public void before() {
     initMocks(this);
     objectMapper = new ObjectMapper();
+    Mockito.when(metricsService.getOrCreateCounter("cms.encryption.reencrypt.success", null))
+        .thenReturn(successCounter);
+    Mockito.when(metricsService.getOrCreateCounter("cms.encryption.reencrypt.fail", null))
+        .thenReturn(failureCounter);
     secureDataService =
         new SecureDataService(
             secureDataDao,
@@ -567,5 +568,214 @@ public class SecureDataServiceTest {
             null,
             principal,
             null);
+  }
+
+  @Test
+  public void testRotateDataKeys() {
+    DataKeyInfo secureDataKeyInfo = getDataKeyInfo(Source.SECURE_DATA);
+    DataKeyInfo secureDataVersionKeyInfo = getDataKeyInfo(Source.SECURE_DATA_VERSION);
+    List<DataKeyInfo> dataKeyInfoList = new ArrayList<>();
+    dataKeyInfoList.add(secureDataKeyInfo);
+    dataKeyInfoList.add(secureDataVersionKeyInfo);
+    dataKeyInfoList.add(secureDataKeyInfo);
+    dataKeyInfoList.add(secureDataVersionKeyInfo);
+    SecureDataRecord secureDataRecord = getSecureDataRecord();
+    Mockito.when(secureDataDao.readSecureDataByIdLocking("id"))
+        .thenReturn(Optional.of(secureDataRecord), Optional.empty());
+    SecureDataVersionRecord secureDataVersionRecord = getSecureVersionRecord();
+    Mockito.when(secureDataVersionDao.readSecureDataVersionByIdLocking("id"))
+        .thenReturn(Optional.of(secureDataVersionRecord), Optional.empty());
+    Mockito.when(
+            secureDataDao.getOldestDataKeyInfo(Mockito.any(OffsetDateTime.class), Mockito.eq(10)))
+        .thenReturn(dataKeyInfoList);
+    Mockito.when(dateTimeSupplier.get()).thenReturn(OffsetDateTime.now());
+    secureDataService.rotateDataKeys(10, 1000, 10);
+    Mockito.verify(successCounter, Mockito.times(2)).inc();
+    Mockito.verify(failureCounter, Mockito.times(2)).inc();
+  }
+
+  @Test
+  public void testGetTotalNumberOfFiles() {
+    Mockito.when(secureDataDao.countByType(SecureDataType.FILE)).thenReturn(10);
+    int totalNumberOfFiles = secureDataService.getTotalNumberOfFiles();
+    Assert.assertEquals(10, totalNumberOfFiles);
+  }
+
+  @Test
+  public void testSecureMetadata() {
+    SecureData secureData = getSecureData();
+    Map<String, String> metadata = secureDataService.parseSecretMetadata(secureData);
+    Assert.assertEquals(4, metadata.size());
+    Assert.assertTrue(checkAllKeysPresentInMetadataMap(metadata));
+    Assert.assertEquals(secureData.getCreatedBy(), metadata.get("created_by"));
+    Assert.assertEquals(secureData.getCreatedTs().toString(), metadata.get("created_ts"));
+    Assert.assertEquals(secureData.getLastUpdatedBy(), metadata.get("last_updated_by"));
+    Assert.assertEquals(secureData.getLastUpdatedTs().toString(), metadata.get("last_updated_ts"));
+  }
+
+  @Test
+  public void testSecureMetadataWhenAllValuesAreNull() {
+    SecureData secureData = Mockito.mock(SecureData.class);
+    Map<String, String> metadata = secureDataService.parseSecretMetadata(secureData);
+    Assert.assertEquals(4, metadata.size());
+    Assert.assertTrue(checkAllKeysPresentInMetadataMap(metadata));
+    Assert.assertNull(metadata.get("created_by"));
+    Assert.assertNull(metadata.get("created_ts"));
+    Assert.assertNull(metadata.get("last_updated_by"));
+    Assert.assertNull(metadata.get("last_updated_ts"));
+  }
+
+  @Test
+  public void testGetSecureDataRecordForPath() {
+    SecureDataRecord secureDataRecord = getSecureDataRecord();
+    Mockito.when(secureDataDao.readSecureDataByPath("sdbId", "path"))
+        .thenReturn(Optional.of(secureDataRecord));
+    Optional<SecureDataRecord> secureDataRecordForPath =
+        secureDataService.getSecureDataRecordForPath("sdbId", "path");
+    assertEquals(secureDataRecord, secureDataRecordForPath.get());
+  }
+
+  @Test
+  public void testGetTotalNumberOfKeyValuePairs() {
+    Mockito.when(secureDataDao.getSumTopLevelKeyValuePairs()).thenReturn(54);
+    int totalNumberOfKeyValuePairs = secureDataService.getTotalNumberOfKeyValuePairs();
+    Assert.assertEquals(54, totalNumberOfKeyValuePairs);
+  }
+
+  @Test
+  public void testGetTotalNumberOfDataNodes() {
+    Mockito.when(secureDataDao.getTotalNumberOfDataNodes()).thenReturn(43);
+    int totalNumberOfDataNodes = secureDataService.getTotalNumberOfDataNodes();
+    Assert.assertEquals(43, totalNumberOfDataNodes);
+  }
+
+  @Test
+  public void testGetPathsById() {
+    Set<String> paths = new HashSet<>();
+    paths.add("path");
+    Mockito.when(secureDataDao.getPathsBySdbId("sdbId")).thenReturn(paths);
+    Set<String> pathsBySdbId = secureDataService.getPathsBySdbId("sdbId");
+    assertEquals(paths, pathsBySdbId);
+    assertSame(paths, pathsBySdbId);
+  }
+
+  @Test
+  public void testListSecureFilesSummaries() throws JsonProcessingException {
+    Mockito.when(secureDataDao.countByPartialPathAndType("partialPath/", SecureDataType.FILE))
+        .thenReturn(50);
+    SecureDataRecord secureDataRecord = getSecureDataRecord();
+    List<SecureDataRecord> secureDataRecords = new ArrayList<>();
+    secureDataRecords.add(secureDataRecord);
+    Mockito.when(
+            secureDataDao.listSecureDataByPartialPathAndType(
+                "sdbId", "partialPath/", SecureDataType.FILE, 10, 10))
+        .thenReturn(secureDataRecords);
+    SecureFileSummaryResult secureFileSummaryResult =
+        secureDataService.listSecureFilesSummaries("sdbId", "partialPath", 10, 10);
+
+    List<SecureFileSummary> secureFileSummaries = secureFileSummaryResult.getSecureFileSummaries();
+    Assert.assertEquals(1, secureFileSummaries.size());
+    Assert.assertEquals(10, secureFileSummaryResult.getLimit());
+    Assert.assertEquals(10, secureFileSummaryResult.getOffset());
+    Assert.assertEquals(50, secureFileSummaryResult.getTotalFileCount());
+    Assert.assertEquals(
+        "sdbBoxId", secureFileSummaryResult.getSecureFileSummaries().get(0).getSdboxId());
+    Assert.assertEquals("", secureFileSummaryResult.getSecureFileSummaries().get(0).getName());
+    Assert.assertEquals(
+        10, secureFileSummaryResult.getSecureFileSummaries().get(0).getSizeInBytes());
+    Assert.assertEquals("path", secureFileSummaryResult.getSecureFileSummaries().get(0).getPath());
+    Assert.assertEquals(
+        "user", secureFileSummaryResult.getSecureFileSummaries().get(0).getCreatedBy());
+    Assert.assertEquals(Integer.valueOf(20), secureFileSummaryResult.getNextOffset());
+  }
+
+  @Test
+  public void testReadFileMetadataOnlyWhenFileIsNotPresent() {
+    Mockito.when(secureDataDao.readMetadataByPathAndType("sdbId", "path", SecureDataType.FILE))
+        .thenReturn(Optional.empty());
+    Optional<SecureFileSummary> secureFileSummary =
+        secureDataService.readFileMetadataOnly("sdbId", "path");
+    Assert.assertFalse(secureFileSummary.isPresent());
+  }
+
+  @Test
+  public void testReadFileMetadataOnlyWhenFileIsPresent() {
+    SecureDataRecord secureDataRecord = getSecureDataRecord();
+    secureDataRecord.setPath("path/record");
+    Mockito.when(secureDataDao.readMetadataByPathAndType("sdbId", "path", SecureDataType.FILE))
+        .thenReturn(Optional.of(secureDataRecord));
+    Optional<SecureFileSummary> secureFileSummaryOptional =
+        secureDataService.readFileMetadataOnly("sdbId", "path");
+    Assert.assertTrue(secureFileSummaryOptional.isPresent());
+    SecureFileSummary secureFileSummary = secureFileSummaryOptional.get();
+    Assert.assertEquals(secureDataRecord.getCreatedTs(), secureFileSummary.getCreatedTs());
+    Assert.assertEquals(secureDataRecord.getCreatedBy(), secureFileSummary.getCreatedBy());
+    Assert.assertEquals(secureDataRecord.getLastUpdatedTs(), secureFileSummary.getLastUpdatedTs());
+    Assert.assertEquals(secureDataRecord.getLastUpdatedBy(), secureFileSummary.getLastUpdatedBy());
+    Assert.assertEquals(secureDataRecord.getSizeInBytes(), secureFileSummary.getSizeInBytes());
+    Assert.assertEquals(secureDataRecord.getPath(), secureFileSummary.getPath());
+    Assert.assertEquals(secureDataRecord.getSdboxId(), secureFileSummary.getSdboxId());
+    Assert.assertEquals("record", secureFileSummary.getName());
+  }
+
+  private boolean checkAllKeysPresentInMetadataMap(Map<String, String> metadata) {
+    return metadata.containsKey("created_by")
+        && metadata.containsKey("created_ts")
+        && metadata.containsKey("last_updated_by")
+        && metadata.containsKey("last_updated_ts");
+  }
+
+  private SecureData getSecureData() {
+    SecureData secureData =
+        new SecureData()
+            .setData("data")
+            .setId("id")
+            .setCreatedBy("createdBy")
+            .setCreatedTs(OffsetDateTime.MIN)
+            .setLastUpdatedBy("lastUpdatedBy")
+            .setLastUpdatedTs(OffsetDateTime.MAX);
+    return secureData;
+  }
+
+  private SecureDataVersionRecord getSecureVersionRecord() {
+    SecureDataVersionRecord secureDataVersionRecord =
+        new SecureDataVersionRecord()
+            .setPath("path")
+            .setType(SecureDataType.FILE)
+            .setVersionCreatedTs(OffsetDateTime.MAX)
+            .setVersionCreatedBy("user")
+            .setActionTs(OffsetDateTime.MAX)
+            .setAction("action")
+            .setSizeInBytes(0)
+            .setSdboxId("sdbBoId")
+            .setLastRotatedTs(OffsetDateTime.MAX)
+            .setEncryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
+            .setActionPrincipal("principal")
+            .setId("id");
+    return secureDataVersionRecord;
+  }
+
+  private SecureDataRecord getSecureDataRecord() {
+    SecureDataRecord secureDataRecord =
+        new SecureDataRecord()
+            .setCreatedBy("user")
+            .setCreatedTs(OffsetDateTime.MAX)
+            .setId(0)
+            .setPath("path")
+            .setEncryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
+            .setLastRotatedTs(OffsetDateTime.MAX)
+            .setLastUpdatedBy("user")
+            .setLastUpdatedTs(OffsetDateTime.MAX)
+            .setSdboxId("sdbBoxId")
+            .setSizeInBytes(10)
+            .setTopLevelKVCount(9)
+            .setType(SecureDataType.FILE);
+    return secureDataRecord;
+  }
+
+  private DataKeyInfo getDataKeyInfo(Source source) {
+    DataKeyInfo dataKeyInfo =
+        new DataKeyInfo().setId("id").setLastRotatedTs(OffsetDateTime.MAX).setSource(source);
+    return dataKeyInfo;
   }
 }

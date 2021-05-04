@@ -5,6 +5,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.AuditLogsS3TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.FiveMinuteRollingFileAppender;
 import ch.qos.logback.core.util.FileSize;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -23,5 +24,6 @@ public class AthenaAuditLoggerConfigurationTest {
         .setParent(Mockito.any(FiveMinuteRollingFileAppender.class));
     Mockito.verify(auditLogsS3TimeBasedRollingPolicy).setTotalSizeCap(Mockito.any(FileSize.class));
     Mockito.verify(auditLogsS3TimeBasedRollingPolicy).start();
+    Assert.assertNotNull(athenaAuditLoggerConfiguration.getAthenaAuditLogger());
   }
 }

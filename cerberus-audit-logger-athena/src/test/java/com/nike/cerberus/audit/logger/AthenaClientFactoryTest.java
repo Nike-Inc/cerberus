@@ -13,4 +13,16 @@ public class AthenaClientFactoryTest {
     AmazonAthena clientInstance2 = athenaClientFactory.getClient("region-2");
     Assert.assertSame(clientInstance1, clientInstance2);
   }
+
+  @Test
+  public void testGetClientDoesNotThrowNPEWhenRegionIsEmptyString() {
+    AthenaClientFactory athenaClientFactory = new AthenaClientFactory();
+    athenaClientFactory.getClient("");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testGetClientThrowsNPEWhenRegionIsNull() {
+    AthenaClientFactory athenaClientFactory = new AthenaClientFactory();
+    athenaClientFactory.getClient(null);
+  }
 }
