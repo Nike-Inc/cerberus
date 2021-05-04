@@ -396,14 +396,13 @@ public class AuthenticationService {
         authTokenService.generateToken(
             principal, principalType, isAdmin, groups, ttlInMinutes, refreshCount);
 
-    return AuthTokenResponse.builder()
-        .clientToken(tokenResult.getToken())
-        .policies(Collections.emptySet())
-        .metadata(metadata)
-        .leaseDuration(
+    return new AuthTokenResponse()
+        .setClientToken(tokenResult.getToken())
+        .setPolicies(Collections.emptySet())
+        .setMetadata(metadata)
+        .setLeaseDuration(
             Duration.between(tokenResult.getCreated(), tokenResult.getExpires()).getSeconds())
-        .renewable(PrincipalType.USER.equals(principalType))
-        .build();
+        .setRenewable(PrincipalType.USER.equals(principalType));
   }
 
   /**

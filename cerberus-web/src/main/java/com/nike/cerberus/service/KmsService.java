@@ -259,13 +259,12 @@ public class KmsService {
     keys.forEach(
         key -> {
           AuthKmsKeyMetadata metadata =
-              AuthKmsKeyMetadata.builder()
-                  .awsKmsKeyId(key.getAwsKmsKeyId())
-                  .awsRegion(key.getAwsRegion())
-                  .createdTs(key.getCreatedTs())
-                  .lastUpdatedTs(key.getLastUpdatedTs())
-                  .lastValidatedTs(key.getLastValidatedTs())
-                  .build();
+              new AuthKmsKeyMetadata()
+                  .setAwsKmsKeyId(key.getAwsKmsKeyId())
+                  .setAwsRegion(key.getAwsRegion())
+                  .setCreatedTs(key.getCreatedTs())
+                  .setLastUpdatedTs(key.getLastUpdatedTs())
+                  .setLastValidatedTs(key.getLastValidatedTs());
 
           awsIamRoleDao
               .getIamRoleById(key.getAwsIamRoleId())

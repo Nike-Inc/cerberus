@@ -19,15 +19,11 @@ package com.nike.cerberus.record;
 import com.nike.cerberus.domain.SecureDataType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class SecureDataVersionRecord {
 
   private String id;

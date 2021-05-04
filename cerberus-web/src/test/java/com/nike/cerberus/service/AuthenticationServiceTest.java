@@ -358,13 +358,12 @@ public class AuthenticationServiceTest {
       tests_that_validateAuthPayloadSizeAndTruncateIfLargerThanMaxKmsSupportedSize_returns_the_original_payload_if_the_size_can_be_encrypted_by_kms()
           throws JsonProcessingException {
     AuthTokenResponse response =
-        AuthTokenResponse.builder()
-            .clientToken(UUID.randomUUID().toString())
-            .leaseDuration(3600)
-            .metadata(new HashMap<>())
-            .policies(new HashSet<>())
-            .renewable(false)
-            .build();
+        new AuthTokenResponse()
+            .setClientToken(UUID.randomUUID().toString())
+            .setLeaseDuration(3600)
+            .setMetadata(new HashMap<>())
+            .setPolicies(new HashSet<>())
+            .setRenewable(false);
 
     byte[] serializedAuth = new ObjectMapper().writeValueAsBytes(response);
 
@@ -386,13 +385,12 @@ public class AuthenticationServiceTest {
     }
 
     AuthTokenResponse response =
-        AuthTokenResponse.builder()
-            .clientToken(UUID.randomUUID().toString())
-            .leaseDuration(3600)
-            .metadata(meta)
-            .policies(policies)
-            .renewable(false)
-            .build();
+        new AuthTokenResponse()
+            .setClientToken(UUID.randomUUID().toString())
+            .setLeaseDuration(3600)
+            .setMetadata(meta)
+            .setPolicies(policies)
+            .setRenewable(false);
 
     byte[] serializedAuth = new ObjectMapper().writeValueAsBytes(response);
     assertTrue(serializedAuth.length > AuthenticationService.KMS_SIZE_LIMIT);

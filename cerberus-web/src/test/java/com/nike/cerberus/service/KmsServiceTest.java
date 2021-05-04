@@ -369,14 +369,13 @@ public class KmsServiceTest {
 
     List<AuthKmsKeyMetadata> expected =
         ImmutableList.of(
-            AuthKmsKeyMetadata.builder()
-                .awsIamRoleArn("iam-role-arn")
-                .awsKmsKeyId("key-id")
-                .awsRegion("us-west-2")
-                .createdTs(create)
-                .lastUpdatedTs(update)
-                .lastValidatedTs(validate)
-                .build());
+            new AuthKmsKeyMetadata()
+                .setAwsIamRoleArn("iam-role-arn")
+                .setAwsKmsKeyId("key-id")
+                .setAwsRegion("us-west-2")
+                .setCreatedTs(create)
+                .setLastUpdatedTs(update)
+                .setLastValidatedTs(validate));
 
     when(awsIamRoleDao.getAllKmsKeys()).thenReturn(Optional.ofNullable(keyRecords));
     when(awsIamRoleDao.getIamRoleById("iam-role-id"))
