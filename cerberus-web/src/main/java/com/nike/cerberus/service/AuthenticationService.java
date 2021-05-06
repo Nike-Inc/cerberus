@@ -487,7 +487,7 @@ public class AuthenticationService {
           .build();
     }
 
-    revoke(authPrincipal.getToken());
+    revoke(authPrincipal, authPrincipal.getTokenExpires());
     final AuthData authData =
         AuthData.builder()
             .username(authPrincipal.getName())
