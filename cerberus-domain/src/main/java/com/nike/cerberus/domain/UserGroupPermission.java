@@ -19,13 +19,17 @@ package com.nike.cerberus.domain;
 import com.nike.cerberus.validation.group.Updatable;
 import java.time.OffsetDateTime;
 import javax.validation.groups.Default;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 /** Represents a permission granted to a user group with regards to a safe deposit box. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserGroupPermission {
 
   private String id;

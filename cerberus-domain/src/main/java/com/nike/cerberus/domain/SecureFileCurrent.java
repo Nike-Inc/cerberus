@@ -19,11 +19,15 @@ package com.nike.cerberus.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SecureFileCurrent implements SecureFile {
 
   @JsonIgnore private String id;

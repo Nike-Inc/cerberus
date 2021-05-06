@@ -20,12 +20,16 @@ import static com.nike.cerberus.domain.DomainConstants.AWS_IAM_PRINCIPAL_ARN_REG
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents the IAM principal credentials sent during authentication. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AwsIamKmsAuthRequest {
 
   @Pattern(

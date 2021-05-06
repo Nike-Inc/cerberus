@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents a summary for a specific safe deposit box. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SafeDepositBoxSummary {
 
   private String id;

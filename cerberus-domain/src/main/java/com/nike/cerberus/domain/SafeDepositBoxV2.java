@@ -26,14 +26,18 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.groups.Default;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 /** Represents a logical grouping of secrets. */
 @UniqueOwner(groups = {Default.class, Updatable.class})
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SafeDepositBoxV2 implements SafeDepositBox {
 
   private String id;

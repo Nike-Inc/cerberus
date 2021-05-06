@@ -17,12 +17,12 @@
 package com.nike.cerberus.domain;
 
 import java.util.List;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import lombok.*;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class VaultStyleErrorResponse {
 
   @Singular private List<String> errors;

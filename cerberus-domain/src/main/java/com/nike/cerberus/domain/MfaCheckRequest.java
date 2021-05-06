@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** MFA check request. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MfaCheckRequest {
 
   private String stateToken;

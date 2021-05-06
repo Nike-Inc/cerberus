@@ -23,13 +23,17 @@ import com.nike.cerberus.validation.group.Updatable;
 import java.time.OffsetDateTime;
 import javax.validation.constraints.Pattern;
 import javax.validation.groups.Default;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotBlank;
 
 /** Represents a permission granted to an IAM role with regards to a safe deposit box */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class IamRolePermission {
 
   private String id;

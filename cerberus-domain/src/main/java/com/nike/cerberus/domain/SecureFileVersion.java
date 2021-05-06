@@ -18,11 +18,15 @@ package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SecureFileVersion implements SecureFile {
 
   private String id;
