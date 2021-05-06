@@ -19,12 +19,16 @@ package com.nike.cerberus.auth.connector;
 import com.nike.cerberus.domain.AuthTokenResponse;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents the authentication data returned by the auth connector. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthData {
 
   private String userId;
