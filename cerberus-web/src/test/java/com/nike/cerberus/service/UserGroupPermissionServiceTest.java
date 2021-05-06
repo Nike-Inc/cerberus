@@ -331,16 +331,17 @@ public class UserGroupPermissionServiceTest {
 
   private UserGroupPermissionRecord getUserGroupPermissionRecord() {
     UserGroupPermissionRecord userGroupPermissionRecord =
-        new UserGroupPermissionRecord()
-            .setUserGroupId("userGroupId")
-            .setId("id")
-            .setRoleId("roleId")
-            .setSdboxId("sdBoxId")
-            .setCreatedBy("user")
-            .setLastUpdatedBy("user")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setLastUpdatedTs(OffsetDateTime.MAX)
-            .setUserGroupId("id");
+        UserGroupPermissionRecord.builder()
+            .userGroupId("userGroupId")
+            .id("id")
+            .roleId("roleId")
+            .sdboxId("sdBoxId")
+            .createdBy("user")
+            .lastUpdatedBy("user")
+            .createdTs(OffsetDateTime.MAX)
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .userGroupId("id")
+            .build();
     return userGroupPermissionRecord;
   }
 }

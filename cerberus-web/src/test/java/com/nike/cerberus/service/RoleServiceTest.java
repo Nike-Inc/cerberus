@@ -105,13 +105,14 @@ public class RoleServiceTest {
 
   private RoleRecord createRoleRecord() {
     RoleRecord roleRecord =
-        new RoleRecord()
-            .setId("id")
-            .setCreatedBy("user")
-            .setName("name")
-            .setLastUpdatedBy("user")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setLastUpdatedTs(OffsetDateTime.MAX);
+        RoleRecord.builder()
+            .id("id")
+            .createdBy("user")
+            .name("name")
+            .lastUpdatedBy("user")
+            .createdTs(OffsetDateTime.MAX)
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .build();
     return roleRecord;
   }
 }

@@ -156,15 +156,16 @@ public class CategoryServiceTest {
 
   private CategoryRecord constructCategoryRecord() {
     CategoryRecord categoryRecord =
-        new CategoryRecord()
-            .setId("id")
-            .setLastUpdatedBy("path")
-            .setDisplayName("displayName")
-            .setCreatedBy("createdBy")
-            .setLastUpdatedBy("lastUpdateBy")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setLastUpdatedTs(OffsetDateTime.MAX)
-            .setPath("path");
+        CategoryRecord.builder()
+            .id("id")
+            .lastUpdatedBy("path")
+            .displayName("displayName")
+            .createdBy("createdBy")
+            .lastUpdatedBy("lastUpdateBy")
+            .createdTs(OffsetDateTime.MAX)
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .path("path")
+            .build();
     return categoryRecord;
   }
 

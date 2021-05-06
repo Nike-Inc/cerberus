@@ -254,28 +254,29 @@ public class SecureDataDaoTest {
 
   private DataKeyInfo getDataKeyInfo() {
     DataKeyInfo dataKeyInfo =
-        new DataKeyInfo()
-            .setId("id")
-            .setLastRotatedTs(OffsetDateTime.MAX)
-            .setSource(Source.SECURE_DATA);
+        DataKeyInfo.builder()
+            .id("id")
+            .lastRotatedTs(OffsetDateTime.MAX)
+            .source(Source.SECURE_DATA)
+            .build();
     return dataKeyInfo;
   }
 
   private SecureDataRecord getSecureDataRecord() {
     SecureDataRecord secureDataRecord =
-        new SecureDataRecord()
-            .setId(1)
-            .setSdboxId("sdbBoxId")
-            .setPath("path")
-            .setEncryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
-            .setType(SecureDataType.FILE)
-            .setSizeInBytes(1)
-            .setTopLevelKVCount(2)
-            .setCreatedBy("user")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setLastUpdatedBy("user")
-            .setLastUpdatedTs(OffsetDateTime.MAX)
-            .setLastRotatedTs(OffsetDateTime.MAX);
+        SecureDataRecord.builder()
+            .sdboxId("sdbBoxId")
+            .path("path")
+            .encryptedBlob("blob".getBytes(StandardCharsets.UTF_8))
+            .type(SecureDataType.FILE)
+            .sizeInBytes(1)
+            .topLevelKVCount(2)
+            .createdBy("user")
+            .createdTs(OffsetDateTime.MAX)
+            .lastUpdatedBy("user")
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .lastRotatedTs(OffsetDateTime.MAX)
+            .build();
     return secureDataRecord;
   }
 }

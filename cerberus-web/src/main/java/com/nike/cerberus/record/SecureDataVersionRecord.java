@@ -39,6 +39,37 @@ public class SecureDataVersionRecord {
   private OffsetDateTime actionTs;
   private OffsetDateTime lastRotatedTs;
 
+  public SecureDataVersionRecord() {}
+
+  public SecureDataVersionRecord(
+      String id,
+      String sdboxId,
+      String path,
+      byte[] encryptedBlob,
+      SecureDataType type,
+      int sizeInBytes,
+      String action,
+      String versionCreatedBy,
+      OffsetDateTime versionCreatedTs,
+      String actionPrincipal,
+      OffsetDateTime actionTs,
+      OffsetDateTime lastRotatedTs) {
+    this.id = id;
+    this.sdboxId = sdboxId;
+    this.path = path;
+    this.encryptedBlob =
+        encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
+    ;
+    this.type = type;
+    this.sizeInBytes = sizeInBytes;
+    this.action = action;
+    this.versionCreatedBy = versionCreatedBy;
+    this.versionCreatedTs = versionCreatedTs;
+    this.actionPrincipal = actionPrincipal;
+    this.actionTs = actionTs;
+    this.lastRotatedTs = lastRotatedTs;
+  }
+
   public byte[] getEncryptedBlob() {
     return encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
   }

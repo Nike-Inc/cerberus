@@ -39,6 +39,37 @@ public class SecureDataRecord {
   private String lastUpdatedBy;
   private OffsetDateTime lastRotatedTs;
 
+  public SecureDataRecord() {}
+
+  public SecureDataRecord(
+      Integer id,
+      String sdboxId,
+      String path,
+      byte[] encryptedBlob,
+      SecureDataType type,
+      int sizeInBytes,
+      Integer topLevelKVCount,
+      OffsetDateTime createdTs,
+      String createdBy,
+      OffsetDateTime lastUpdatedTs,
+      String lastUpdatedBy,
+      OffsetDateTime lastRotatedTs) {
+    this.id = id;
+    this.sdboxId = sdboxId;
+    this.path = path;
+    this.encryptedBlob =
+        encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
+    ;
+    this.type = type;
+    this.sizeInBytes = sizeInBytes;
+    this.topLevelKVCount = topLevelKVCount;
+    this.createdTs = createdTs;
+    this.createdBy = createdBy;
+    this.lastUpdatedTs = lastUpdatedTs;
+    this.lastUpdatedBy = lastUpdatedBy;
+    this.lastRotatedTs = lastRotatedTs;
+  }
+
   public byte[] getEncryptedBlob() {
     return encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
   }

@@ -84,6 +84,7 @@ public class SecureDataDao {
             .path(path)
             .sdboxId(sdbId)
             .encryptedBlob(encryptedPayload)
+            .topLevelKVCount(topLevelKVPairCount)
             .type(type)
             .sizeInBytes(sizeInBytes)
             .createdBy(createdBy)
