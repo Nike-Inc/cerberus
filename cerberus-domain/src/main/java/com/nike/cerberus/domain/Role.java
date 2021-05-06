@@ -17,12 +17,16 @@
 package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents a specific role that can be assigned. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Role {
 
   private String id;

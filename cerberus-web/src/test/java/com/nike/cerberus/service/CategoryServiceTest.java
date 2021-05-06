@@ -170,14 +170,15 @@ public class CategoryServiceTest {
 
   private Category createCategory() {
     Category category =
-        new Category()
-            .setCreatedBy("createdBy")
-            .setCreatedTs(OffsetDateTime.MAX)
-            .setPath("path")
-            .setDisplayName("displayName")
-            .setLastUpdatedBy("lastUpdateBy")
-            .setLastUpdatedTs(OffsetDateTime.MAX)
-            .setId("id");
+        Category.builder()
+            .createdBy("createdBy")
+            .createdTs(OffsetDateTime.MAX)
+            .path("path")
+            .displayName("displayName")
+            .lastUpdatedBy("lastUpdateBy")
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .id("id")
+            .build();
     return category;
   }
 }

@@ -715,13 +715,14 @@ public class SecureDataServiceTest {
 
   private SecureData getSecureData() {
     SecureData secureData =
-        new SecureData()
-            .setData("data")
-            .setId("id")
-            .setCreatedBy("createdBy")
-            .setCreatedTs(OffsetDateTime.MIN)
-            .setLastUpdatedBy("lastUpdatedBy")
-            .setLastUpdatedTs(OffsetDateTime.MAX);
+        SecureData.builder()
+            .data("data")
+            .id("id")
+            .createdBy("createdBy")
+            .createdTs(OffsetDateTime.MIN)
+            .lastUpdatedBy("lastUpdatedBy")
+            .lastUpdatedTs(OffsetDateTime.MAX)
+            .build();
     return secureData;
   }
 
