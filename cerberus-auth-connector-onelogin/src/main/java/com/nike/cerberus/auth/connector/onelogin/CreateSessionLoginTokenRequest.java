@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing a create session login token request. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 class CreateSessionLoginTokenRequest {
 
   private String usernameOrEmail;

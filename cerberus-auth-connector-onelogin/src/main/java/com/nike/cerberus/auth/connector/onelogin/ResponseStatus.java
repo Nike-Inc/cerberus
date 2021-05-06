@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing the response status for all API calls. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 class ResponseStatus {
 
   private String type;

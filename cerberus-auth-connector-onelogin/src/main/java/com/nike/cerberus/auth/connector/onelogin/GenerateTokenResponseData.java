@@ -17,12 +17,16 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
 import java.time.OffsetDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing the payload of a generate token response. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 class GenerateTokenResponseData {
 
   private String accessToken;

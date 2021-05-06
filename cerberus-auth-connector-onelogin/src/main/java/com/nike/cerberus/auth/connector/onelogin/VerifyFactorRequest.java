@@ -16,12 +16,16 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing the payload of a verify factor request. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 class VerifyFactorRequest {
 
   private String deviceId;

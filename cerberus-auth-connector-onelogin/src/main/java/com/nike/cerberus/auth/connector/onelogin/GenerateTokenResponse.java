@@ -18,12 +18,16 @@ package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.LinkedList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing a generate token response. */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 class GenerateTokenResponse {
 
   private ResponseStatus status;

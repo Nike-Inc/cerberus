@@ -17,12 +17,16 @@
 package com.nike.cerberus.auth.connector.onelogin;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing the get user response. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 class GetUserResponse {
 
   private ResponseStatus status;

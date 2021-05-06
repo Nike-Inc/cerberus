@@ -21,12 +21,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** POJO representing the payload of a get user response. */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 class UserData {
 
   private OffsetDateTime activatedAt;
