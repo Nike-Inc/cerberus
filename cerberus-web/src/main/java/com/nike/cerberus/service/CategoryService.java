@@ -120,7 +120,7 @@ public class CategoryService {
     final CategoryRecord record = new CategoryRecord();
     record
         .setId(uuidSupplier.get())
-        .setPath(slugger.toSlug(category.getDisplayName()))
+        .setPath(Slugger.toSlug(category.getDisplayName()))
         .setDisplayName(category.getDisplayName())
         .setCreatedBy(user)
         .setLastUpdatedBy(user)
