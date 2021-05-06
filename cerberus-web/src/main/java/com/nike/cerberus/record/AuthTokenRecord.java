@@ -16,9 +16,10 @@
 
 package com.nike.cerberus.record;
 
+import com.nike.cerberus.domain.AuthTokenInfo;
 import java.time.OffsetDateTime;
 
-public class AuthTokenRecord {
+public class AuthTokenRecord implements AuthTokenInfo {
 
   private String id;
 

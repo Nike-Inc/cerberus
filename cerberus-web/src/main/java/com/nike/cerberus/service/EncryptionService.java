@@ -101,13 +101,21 @@ public class EncryptionService {
    * <p>http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
    */
   public String decrypt(String encryptedPayload, String sdbPath) {
-    ParsedCiphertext parsedCiphertext = CiphertextUtils.parse(encryptedPayload);
+    ParsedCiphertext parsedCiphertext = getParsedCipherText(encryptedPayload);
     try {
       return decrypt(parsedCiphertext, sdbPath);
     } catch (RuntimeException e) {
       log.error("Decrypt operation failed " + CiphertextUtils.toJson(parsedCiphertext), e);
       throw e;
     }
+  }
+
+  ParsedCiphertext getParsedCipherText(String encryptedPayload) {
+    return CiphertextUtils.parse(encryptedPayload);
+  }
+
+  ParsedCiphertext getParsedCipherText(byte[] encryptedPayload) {
+    return CiphertextUtils.parse(encryptedPayload);
   }
 
   /**
@@ -118,7 +126,7 @@ public class EncryptionService {
    * <p>http://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
    */
   public byte[] decrypt(byte[] encryptedPayload, String sdbPath) {
-    ParsedCiphertext parsedCiphertext = CiphertextUtils.parse(encryptedPayload);
+    ParsedCiphertext parsedCiphertext = getParsedCipherText(encryptedPayload);
     try {
       return decryptToBytes(parsedCiphertext, sdbPath);
     } catch (RuntimeException e) {
@@ -230,7 +238,7 @@ public class EncryptionService {
     if (!StringUtils.equals(pathFromEncryptionContext, sdbPath)) {
       log.error("EncryptionContext did not have expected path, possible tampering: " + sdbPath);
       throw new IllegalArgumentException(
-          "EncyptionContext did not have expected path, possible tampering: " + sdbPath);
+          "EncryptionContext did not have expected path, possible tampering: " + sdbPath);
     }
   }
 

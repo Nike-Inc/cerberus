@@ -26,7 +26,7 @@ public class AuditableEventContextTest {
 
   @Test
   public void testCheckAuthTokenIsEmptyIfPrincipleIsInstanceOfCerberusAuthToken() {
-    CerberusAuthToken cerberusAuthToken = new CerberusAuthToken();
+    CerberusAuthToken cerberusAuthToken = CerberusAuthToken.Builder.create().build();
     auditableEventContext.setPrincipal(cerberusAuthToken);
     Optional<CerberusAuthToken> principalAsCerberusPrincipal =
         auditableEventContext.getPrincipalAsCerberusPrincipal();
@@ -36,9 +36,9 @@ public class AuditableEventContextTest {
 
   @Test
   public void testGetPrincipalNameIfPrincipleIsInstanceOfCerberusAuthToken() {
-    CerberusAuthToken cerberusAuthToken = new CerberusAuthToken();
     String cerberusPrinciple = "cerberusPrinciple";
-    cerberusAuthToken.setPrincipal(cerberusPrinciple);
+    CerberusAuthToken cerberusAuthToken =
+        CerberusAuthToken.Builder.create().withPrincipal(cerberusPrinciple).build();
     auditableEventContext.setPrincipal(cerberusAuthToken);
     String principalName = auditableEventContext.getPrincipalName();
     Assert.assertEquals(cerberusPrinciple, principalName);

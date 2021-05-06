@@ -87,6 +87,10 @@ public class CerberusPrincipal implements Authentication {
     return cerberusAuthToken.getToken();
   }
 
+  public String getTokenId() {
+    return cerberusAuthToken.getId();
+  }
+
   public Set<String> getUserGroups() {
     if (cerberusAuthToken.getGroups() == null) {
       return new HashSet<>();
