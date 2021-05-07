@@ -19,15 +19,11 @@ package com.nike.cerberus.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class SecureFileCurrent implements SecureFile {
 
   @JsonIgnore private String id;
@@ -40,6 +36,32 @@ public class SecureFileCurrent implements SecureFile {
   private OffsetDateTime createdTs;
   private String lastUpdatedBy;
   private OffsetDateTime lastUpdatedTs;
+
+  public SecureFileCurrent() {}
+
+  public SecureFileCurrent(
+      String id,
+      String sdboxId,
+      String path,
+      byte[] data,
+      int sizeInBytes,
+      String name,
+      String createdBy,
+      OffsetDateTime createdTs,
+      String lastUpdatedBy,
+      OffsetDateTime lastUpdatedTs) {
+    this.id = id;
+    this.sdboxId = sdboxId;
+    this.path = path;
+    this.data = data != null ? Arrays.copyOf(data, data.length) : null;
+    ;
+    this.sizeInBytes = sizeInBytes;
+    this.name = name;
+    this.createdBy = createdBy;
+    this.createdTs = createdTs;
+    this.lastUpdatedBy = lastUpdatedBy;
+    this.lastUpdatedTs = lastUpdatedTs;
+  }
 
   public byte[] getData() {
     return data != null ? Arrays.copyOf(data, data.length) : null;

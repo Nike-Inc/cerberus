@@ -18,15 +18,11 @@ package com.nike.cerberus.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class SecureFileVersion implements SecureFile {
 
   private String id;
@@ -40,6 +36,31 @@ public class SecureFileVersion implements SecureFile {
   private OffsetDateTime versionCreatedTs;
   private String actionPrincipal;
   private OffsetDateTime actionTs;
+
+  public SecureFileVersion(
+      String id,
+      String sdboxId,
+      String path,
+      byte[] data,
+      String name,
+      int sizeInBytes,
+      String action,
+      String versionCreatedBy,
+      OffsetDateTime versionCreatedTs,
+      String actionPrincipal,
+      OffsetDateTime actionTs) {
+    this.id = id;
+    this.sdboxId = sdboxId;
+    this.path = path;
+    this.data = Arrays.copyOf(data, data.length);
+    this.name = name;
+    this.sizeInBytes = sizeInBytes;
+    this.action = action;
+    this.versionCreatedBy = versionCreatedBy;
+    this.versionCreatedTs = versionCreatedTs;
+    this.actionPrincipal = actionPrincipal;
+    this.actionTs = actionTs;
+  }
 
   public byte[] getData() {
     return Arrays.copyOf(data, data.length);
