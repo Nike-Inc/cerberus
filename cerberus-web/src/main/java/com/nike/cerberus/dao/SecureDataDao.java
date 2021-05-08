@@ -61,7 +61,7 @@ public class SecureDataDao {
             .createdTs(createdTs)
             .lastUpdatedBy(lastUpdatedBy)
             .lastUpdatedTs(lastUpdatedTs)
-            .lastRotatedTs(lastUpdatedTs)
+            .lastRotatedTs(lastUpdatedTs) // This is intentional
             .build());
   }
 
