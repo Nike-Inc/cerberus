@@ -265,6 +265,7 @@ public class SecureDataDaoTest {
   private SecureDataRecord getSecureDataRecord() {
     SecureDataRecord secureDataRecord =
         SecureDataRecord.builder()
+            .id(1)
             .sdboxId("sdbBoxId")
             .path("path")
             .encryptedBlob("blob".getBytes(StandardCharsets.UTF_8))

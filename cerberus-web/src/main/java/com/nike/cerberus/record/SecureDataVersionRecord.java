@@ -59,7 +59,6 @@ public class SecureDataVersionRecord {
     this.path = path;
     this.encryptedBlob =
         encryptedBlob != null ? Arrays.copyOf(encryptedBlob, encryptedBlob.length) : null;
-    ;
     this.type = type;
     this.sizeInBytes = sizeInBytes;
     this.action = action;
