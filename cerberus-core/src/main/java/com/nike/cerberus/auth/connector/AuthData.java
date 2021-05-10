@@ -19,8 +19,16 @@ package com.nike.cerberus.auth.connector;
 import com.nike.cerberus.domain.AuthTokenResponse;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /** Represents the authentication data returned by the auth connector. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthData {
 
   private String userId;
@@ -31,61 +39,7 @@ public class AuthData {
 
   private String factorResult;
 
-  private List<AuthMfaDevice> devices = new LinkedList<>();
+  @Builder.Default private List<AuthMfaDevice> devices = new LinkedList<>();
 
   private AuthTokenResponse clientToken;
-
-  public String getUserId() {
-    return userId;
-  }
-
-  public AuthData setUserId(String userId) {
-    this.userId = userId;
-    return this;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public AuthData setUsername(String username) {
-    this.username = username;
-    return this;
-  }
-
-  public String getStateToken() {
-    return stateToken;
-  }
-
-  public AuthData setStateToken(String stateToken) {
-    this.stateToken = stateToken;
-    return this;
-  }
-
-  public List<AuthMfaDevice> getDevices() {
-    return devices;
-  }
-
-  public AuthData setDevices(List<AuthMfaDevice> devices) {
-    this.devices = devices;
-    return this;
-  }
-
-  public AuthTokenResponse getClientToken() {
-    return clientToken;
-  }
-
-  public AuthData setClientToken(AuthTokenResponse clientToken) {
-    this.clientToken = clientToken;
-    return this;
-  }
-
-  public String getFactorResult() {
-    return factorResult;
-  }
-
-  public AuthData setFactorResult(String factorResult) {
-    this.factorResult = factorResult;
-    return this;
-  }
 }
