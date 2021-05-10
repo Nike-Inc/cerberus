@@ -75,7 +75,6 @@ public class SecureFileVersion implements SecureFile {
 
     public SecureFileVersionBuilder data(byte[] data) {
       this.data = Arrays.copyOf(data, data.length);
-      ;
       return this;
     }
   }

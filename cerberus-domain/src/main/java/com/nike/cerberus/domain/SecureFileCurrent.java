@@ -54,7 +54,6 @@ public class SecureFileCurrent implements SecureFile {
     this.sdboxId = sdboxId;
     this.path = path;
     this.data = data != null ? Arrays.copyOf(data, data.length) : null;
-    ;
     this.sizeInBytes = sizeInBytes;
     this.name = name;
     this.createdBy = createdBy;
