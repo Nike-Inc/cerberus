@@ -42,8 +42,8 @@ public class OneLoginAuthConnector implements AuthConnector {
   @Override
   public AuthResponse authenticate(String username, String password) {
     final SessionLoginTokenData sessionLoginToken = createSessionLoginToken(username, password);
-    final AuthData authData = new AuthData();
-    final AuthResponse authResponse = new AuthResponse().setData(authData);
+    final AuthData authData = AuthData.builder().build();
+    final AuthResponse authResponse = AuthResponse.builder().data(authData).build();
 
     if (StringUtils.isNotBlank(sessionLoginToken.getStateToken())) {
       authResponse.setStatus(AuthStatus.MFA_REQUIRED);
@@ -56,9 +56,10 @@ public class OneLoginAuthConnector implements AuthConnector {
                   authData
                       .getDevices()
                       .add(
-                          new AuthMfaDevice()
-                              .setId(String.valueOf(d.getDeviceId()))
-                              .setName(d.getDeviceType())));
+                          AuthMfaDevice.builder()
+                              .id(String.valueOf(d.getDeviceId()))
+                              .name(d.getDeviceType())
+                              .build()));
     } else {
       authResponse.setStatus(AuthStatus.SUCCESS);
     }
@@ -94,8 +95,8 @@ public class OneLoginAuthConnector implements AuthConnector {
   @Override
   public AuthResponse mfaCheck(String stateToken, String deviceId, String otpToken) {
     final SessionLoginTokenData sessionLoginToken = verifyFactor(deviceId, stateToken, otpToken);
-    final AuthData authData = new AuthData();
-    final AuthResponse authResponse = new AuthResponse().setData(authData);
+    final AuthData authData = AuthData.builder().build();
+    final AuthResponse authResponse = AuthResponse.builder().data(authData).build();
 
     authResponse.setStatus(AuthStatus.SUCCESS);
     authData.setUserId(String.valueOf(sessionLoginToken.getUser().getId()));
