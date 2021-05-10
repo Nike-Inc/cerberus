@@ -16,32 +16,13 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /** POJO representing a generate token request. */
+@Data
+@NoArgsConstructor
 class GenerateTokenRequest {
 
   private String grantType = "client_credentials";
-
-  public String getGrantType() {
-    return grantType;
-  }
-
-  public GenerateTokenRequest setGrantType(String grantType) {
-    this.grantType = grantType;
-    return this;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    GenerateTokenRequest that = (GenerateTokenRequest) o;
-
-    return grantType != null ? grantType.equals(that.grantType) : that.grantType == null;
-  }
-
-  @Override
-  public int hashCode() {
-    return grantType != null ? grantType.hashCode() : 0;
-  }
 }

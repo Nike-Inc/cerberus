@@ -16,7 +16,16 @@
 
 package com.nike.cerberus.auth.connector.onelogin;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /** POJO representing the session user. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 class SessionUser {
 
   private long id;
@@ -28,49 +37,4 @@ class SessionUser {
   private String firstname;
 
   private String lastname;
-
-  public long getId() {
-    return id;
-  }
-
-  public SessionUser setId(long id) {
-    this.id = id;
-    return this;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public SessionUser setEmail(String email) {
-    this.email = email;
-    return this;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public SessionUser setUsername(String username) {
-    this.username = username;
-    return this;
-  }
-
-  public String getFirstname() {
-    return firstname;
-  }
-
-  public SessionUser setFirstname(String firstname) {
-    this.firstname = firstname;
-    return this;
-  }
-
-  public String getLastname() {
-    return lastname;
-  }
-
-  public SessionUser setLastname(String lastname) {
-    this.lastname = lastname;
-    return this;
-  }
 }

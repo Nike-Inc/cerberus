@@ -56,19 +56,15 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_authenticate_with_no_mfa() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(false);
+    ResponseStatus status = ResponseStatus.builder().error(false).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
-    SessionUser user = new SessionUser();
-    user.setId(USER_ID);
-    user.setUsername(USERNAME);
+    SessionUser user = SessionUser.builder().id(USER_ID).username(USERNAME).build();
 
-    SessionLoginTokenData sessionLoginTokenData = new SessionLoginTokenData();
-    sessionLoginTokenData.setUser(user);
+    SessionLoginTokenData sessionLoginTokenData =
+        SessionLoginTokenData.builder().user(user).build();
 
     createSessionLoginTokenResponse.setData(Lists.newArrayList(sessionLoginTokenData));
 
@@ -85,25 +81,21 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_authenticate_with_mfa_required() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(false);
+    ResponseStatus status = ResponseStatus.builder().error(false).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
-    SessionUser user = new SessionUser();
-    user.setId(USER_ID);
-    user.setUsername(USERNAME);
+    SessionUser user = SessionUser.builder().id(USER_ID).username(USERNAME).build();
 
-    MfaDevice device = new MfaDevice();
-    device.setDeviceId(DEVICE_ID);
-    device.setDeviceType(DEVICE_TYPE);
+    MfaDevice device = MfaDevice.builder().deviceId(DEVICE_ID).deviceType(DEVICE_TYPE).build();
 
-    SessionLoginTokenData sessionLoginTokenData = new SessionLoginTokenData();
-    sessionLoginTokenData.setUser(user);
-    sessionLoginTokenData.setStateToken(STATE_TOKEN);
-    sessionLoginTokenData.setDevices(Lists.newArrayList(device));
+    SessionLoginTokenData sessionLoginTokenData =
+        SessionLoginTokenData.builder()
+            .user(user)
+            .stateToken(STATE_TOKEN)
+            .devices(Lists.newArrayList(device))
+            .build();
 
     createSessionLoginTokenResponse.setData(Lists.newArrayList(sessionLoginTokenData));
 
@@ -166,14 +158,11 @@ public class OneLoginAuthConnectorTest {
   }
 
   private void setupMockWhereLoginGivesError(long statusCode, String message) {
-    ResponseStatus status = new ResponseStatus();
-    status.setCode(statusCode);
-    status.setMessage(message);
-    status.setError(true);
+    ResponseStatus status =
+        ResponseStatus.builder().code(statusCode).message(message).error(true).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
     when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD))
         .thenReturn(createSessionLoginTokenResponse);
@@ -190,15 +179,14 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_mfaCheck() {
-    SessionUser user = new SessionUser();
-    user.setId(USER_ID);
-    user.setUsername(USERNAME);
+    SessionUser user = SessionUser.builder().id(USER_ID).username(USERNAME).build();
 
-    SessionLoginTokenData sessionLoginTokenData = new SessionLoginTokenData();
+    SessionLoginTokenData sessionLoginTokenData =
+        SessionLoginTokenData.builder().user(user).build();
     sessionLoginTokenData.setUser(user);
 
     VerifyFactorResponse verifyFactorResponse = mock(VerifyFactorResponse.class);
-    when(verifyFactorResponse.getStatus()).thenReturn(new ResponseStatus());
+    when(verifyFactorResponse.getStatus()).thenReturn(ResponseStatus.builder().build());
     when(verifyFactorResponse.getData()).thenReturn(Lists.newArrayList(sessionLoginTokenData));
     when(oneLoginClient.verifyFactor(DEVICE_ID.toString(), STATE_TOKEN, OTP_TOKEN))
         .thenReturn(verifyFactorResponse);
@@ -232,16 +220,12 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_getUserById() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(false);
+    ResponseStatus status = ResponseStatus.builder().error(false).build();
 
-    UserData userData = new UserData();
-    userData.setId(USER_ID);
+    UserData userData = UserData.builder().id(USER_ID).build();
 
-    GetUserResponse getUserResponse = new GetUserResponse();
-    getUserResponse.setData(Lists.newArrayList(userData));
-    getUserResponse.setStatus(status);
-
+    GetUserResponse getUserResponse =
+        GetUserResponse.builder().data(Lists.newArrayList(userData)).status(status).build();
     when(oneLoginClient.getUserById(USER_ID)).thenReturn(getUserResponse);
 
     // invoke method under test
@@ -252,10 +236,8 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_getUserById_gives_error() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(true);
-    GetUserResponse getUserResponse = new GetUserResponse();
-    getUserResponse.setStatus(status);
+    ResponseStatus status = ResponseStatus.builder().error(true).build();
+    GetUserResponse getUserResponse = GetUserResponse.builder().status(status).build();
 
     when(oneLoginClient.getUserById(USER_ID)).thenReturn(getUserResponse);
 
@@ -300,13 +282,11 @@ public class OneLoginAuthConnectorTest {
   }
 
   private void setupMockWhereVerifyGivesError(long statusCode, String message) {
-    ResponseStatus status = new ResponseStatus();
-    status.setCode(statusCode);
-    status.setMessage(message);
-    status.setError(true);
+    ResponseStatus status =
+        ResponseStatus.builder().code(statusCode).message(message).error(true).build();
 
-    VerifyFactorResponse verifyFactorResponse = new VerifyFactorResponse();
-    verifyFactorResponse.setStatus(status);
+    VerifyFactorResponse verifyFactorResponse =
+        VerifyFactorResponse.builder().status(status).build();
 
     when(oneLoginClient.verifyFactor(DEVICE_ID.toString(), STATE_TOKEN, OTP_TOKEN))
         .thenReturn(verifyFactorResponse);
@@ -314,12 +294,10 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_createSessionLoginToken() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(false);
+    ResponseStatus status = ResponseStatus.builder().error(false).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
     SessionLoginTokenData expectedData = mock(SessionLoginTokenData.class);
     createSessionLoginTokenResponse.setData(Lists.newArrayList(expectedData));
@@ -336,14 +314,11 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_createSessionLoginToken_fails_with_401_when_bad_username_is_given() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(true);
-    status.setCode(400);
-    status.setMessage("bad request");
+    ResponseStatus status =
+        ResponseStatus.builder().code(400).message("bad request").error(true).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
     when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD))
         .thenReturn(createSessionLoginTokenResponse);
@@ -358,14 +333,11 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_createSessionLoginToken_fails_with_401_when_bad_password_is_given() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(true);
-    status.setCode(401);
-    status.setMessage("Authentication Failed");
+    ResponseStatus status =
+        ResponseStatus.builder().code(401).message("Authentication Failed").error(true).build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
     when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD))
         .thenReturn(createSessionLoginTokenResponse);
@@ -380,14 +352,11 @@ public class OneLoginAuthConnectorTest {
 
   @Test
   public void test_createSessionLoginToken_fails_with_when_MFA_setup_is_required() {
-    ResponseStatus status = new ResponseStatus();
-    status.setError(true);
-    status.setCode(400);
-    status.setMessage("MFA: rest doesnt matter");
+    ResponseStatus status =
+        ResponseStatus.builder().error(true).code(400).message("MFA: rest doesnt matter").build();
 
     CreateSessionLoginTokenResponse createSessionLoginTokenResponse =
-        new CreateSessionLoginTokenResponse();
-    createSessionLoginTokenResponse.setStatus(status);
+        CreateSessionLoginTokenResponse.builder().status(status).build();
 
     when(oneLoginClient.createSessionLoginToken(USERNAME, PASSWORD))
         .thenReturn(createSessionLoginTokenResponse);

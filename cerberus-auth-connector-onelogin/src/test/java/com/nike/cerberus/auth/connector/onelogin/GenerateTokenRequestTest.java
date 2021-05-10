@@ -30,7 +30,9 @@ public class GenerateTokenRequestTest {
 
   @Test
   public void test_setGrantType() {
-    assertEquals("foo", new GenerateTokenRequest().setGrantType("foo").getGrantType());
+    GenerateTokenRequest generateTokenRequest = new GenerateTokenRequest();
+    generateTokenRequest.setGrantType("foo");
+    assertEquals("foo", generateTokenRequest.getGrantType());
   }
 
   @Test
@@ -41,8 +43,8 @@ public class GenerateTokenRequestTest {
   @Test
   public void test_hashCode() {
     assertEquals(new GenerateTokenRequest().hashCode(), new GenerateTokenRequest().hashCode());
-    assertTrue(
-        new GenerateTokenRequest().hashCode()
-            != new GenerateTokenRequest().setGrantType("foo").hashCode());
+    GenerateTokenRequest generateTokenRequest = new GenerateTokenRequest();
+    generateTokenRequest.setGrantType("foo");
+    assertTrue(new GenerateTokenRequest().hashCode() != generateTokenRequest.hashCode());
   }
 }
