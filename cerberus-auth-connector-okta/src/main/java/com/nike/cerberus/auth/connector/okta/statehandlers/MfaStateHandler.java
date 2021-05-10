@@ -42,9 +42,9 @@ public class MfaStateHandler extends AbstractOktaStateHandler {
     final String userId = mfaChallengeResponse.getUser().getId();
     final String userLogin = mfaChallengeResponse.getUser().getLogin();
 
-    final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
+    final AuthData authData = AuthData.builder().userId(userId).username(userLogin).build();
     AuthResponse authResponse =
-        new AuthResponse().setData(authData).setStatus(AuthStatus.MFA_CHALLENGE);
+        AuthResponse.builder().data(authData).status(AuthStatus.MFA_CHALLENGE).build();
 
     authenticationResponseFuture.complete(authResponse);
   }
