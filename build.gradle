@@ -166,7 +166,7 @@ subprojects {
     // common test deps
     testImplementation 'org.codehaus.groovy:groovy-all:3.0.7'
     testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-3.0'
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
     testImplementation 'com.openpojo:openpojo:0.8.13'
   }
