@@ -23,7 +23,7 @@ buildscript {
     versions = [
       lombok: '1.18.18',
       resilience4j: '1.7.0',
-      awsSdkVersion: '1.11.948',
+      awsSdkVersion: '1.11.1017',
       kork: '7.99.0',
       guava: '30.1-jre',
       springBoot: '2.4.2',
@@ -166,7 +166,7 @@ subprojects {
     // common test deps
     testImplementation 'org.codehaus.groovy:groovy-all:3.0.7'
     testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-3.0'
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
     testImplementation 'com.openpojo:openpojo:0.8.13'
   }
