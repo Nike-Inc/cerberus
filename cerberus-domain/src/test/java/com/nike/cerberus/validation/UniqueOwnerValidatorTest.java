@@ -82,7 +82,6 @@ public class UniqueOwnerValidatorTest {
   @Test
   public void owner_in_group_permissions_is_invalid() {
     UserGroupPermission userGroupPermission = UserGroupPermission.builder().name("owner").build();
-    userGroupPermission.setName("owner");
 
     Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
     userGroupPermissions.add(userGroupPermission);

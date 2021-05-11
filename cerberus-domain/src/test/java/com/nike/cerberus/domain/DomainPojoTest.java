@@ -41,6 +41,7 @@ public class DomainPojoTest {
         PojoClassFactory.getPojoClasses("com.nike.cerberus.domain", pojoClassFilter);
 
     pojoClasses.remove(PojoClassFactory.getPojoClass(CerberusAuthToken.class));
+    pojoClasses.remove(PojoClassFactory.getPojoClass(UserCredentials.class));
 
     Assert.assertTrue(pojoClasses.size() > 1);
 

@@ -18,25 +18,20 @@ package com.nike.cerberus.domain;
 
 import java.util.Arrays;
 import lombok.Getter;
-import lombok.Setter;
 
 /** Represents the user's credentials sent during authentication. */
 public class UserCredentials {
 
-  @Getter @Setter private String username;
+  @Getter private String username;
 
   private byte[] password;
 
-  public UserCredentials(String username, byte[] password) {
+  public UserCredentials(final String username, final byte[] password) {
     this.username = username;
     this.password = Arrays.copyOf(password, password.length);
   }
 
   public byte[] getPassword() {
     return Arrays.copyOf(password, password.length);
-  }
-
-  public void setPassword(byte[] password) {
-    this.password = password != null ? Arrays.copyOf(password, password.length) : null;
   }
 }
