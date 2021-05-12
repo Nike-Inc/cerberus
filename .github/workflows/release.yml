@@ -31,13 +31,13 @@ jobs:
           BINTRAY_KEY: ${{ secrets.BINTRAY_KEY}}
         run: ./gradlew bintrayUpload
       - name: Upload binary to GitHub release
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@2.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: cerberus-web/build/libs/cerberus.jar
           tag: ${{ github.ref }}
       - name: Upload checksum to GitHub release
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@2.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: cerberus-web/build/libs/cerberus.jar.MD5
