@@ -418,8 +418,7 @@ public class PermissionValidationServiceTest {
     Assert.assertTrue("Request path is invalid.".equals(exceptionMessage));
   }
 
-  @Test
-  public void
+  private void
       testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndVerifyPathIsValid() {
     PermissionValidationService permissionValidationService =
         Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
@@ -445,8 +444,7 @@ public class PermissionValidationServiceTest {
         "The SDB for the path: category/slug/ was not found.".equals(exceptionMessage));
   }
 
-  @Test
-  public void
+  private void
       testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndVerifySdbidPresent() {
     PermissionValidationService permissionValidationService =
         Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
@@ -473,8 +471,7 @@ public class PermissionValidationServiceTest {
         exceptionMessage);
   }
 
-  @Test
-  public void
+  private void
       testDoesPrincipalHaveSdbPermissionsForActionWhenRequestAttributesWhenServletPathIsSecuredAndHasPermission() {
     PermissionValidationService permissionValidationService =
         Mockito.spy(createPermissionValidationServiceWithGroupCaseSensitive(false));
