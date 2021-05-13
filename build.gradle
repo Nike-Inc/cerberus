@@ -258,7 +258,7 @@ task generateAggregatedReports(dependsOn: [
   aggregatedJunitXml,
   aggregatedJunitHtml,
   aggregatedJacocoReport,
-  //dependencyCheckAggregate
+  dependencyCheckAggregate
 ]) {
   doLast {
     println "Finished generating aggregated reports"
