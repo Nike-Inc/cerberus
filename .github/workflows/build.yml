@@ -26,12 +26,12 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard -x integrationTest --continue
-      - name: Upload coverage report to CodeCov
-        uses: codecov/codecov-action@v1
-        with:
-          file: build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml # optional
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true
+#      - name: Upload coverage report to CodeCov
+#        uses: codecov/codecov-action@v1
+#        with:
+#          file: build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml # optional
+#          fail_ci_if_error: true # optional (default = false)
+#          verbose: true
       - name: Slack notification when master build fails
         if: ${{ failure() && github.ref == 'refs/heads/master'}}
         uses: rtCamp/action-slack-notify@v2.1.2
