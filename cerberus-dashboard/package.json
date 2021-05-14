@@ -57,7 +57,7 @@
     "react-scripts": "4.0.3",
     "redux-devtools": "3.7.0",
     "bufferutil": "^4.0.3",
-    "utf-8-validate": "^5.0.4",
+    "utf-8-validate": "^5.0.5",
     "typescript": "^4.2.3",
     "sass": "^1.32.8",
     "fibers": "^5.0.0",
