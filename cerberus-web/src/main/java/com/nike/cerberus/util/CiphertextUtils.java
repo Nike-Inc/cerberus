@@ -23,12 +23,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.nike.backstopper.exception.ApiException;
-import com.nike.cerberus.error.DefaultApiError;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for working with the 'AWS Encryption SDK Message Format'.
@@ -55,13 +52,7 @@ public class CiphertextUtils {
     List<String> cmkArns = Lists.newArrayList();
     for (KeyBlob keyBlob : parsedCiphertext.getEncryptedKeyBlobs()) {
       if (KMS_PROVIDER_ID.equals(keyBlob.getProviderId())) {
-        try {
-          cmkArns.add(new String(keyBlob.getProviderInformation(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-          LoggerFactory.getLogger("com.nike.cerberus.util.CiphertextUtils")
-              .error("Failed to create new string from key blob provider information", e);
-          throw new ApiException(DefaultApiError.INTERNAL_SERVER_ERROR);
-        }
+        cmkArns.add(new String(keyBlob.getProviderInformation(), StandardCharsets.UTF_8));
       }
     }
     return cmkArns;
@@ -87,13 +78,8 @@ public class CiphertextUtils {
     for (KeyBlob keyBlob : parsedCiphertext.getEncryptedKeyBlobs()) {
       JsonObject blob = new JsonObject();
       blob.addProperty("providerId", keyBlob.getProviderId());
-      try {
-        blob.addProperty("providerInfo", new String(keyBlob.getProviderInformation(), "UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        LoggerFactory.getLogger("com.nike.cerberus.util.CiphertextUtils")
-            .error("Failed to create new string from key blob provider information", e);
-        throw new ApiException(DefaultApiError.INTERNAL_SERVER_ERROR);
-      }
+      blob.addProperty(
+          "providerInfo", new String(keyBlob.getProviderInformation(), StandardCharsets.UTF_8));
       blob.addProperty("isComplete:", keyBlob.isComplete());
       keyBlobs.add(blob);
     }

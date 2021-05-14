@@ -8,21 +8,27 @@ updates:
     # Look for `build.gradle`  files in the `root` directory
     directory: "/"
     target-branch: "dep/dependency_upgrade_staging"
-    open-pull-requests-limit: 30
+    open-pull-requests-limit: 20
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+      time: "08:00"
+      timezone: "America/Los_Angeles"
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
     directory: "/cerberus-dashboard"
     target-branch: "dep/dependency_upgrade_staging"
-    open-pull-requests-limit: 30
-    # Check the npm registry for updates every day (weekdays)
+    open-pull-requests-limit: 20
+    # Check the npm registry for updates every monday at 8:00 AM
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+      time: "08:00"
+      timezone: "America/Los_Angeles"
   - package-ecosystem: "github-actions"
     # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
     directory: "/"
     target-branch: "dep/dependency_upgrade_staging"
     # Check the npm registry for updates every day (weekdays)
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+      time: "08:00"
+      timezone: "America/Los_Angeles"
