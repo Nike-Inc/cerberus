@@ -64,8 +64,8 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
     final String userId = mfaResponse.getUser().getId();
     final String userLogin = mfaResponse.getUser().getLogin();
 
-    final AuthData authData = new AuthData().setUserId(userId).setUsername(userLogin);
-    final AuthResponse authResponse = new AuthResponse().setData(authData);
+    final AuthData authData = AuthData.builder().userId(userId).username(userLogin).build();
+    final AuthResponse authResponse = AuthResponse.builder().data(authData).build();
 
     authData.setStateToken(mfaResponse.getStateToken());
     authResponse.setStatus(AuthStatus.MFA_REQUIRED);
@@ -81,11 +81,12 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
             authData
                 .getDevices()
                 .add(
-                    new AuthMfaDevice()
-                        .setId(factor.getId())
-                        .setName(getDeviceName(factor))
-                        .setRequiresTrigger(isTriggerRequired(factor))
-                        .setIsPush(isPush(factor))));
+                    AuthMfaDevice.builder()
+                        .id(factor.getId())
+                        .name(getDeviceName(factor))
+                        .requiresTrigger(isTriggerRequired(factor))
+                        .isPush(isPush(factor))
+                        .build()));
 
     authenticationResponseFuture.complete(authResponse);
   }

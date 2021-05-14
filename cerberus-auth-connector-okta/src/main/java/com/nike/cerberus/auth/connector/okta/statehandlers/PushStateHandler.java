@@ -26,9 +26,9 @@ public class PushStateHandler extends AbstractOktaStateHandler {
     final String factorResult = mfaChallengeResponse.getFactorResult();
 
     final AuthData authData =
-        new AuthData().setUserId(userId).setUsername(userLogin).setFactorResult(factorResult);
+        AuthData.builder().userId(userId).username(userLogin).factorResult(factorResult).build();
     AuthResponse authResponse =
-        new AuthResponse().setData(authData).setStatus(AuthStatus.MFA_CHALLENGE);
+        AuthResponse.builder().data(authData).status(AuthStatus.MFA_CHALLENGE).build();
 
     authenticationResponseFuture.complete(authResponse);
   }
@@ -46,8 +46,9 @@ public class PushStateHandler extends AbstractOktaStateHandler {
     final String factorResult = mfaChallengeResponse.getStatus().toString();
 
     final AuthData authData =
-        new AuthData().setUserId(userId).setUsername(userLogin).setFactorResult(factorResult);
-    AuthResponse authResponse = new AuthResponse().setData(authData).setStatus(AuthStatus.SUCCESS);
+        AuthData.builder().userId(userId).username(userLogin).factorResult(factorResult).build();
+    AuthResponse authResponse =
+        AuthResponse.builder().data(authData).status(AuthStatus.SUCCESS).build();
 
     authenticationResponseFuture.complete(authResponse);
   }

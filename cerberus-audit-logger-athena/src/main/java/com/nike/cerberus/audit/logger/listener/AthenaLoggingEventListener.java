@@ -71,17 +71,12 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                       .put(
                           "principal_type",
                           cerberusPrincipal
-                              .map(p -> cerberusPrincipal.get().getPrincipalType().getName())
+                              .map(p -> p.getPrincipalType().getName())
                               .orElse(AuditableEventContext.UNKNOWN))
                       .put(
                           "principal_token_created",
                           cerberusPrincipal
-                              .map(
-                                  p ->
-                                      cerberusPrincipal
-                                          .get()
-                                          .getCreated()
-                                          .format(ATHENA_DATE_FORMATTER))
+                              .map(p -> p.getCreated().format(ATHENA_DATE_FORMATTER))
                               .orElseGet(
                                   () ->
                                       OffsetDateTime.parse(PARTY_LIKE_ITS_99, ISO_OFFSET_DATE_TIME)
@@ -89,12 +84,7 @@ public class AthenaLoggingEventListener implements ApplicationListener<Auditable
                       .put(
                           "principal_token_expires",
                           cerberusPrincipal
-                              .map(
-                                  p ->
-                                      cerberusPrincipal
-                                          .get()
-                                          .getExpires()
-                                          .format(ATHENA_DATE_FORMATTER))
+                              .map(p -> p.getExpires().format(ATHENA_DATE_FORMATTER))
                               .orElseGet(
                                   () ->
                                       OffsetDateTime.parse(PARTY_LIKE_ITS_99, ISO_OFFSET_DATE_TIME)
