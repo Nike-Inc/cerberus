@@ -41,7 +41,12 @@ public class AuthTokenDao {
   }
 
   public Optional<AuthTokenRecord> getAuthTokenFromHash(String hash) {
-    return Optional.ofNullable(authTokenMapper.getAuthTokenFromHash(hash));
+    Optional<AuthTokenRecord> authTokenRecord =
+        Optional.ofNullable(authTokenMapper.getAuthTokenFromHash(hash));
+    if (authTokenRecord.isEmpty()) {
+      logger.warn("Failed to get auth token from hash");
+    }
+    return authTokenRecord;
   }
 
   public void deleteAuthTokenFromHash(String hash) {

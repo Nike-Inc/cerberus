@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -221,7 +222,7 @@ public class PermissionValidationService {
 
   public boolean doesPrincipalHaveSdbPermissionsForAction(String action) {
     var request =
-        Optional.ofNullable(RequestContextHolder.getRequestAttributes())
+        Optional.ofNullable(getRequestAttributesFromContext())
             .filter(
                 requestAttributes ->
                     ServletRequestAttributes.class.isAssignableFrom(requestAttributes.getClass()))
@@ -251,7 +252,7 @@ public class PermissionValidationService {
           .build();
     }
 
-    var principal = (CerberusPrincipal) SecurityContextHolder.getContext().getAuthentication();
+    var principal = getCerberusPrincipalFromContext();
     var sdbBasePath =
         String.format("%s/%s/", sdbAccessRequest.getCategory(), sdbAccessRequest.getSdbSlug());
     var secureDataAction = SecureDataAction.fromString(action);
@@ -288,6 +289,14 @@ public class PermissionValidationService {
     sdbAccessRequest.setSdbId(sdbId);
 
     return true;
+  }
+
+  RequestAttributes getRequestAttributesFromContext() {
+    return RequestContextHolder.getRequestAttributes();
+  }
+
+  CerberusPrincipal getCerberusPrincipalFromContext() {
+    return (CerberusPrincipal) SecurityContextHolder.getContext().getAuthentication();
   }
 
   private void parseRequestPathInfo(String requestPath) {

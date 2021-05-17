@@ -19,7 +19,11 @@ package com.nike.cerberus.record;
 import com.nike.cerberus.domain.SecureDataType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@EqualsAndHashCode
+@ToString
 public class SecureDataRecord {
 
   private Integer id;

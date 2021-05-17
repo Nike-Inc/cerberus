@@ -20,7 +20,7 @@ allprojects {
   dependencyCheck {
     failOnError = false
     format = 'ALL'
-    failBuildOnCVSS = 7
+    failBuildOnCVSS = 11
 
     suppressionFile = "${rootProject.projectDir}/dependency-check-supressions.xml"
   }

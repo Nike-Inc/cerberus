@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.4.2"
+  id 'org.springframework.boot' version "2.4.4"
 }
 
 sourceCompatibility = '11'
@@ -50,7 +50,7 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
-  implementation "com.netflix.spinnaker.kork:kork-secrets:${versions.kork}"
+  implementation "io.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
   implementation "com.netflix.hystrix:hystrix-core:1.5.18" // TODO remove hystrix and use resilience4j
@@ -64,8 +64,16 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-kms:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
+  implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
   implementation 'com.amazonaws:aws-encryption-sdk-java:1.6.1'
+
+
+  // JWT
+  implementation "io.jsonwebtoken:jjwt-api:0.10.8"
+  implementation "io.jsonwebtoken:jjwt-impl:0.10.8"
+  implementation "io.jsonwebtoken:jjwt-jackson:0.10.8"
+
 
   //dist tracing
   implementation 'com.nike.wingtips:wingtips-spring-boot:0.23.1'

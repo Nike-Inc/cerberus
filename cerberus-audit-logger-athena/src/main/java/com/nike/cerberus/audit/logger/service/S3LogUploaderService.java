@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PreDestroy;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class S3LogUploaderService {
   private static final String ATHENA_LOG_NAME = "athena-audit-logger";
   private static final String ATHENA_LOG_APPENDER = "athena-log-appender";
 
-  private final ExecutorService executor = Executors.newSingleThreadExecutor();
+  @Setter private ExecutorService executor = Executors.newSingleThreadExecutor();
   private final AmazonS3 amazonS3;
   private final String bucket;
   private final String bucketRegion;
