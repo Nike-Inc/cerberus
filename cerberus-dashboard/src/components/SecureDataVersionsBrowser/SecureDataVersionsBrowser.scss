@@ -118,24 +118,24 @@
           padding: 10px;
           border-radius: 3px;
 
-          .json-pretty {
+          .__json-pretty__ {
             line-height: 1.3;
             color: $snkrs_white;
-            background: $snkrs_dark_grey;
+            background-color: $snkrs_dark_grey;
 
-            .json-key {
+            .__json-key__ {
               color: $snkrs_accent
             }
 
-            .json-value {
+            .__json-value__ {
               color: $snkrs_success
             }
 
-            .json-string {
+            .__json-string__ {
               color: $snkrs_accent
             }
 
-            .json-boolean {
+            .__json-boolean__ {
               color: $snkrs_success
             }
           }
