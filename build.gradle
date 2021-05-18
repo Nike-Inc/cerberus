@@ -172,7 +172,7 @@ subprojects {
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-    testImplementation 'com.openpojo:openpojo:0.8.13'
+    testImplementation 'com.openpojo:openpojo:0.9.1'
   }
 
   test {
