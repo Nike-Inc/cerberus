@@ -21,7 +21,7 @@ import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.18',
+      lombok: '1.18.20',
       resilience4j: '1.7.0',
       awsSdkVersion: '1.11.948',
       kork: '7.107.0',
