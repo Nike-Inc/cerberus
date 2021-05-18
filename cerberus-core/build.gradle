@@ -31,7 +31,7 @@ dependencies {
   api 'com.github.ben-manes.caffeine:caffeine:2.8.0'
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
-  api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
+  api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
   api "org.glassfish.jaxb:jaxb-runtime:3.0.0"
 
   // Find bugs annotations
