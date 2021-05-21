@@ -59,6 +59,10 @@ class UserBox extends Component {
             this.props.dispatch(headerActions.mouseOutUsername())
         }.bind(this)
 
+        this.handleMouseClickSdbSummary = function() {
+            this.props.dispatch(push('/admin/sdb-metadata'))
+        }.bind(this)
+
         this.handleMouseClickViewToken = function() {
             this.props.dispatch(modalActions.pushModal(<ViewTokenModal />))
         }.bind(this)
@@ -83,8 +87,12 @@ class UserBox extends Component {
                 <div id='u-b-context-menu' className={this.props.displayUserContextMenu ? 'show-me-block' : 'hide-me'}
                      onMouseEnter={this.handleMouseClickUserName}
                      onMouseLeave={this.handleMouseLeaveUserMenuContext} >
-                    {isAdmin && <div className='context-menu-button' onClick={() => {push('/admin/sdb-metadata')}}>SDB Summary</div>}
-                    <div className='context-menu-button' onClick={this.handleMouseClickViewToken}>View Token</div>
+                    {isAdmin && <div className='context-menu-button' onClick={
+                        this.handleMouseClickSdbSummary
+                    }>SDB Summary</div>}
+                    <div className='context-menu-button' onClick={
+                        this.handleMouseClickViewToken
+                    }>View Token</div>
                     <div className='context-menu-button' onClick={this.handleMouseClickLogout}>Logout</div>
                 </div>
             </div>
