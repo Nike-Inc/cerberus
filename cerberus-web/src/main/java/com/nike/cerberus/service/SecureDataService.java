@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.service;
 
+import static java.util.Optional.ofNullable;
+
 import com.codahale.metrics.Counter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -465,9 +467,13 @@ public class SecureDataService {
     Map<String, String> secretMetadata = Maps.newHashMap();
 
     secretMetadata.put("created_by", secureData.getCreatedBy());
-    secretMetadata.put("created_ts", secureData.getCreatedTs().toString());
+    secretMetadata.put(
+        "created_ts",
+        ofNullable(secureData.getCreatedTs()).map(OffsetDateTime::toString).orElse(null));
     secretMetadata.put("last_updated_by", secureData.getLastUpdatedBy());
-    secretMetadata.put("last_updated_ts", secureData.getLastUpdatedTs().toString());
+    secretMetadata.put(
+        "last_updated_ts",
+        ofNullable(secureData.getLastUpdatedTs()).map(OffsetDateTime::toString).orElse(null));
 
     return secretMetadata;
   }

@@ -14,27 +14,12 @@
  * limitations under the License.
  */
 
-import { LoginCallback, SecureRoute, Security } from '@okta/okta-react';
-import { OktaAuth, toRelativeUrl } from '@okta/okta-auth-js';
-import axios from "axios";
 import { ConnectedRouter } from "connected-react-router";
 import React from "react";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
-import { Route, Switch } from "react-router";
-import {
-  handleUserLogin
-} from "./actions/authenticationActions";
-import "./assets/styles/reactSelect.scss";
-import App from "./components/App/App";
-import * as cms from "./constants/cms";
-import environmentService from "./service/EnvironmentService";
+import Root from './components/Root/Root';
 import configureStore, { history } from "./store/configureStore";
-import { getLogger } from "./utils/logger";
-import NotFound from './components/NotFound/NotFound';
-
-var log = getLogger("main");
-const AUTH_ACTION_TIMEOUT = 6000; // 60 seconds in milliseconds
 
 /**
  * This is our redux data store for storing all data retrieved from API Calls and any other state that needs
@@ -42,77 +27,12 @@ const AUTH_ACTION_TIMEOUT = 6000; // 60 seconds in milliseconds
  */
 const store = configureStore(window.__INITIAL_STATE__);
 
-const oktaAuth = new OktaAuth({
-    issuer: process.env.REACT_APP_AUTH_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-    redirectUri: `${window.location.origin}/dashboard/callback`,
-    postLogoutRedirectUri: `${window.location.origin}`,
-    scope: ['openid', 'email'],
-    pkce: true,
-    tokenManager: {
-        autoRenew: true,
-        storage: 'sessionStorage',
-    },
-});
-
-const restoreOriginalUri = async (_oktaAuth, originalUri) => {
-  console.log("Restoring URI to: ", originalUri)
-  history.replace(toRelativeUrl(originalUri, window.location.origin));
-}
-
-
-let oauthTokenStorage = JSON.parse(sessionStorage.getItem("okta-token-storage"));
-let oauthToken = oauthTokenStorage?.idToken?.value;
-console.log(oauthToken)
-
-axios({
-    method: 'post',
-    url: environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH,
-    data: {
-      token: oauthToken,
-    },
-    timeout: AUTH_ACTION_TIMEOUT,
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  })
-    .then(function (response) {
-      console.log(`${environmentService.getDomain() + cms.TOKEN_EXCHANGE_PATH} Response: `, response)
-      handleUserLoginAfterTokenExchange(response)
-      console.log("exchange token successful")
-  })
-    .catch((error) => {
-      console.log("Failed to exchange OAuth token")
-      console.log(error)
-    });
-
-let handleUserLoginAfterTokenExchange = (response) => {
-    console.log("calling handle user login")
-    handleUserLogin(response, store.dispatch, true);
-}
-
-/**
- * The Provider makes the dispatch method available to children components that connect to it.
- * The dispatcher is used to fire off actions such as a button being clicked, or submitting a form.
- *
- * Once an action fires off a reducer is triggered to manipulate the data in the store to change the state of
- * this app.
- *
- * Components that connect to the piece of state that has changed will have there inputs updated.
- *
- * This is an implementation of FLUX.
- */
 render(
-    <Provider store={store}>
-        <ConnectedRouter history={history}>
-            <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
-                <Switch>
-                    <Route path="/dashboard/callback" component={LoginCallback} />
-                    <SecureRoute path="/" component={App} />
-                </Switch>
-            </Security>
-        </ConnectedRouter>
-    </Provider>,
-  document.getElementById("root")
+  <Provider store={store}>
+    <ConnectedRouter history={history}>
+      <Root />
+    </ConnectedRouter>
+  </Provider>
+  ,document.getElementById("root")
 );
 

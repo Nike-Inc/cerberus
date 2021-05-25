@@ -21,7 +21,7 @@ import { routerMiddleware } from 'connected-react-router'
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 
-export const history = createBrowserHistory();
+export const history = createBrowserHistory({basename: '/dashboard/'});
 
 export default function configureStore() {
 

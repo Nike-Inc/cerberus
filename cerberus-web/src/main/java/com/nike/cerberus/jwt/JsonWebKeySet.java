@@ -1,8 +1,10 @@
 package com.nike.cerberus.jwt;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 
 @Data
+@SuppressFBWarnings(justification = "It's just a POJO.")
 /**
  * https://tools.ietf.org/html/rfc7517 Only supports RSA private key for now
  * https://tools.ietf.org/html/rfc7517#section-9.3 not parse alg or sig because optional

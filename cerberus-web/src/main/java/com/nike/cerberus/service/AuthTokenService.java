@@ -89,7 +89,6 @@ public class AuthTokenService {
     this.tokenFlag = tokenFlag;
   }
 
-  @Transactional
   public CerberusAuthToken generateToken(
       String principal,
       PrincipalType principalType,
@@ -174,7 +173,6 @@ public class AuthTokenService {
     AuthTokenRecord authTokenRecord =
         new AuthTokenRecord()
             .setId(id)
-            .setTokenHash(tokenHasher.hashToken(token))
             .setCreatedTs(now)
             .setExpiresTs(now.plusMinutes(ttlInMinutes))
             .setPrincipal(principal)
@@ -230,6 +228,75 @@ public class AuthTokenService {
     return tokenRecord.map(
         authTokenRecord -> getCerberusAuthTokenFromRecord(token, authTokenRecord));
   }
+
+  //  @Transactional
+  //  public CerberusAuthToken generateToken(
+  //      String principal,
+  //      PrincipalType principalType,
+  //      boolean isAdmin,
+  //      String groups,
+  //      long ttlInMinutes,
+  //      int refreshCount) {
+  //
+  //    checkArgument(StringUtils.isNotBlank(principal), "The principal must be set and not empty");
+  //
+  //    String id = uuidSupplier.get();
+  //    String token = authTokenGenerator.generateSecureToken();
+  //    OffsetDateTime now = dateTimeSupplier.get();
+  //
+  //    AuthTokenRecord tokenRecord =
+  //        new AuthTokenRecord()
+  //            .setId(id)
+  //            .setTokenHash(tokenHasher.hashToken(token))
+  //            .setCreatedTs(now)
+  //            .setExpiresTs(now.plusMinutes(ttlInMinutes))
+  //            .setPrincipal(principal)
+  //            .setPrincipalType(principalType.getName())
+  //            .setIsAdmin(isAdmin)
+  //            .setGroups(groups)
+  //            .setRefreshCount(refreshCount);
+  //
+  //    authTokenDao.createAuthToken(tokenRecord);
+  //
+  //    return getCerberusAuthTokenFromRecord(token, tokenRecord);
+  //  }
+  //
+  //  private CerberusAuthToken getCerberusAuthTokenFromRecord(
+  //      String token, AuthTokenRecord tokenRecord) {
+  //    return CerberusAuthToken.builder()
+  //        .token(token)
+  //        .created(tokenRecord.getCreatedTs())
+  //        .expires(tokenRecord.getExpiresTs())
+  //        .principal(tokenRecord.getPrincipal())
+  //        .principalType(PrincipalType.fromName(tokenRecord.getPrincipalType()))
+  //        .isAdmin(tokenRecord.getIsAdmin())
+  //        .groups(tokenRecord.getGroups())
+  //        .refreshCount(tokenRecord.getRefreshCount())
+  //        .build();
+  //  }
+  //
+  //  public Optional<CerberusAuthToken> getCerberusAuthTokenWithJwt(String token) {
+  //    Optional<CerberusJwtClaim> jwtClaim = // get jwt claim with token (parseAndValidateToken)
+  //    return tokenRecord.map(
+  //            authTokenRecord -> getCerberusAuthTokenFromRecord(token, jwtClaim));
+  //  }
+  //
+  //  public Optional<CerberusAuthToken> getCerberusAuthToken(String token) {
+  //    Optional<AuthTokenRecord> tokenRecord =
+  //        authTokenDao.getAuthTokenFromHash(tokenHasher.hashToken(token));
+  //
+  //    OffsetDateTime now = OffsetDateTime.now();
+  //    if (tokenRecord.isPresent() && tokenRecord.get().getExpiresTs().isBefore(now)) {
+  //      logger.warn(
+  //          "Returning empty optional, because token was expired, expired: {}, now: {}",
+  //          tokenRecord.get().getExpiresTs(),
+  //          now);
+  //      return Optional.empty();
+  //    }
+  //
+  //    return tokenRecord.map(
+  //        authTokenRecord -> getCerberusAuthTokenFromRecord(token, authTokenRecord));
+  //  }
 
   @Transactional
   public void revokeToken(CerberusPrincipal cerberusPrincipal, OffsetDateTime tokenExpires) {

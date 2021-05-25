@@ -16,18 +16,38 @@
 
 package com.nike.cerberus.controller;
 
+import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@Slf4j
 @Controller
 public class DashboardController {
   @GetMapping(value = {"/", "/dashboard", "/dashboard/"})
-  public String root() {
+  public String root(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    log.info("*** Redirecting to index.html from " + uri + " ***");
     return "redirect:/dashboard/index.html";
   }
 
   @GetMapping(value = {"/dashboard/callback"})
-  public String callback() {
+  public String callback(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    log.info("*** Forwarding to index.html from " + uri + " ***");
+    return "forward:/dashboard/index.html";
+  }
+
+  @GetMapping(value = {"/dashboard/manage-safe-deposit-box/static/**"})
+  public String staticMapping(HttpServletRequest request) {
+    String uri = request.getRequestURI();
+    String[] path = uri.split("/", 4);
+    log.info("*** Redirecting *static* to: /dashboard/" + path[path.length - 1] + " ***");
+    return "redirect:/dashboard/" + path[path.length - 1];
+  }
+
+  @GetMapping(value = {"/dashboard/manage-safe-deposit-box/**"})
+  public String sdbMapping() {
     return "forward:/dashboard/index.html";
   }
 }

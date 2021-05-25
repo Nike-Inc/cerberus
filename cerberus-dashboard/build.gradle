@@ -26,8 +26,9 @@ node {
 task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
 
   doFirst {
-    if (System.getenv("ENV_FILE")) {
-      String file_path = System.getenv("ENV_FILE")
+    if (System.getenv("ENV_FILE_PATH")) {
+      String file_path = System.getenv("ENV_FILE_PATH")
+      project.logger.info(file_path)
       assert file(file_path).exists()
       new File("${project.projectDir.absolutePath}", ".env").text = file(file_path).text
     }
