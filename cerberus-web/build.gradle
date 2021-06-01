@@ -55,7 +55,7 @@ dependencies {
   // Misc
   implementation "com.netflix.hystrix:hystrix-core:1.5.18" // TODO remove hystrix and use resilience4j
   implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
-  implementation 'com.google.code.gson:gson:2.8.6' // todo delete, should use jackson. see cipher text utils
+  implementation 'com.google.code.gson:gson:2.8.7' // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
   implementation group: 'org.apache.tika', name: 'tika-core', version: '1.26'
