@@ -42,6 +42,8 @@ public class OauthJwtAuthenticationController {
 
   private final AuthenticationService authenticationService;
   private OauthJwksKeyResolver oauthJwksKeyResolver;
+  // The assumption here is that email = username†
+  protected static final String USERNAME_CLAIM_NAME = "email";
 
   @Autowired
   public OauthJwtAuthenticationController(
@@ -50,23 +52,31 @@ public class OauthJwtAuthenticationController {
     this.authenticationService = authenticationService;
   }
 
+  /**
+   * At the end of the OAuth flow, the client receives a token from the authorization server. We
+   * need to take that token and issue a Cerberus token so that the client can continue doing
+   * Cerberus business.
+   *
+   * @param request The OAuth JWT
+   * @return The auth response which contains the Cerberus token and some metadata
+   */
   @RequestMapping(value = "/exchange", method = POST, consumes = APPLICATION_JSON_VALUE)
   public AuthResponse handleCerberusTokenExchange(@RequestBody OauthJwtExchangeRequest request) {
-    final String email;
+    final String username;
     try {
       Jws<Claims> claimsJws =
           Jwts.parser()
               .setSigningKeyResolver(oauthJwksKeyResolver)
               .parseClaimsJws(request.getToken());
-      email = claimsJws.getBody().get("email", String.class);
+      username = claimsJws.getBody().get(USERNAME_CLAIM_NAME, String.class);
     } catch (Exception e) {
       throw ApiException.newBuilder().withApiErrors(DefaultApiError.OAUTH_JWT_INVALID).build();
     }
-    if (StringUtils.isBlank(email)) {
+    if (StringUtils.isBlank(username)) {
       throw ApiException.newBuilder()
-          .withApiErrors(DefaultApiError.OAUTH_JWT_EMAIL_INVALID)
+          .withApiErrors(DefaultApiError.OAUTH_JWT_USERNAME_INVALID)
           .build();
     }
-    return authenticationService.authenticate(email);
+    return authenticationService.oauthAuthenticate(username);
   }
 }

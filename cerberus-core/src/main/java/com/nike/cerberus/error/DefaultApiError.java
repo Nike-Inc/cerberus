@@ -62,7 +62,7 @@ public enum DefaultApiError implements ApiError {
   OAUTH_JWT_INVALID(99108, "OAuth JWT is invalid.", SC_BAD_REQUEST),
 
   /** The user supplied OAuth JWT contains invalid email. */
-  OAUTH_JWT_EMAIL_INVALID(99109, "OAuth JWT is invalid.", SC_BAD_REQUEST),
+  OAUTH_JWT_USERNAME_INVALID(99109, "Username is missing from JWT.", SC_BAD_REQUEST),
 
   /** Category display name is blank. */
   CATEGORY_DISPLAY_NAME_BLANK(99200, "Display name may not be blank.", SC_BAD_REQUEST),
