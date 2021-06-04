@@ -7,7 +7,7 @@ import lombok.Data;
 @SuppressFBWarnings(justification = "It's just a POJO.")
 /**
  * https://tools.ietf.org/html/rfc7517 Only supports RSA private key for now
- * https://tools.ietf.org/html/rfc7517#section-9.3 not parse alg or sig because optional
+ * https://tools.ietf.org/html/rfc7517#section-9.3 not parsing alg or sig because optional
  */
 public class JsonWebKeySet {
   private JsonWebKey[] keys;

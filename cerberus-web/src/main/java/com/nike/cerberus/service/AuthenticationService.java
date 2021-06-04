@@ -172,7 +172,13 @@ public class AuthenticationService {
     return authResponse;
   }
 
-  public AuthResponse authenticate(final String username) {
+  /**
+   * Authenticate an user through OAuth info and get back an UNENCRYPTED payload
+   *
+   * @param username The username of the user
+   * @return Unencrypted auth response
+   */
+  public AuthResponse oauthAuthenticate(final String username) {
     final AuthResponse authResponse = new AuthResponse();
     authResponse.setData(new AuthData().setUserId(username));
     authResponse
