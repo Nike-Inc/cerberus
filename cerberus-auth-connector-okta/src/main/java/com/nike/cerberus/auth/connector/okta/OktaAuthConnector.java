@@ -54,15 +54,15 @@ public class OktaAuthConnector implements AuthConnector {
   public OktaAuthConnector(
       AuthenticationClient oktaAuthenticationClient,
       OktaConfigurationProperties oktaConfigurationProperties) {
-      this.oktaAuthenticationClient = oktaAuthenticationClient;
-      this.sdkClient = getSdkClient(oktaConfigurationProperties);
+    this.oktaAuthenticationClient = oktaAuthenticationClient;
+    this.sdkClient = getSdkClient(oktaConfigurationProperties);
   }
 
   private Client getSdkClient(OktaConfigurationProperties oktaConfigurationProperties) {
-      return Clients.builder()
-            .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
-            .setClientCredentials(new TokenClientCredentials(oktaConfigurationProperties.getApiKey()))
-            .build();
+    return Clients.builder()
+        .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
+        .setClientCredentials(new TokenClientCredentials(oktaConfigurationProperties.getApiKey()))
+        .build();
   }
 
   /** Authenticates user using Okta Auth SDK. */
