@@ -30,12 +30,11 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
+import com.okta.sdk.authc.credentials.TokenClientCredentials;
 import com.okta.sdk.client.Client;
 import com.okta.sdk.client.Clients;
 import com.okta.sdk.resource.group.GroupList;
 import com.okta.sdk.resource.user.User;
-import com.okta.sdk.authc.credentials.TokenClientCredentials;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -55,15 +54,15 @@ public class OktaAuthConnector implements AuthConnector {
   public OktaAuthConnector(
       AuthenticationClient oktaAuthenticationClient,
       OktaConfigurationProperties oktaConfigurationProperties) {
-      this.oktaAuthenticationClient = oktaAuthenticationClient;
-      this.sdkClient = getSdkClient(oktaConfigurationProperties);
+    this.oktaAuthenticationClient = oktaAuthenticationClient;
+    this.sdkClient = getSdkClient(oktaConfigurationProperties);
   }
 
   private Client getSdkClient(OktaConfigurationProperties oktaConfigurationProperties) {
-      return Clients.builder()
-            .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
-            .setClientCredentials(new TokenClientCredentials(oktaConfigurationProperties.getApiKey()))
-            .build();
+    return Clients.builder()
+        .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
+        .setClientCredentials(new TokenClientCredentials(oktaConfigurationProperties.getApiKey()))
+        .build();
   }
 
   /** Authenticates user using Okta Auth SDK. */

@@ -16,9 +16,8 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.okta.sdk.resource.user.factor.UserFactorList;
 import com.okta.sdk.resource.user.User;
-import java.util.List;
+import com.okta.sdk.resource.user.factor.UserFactorList;
 
 /** POJO representing embedded data within the user authentication response. */
 public class EmbeddedAuthResponseDataV1 {
