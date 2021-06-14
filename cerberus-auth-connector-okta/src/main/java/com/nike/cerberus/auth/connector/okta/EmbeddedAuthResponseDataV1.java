@@ -16,8 +16,8 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import com.okta.sdk.models.factors.Factor;
-import com.okta.sdk.models.users.User;
+import com.okta.sdk.resource.user.factor.UserFactorList;
+import com.okta.sdk.resource.user.User;
 import java.util.List;
 
 /** POJO representing embedded data within the user authentication response. */
@@ -25,7 +25,7 @@ public class EmbeddedAuthResponseDataV1 {
 
   private User user;
 
-  private List<Factor> factors;
+  private UserFactorList factors;
 
   public User getUser() {
     return user;
@@ -35,11 +35,11 @@ public class EmbeddedAuthResponseDataV1 {
     this.user = user;
   }
 
-  public List<Factor> getFactors() {
+  public UserFactorList getFactors() {
     return factors;
   }
 
-  public void setFactors(List<Factor> factors) {
+  public void setFactors(UserFactorList factors) {
     this.factors = factors;
   }
 }

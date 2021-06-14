@@ -17,12 +17,10 @@
 package com.nike.cerberus.auth.connector.okta;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
@@ -31,9 +29,6 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHand
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
-import com.okta.sdk.models.usergroups.UserGroup;
-import com.okta.sdk.models.usergroups.UserGroupProfile;
-import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -44,19 +39,15 @@ public class OktaAuthConnectorTest {
   // class under test
   private OktaAuthConnector oktaAuthConnector;
 
-  // dependencies
-  @Mock private OktaApiClientHelper oktaApiClientHelper;
-
   @Mock private AuthenticationClient client;
+  @Mock OktaConfigurationProperties oktaConfig;
 
   @Before
   public void setup() {
 
     initMocks(this);
-    // create test object
-    oktaAuthConnector = new OktaAuthConnector(oktaApiClientHelper, client);
 
-    reset(oktaApiClientHelper);
+    oktaAuthConnector = new OktaAuthConnector(client, oktaConfig);
   }
 
   /////////////////////////
@@ -245,34 +236,5 @@ public class OktaAuthConnectorTest {
 
     //  verify results
     assertEquals(expectedResponse, actualResponse);
-  }
-
-  @Test
-  public void getGroupsHappy() {
-
-    String id = "id";
-    AuthData authData = mock(AuthData.class);
-    when(authData.getUserId()).thenReturn(id);
-
-    String name1 = "name 1";
-    UserGroupProfile profile1 = mock(UserGroupProfile.class);
-    UserGroup group1 = mock(UserGroup.class);
-    when(profile1.getName()).thenReturn(name1);
-    when(group1.getProfile()).thenReturn(profile1);
-
-    String name2 = "name 2";
-    UserGroupProfile profile2 = mock(UserGroupProfile.class);
-    UserGroup group2 = mock(UserGroup.class);
-    when(profile2.getName()).thenReturn(name2);
-    when(group2.getProfile()).thenReturn(profile2);
-
-    when(oktaApiClientHelper.getUserGroups(id)).thenReturn(Lists.newArrayList(group1, group2));
-
-    // do the call
-    Set<String> result = this.oktaAuthConnector.getGroups(authData);
-
-    // verify results
-    assertTrue(result.contains(name1));
-    assertTrue(result.contains(name2));
   }
 }

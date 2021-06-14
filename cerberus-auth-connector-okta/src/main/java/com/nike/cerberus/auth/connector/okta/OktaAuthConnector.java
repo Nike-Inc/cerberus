@@ -30,9 +30,13 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
-import com.okta.sdk.models.usergroups.UserGroup;
+import com.okta.sdk.client.Client;
+import com.okta.sdk.client.Clients;
+import com.okta.sdk.resource.group.GroupList;
+import com.okta.sdk.resource.user.User;
+import com.okta.sdk.authc.credentials.TokenClientCredentials;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,17 +47,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class OktaAuthConnector implements AuthConnector {
 
-  private final OktaApiClientHelper oktaApiClientHelper;
-
   private final AuthenticationClient oktaAuthenticationClient;
+
+  private final Client sdkClient;
 
   @Autowired
   public OktaAuthConnector(
-      final OktaApiClientHelper oktaApiClientHelper,
-      AuthenticationClient oktaAuthenticationClient) {
+      AuthenticationClient oktaAuthenticationClient,
+      OktaConfigurationProperties oktaConfigurationProperties) {
+      this.oktaAuthenticationClient = oktaAuthenticationClient;
+      this.sdkClient = getSdkClient(oktaConfigurationProperties);
+  }
 
-    this.oktaApiClientHelper = oktaApiClientHelper;
-    this.oktaAuthenticationClient = oktaAuthenticationClient;
+  private Client getSdkClient(OktaConfigurationProperties oktaConfigurationProperties) {
+      return Clients.builder()
+            .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
+            .setClientCredentials(new TokenClientCredentials(oktaConfigurationProperties.getApiKey()))
+            .build();
   }
 
   /** Authenticates user using Okta Auth SDK. */
@@ -183,13 +193,13 @@ public class OktaAuthConnector implements AuthConnector {
 
     Preconditions.checkNotNull(authData, "auth data cannot be null.");
 
-    final List<UserGroup> userGroups = oktaApiClientHelper.getUserGroups(authData.getUserId());
+    User user = sdkClient.getUser(authData.getUserId());
+    GroupList userGroups = user.listGroups();
 
     final Set<String> groups = new HashSet<>();
-    if (userGroups.isEmpty()) {
+    if (userGroups == null) {
       return groups;
     }
-
     userGroups.forEach(group -> groups.add(group.getProfile().getName()));
 
     return groups;
