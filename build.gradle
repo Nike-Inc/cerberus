@@ -16,7 +16,6 @@
 
 
 import com.github.spotbugs.snom.SpotBugsReport
-import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 
 buildscript {
   ext {
@@ -46,7 +45,6 @@ buildscript {
 
   dependencies {
     classpath "org.owasp:dependency-check-gradle:6.1.0"
-    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
@@ -64,7 +62,6 @@ allprojects {
   apply plugin: 'groovy'
   apply plugin: 'java-library'
   apply plugin: 'jacoco'
-  apply plugin: SpinnakerCodeStylePlugin
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
