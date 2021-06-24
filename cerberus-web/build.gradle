@@ -80,7 +80,7 @@ dependencies {
 
   // test deps
   testImplementation('org.springframework.boot:spring-boot-starter-test')
-  testImplementation "commons-io:commons-io:2.8.0"
+  testImplementation "commons-io:commons-io:2.10.0"
   testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.13.0"
 
   // Integration Test Deps
