@@ -35,9 +35,6 @@ buildscript {
       url "https://repo.maven.apache.org/maven2"
     }
     maven {
-      url "https://dl.bintray.com/spinnaker/gradle"
-    }
-    maven {
       url "https://plugins.gradle.org/m2/"
     }
     google()
