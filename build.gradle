@@ -26,7 +26,7 @@ buildscript {
       awsSdkVersion: '1.11.1020',
       kork: '7.109.0',
       guava: '30.1.1-jre',
-      springBoot: '2.4.5',
+      springBoot: '2.5.3',
       jjwt: '0.11.2'
     ]
   }
