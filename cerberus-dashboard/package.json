@@ -61,7 +61,7 @@
     "redux-devtools": "3.7.0",
     "sass": "^1.32.11",
     "sockjs-client": "^1.5.1",
-    "ts-node": "^9.1.1",
+    "ts-node": "^10.2.0",
     "type-fest": "~0.21.3",
     "utf-8-validate": "^5.0.4",
     "webpack-hot-middleware": "^2.25.0",
