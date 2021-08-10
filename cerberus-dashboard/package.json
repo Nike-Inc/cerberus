@@ -65,7 +65,7 @@
     "type-fest": "~0.21.3",
     "utf-8-validate": "^5.0.4",
     "webpack-hot-middleware": "^2.25.0",
-    "webpack-plugin-serve": "^1.4.1"
+    "webpack-plugin-serve": "^1.5.0"
   },
   "browserslist": {
     "production": [
