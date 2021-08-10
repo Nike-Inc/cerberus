@@ -62,7 +62,7 @@
     "sass": "^1.32.11",
     "sockjs-client": "^1.5.1",
     "ts-node": "^9.1.1",
-    "type-fest": "~0.21.3",
+    "type-fest": "~2.0.0",
     "utf-8-validate": "^5.0.4",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-plugin-serve": "^1.4.1"
