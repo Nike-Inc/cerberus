@@ -16,7 +16,6 @@
 
 
 import com.github.spotbugs.snom.SpotBugsReport
-import com.netflix.spinnaker.gradle.codestyle.SpinnakerCodeStylePlugin
 
 buildscript {
   ext {
@@ -37,9 +36,6 @@ buildscript {
       url "https://repo.maven.apache.org/maven2"
     }
     maven {
-      url "https://dl.bintray.com/spinnaker/gradle"
-    }
-    maven {
       url "https://plugins.gradle.org/m2/"
     }
     google()
@@ -47,7 +43,7 @@ buildscript {
 
   dependencies {
     classpath "org.owasp:dependency-check-gradle:6.1.6"
-    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
+//    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
@@ -65,7 +61,6 @@ allprojects {
   apply plugin: 'groovy'
   apply plugin: 'java-library'
   apply plugin: 'jacoco'
-  apply plugin: SpinnakerCodeStylePlugin
   apply plugin: 'com.github.spotbugs'
 
   dependencies {
@@ -159,7 +154,7 @@ subprojects {
       //upgrading tomcat manually until Spring-Boot 2.3.5 is released to resolve a security vulnerability
       //keep tomcat on 9.x until Spring Boot implements javax->jakarta change
       dependency 'org.apache.tomcat.embed:tomcat-embed-core:9.0.44'
-      dependency 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.44'
+      dependency 'org.apache.tomcat.embed:tomcat-embed-websocket:10.0.10'
     }
   }
 
