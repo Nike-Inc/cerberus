@@ -16,11 +16,12 @@
 
 import React from "react";
 import { Component } from "react";
-import { hashHistory } from "react-router";
+import store from '../../store/configureStore';
+import { push } from 'connected-react-router';
 
 export default class NotFound extends Component {
   componentDidMount() {
-    hashHistory.push("/");
+    store.dispatch(push("/"));
   }
 
   render() {

@@ -17,6 +17,7 @@
 import React from 'react';
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import * as appActions from '../../actions/appActions';
 import Login from '../Login/Login';
@@ -26,6 +27,13 @@ import Messenger from '../Messenger/Messenger';
 import SideBar from '../SideBar/SideBar';
 import Footer from '../Footer/Footer';
 import './App.scss';
+import LandingView from "../LandingView/LandingView";
+import ManageSafeDepositBox from "../ManageSafeDepositBox/ManageSafeDepositBox";
+import SDBMetadataList from "../SDBMetadataList/SDBMetadataList";
+import NotFound from "../NotFound/NotFound";
+
+import {ConnectedRouter} from "connected-react-router";
+import { history } from '../../store/configureStore';
 
 /**
  * This is the main Component that loads the header, content div and footer
@@ -44,34 +52,44 @@ class App extends Component {
         axios.defaults.headers.common['X-Cerberus-Client'] = `Dashboard/${dashboardVersion}`;
 
         return (
-            <div id='main-wrapper'>
-                <Modal modalStack={modalStack} />
+            <ConnectedRouter history={history}>
+                <div id='main-wrapper'>
+                    <Modal modalStack={modalStack} />
 
-                {!isAuthenticated && <Login />}
-                {(isAuthenticated || isSessionExpired) &&
-                    <div id='content-wrapper'>
-                        <Header userName={userName}
-                            displayUserContextMenu={displayUserContextMenu}
-                            dispatch={dispatch}
-                            cerberusAuthToken={cerberusAuthToken}
-                            isAdmin={isAdmin} />
-                        {isAuthenticated &&
-                            <div id="app-messenger-wrapper">
-                                <Messenger />
-                            </div>
-                        }
-                        <div id='content'>
-                            <SideBar />
-                            <div id='workspace'>
-                                <div id='workspace-wrapper'>
-                                    {children}
+                    {!isAuthenticated && <Login />}
+                    {(isAuthenticated || isSessionExpired) &&
+                        <div id='content-wrapper'>
+                            <Header userName={userName}
+                                displayUserContextMenu={displayUserContextMenu}
+                                dispatch={dispatch}
+                                cerberusAuthToken={cerberusAuthToken}
+                                isAdmin={isAdmin} />
+                            {isAuthenticated &&
+                                <div id="app-messenger-wrapper">
+                                    <Messenger />
+                                </div>
+                            }
+                            <div id='content'>
+                                <SideBar />
+                                <div id='workspace'>
+                                    <div id='workspace-wrapper'>
+                                        <Switch>
+                                            <Route
+                                                path="/manage-safe-deposit-box/:id"
+                                                component={ManageSafeDepositBox}
+                                            />
+                                            <Route path="/admin/sdb-metadata" component={SDBMetadataList} />
+                                            <Route path="/" exact component={LandingView} />
+                                            <Route path="*" component={NotFound} />
+                                        </Switch>
+                                    </div>
                                 </div>
                             </div>
+                            <Footer />
                         </div>
-                        <Footer />
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            </ConnectedRouter>
         );
     }
 }

@@ -68,7 +68,7 @@ const mapStateToProps = state => ({
     isMfaRequired: state.auth.isMfaRequired,
     statusText: state.auth.statusText,
     initialValues: {
-        redirectTo: state.routing.locationBeforeTransitions.query.next || '/'
+        redirectTo: state.router.location.query.next || '/'
     }
 });
 
