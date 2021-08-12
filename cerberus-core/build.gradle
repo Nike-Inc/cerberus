@@ -23,26 +23,26 @@ dependencies {
   api 'com.nike.backstopper:backstopper-spring-web-mvc:0.13.0'
 
   // Metrics
-  api 'io.dropwizard.metrics:metrics-core:4.1.17'
+  api 'io.dropwizard.metrics:metrics-core:4.2.0'
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
   api "com.squareup.okhttp3:okhttp:4.9.1"
-  api 'com.github.ben-manes.caffeine:caffeine:2.8.0'
+  api 'com.github.ben-manes.caffeine:caffeine:3.0.2'
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
-  api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.0"
-  api "org.glassfish.jaxb:jaxb-runtime:3.0.0"
+  api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+  api "org.glassfish.jaxb:jaxb-runtime:3.0.1"
 
   // Find bugs annotations
   api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
 
-  api group: 'com.google.guava', name: 'guava', version: '30.0-jre'
+  api group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 }
 
 configurations.all {
   resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.4.30"
-    force "org.jetbrains.kotlin:kotlin-stdlib:1.4.21-2"
+    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.0"
+    force "org.jetbrains.kotlin:kotlin-stdlib:1.5.0"
   }
 }

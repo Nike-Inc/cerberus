@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.4.4"
+  id 'org.springframework.boot' version "2.4.5"
 }
 
 sourceCompatibility = '11'
@@ -44,9 +44,9 @@ dependencies {
   // DB: Mybatis, Flyway, C3p0
   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.4'
   implementation 'org.mybatis:mybatis-spring:2.0.6'
-  implementation 'org.mybatis:mybatis:3.5.6'
+  implementation 'org.mybatis:mybatis:3.5.7'
   implementation 'com.mchange:c3p0:0.9.5.5'
-  implementation 'mysql:mysql-connector-java:8.0.23'
+  implementation 'mysql:mysql-connector-java:8.0.25'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
@@ -58,7 +58,7 @@ dependencies {
   implementation 'com.google.code.gson:gson:2.8.6' // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
-  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.25'
+  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.26'
 
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
@@ -70,9 +70,9 @@ dependencies {
 
 
   // JWT
-  implementation "io.jsonwebtoken:jjwt-api:0.10.8"
-  implementation "io.jsonwebtoken:jjwt-impl:0.10.8"
-  implementation "io.jsonwebtoken:jjwt-jackson:0.10.8"
+  implementation "io.jsonwebtoken:jjwt-api:${versions.jjwt}"
+  implementation "io.jsonwebtoken:jjwt-impl:${versions.jjwt}"
+  implementation "io.jsonwebtoken:jjwt-jackson:${versions.jjwt}"
 
 
   //dist tracing

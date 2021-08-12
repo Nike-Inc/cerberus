@@ -20,12 +20,13 @@ import com.github.spotbugs.snom.SpotBugsReport
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.18',
+      lombok: '1.18.20',
       resilience4j: '1.7.0',
-      awsSdkVersion: '1.11.948',
-      kork: '7.107.0',
-      guava: '30.1-jre',
-      springBoot: '2.4.4',
+      awsSdkVersion: '1.11.1020',
+      kork: '7.109.0',
+      guava: '30.1.1-jre',
+      springBoot: '2.4.5',
+      jjwt: '0.11.2'
     ]
   }
   ext['groovy.version'] = '3.0.7'
@@ -41,7 +42,8 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:6.1.0"
+    classpath "org.owasp:dependency-check-gradle:6.1.6"
+//    classpath 'com.netflix.spinnaker.gradle:spinnaker-dev-plugin:7.11.6'
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
@@ -49,7 +51,7 @@ buildscript {
 plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.12"
-  id "com.github.spotbugs" version "4.6.0"
+  id "com.github.spotbugs" version "4.7.1"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -162,11 +164,11 @@ subprojects {
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.7'
-    testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-3.0'
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.8'
+    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-    testImplementation 'com.openpojo:openpojo:0.8.13'
+    testImplementation 'com.openpojo:openpojo:0.9.1'
   }
 
   test {
@@ -221,7 +223,7 @@ configurations {
 }
 
 dependencies {
-  antJUnit 'org.apache.ant:ant-junit:1.10.9'
+  antJUnit 'org.apache.ant:ant-junit:1.10.10'
 }
 
 // Compile all the test results into a single one.
