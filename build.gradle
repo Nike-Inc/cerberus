@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import com.github.spotbugs.snom.SpotBugsReport
 
 buildscript {
@@ -51,6 +50,7 @@ plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.12"
   id "com.github.spotbugs" version "4.7.1"
+  id "com.diffplug.spotless" version "5.14.2"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -61,6 +61,13 @@ allprojects {
   apply plugin: 'java-library'
   apply plugin: 'jacoco'
   apply plugin: 'com.github.spotbugs'
+  apply plugin: 'com.diffplug.spotless'
+
+  spotless {
+    java {
+      googleJavaFormat()
+    }
+  }
 
   dependencies {
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'

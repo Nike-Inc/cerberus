@@ -305,5 +305,6 @@ public class ApplicationConfiguration {
   public RequestWasNotAuthenticatedEntryPoint requestWasNotAuthenticatedEntryPoint(
       SpringApiExceptionHandler springApiExceptionHandler) {
     return new RequestWasNotAuthenticatedEntryPoint(springApiExceptionHandler);
-  };
+  }
+  ;
 }
