@@ -241,7 +241,14 @@ public class SafeDepositBoxService {
    */
   public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox){
     if(!safeDepositBox.getOwner().toLowerCase().startsWith(this.adGroupNamePrefix)){
-      throw ApiException.newBuilder().withApiErrors(DefaultApiError.SDB_OWNER_NOT_VALID).build();
+      String errorMessage =
+              String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
+      throw ApiException.newBuilder().withApiErrors(
+              CustomApiError.createCustomApiError(
+                      DefaultApiError.SDB_OWNER_NOT_VALID,
+                      errorMessage))
+                      .withExceptionMessage(errorMessage)
+                      .build();
     }
   }
 
@@ -255,7 +262,14 @@ public class SafeDepositBoxService {
             safeDepositBox.getUserGroupPermissions();
     for(UserGroupPermission permission: userGroupPermissionSet){
       if(!permission.getName().toLowerCase().startsWith(this.adGroupNamePrefix)){
-        throw ApiException.newBuilder().withApiErrors(DefaultApiError.SDB_USER_GROUP_NOT_VALID).build();
+        String errorMessage =
+                String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
+        throw ApiException.newBuilder().withApiErrors(
+                        CustomApiError.createCustomApiError(
+                                DefaultApiError.SDB_USER_GROUP_NOT_VALID,
+                                errorMessage))
+                .withExceptionMessage(errorMessage)
+                .build();
       }
     }
   }
