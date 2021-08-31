@@ -64,6 +64,7 @@ public class SafeDepositBoxService {
   private final SecureDataVersionDao secureDataVersionDao;
   private final Boolean userGroupsCaseSensitive;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
+  public String adGroupNamePrefix;
 
   @Autowired
   public SafeDepositBoxService(
@@ -81,7 +82,8 @@ public class SafeDepositBoxService {
       SecureDataVersionDao secureDataVersionDao,
       @Value(USER_GROUPS_CASE_SENSITIVE) Boolean userGroupsCaseSensitive,
       SdbAccessRequest sdbAccessRequest,
-      AuditLoggingFilterDetails auditLoggingFilterDetails) {
+      AuditLoggingFilterDetails auditLoggingFilterDetails,
+      String adGroupNamePrefix) {
 
     this.safeDepositBoxDao = safeDepositBoxDao;
     this.userGroupDao = userGroupDao;
@@ -97,6 +99,7 @@ public class SafeDepositBoxService {
     this.secureDataVersionDao = secureDataVersionDao;
     this.userGroupsCaseSensitive = userGroupsCaseSensitive;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
+    this.adGroupNamePrefix = adGroupNamePrefix;
   }
 
   /**
@@ -231,6 +234,32 @@ public class SafeDepositBoxService {
   }
 
   /**
+   * Validates the owner AD group name of safe deposit box with the approved
+   * specification
+   *
+   * @param safeDepositBox Safe deposit box to check
+   */
+  public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox){
+    if(!safeDepositBox.getOwner().toLowerCase().startsWith(this.adGroupNamePrefix)){
+      throw ApiException.newBuilder().withApiErrors(DefaultApiError.SDB_OWNER_NOT_VALID).build();
+    }
+  }
+
+  /**
+   * Validates the user group AD group names of safe deposit box with the approved
+   * specification
+   * @param safeDepositBox Safe deposit box to check
+   */
+  public void validateUserGroupName(SafeDepositBoxV2 safeDepositBox){
+    final Set<UserGroupPermission> userGroupPermissionSet =
+            safeDepositBox.getUserGroupPermissions();
+    for(UserGroupPermission permission: userGroupPermissionSet){
+      if(!permission.getName().toLowerCase().startsWith(this.adGroupNamePrefix)){
+        throw ApiException.newBuilder().withApiErrors(DefaultApiError.SDB_USER_GROUP_NOT_VALID).build();
+      }
+    }
+  }
+  /**
    * Creates a safe deposit box and all the appropriate permissions.
    *
    * @param safeDepositBox Safe deposit box to create
@@ -240,6 +269,8 @@ public class SafeDepositBoxService {
   @Transactional
   public SafeDepositBoxV2 createSafeDepositBoxV2(
       final SafeDepositBoxV2 safeDepositBox, final String user) {
+    validateSDBOwnerName(safeDepositBox);
+    validateUserGroupName(safeDepositBox);
     final OffsetDateTime now = dateTimeSupplier.get();
     final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
     final Set<UserGroupPermission> userGroupPermissionSet =
@@ -484,6 +515,8 @@ public class SafeDepositBoxService {
           .withExceptionMessage(msg)
           .build();
     }
+
+
 
     final List<UserGroupRecord> userGroupOwnerRecords =
         userGroupDao.getUserGroupsByRole(safeDepositBoxId, ownerRole.get().getId());

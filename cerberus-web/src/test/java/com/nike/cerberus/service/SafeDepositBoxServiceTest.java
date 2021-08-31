@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.dao.SafeDepositBoxDao;
 import com.nike.cerberus.dao.SecureDataVersionDao;
@@ -39,6 +40,7 @@ import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
+import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -437,5 +439,107 @@ public class SafeDepositBoxServiceTest {
     List<SafeDepositBoxSummary> roleArnSdbSummaries =
         safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(roleArnPrincipal);
     assertEquals(roleArnRecords.size(), roleArnSdbSummaries.size());
+  }
+
+  @Test
+  public void test_that_validates_owner_AD_group_name(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    safeDepositBoxService.validateSDBOwnerName(sdbObject);
+  }
+
+  @Test(expected = ApiException.class)
+  public void test_that_rejects_bad_owner_AD_group_name(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "blah";
+    safeDepositBoxService.validateSDBOwnerName(sdbObject);
+  }
+
+  @Test
+  public void test_that_validates_user_AD_group_name(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("app.mock.foo").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    safeDepositBoxService.validateUserGroupName(sdbObject);
+  }
+
+  @Test(expected = ApiException.class)
+  public void test_that_rejects_bad_user_AD_group_name(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.foo";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("app.foo").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    safeDepositBoxService.validateUserGroupName(sdbObject);
   }
 }
