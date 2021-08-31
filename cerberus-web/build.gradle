@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.4.9"
+  id 'org.springframework.boot' version "2.5.4"
 }
 
 sourceCompatibility = '11'
