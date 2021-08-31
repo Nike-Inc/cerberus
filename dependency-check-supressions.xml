@@ -44,4 +44,11 @@
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib\-common@.*$</packageUrl>
         <cve>CVE-2020-15824</cve>
      </suppress>
+     <suppress>
+        <notes><![CDATA[
+        file name: ansi-html:0.0.7
+        ]]></notes>
+        <packageUrl regex="true">^pkg:npm/ansi\-html@.*$</packageUrl>
+        <cve>CVE-2021-23424</cve>
+     </suppress>
 </suppressions>
