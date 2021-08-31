@@ -18,10 +18,11 @@ dependencies {
   implementation project(":cerberus-core")
 
   // Okta
-  implementation "com.okta:okta-sdk:0.0.4"
-  implementation "com.okta.authn.sdk:okta-authn-sdk-api:2.0.2"
-  implementation "com.okta.sdk:okta-sdk-httpclient:3.0.1"
-  implementation "com.okta.authn.sdk:okta-authn-sdk-impl:2.0.2"
+  compile "com.okta.sdk:okta-sdk-api:${versions.okta}"
+  runtime "com.okta.sdk:okta-sdk-impl:${versions.okta}"
+  implementation "com.okta.authn.sdk:okta-authn-sdk-api:${versions.oktaAuthnSdk}"
+  implementation "com.okta.sdk:okta-sdk-httpclient:${versions.okta}"
+  implementation "com.okta.authn.sdk:okta-authn-sdk-impl:${versions.oktaAuthnSdk}"
 
   // The Okta SDKs pull in an outdated version of guava that the OWASP Dep checker doesn't like
   implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"

@@ -127,7 +127,8 @@ public class AuthenticationServiceTest {
     assertEquals(expectedResponse, actualResponse);
     assertEquals(
         expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
-  };
+  }
+  ;
 
   @Test
   public void tests_that_generateCommonVaultPrincipalAuthMetadata_contains_expected_fields() {
