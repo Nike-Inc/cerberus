@@ -39,10 +39,3 @@ dependencies {
 
   api group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 }
-
-configurations.all {
-  resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.0"
-    force "org.jetbrains.kotlin:kotlin-stdlib:1.5.0"
-  }
-}
