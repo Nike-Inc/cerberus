@@ -20,7 +20,7 @@ dependencies {
   // Okta
   implementation "com.okta:okta-sdk:0.0.4"
   implementation "com.okta.authn.sdk:okta-authn-sdk-api:2.0.2"
-  implementation "com.okta.sdk:okta-sdk-httpclient:3.0.1"
+  implementation "com.okta.sdk:okta-sdk-httpclient:5.0.0"
   implementation "com.okta.authn.sdk:okta-authn-sdk-impl:2.0.2"
 
   // The Okta SDKs pull in an outdated version of guava that the OWASP Dep checker doesn't like
