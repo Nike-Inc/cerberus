@@ -29,6 +29,7 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHand
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
+import com.okta.sdk.client.Client;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -40,14 +41,14 @@ public class OktaAuthConnectorTest {
   private OktaAuthConnector oktaAuthConnector;
 
   @Mock private AuthenticationClient client;
-  @Mock OktaConfigurationProperties oktaConfig;
+  @Mock Client sdkClient;
 
   @Before
   public void setup() {
 
     initMocks(this);
 
-    oktaAuthConnector = new OktaAuthConnector(client, oktaConfig);
+    oktaAuthConnector = new OktaAuthConnector(client, sdkClient);
   }
 
   /////////////////////////

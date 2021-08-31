@@ -58,6 +58,14 @@ public class OktaAuthConnector implements AuthConnector {
     this.sdkClient = getSdkClient(oktaConfigurationProperties);
   }
 
+  /** Alternate constructor to facilitate unit testing */
+  public OktaAuthConnector(
+          AuthenticationClient oktaAuthenticationClient,
+          Client sdkClient) {
+    this.oktaAuthenticationClient = oktaAuthenticationClient;
+    this.sdkClient = sdkClient;
+  }
+
   private Client getSdkClient(OktaConfigurationProperties oktaConfigurationProperties) {
     return Clients.builder()
         .setOrgUrl(oktaConfigurationProperties.getBaseUrl())
