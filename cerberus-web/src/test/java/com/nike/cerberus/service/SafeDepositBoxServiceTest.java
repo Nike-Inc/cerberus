@@ -542,4 +542,185 @@ public class SafeDepositBoxServiceTest {
 
     safeDepositBoxService.validateUserGroupName(sdbObject);
   }
+
+  @Test
+  public void test_that_validates_user_AD_group_name_on_user_group_change(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    SafeDepositBoxV2 newSdbObject = new SafeDepositBoxV2();
+    newSdbObject.setId(id);
+    newSdbObject.setPath("app/health-check-bucket/");
+    newSdbObject.setCategoryId(categoryId);
+    newSdbObject.setName(sdbName);
+    newSdbObject.setOwner("app.mock.test");
+    newSdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    newSdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    newSdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    newSdbObject.setCreatedBy("foobar@nike.com");
+    newSdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    Set<UserGroupPermission> newUserPerms = new HashSet<>();
+    newUserPerms.add(new UserGroupPermission().withName("app.mock").withRoleId(readId));
+    newUserPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    newSdbObject.setUserGroupPermissions(newUserPerms);
+
+    safeDepositBoxService.validateNewUserGroupPermissions(sdbObject, newSdbObject);
+  }
+
+  @Test
+  public void test_that_validates_user_AD_group_name_on_user_group_addition(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    SafeDepositBoxV2 newSdbObject = new SafeDepositBoxV2();
+    newSdbObject.setId(id);
+    newSdbObject.setPath("app/health-check-bucket/");
+    newSdbObject.setCategoryId(categoryId);
+    newSdbObject.setName(sdbName);
+    newSdbObject.setOwner("app.mock.test");
+    newSdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    newSdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    newSdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    newSdbObject.setCreatedBy("foobar@nike.com");
+    newSdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    Set<UserGroupPermission> newUserPerms = new HashSet<>();
+    newUserPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    newUserPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    newUserPerms.add(new UserGroupPermission().withName("app.mock.foobar").withRoleId(readId));
+    newSdbObject.setUserGroupPermissions(newUserPerms);
+
+    safeDepositBoxService.validateNewUserGroupPermissions(sdbObject, newSdbObject);
+  }
+
+  @Test
+  public void test_that_validates_user_AD_group_name_on_user_group_removal(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    SafeDepositBoxV2 newSdbObject = new SafeDepositBoxV2();
+    newSdbObject.setId(id);
+    newSdbObject.setPath("app/health-check-bucket/");
+    newSdbObject.setCategoryId(categoryId);
+    newSdbObject.setName(sdbName);
+    newSdbObject.setOwner("app.mock.test");
+    newSdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    newSdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    newSdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    newSdbObject.setCreatedBy("foobar@nike.com");
+    newSdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    Set<UserGroupPermission> newUserPerms = new HashSet<>();
+    newUserPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    newSdbObject.setUserGroupPermissions(newUserPerms);
+
+    safeDepositBoxService.validateNewUserGroupPermissions(sdbObject, newSdbObject);
+  }
+
+  @Test(expected = ApiException.class)
+  public void test_that_invalidates_user_AD_group_name_on_user_group_addition(){
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("app.mock.test");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    SafeDepositBoxV2 newSdbObject = new SafeDepositBoxV2();
+    newSdbObject.setId(id);
+    newSdbObject.setPath("app/health-check-bucket/");
+    newSdbObject.setCategoryId(categoryId);
+    newSdbObject.setName(sdbName);
+    newSdbObject.setOwner("app.mock.test");
+    newSdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    newSdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    newSdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    newSdbObject.setCreatedBy("foobar@nike.com");
+    newSdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.mock";
+    Set<UserGroupPermission> userPerms = new HashSet<>();
+    userPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    userPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    sdbObject.setUserGroupPermissions(userPerms);
+
+    Set<UserGroupPermission> newUserPerms = new HashSet<>();
+    newUserPerms.add(new UserGroupPermission().withName("lst.mock").withRoleId(readId));
+    newUserPerms.add(new UserGroupPermission().withName("app.mock.blah").withRoleId(readId));
+    newUserPerms.add(new UserGroupPermission().withName("app.exception").withRoleId(readId));
+    newSdbObject.setUserGroupPermissions(newUserPerms);
+
+    safeDepositBoxService.validateNewUserGroupPermissions(sdbObject, newSdbObject);
+  }
 }

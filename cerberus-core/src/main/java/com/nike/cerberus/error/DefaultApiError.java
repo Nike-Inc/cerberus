@@ -272,12 +272,12 @@ public enum DefaultApiError implements ApiError {
 
   /** Owner AD Group does not match approved specification */
   SDB_OWNER_NOT_VALID(99250,
-          "Owner AD Group does not match approved specification",
+          "Owner AD Group does not match approved specification!",
           SC_BAD_REQUEST),
 
   /** User AD group does not match approved specification */
   SDB_USER_GROUP_NOT_VALID(99251,
-          "User AD Group does not match approved specification",
+          "User AD Group does not match approved specification!",
           SC_BAD_REQUEST),
 
   /** Generic not found error. */
