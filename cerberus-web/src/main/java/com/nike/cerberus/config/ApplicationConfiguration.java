@@ -158,7 +158,6 @@ public class ApplicationConfiguration {
       @Value("${cerberus.adGroupNamePrefix:}") String adGroupNamePrefix) {
     return adGroupNamePrefix.toLowerCase();
   }
-  ;
 
   @Bean("encryptCryptoMaterialsManager")
   public CryptoMaterialsManager encryptCryptoMaterialsManager(
