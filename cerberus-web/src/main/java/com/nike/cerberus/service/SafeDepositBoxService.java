@@ -33,10 +33,7 @@ import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.*;
 import java.time.OffsetDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -240,9 +237,12 @@ public class SafeDepositBoxService {
    * @param safeDepositBox Safe deposit box to check
    */
   public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox){
-    if(!safeDepositBox.getOwner().toLowerCase().startsWith(this.adGroupNamePrefix)){
+    String ownerName = safeDepositBox.getOwner();
+    if(!ownerName.toLowerCase().startsWith(this.adGroupNamePrefix)){
       String errorMessage =
-              String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
+              String.format("Owner '%s' is not valid! AD group prefix must start with: '%s'",
+                      ownerName,
+                      this.adGroupNamePrefix);
       throw ApiException.newBuilder().withApiErrors(
               CustomApiError.createCustomApiError(
                       DefaultApiError.SDB_OWNER_NOT_VALID,
@@ -255,24 +255,56 @@ public class SafeDepositBoxService {
   /**
    * Validates the user group AD group names of safe deposit box with the approved
    * specification
-   * @param safeDepositBox Safe deposit box to check
+   * @param safeDepositBox safe deposit box to check
    */
   public void validateUserGroupName(SafeDepositBoxV2 safeDepositBox){
-    final Set<UserGroupPermission> userGroupPermissionSet =
-            safeDepositBox.getUserGroupPermissions();
-    for(UserGroupPermission permission: userGroupPermissionSet){
-      if(!permission.getName().toLowerCase().startsWith(this.adGroupNamePrefix)){
-        String errorMessage =
-                String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
-        throw ApiException.newBuilder().withApiErrors(
-                        CustomApiError.createCustomApiError(
-                                DefaultApiError.SDB_USER_GROUP_NOT_VALID,
-                                errorMessage))
-                .withExceptionMessage(errorMessage)
-                .build();
+    List<String> invalidUserGroups = new ArrayList<>();
+    for(UserGroupPermission permission: safeDepositBox.getUserGroupPermissions()){
+      String userGroupName = permission.getName();
+      if(!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)){
+        invalidUserGroups.add(userGroupName);
       }
     }
+    if(!invalidUserGroups.isEmpty()){
+      generateUserGroupPermissionError(invalidUserGroups);
+    }
   }
+
+  /**
+   * Gets new user group permissions added to an SDB
+   * @param currentBox The record of the SDB
+   * @param newSafeDepositBox The new box constructed from the update
+   */
+  public void validateNewUserGroupPermissions(SafeDepositBoxV2 currentBox, SafeDepositBoxV2 newSafeDepositBox){
+    Set<UserGroupPermission> newUserGroupPermissions = newSafeDepositBox.getUserGroupPermissions();
+    List<String> invalidUserGroups = new ArrayList<>();
+    for(UserGroupPermission permission: newUserGroupPermissions){
+      if(!currentBox.getUserGroupPermissions().contains(permission)){
+        String userGroupName = permission.getName();
+        if(!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)){
+          invalidUserGroups.add(userGroupName);
+        }
+      }
+    }
+    if(!invalidUserGroups.isEmpty()){
+      generateUserGroupPermissionError(invalidUserGroups);
+    }
+  };
+
+  private void generateUserGroupPermissionError(List<String> invalidUserGroups){
+    String errorPreamble = String.format("The following groups are invalid: %s. ", invalidUserGroups);
+    String errorMessage = String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
+
+    errorMessage = errorPreamble + errorMessage;
+
+    throw ApiException.newBuilder().withApiErrors(
+            CustomApiError.createCustomApiError(
+                    DefaultApiError.SDB_USER_GROUP_NOT_VALID,
+                    errorMessage))
+            .withExceptionMessage(errorMessage)
+            .build();
+  }
+
   /**
    * Creates a safe deposit box and all the appropriate permissions.
    *
@@ -283,8 +315,11 @@ public class SafeDepositBoxService {
   @Transactional
   public SafeDepositBoxV2 createSafeDepositBoxV2(
       final SafeDepositBoxV2 safeDepositBox, final String user) {
+
+    // Validate AD Group names against specification
     validateSDBOwnerName(safeDepositBox);
     validateUserGroupName(safeDepositBox);
+
     final OffsetDateTime now = dateTimeSupplier.get();
     final SafeDepositBoxRecord boxRecordToStore = buildBoxToStore(safeDepositBox, user, now);
     final Set<UserGroupPermission> userGroupPermissionSet =
@@ -346,6 +381,17 @@ public class SafeDepositBoxService {
       final String id) {
 
     final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(id);
+
+    // If owner has changed, validate the new owner name
+    if(!currentBox.getOwner().equals(safeDepositBox.getOwner())){
+      validateSDBOwnerName(safeDepositBox);
+    }
+
+    // If user groups have changed, validate the new additions
+    if(!currentBox.getUserGroupPermissions().equals(safeDepositBox.getUserGroupPermissions())){
+      validateNewUserGroupPermissions(currentBox, safeDepositBox);
+    }
+
     String principalName = authPrincipal.getName();
     final OffsetDateTime now = dateTimeSupplier.get();
     final SafeDepositBoxRecord boxToUpdate =
