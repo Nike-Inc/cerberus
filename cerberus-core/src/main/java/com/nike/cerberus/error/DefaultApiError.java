@@ -21,8 +21,6 @@ import static javax.servlet.http.HttpServletResponse.*;
 
 import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.apierror.ApiErrorBase;
-import org.springframework.beans.factory.annotation.Value;
-
 import java.util.Map;
 import java.util.UUID;
 
@@ -271,14 +269,12 @@ public enum DefaultApiError implements ApiError {
   OKTA_PUSH_MFA_REJECTED(99249, "Push notification request was rejected by user", SC_UNAUTHORIZED),
 
   /** Owner AD Group does not match approved specification */
-  SDB_OWNER_NOT_VALID(99250,
-          "Owner AD Group does not match approved specification!",
-          SC_BAD_REQUEST),
+  SDB_OWNER_NOT_VALID(
+      99250, "Owner AD Group does not match approved specification!", SC_BAD_REQUEST),
 
   /** User AD group does not match approved specification */
-  SDB_USER_GROUP_NOT_VALID(99251,
-          "User AD Group does not match approved specification!",
-          SC_BAD_REQUEST),
+  SDB_USER_GROUP_NOT_VALID(
+      99251, "User AD Group does not match approved specification!", SC_BAD_REQUEST),
 
   /** Generic not found error. */
   ENTITY_NOT_FOUND(99996, "Not found", SC_NOT_FOUND),
@@ -303,7 +299,9 @@ public enum DefaultApiError implements ApiError {
 
   private final ApiError delegate;
 
-  DefaultApiError(final ApiError delegate) {this.delegate = delegate;}
+  DefaultApiError(final ApiError delegate) {
+    this.delegate = delegate;
+  }
 
   DefaultApiError(final int errorCode, final String message, final int httpStatusCode) {
     this(
