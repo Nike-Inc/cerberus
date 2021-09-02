@@ -26,7 +26,7 @@ export default class GroupsSelect extends Component {
         var options = [];
         userGroups.forEach(group => {
             if (process.env.REACT_APP_AD_GROUP_NAME_PATTERN) {
-                let groupNamingPattern = process.env.REACT_APP_AD_GROUP_NAME_PATTERN
+                let groupNamingPattern = process.env.REACT_APP_AD_GROUP_NAME_PATTERN.toLowerCase()
                 if (group.toLowerCase().startsWith(groupNamingPattern)) {
                     options.push({ label: group, value: group });
                 }
