@@ -291,6 +291,11 @@ public class SafeDepositBoxService {
     }
   };
 
+  /**
+   * Generates the error message and throws the error if AD groups do not match
+   * specification
+   * @param invalidUserGroups list of names of invalid user groups
+   */
   private void generateUserGroupPermissionError(List<String> invalidUserGroups){
     String errorPreamble = String.format("The following groups are invalid: %s. ", invalidUserGroups);
     String errorMessage = String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
