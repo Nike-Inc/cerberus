@@ -46,6 +46,8 @@ const validate = values => {
 
     if (!values.owner) {
         errors.owner = 'You must select an owning user group';
+    } else if (process.env.REACT_APP_AD_GROUP_NAME_PATTERN) {
+        validateOwner(values.owner, process.env.REACT_APP_AD_GROUP_NAME_PATTERN, errors);
     }
 
     if (values.userGroupPermissions) {
@@ -59,6 +61,12 @@ const validate = values => {
     log.debug('Completed validation returning Error:\n' + JSON.stringify(errors, null, 2));
     return errors;
 };
+
+const validateOwner = (owner, ownerPrefix, errors) => {
+    if (!owner.toLowerCase().startsWith(ownerPrefix.toLowerCase())) {
+        errors.owner = 'This AD Group name does not match your organizations specified naming pattern: ' + ownerPrefix;
+    }
+}
 
 const validateUserGroupPermissions = (permission, index, errors) => {
     errors.userGroupPermissions[`${index}`] = {};
