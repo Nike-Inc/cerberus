@@ -153,11 +153,12 @@ public class ApplicationConfiguration {
     return currentRegion().getName();
   }
 
-  @Bean(name="adGroupNamePrefix")
+  @Bean(name = "adGroupNamePrefix")
   public String ADGroupNamePrefix(
-          @Value("${cerberus.adGroupNamePrefix:}") String adGroupNamePrefix){
-    return adGroupNamePrefix;
-  };
+      @Value("${cerberus.adGroupNamePrefix:}") String adGroupNamePrefix) {
+    return adGroupNamePrefix.toLowerCase();
+  }
+  ;
 
   @Bean("encryptCryptoMaterialsManager")
   public CryptoMaterialsManager encryptCryptoMaterialsManager(

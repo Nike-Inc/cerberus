@@ -33,11 +33,11 @@ import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.*;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -235,83 +235,87 @@ public class SafeDepositBoxService {
   }
 
   /**
-   * Validates the owner AD group name of safe deposit box with the approved
-   * specification
+   * Validates the owner AD group name of safe deposit box with the approved specification
    *
    * @param safeDepositBox Safe deposit box to check
    */
-  public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox){
+  public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox) {
     String ownerName = safeDepositBox.getOwner();
-    if(!ownerName.toLowerCase().startsWith(this.adGroupNamePrefix)){
+    if (!ownerName.toLowerCase().startsWith(this.adGroupNamePrefix)) {
       String errorMessage =
-              String.format("Owner '%s' is not valid! AD group prefix must start with: '%s'",
-                      ownerName,
-                      this.adGroupNamePrefix);
-      throw ApiException.newBuilder().withApiErrors(
+          String.format(
+              "Owner '%s' is not valid! AD group prefix must start with: '%s'",
+              ownerName, this.adGroupNamePrefix);
+      throw ApiException.newBuilder()
+          .withApiErrors(
               CustomApiError.createCustomApiError(
-                      DefaultApiError.SDB_OWNER_NOT_VALID,
-                      errorMessage))
-                      .withExceptionMessage(errorMessage)
-                      .build();
+                  DefaultApiError.SDB_OWNER_NOT_VALID, errorMessage))
+          .withExceptionMessage(errorMessage)
+          .build();
     }
   }
 
   /**
-   * Validates the user group AD group names of safe deposit box with the approved
-   * specification
+   * Validates the user group AD group names of safe deposit box with the approved specification
+   *
    * @param safeDepositBox safe deposit box to check
    */
-  public void validateUserGroupName(SafeDepositBoxV2 safeDepositBox){
+  public void validateUserGroupName(SafeDepositBoxV2 safeDepositBox) {
     List<String> invalidUserGroups = new ArrayList<>();
-    for(UserGroupPermission permission: safeDepositBox.getUserGroupPermissions()){
+    for (UserGroupPermission permission : safeDepositBox.getUserGroupPermissions()) {
       String userGroupName = permission.getName();
-      if(!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)){
+      if (!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)) {
         invalidUserGroups.add(userGroupName);
       }
     }
-    if(!invalidUserGroups.isEmpty()){
+    if (!invalidUserGroups.isEmpty()) {
       generateUserGroupPermissionError(invalidUserGroups);
     }
   }
 
   /**
    * Gets new user group permissions added to an SDB
+   *
    * @param currentBox The record of the SDB
    * @param newSafeDepositBox The new box constructed from the update
    */
-  public void validateNewUserGroupPermissions(SafeDepositBoxV2 currentBox, SafeDepositBoxV2 newSafeDepositBox){
+  public void validateNewUserGroupPermissions(
+      SafeDepositBoxV2 currentBox, SafeDepositBoxV2 newSafeDepositBox) {
     Set<UserGroupPermission> newUserGroupPermissions = newSafeDepositBox.getUserGroupPermissions();
     List<String> invalidUserGroups = new ArrayList<>();
-    for(UserGroupPermission permission: newUserGroupPermissions){
-      if(!currentBox.getUserGroupPermissions().contains(permission)){
+    for (UserGroupPermission permission : newUserGroupPermissions) {
+      if (!currentBox.getUserGroupPermissions().contains(permission)) {
         String userGroupName = permission.getName();
-        if(!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)){
+        if (!userGroupName.toLowerCase().startsWith(this.adGroupNamePrefix)) {
           invalidUserGroups.add(userGroupName);
         }
       }
     }
-    if(!invalidUserGroups.isEmpty()){
+    if (!invalidUserGroups.isEmpty()) {
       generateUserGroupPermissionError(invalidUserGroups);
     }
-  };
+  }
+  ;
 
   /**
-   * Generates the error message and throws the error if AD groups do not match
-   * specification
+   * Generates the error message and throws the error if AD groups do not match specification
+   *
    * @param invalidUserGroups list of names of invalid user groups
    */
-  private void generateUserGroupPermissionError(List<String> invalidUserGroups){
-    String errorPreamble = String.format("The following groups are invalid: %s. ", invalidUserGroups);
-    String errorMessage = String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
+  private void generateUserGroupPermissionError(List<String> invalidUserGroups) {
+    String errorPreamble =
+        String.format("The following groups are invalid: %s. ", invalidUserGroups);
+    String errorMessage =
+        String.format("AD group prefix must start with: '%s'", this.adGroupNamePrefix);
 
     errorMessage = errorPreamble + errorMessage;
 
-    throw ApiException.newBuilder().withApiErrors(
+    throw ApiException.newBuilder()
+        .withApiErrors(
             CustomApiError.createCustomApiError(
-                    DefaultApiError.SDB_USER_GROUP_NOT_VALID,
-                    errorMessage))
-            .withExceptionMessage(errorMessage)
-            .build();
+                DefaultApiError.SDB_USER_GROUP_NOT_VALID, errorMessage))
+        .withExceptionMessage(errorMessage)
+        .build();
   }
 
   /**
@@ -392,12 +396,12 @@ public class SafeDepositBoxService {
     final SafeDepositBoxV2 currentBox = getSDBAndValidatePrincipalAssociationV2(id);
 
     // If owner has changed, validate the new owner name
-    if(!currentBox.getOwner().equals(safeDepositBox.getOwner())){
+    if (!currentBox.getOwner().equals(safeDepositBox.getOwner())) {
       validateSDBOwnerName(safeDepositBox);
     }
 
     // If user groups have changed, validate the new additions
-    if(!currentBox.getUserGroupPermissions().equals(safeDepositBox.getUserGroupPermissions())){
+    if (!currentBox.getUserGroupPermissions().equals(safeDepositBox.getUserGroupPermissions())) {
       validateNewUserGroupPermissions(currentBox, safeDepositBox);
     }
 
@@ -584,8 +588,6 @@ public class SafeDepositBoxService {
           .withExceptionMessage(msg)
           .build();
     }
-
-
 
     final List<UserGroupRecord> userGroupOwnerRecords =
         userGroupDao.getUserGroupsByRole(safeDepositBoxId, ownerRole.get().getId());

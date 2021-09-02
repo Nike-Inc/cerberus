@@ -40,7 +40,6 @@ import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
-import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
@@ -442,7 +441,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
-  public void test_that_validates_owner_AD_group_name(){
+  public void test_that_validates_owner_AD_group_name() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -465,7 +464,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test(expected = ApiException.class)
-  public void test_that_rejects_bad_owner_AD_group_name(){
+  public void test_that_rejects_bad_owner_AD_group_name() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -488,7 +487,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
-  public void test_that_validates_user_AD_group_name(){
+  public void test_that_validates_user_AD_group_name() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -516,7 +515,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test(expected = ApiException.class)
-  public void test_that_rejects_bad_user_AD_group_name(){
+  public void test_that_rejects_bad_user_AD_group_name() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -544,7 +543,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
-  public void test_that_validates_user_AD_group_name_on_user_group_change(){
+  public void test_that_validates_user_AD_group_name_on_user_group_change() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -589,7 +588,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
-  public void test_that_validates_user_AD_group_name_on_user_group_addition(){
+  public void test_that_validates_user_AD_group_name_on_user_group_addition() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -635,7 +634,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test
-  public void test_that_validates_user_AD_group_name_on_user_group_removal(){
+  public void test_that_validates_user_AD_group_name_on_user_group_removal() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -679,7 +678,7 @@ public class SafeDepositBoxServiceTest {
   }
 
   @Test(expected = ApiException.class)
-  public void test_that_invalidates_user_AD_group_name_on_user_group_addition(){
+  public void test_that_invalidates_user_AD_group_name_on_user_group_addition() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
