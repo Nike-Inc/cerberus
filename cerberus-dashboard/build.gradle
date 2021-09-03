@@ -24,6 +24,15 @@ node {
 }
 
 task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
+
+  doFirst {
+    if (System.getenv("FRONTEND_ENV_FILE_PATH")) {
+      String file_path = System.getenv("FRONTEND_ENV_FILE_PATH")
+      assert file(file_path).exists()
+      new File("${project.projectDir.absolutePath}", ".env").text = file(file_path).text
+    }
+  }
+
   group 'build'
   args = ["run", "build"]
 }

@@ -23,8 +23,16 @@ export default class GroupsSelect extends Component {
     render() {
         const { userGroups, allowCustomValues, value, onChange, handleBeingTouched, touched, error } = this.props;
 
-        var options = userGroups.map(function (group) {
-            return { label: group, value: group };
+        var options = [];
+        userGroups.forEach(group => {
+            if (process.env.REACT_APP_AD_GROUP_NAME_PREFIX) {
+                let groupNamingPattern = process.env.REACT_APP_AD_GROUP_NAME_PREFIX.toLowerCase()
+                if (group.toLowerCase().startsWith(groupNamingPattern)) {
+                    options.push({ label: group, value: group });
+                }
+            } else {
+                options.push({ label: group, value: group });
+            }
         });
 
         var containsValue = false;
