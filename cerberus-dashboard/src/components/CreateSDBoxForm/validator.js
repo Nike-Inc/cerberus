@@ -46,8 +46,8 @@ const validate = values => {
 
     if (!values.owner) {
         errors.owner = 'You must select an owning user group';
-    } else if (process.env.REACT_APP_AD_GROUP_NAME_PATTERN) {
-        validateOwner(values.owner, process.env.REACT_APP_AD_GROUP_NAME_PATTERN, errors);
+    } else if (process.env.REACT_APP_AD_GROUP_NAME_PREFIX) {
+        validateOwner(values.owner, process.env.REACT_APP_AD_GROUP_NAME_PREFIX, errors);
     }
 
     if (values.userGroupPermissions) {
