@@ -26,6 +26,7 @@ import Header from '../Header/Header';
 import Messenger from '../Messenger/Messenger';
 import SideBar from '../SideBar/SideBar';
 import Footer from '../Footer/Footer';
+import Banner from '../Banner/Banner';
 import './App.scss';
 import LandingView from "../LandingView/LandingView";
 import ManageSafeDepositBox from "../ManageSafeDepositBox/ManageSafeDepositBox";
@@ -69,6 +70,10 @@ class App extends Component {
                                     <Messenger />
                                 </div>
                             }
+                            {process.env.REACT_APP_BANNER_MESSAGE &&
+                                <div id='banner'>
+                                    <Banner/>
+                                </div>}
                             <div id='content'>
                                 <SideBar />
                                 <div id='workspace'>
