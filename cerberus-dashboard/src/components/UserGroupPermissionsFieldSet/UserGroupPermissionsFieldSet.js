@@ -69,7 +69,7 @@ export default class UserGroupPermissionsFieldSet extends Component {
                                         dispatch(touch(formName, permission.roleId.name));
                                     }} />
 
-                                {!validateADGroup(permission.name.value) && <div className="warning-icon" data-tip={process.env.REACT_APP_SDB_WARNING_MESSAGE ? process.env.REACT_APP_SDB_WARNING_MESSAGE : ""}></div>}
+                                {!validateADGroup(permission.name.value) && <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>}
 
                                 <Buttons handleRemoveClicked={() => {
                                     userGroupPermissions.removeField(index);

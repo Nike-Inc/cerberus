@@ -59,7 +59,7 @@ export default class SafeDepositBoxSettings extends Component {
                     <div className="sdb-settings-owner">
                         <div className="sdb-settings-label">Owner:</div>
                         <div className="sdb-settings-value">{sdbData.owner}</div>
-                        {!validateADGroup(sdbData.owner) && <div className="warning-icon" data-tip={process.env.REACT_APP_SDB_WARNING_MESSAGE ? process.env.REACT_APP_SDB_WARNING_MESSAGE : ""}></div>}
+                        {!validateADGroup(sdbData.owner) && <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>}
                     </div>
                 </div>
                 <div className="sdb-settings-description">
@@ -109,7 +109,7 @@ const readOnlyUserGroupPermissions = (userGroupPermissions, roles) => {
                         return (
                             <tr key={perm.id} className={(index + 1) % 2 === 0 ? "iam-read-only-perm even-row" : "iam-read-only-perm odd-row"}>
                                 <td>
-                                    {!validateADGroup(perm.name) && <div className="warning-icon" data-tip={process.env.REACT_APP_SDB_WARNING_MESSAGE ? process.env.REACT_APP_SDB_WARNING_MESSAGE : ""}></div>}
+                                    {!validateADGroup(perm.name) && <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>}
                                     {perm.name}
                                 </td>
                                 <td>{roleNameFromId(perm.roleId, roles)}</td>
