@@ -21,6 +21,10 @@ public class FeatureFlagServiceV1 {
    */
   private final String adGroupNamePrefix;
 
+  /**
+   * A banner message to be displayed at the top of the UI, for announcements on feature or service
+   * agreement changes.
+   */
   private final String bannerMessage;
 
   @Autowired

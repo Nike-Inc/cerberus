@@ -1,9 +1,11 @@
 package com.nike.cerberus.controller;
 
+import static com.nike.cerberus.security.CerberusPrincipal.ROLE_USER;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import com.nike.cerberus.service.FeatureFlagServiceV1;
 import java.util.Map;
+import javax.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,7 @@ public class FeatureFlagControllerV1 {
    *
    * @return Map of all feature flags
    */
+  @RolesAllowed(ROLE_USER)
   @RequestMapping(method = GET)
   public Map<String, String> getAllFeatureFlags() {
     return this.featureFlagService.getAllFeatureFlags();
