@@ -21,9 +21,12 @@ public class FeatureFlagServiceV1 {
    */
   private final String adGroupNamePrefix;
 
+  private final String bannerMessage;
+
   @Autowired
-  public FeatureFlagServiceV1(String adGroupNamePrefix) {
+  public FeatureFlagServiceV1(String adGroupNamePrefix, String bannerMessage) {
     this.adGroupNamePrefix = adGroupNamePrefix;
+    this.bannerMessage = bannerMessage;
   }
 
   /**
@@ -34,6 +37,7 @@ public class FeatureFlagServiceV1 {
   public Map<String, String> getAllFeatureFlags() {
     Map<String, String> flags = new HashMap<>();
     flags.put("adGroupNamePrefix", this.adGroupNamePrefix);
+    flags.put("bannerMessage", this.bannerMessage);
     return flags;
   }
 }

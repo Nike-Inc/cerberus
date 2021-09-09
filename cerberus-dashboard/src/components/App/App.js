@@ -45,6 +45,10 @@ class App extends Component {
         if (!this.props.hasDashboardMetadataLoaded) {
             this.props.dispatch(appActions.loadDashboardMetadata());
         }
+
+        fetch('/v1/feature-flag')
+        .then(response => response.json())
+        .then(data => window.env = data);
     }
 
     render() {
@@ -70,10 +74,7 @@ class App extends Component {
                                     <Messenger />
                                 </div>
                             }
-                            {process.env.REACT_APP_BANNER_MESSAGE &&
-                                <div id='banner'>
-                                    <Banner/>
-                                </div>}
+                            {window.env.bannerMessage && <Banner message={window.env.bannerMessage}/>}
                             <div id='content'>
                                 <SideBar />
                                 <div id='workspace'>

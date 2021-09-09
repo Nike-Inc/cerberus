@@ -16,22 +16,17 @@
 
 import React from 'react';
 import { Component } from 'react';
-import { connect } from 'react-redux';
+import parse from 'html-react-parser';
 import './Banner.scss';
 
-import { getLogger } from '../../utils/logger';
-var log = getLogger('ad-group-warning-banner');
-
-const formName = 'banner';
-
 export default class Banner extends Component {
+
     render() {
-            return (
-                <div id='banner-wrapper'>
-                    <div id='banner'>
-                        {process.env.REACT_APP_BANNER_MESSAGE}
-                    </div>
-                </div>
-            )
+        const { message } = this.props;
+        return (
+            <div id='banner'>
+                {parse(message)}
+            </div>
+        )
     }
 }
