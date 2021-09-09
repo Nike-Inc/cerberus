@@ -27,10 +27,18 @@ public class FeatureFlagServiceV1 {
    */
   private final String bannerMessage;
 
+  /**
+   * A tooltip message to be displayed when a user hovers over the warning symbols on misconfigured
+   * SDBs. Should be concise.
+   */
+  private final String sdbWarningMessage;
+
   @Autowired
-  public FeatureFlagServiceV1(String adGroupNamePrefix, String bannerMessage) {
+  public FeatureFlagServiceV1(
+      String adGroupNamePrefix, String bannerMessage, String sdbWarningMessage) {
     this.adGroupNamePrefix = adGroupNamePrefix;
     this.bannerMessage = bannerMessage;
+    this.sdbWarningMessage = sdbWarningMessage;
   }
 
   /**
@@ -42,6 +50,7 @@ public class FeatureFlagServiceV1 {
     Map<String, String> flags = new HashMap<>();
     flags.put("adGroupNamePrefix", this.adGroupNamePrefix);
     flags.put("bannerMessage", this.bannerMessage);
+    flags.put("sdbWarningMessage", this.sdbWarningMessage);
     return flags;
   }
 }

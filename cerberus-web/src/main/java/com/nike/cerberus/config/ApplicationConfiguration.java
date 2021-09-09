@@ -164,6 +164,12 @@ public class ApplicationConfiguration {
     return bannerMessage;
   }
 
+  @Bean(name = "sdbWarningMessage")
+  public String sdbWarningMessage(
+      @Value("${cerberus.sdbWarningMessage:}") String sdbWarningMessage) {
+    return sdbWarningMessage;
+  }
+
   @Bean("encryptCryptoMaterialsManager")
   public CryptoMaterialsManager encryptCryptoMaterialsManager(
       @Value("${cerberus.encryption.cmk.arns}") String cmkArns,
