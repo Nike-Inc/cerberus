@@ -109,3 +109,14 @@ $column-padding: 15px;
   }
 
 }
+
+.warning-icon {
+  background: url("../../assets/images/warning.svg");
+  background-repeat: no-repeat;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: 3px;
+  margin-top: 3px;
+  display: inline;
+  filter: invert(53%) sepia(91%) saturate(1398%) hue-rotate(345deg) brightness(105%) contrast(102%);
+}

@@ -46,8 +46,8 @@ const validate = values => {
 
     if (!values.owner) {
         errors.owner = 'You must select an owning user group';
-    } else if (process.env.REACT_APP_AD_GROUP_NAME_PREFIX) {
-        validateOwner(values.owner, process.env.REACT_APP_AD_GROUP_NAME_PREFIX, errors);
+    } else {
+        validateOwner(values.owner, errors);
     }
 
     if (values.userGroupPermissions) {
@@ -62,16 +62,30 @@ const validate = values => {
     return errors;
 };
 
-const validateOwner = (owner, ownerPrefix, errors) => {
-    if (!owner.toLowerCase().startsWith(ownerPrefix.toLowerCase())) {
-        errors.owner = 'This AD Group name does not match your organizations specified naming pattern: ' + ownerPrefix;
+const validateOwner = (owner, errors) => {
+    if (!validateADGroup(owner)) {
+        errors.owner = 'Owners must be AD Groups that start with \'' + process.env.REACT_APP_AD_GROUP_NAME_PREFIX + '\'';
     }
+}
+
+export const validateADGroup = (group) => {
+    if (process.env.REACT_APP_AD_GROUP_NAME_PREFIX) {
+        let prefix = process.env.REACT_APP_AD_GROUP_NAME_PREFIX.toLowerCase()
+        if (!group.toLowerCase().startsWith(prefix)) {
+            return false
+        }
+    }
+    return true
 }
 
 const validateUserGroupPermissions = (permission, index, errors) => {
     errors.userGroupPermissions[`${index}`] = {};
     if (!permission.name) {
         errors.userGroupPermissions[`${index}`].name = 'You must select a user group for this permission';
+    } else {
+        if (!validateADGroup(permission.name)) {
+            errors.userGroupPermissions[`${index}`].name = 'User Group Permissions must be AD Groups that start with \'' + process.env.REACT_APP_AD_GROUP_NAME_PREFIX + '\'';
+        }
     }
 
     if (!permission.roleId) {
