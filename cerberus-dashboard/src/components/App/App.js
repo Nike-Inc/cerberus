@@ -45,16 +45,27 @@ class App extends Component {
         if (!this.props.hasDashboardMetadataLoaded) {
             this.props.dispatch(appActions.loadDashboardMetadata());
         }
+    }
 
-        fetch('/v1/feature-flag')
-        .then(response => response.json())
-        .then(data => window.env = data);
+    getEnvironment(cerberusAuthToken) {
+        axios.get('/v1/feature-flag',{
+        headers: {
+            'X-Cerberus-Token': cerberusAuthToken
+        }})
+        .then((response) => {
+            console.log(response)
+            window.env = response.data;
+        })
     }
 
     render() {
         const { isAdmin, userName, displayUserContextMenu, dispatch, cerberusAuthToken, modalStack, children, isSessionExpired, isAuthenticated, dashboardVersion } = this.props;
 
         axios.defaults.headers.common['X-Cerberus-Client'] = `Dashboard/${dashboardVersion}`;
+
+        if (isAuthenticated) {
+            this.getEnvironment(cerberusAuthToken)
+        }
 
         return (
             <ConnectedRouter history={history}>
