@@ -26,13 +26,12 @@ import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -73,9 +72,9 @@ public class AwsIamStsAuthController {
     for (int count = 0; ; count++) {
       try {
         try {
-          int sleepTime = 30*count;
+          int sleepTime = 30 * count;
           TimeUnit.SECONDS.sleep(sleepTime);
-        }catch(InterruptedException e){
+        } catch (InterruptedException e) {
           log.info(e.getMessage());
         }
 
