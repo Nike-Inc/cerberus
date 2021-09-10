@@ -94,7 +94,8 @@ public class AwsIamStsAuthControllerTest {
       actualException = e;
     }
     Assert.assertSame(runtimeException, actualException);
-    Mockito.verify(auditLoggingFilterDetails)
-        .setAction("Failed to authenticate with AWS IAM STS Auth");
+    String auditMessage = String.format("Failed to authenticate with AWS IAM STS Auth: %s", actualException.getMessage());
+    Mockito.verify(auditLoggingFilterDetails, Mockito.atLeastOnce())
+        .setAction(auditMessage);
   }
 }
