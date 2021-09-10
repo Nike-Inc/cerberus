@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 @RestController
 @RequestMapping("/v2/auth/sts-identity")
@@ -70,6 +72,13 @@ public class AwsIamStsAuthController {
 
     for (int count = 0; ; count++) {
       try {
+        try {
+          int sleepTime = 30*count;
+          TimeUnit.SECONDS.sleep(sleepTime);
+        }catch(InterruptedException e){
+          log.info(e.getMessage());
+        }
+
         if (headerAuthorization == null || headerXAmzDate == null) {
           throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
         }
