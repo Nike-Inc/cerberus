@@ -23,6 +23,7 @@ import GroupsSelect from '../GroupSelect/GroupsSelect';
 import UserGroupPermissionsFieldSet from '../UserGroupPermissionsFieldSet/UserGroupPermissionsFieldSet';
 import IamPrincipalPermissionsFieldSet from '../IamPrincipalPermissionsFieldSet/IamPrincipalPermissionsFieldSet';
 import SDBDescriptionField from '../SDBDescriptionField/SDBDescriptionField';
+import { validateADGroup } from '../CreateSDBoxForm/validator';
 
 import * as modalActions from '../../actions/modalActions';
 import * as manageSafetyDepositBoxActions from '../../actions/manageSafetyDepositBoxActions';
@@ -65,6 +66,9 @@ class EditSDBoxForm extends Component {
 
                 <div id="owner">
                     <label id="category-select-label" className='ncss-label'>Owner</label>
+                    {!validateADGroup(owner.value) && 
+                        <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>
+                    }
                     <GroupsSelect {...owner}
                         userGroups={userGroups}
                         allowCustomValues={false}
