@@ -68,15 +68,16 @@ public class AwsIamStsAuthController {
     String iamPrincipalArn;
     AuthTokenResponse authResponse;
 
-    for(int count=0;; count++){
+    for (int count = 0; ; count++) {
       try {
         if (headerAuthorization == null || headerXAmzDate == null) {
           throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
         }
         AwsStsHttpHeader header =
-                new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+            new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
 
-        GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
+        GetCallerIdentityResponse getCallerIdentityResponse =
+            awsStsClient.getCallerIdentity(header);
         iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
 
         authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
@@ -84,8 +85,10 @@ public class AwsIamStsAuthController {
 
         return authResponse;
       } catch (Exception e) {
-        auditLoggingFilterDetails.setAction("Failed to authenticate with AWS IAM STS Auth");
-        if(count >= MAX_RETRIES){
+        String auditMessage =
+            String.format("Failed to authenticate with AWS IAM STS Auth: %s", e.getMessage());
+        auditLoggingFilterDetails.setAction(auditMessage);
+        if (count >= MAX_RETRIES) {
           throw e;
         }
       }
