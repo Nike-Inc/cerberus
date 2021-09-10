@@ -28,6 +28,7 @@ import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +41,7 @@ public class AwsIamStsAuthController {
   private static final String HEADER_X_AMZ_DATE = "x-amz-date";
   private static final String HEADER_X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
   private static final String HEADER_AUTHORIZATION = "Authorization";
+  private static final Integer MAX_RETRIES = 5;
 
   private final AuthenticationService authenticationService;
   private final AwsStsClient awsStsClient;
@@ -67,24 +69,27 @@ public class AwsIamStsAuthController {
     String iamPrincipalArn;
     AuthTokenResponse authResponse;
 
-    try {
-      if (headerAuthorization == null || headerXAmzDate == null) {
-        throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
+    for(int count=0;; count++){
+      try {
+        if (headerAuthorization == null || headerXAmzDate == null) {
+          throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
+        }
+        AwsStsHttpHeader header =
+                new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+
+        GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
+        iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
+
+        authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
+        auditLoggingFilterDetails.setAction("Successfully authenticated with AWS IAM STS Auth");
+
+        return authResponse;
+      } catch (Exception e) {
+        auditLoggingFilterDetails.setAction("Failed to authenticate with AWS IAM STS Auth");
+        if(count >= MAX_RETRIES){
+          throw e;
+        }
       }
-
-      AwsStsHttpHeader header =
-          new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
-      GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
-      iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
-
-      authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
-    } catch (Exception e) {
-      auditLoggingFilterDetails.setAction("Failed to authenticate with AWS IAM STS Auth");
-      throw e;
     }
-
-    auditLoggingFilterDetails.setAction("Successfully authenticated with AWS IAM STS Auth");
-
-    return authResponse;
   }
 }
