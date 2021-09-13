@@ -42,7 +42,7 @@ public class AwsIamStsAuthController {
   private static final String HEADER_X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
   private static final String HEADER_AUTHORIZATION = "Authorization";
   private static final Integer MAX_RETRIES = 5;
-  private Integer WAIT_TIME = 30;
+  private Integer waitTime = 30;
 
   private final AuthenticationService authenticationService;
   private final AwsStsClient awsStsClient;
@@ -64,8 +64,8 @@ public class AwsIamStsAuthController {
    *
    * @param waitTime How long to sleep in seconds
    */
-  protected void setWaitTime(Integer waitTime) {
-    WAIT_TIME = waitTime;
+  protected void setWaitTime(Integer newWaitTime) {
+    waitTime = newWaitTime;
   }
 
   @RequestMapping(method = POST)
@@ -82,7 +82,7 @@ public class AwsIamStsAuthController {
     for (int count = 0; ; count++) {
       try {
         try {
-          int sleepTime = WAIT_TIME * count;
+          int sleepTime = waitTime * count;
           TimeUnit.SECONDS.sleep(sleepTime);
         } catch (InterruptedException e) {
           log.info(e.getMessage());
