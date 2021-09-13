@@ -62,7 +62,7 @@ public class AwsIamStsAuthController {
   /**
    * Sets the wait time method attribute to allow customization during unit testing of sleep
    *
-   * @param waitTime How long to sleep in seconds
+   * @param newWaitTime How long to sleep in seconds
    */
   protected void setWaitTime(Integer newWaitTime) {
     waitTime = newWaitTime;
