@@ -59,6 +59,11 @@ public class AwsIamStsAuthController {
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
+  /**
+   * Sets the wait time method attribute to allow customization during unit testing of sleep
+   *
+   * @param waitTime How long to sleep in seconds
+   */
   protected void setWaitTime(Integer waitTime) {
     WAIT_TIME = waitTime;
   }
