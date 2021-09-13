@@ -18,11 +18,25 @@
 
 #banner {
   height: 50px;
-  width: 100%;
-  flex-shrink: 0;
+  width: 90%;
+  margin: 15px 0px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  line-height: 50px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   background-color: $snkrs_error;
   color: $snkrs_white;
-  font-family: SansSerif, sans-serif;
-  padding-left: 20px;
-  padding-top: 6px;
+  font-family: "Nike TG","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: large;
+
+  a {
+    color: $snkrs_white;
+    text-decoration: underline;
+  }
+
+  a:hover {
+    color: $snkrs_grey;
+  }
 }

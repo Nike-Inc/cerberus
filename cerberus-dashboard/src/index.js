@@ -31,6 +31,8 @@ import "./assets/styles/reactSelect.scss";
 
 var log = getLogger("main");
 
+window.env = {}
+
 /**
  * This is our redux data store for storing all data retrieved from API Calls and any other state that needs
  * to be maintained.

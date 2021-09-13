@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { Component } from 'react';
-import EditSDBoxForm from '../EditSDBoxForm/EditSDBoxForm';
-import DeleteSafeDepositBoxForm from '../DeleteSafeDepositBoxForm/DeleteSafeDepositBoxForm';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import ReactTooltip from 'react-tooltip';
 import * as modalActions from '../../actions/modalActions';
+import { validateADGroup } from '../CreateSDBoxForm/validator';
+import DeleteSafeDepositBoxForm from '../DeleteSafeDepositBoxForm/DeleteSafeDepositBoxForm';
+import EditSDBoxForm from '../EditSDBoxForm/EditSDBoxForm';
 import './SafeDepositBoxSettings.scss';
+
 
 export default class SafeDepositBoxSettings extends Component {
 
@@ -44,6 +46,7 @@ export default class SafeDepositBoxSettings extends Component {
 
         return (
             <div className="safe-deposit-box-settings">
+                <ReactTooltip />
                 <div className="sdb-settings-name">
                     <div className="sdb-settings-label">Name:</div>
                     <div className="sdb-settings-value">{sdbData.name}</div>
@@ -56,6 +59,7 @@ export default class SafeDepositBoxSettings extends Component {
                     <div className="sdb-settings-owner">
                         <div className="sdb-settings-label">Owner:</div>
                         <div className="sdb-settings-value">{sdbData.owner}</div>
+                        {!validateADGroup(sdbData.owner) && <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>}
                     </div>
                 </div>
                 <div className="sdb-settings-description">
@@ -104,7 +108,10 @@ const readOnlyUserGroupPermissions = (userGroupPermissions, roles) => {
                     {userGroupPermissions.map((perm, index) => {
                         return (
                             <tr key={perm.id} className={(index + 1) % 2 === 0 ? "iam-read-only-perm even-row" : "iam-read-only-perm odd-row"}>
-                                <td>{perm.name}</td>
+                                <td>
+                                    {!validateADGroup(perm.name) && <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>}
+                                    {perm.name}
+                                </td>
                                 <td>{roleNameFromId(perm.roleId, roles)}</td>
                             </tr>
                         );

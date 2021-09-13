@@ -47,10 +47,29 @@ class App extends Component {
         }
     }
 
+    getEnvironment(cerberusAuthToken) {
+        console.log(window.env)
+        if (Object.entries(window.env).length === 0) {
+            axios.get('/v1/feature-flag',{
+                headers: {
+                    'X-Cerberus-Token': cerberusAuthToken
+                }})
+                .then((response) => {
+                    console.log(response)
+                    window.env = response.data;
+                    this.forceUpdate()
+                })
+        }
+    }
+
     render() {
         const { isAdmin, userName, displayUserContextMenu, dispatch, cerberusAuthToken, modalStack, children, isSessionExpired, isAuthenticated, dashboardVersion } = this.props;
 
         axios.defaults.headers.common['X-Cerberus-Client'] = `Dashboard/${dashboardVersion}`;
+
+        if (isAuthenticated) {
+            this.getEnvironment(cerberusAuthToken)
+        }
 
         return (
             <ConnectedRouter history={history}>
@@ -70,10 +89,7 @@ class App extends Component {
                                     <Messenger />
                                 </div>
                             }
-                            {process.env.REACT_APP_BANNER_MESSAGE &&
-                                <div id='banner'>
-                                    <Banner/>
-                                </div>}
+                            {window.env.bannerMessage && <Banner message={window.env.bannerMessage}/>}
                             <div id='content'>
                                 <SideBar />
                                 <div id='workspace'>
