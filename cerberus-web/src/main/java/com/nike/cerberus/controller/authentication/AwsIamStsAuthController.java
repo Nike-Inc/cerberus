@@ -42,6 +42,7 @@ public class AwsIamStsAuthController {
   private static final String HEADER_X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
   private static final String HEADER_AUTHORIZATION = "Authorization";
   private static final Integer MAX_RETRIES = 5;
+  private Integer WAIT_TIME = 30;
 
   private final AuthenticationService authenticationService;
   private final AwsStsClient awsStsClient;
@@ -58,6 +59,10 @@ public class AwsIamStsAuthController {
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
+  protected void setWaitTime(Integer waitTime) {
+    WAIT_TIME = waitTime;
+  }
+
   @RequestMapping(method = POST)
   public AuthTokenResponse authenticate(
       @RequestHeader(value = HEADER_X_AMZ_DATE, required = false)
@@ -72,7 +77,7 @@ public class AwsIamStsAuthController {
     for (int count = 0; ; count++) {
       try {
         try {
-          int sleepTime = 30 * count;
+          int sleepTime = WAIT_TIME * count;
           TimeUnit.SECONDS.sleep(sleepTime);
         } catch (InterruptedException e) {
           log.info(e.getMessage());

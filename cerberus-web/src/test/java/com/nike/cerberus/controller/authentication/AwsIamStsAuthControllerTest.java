@@ -35,6 +35,7 @@ public class AwsIamStsAuthControllerTest {
   public void testAuthenticateIfHeaderAmzDateIsNull() {
     ApiException apiException = null;
     try {
+      awsIamStsAuthController.setWaitTime(0);
       awsIamStsAuthController.authenticate(null, null, null);
     } catch (ApiException e) {
       apiException = e;
@@ -48,6 +49,7 @@ public class AwsIamStsAuthControllerTest {
   public void testAuthenticateIfHeaderAmzSecurityTokenIsNull() {
     ApiException apiException = null;
     try {
+      awsIamStsAuthController.setWaitTime(0);
       awsIamStsAuthController.authenticate("date", null, null);
     } catch (ApiException e) {
       apiException = e;
@@ -77,6 +79,7 @@ public class AwsIamStsAuthControllerTest {
 
   @Test
   public void testAuthenticateWhenSTSAuthenticateThrowsException() {
+
     GetCallerIdentityResponse getCallerIdentityResponse =
         Mockito.mock(GetCallerIdentityResponse.class);
     GetCallerIdentityResult getCallerIdentityResult = Mockito.mock(GetCallerIdentityResult.class);
@@ -89,6 +92,7 @@ public class AwsIamStsAuthControllerTest {
     Mockito.when(authenticationService.stsAuthenticate("arn")).thenThrow(runtimeException);
     RuntimeException actualException = null;
     try {
+      awsIamStsAuthController.setWaitTime(0);
       awsIamStsAuthController.authenticate("date", "token", "authorization");
     } catch (RuntimeException e) {
       actualException = e;
