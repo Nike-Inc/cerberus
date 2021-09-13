@@ -18,20 +18,17 @@ import React from 'react';
 import { Component } from 'react';
 import Select from 'react-select';
 
-export default class GroupsSelect extends Component {
+import { validateADGroup } from '../CreateSDBoxForm/validator';
+
+class GroupsSelect extends Component {
 
     render() {
         const { userGroups, allowCustomValues, value, onChange, handleBeingTouched, touched, error } = this.props;
 
         var options = [];
         userGroups.forEach(group => {
-            if (process.env.REACT_APP_AD_GROUP_NAME_PREFIX) {
-                let groupNamingPattern = process.env.REACT_APP_AD_GROUP_NAME_PREFIX.toLowerCase()
-                if (group.toLowerCase().startsWith(groupNamingPattern)) {
-                    options.push({ label: group, value: group });
-                }
-            } else {
-                options.push({ label: group, value: group });
+            if (validateADGroup(group)) {
+                options.push({ label: group, value: group })
             }
         });
 
@@ -74,3 +71,5 @@ export default class GroupsSelect extends Component {
         );
     }
 }
+
+export default GroupsSelect
