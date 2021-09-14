@@ -18,7 +18,7 @@ import * as cms from '../../constants/cms';
 import { getLogger } from '../../utils/logger';
 var log = getLogger('create-new-sdb-validator');
 
-const doesContainNonAlphaNumericSpaceCharsRegex = /[^a-z\d\s\-]+/i;
+const doesContainNonAlphaNumericSpaceCharsRegex = /[^a-z\d\s-]+/i;
 
 // define our client side form validation rules
 const validate = values => {
