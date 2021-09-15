@@ -48,14 +48,12 @@ class App extends Component {
     }
 
     getEnvironment(cerberusAuthToken) {
-        console.log(window.env)
         if (Object.entries(window.env).length === 0) {
             axios.get('/v1/feature-flag',{
                 headers: {
                     'X-Cerberus-Token': cerberusAuthToken
                 }})
                 .then((response) => {
-                    console.log(response)
                     window.env = response.data;
                     this.forceUpdate()
                 })
