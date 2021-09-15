@@ -37,7 +37,9 @@ export default class MfaDeviceSelect extends Component {
 
         var options = mfaDevices.map(function(mfaDevice) {
             return {label: mfaDevice.name, value: mfaDevice.id}
-        })
+        });
+
+        let selected = options.find(option => option.value === value);
 
         return (
             <div className='mfa-device-select'>
@@ -45,10 +47,10 @@ export default class MfaDeviceSelect extends Component {
                     className={((touched && error) ? 'category-select select-container-error' : 'category-select select-container')}
                     onChange = {(selectedFactor) => {
                         this.props.dispatch(setSelectedDeviceId(selectedFactor.value))
-                        handleBeingTouched(); onChange(selectedFactor)}
-                    }
+                        handleBeingTouched(); onChange(selectedFactor)
+                    }}
                     onBlur={() => { handleBeingTouched() }}
-                    value={value}
+                    value={selected}
                     placeholder="Select a MFA device"
                     options={options} />
                 {touched && error && <div className='select-error-msg'>{error}</div>}

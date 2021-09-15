@@ -82,6 +82,9 @@ class SDBMetadataList extends Component {
 }
 
 const paginationMenu = (metadata, options, perPage, pageNumber, handlePerPageSelect, handlePageClick) => {
+    
+    let selected = options.find(option => option.value === perPage);
+
     return (
         <div className="metadata-pagination-menu ncss-brand">
             <ReactPaginate pageCount={Math.ceil(metadata.total_sdbcount / perPage)}
@@ -104,7 +107,7 @@ const paginationMenu = (metadata, options, perPage, pageNumber, handlePerPageSel
             <Select
                 className={'metadata-pagination-per-page-selector'}
                 onChange={handlePerPageSelect}
-                value={perPage}
+                value={selected}
                 placeholder="Show Per Page"
                 options={options}
                 searchable={false}

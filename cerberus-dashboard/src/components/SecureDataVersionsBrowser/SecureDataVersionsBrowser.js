@@ -244,6 +244,8 @@ const pathVersionsBrowserPaginationMenu = (pathData, perPage, pageNumber, handle
         return (<div></div>);
     }
 
+    let selected = options.find(option => option.value === perPage);
+
     return (
         <div className="version-pagination-menu paths-with-history-pagination-menu ncss-brand">
             <ReactPaginate pageCount={Math.ceil(pathData.total_version_count / perPage)}
@@ -266,7 +268,7 @@ const pathVersionsBrowserPaginationMenu = (pathData, perPage, pageNumber, handle
             <Select
                 className={'version-pagination-per-page-selector'}
                 onChange={handlePerPageSelect}
-                value={perPage}
+                value={selected}
                 placeholder="Show Per Page"
                 options={options}
                 searchable={false}

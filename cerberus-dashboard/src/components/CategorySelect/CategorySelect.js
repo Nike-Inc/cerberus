@@ -28,6 +28,8 @@ export default class CategorySelect extends Component {
             return {label: category.display_name, value: category.id}
         })
 
+        let selected = options.find(option => option.value === value);
+
         return (
             <div className='category-select-container'>
                 <label className='category-select-label ncss-label'>Category</label>
@@ -36,7 +38,7 @@ export default class CategorySelect extends Component {
                     onChange = {(v) => { handleBeingTouched(); onChange(v)} }
                     onBlur={() => { handleBeingTouched() }}
                     placeholder="Choose a Category"
-                    value={value}
+                    value={selected}
                     options={options} />
                 {touched && error && <div className='select-error-msg'>{error}</div>}
             </div>
