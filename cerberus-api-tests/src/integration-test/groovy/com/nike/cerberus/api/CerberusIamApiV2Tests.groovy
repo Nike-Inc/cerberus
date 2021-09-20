@@ -37,6 +37,7 @@ class CerberusIamApiV2Tests {
     private String roleName
     private String region
     private String ownerGroup
+    private String adGroupNamePrefix
     private String cerberusAuthToken
     private def cerberusAuthData
 
@@ -66,9 +67,12 @@ class CerberusIamApiV2Tests {
 
         region = PropUtils.getRequiredProperty("TEST_REGION",
                 "The region to use when authenticating with Cerberus using the IAM Auth endpoint")
+
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
 
+        adGroupNamePrefix = PropUtils.getRequiredProperty("AD_GROUP_NAME_PREFIX",
+                "AD group name prefix")
     }
 
     @Test
@@ -88,12 +92,12 @@ class CerberusIamApiV2Tests {
 
     @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
-        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test
@@ -129,7 +133,7 @@ class CerberusIamApiV2Tests {
         ]
 
         // create test sdb
-        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, "Lst-foo", userPerms, iamPrincipalPermissions)
+        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, userPerms, iamPrincipalPermissions)
         def sdbPath = testSdb.getString("path")
         sdbPath = StringUtils.removeEnd(sdbPath, "/")
         "create, read, update then delete a secret node"(iamAuthToken, sdbPath)
@@ -152,7 +156,7 @@ class CerberusIamApiV2Tests {
         ]
 
         // create test sdb
-        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, "Lst-foo", userPerms, iamPrincipalPermissions)
+        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, userPerms, iamPrincipalPermissions)
         def sdbPath = testSdb.getString("path")
         sdbPath = StringUtils.removeEnd(sdbPath, "/")
         "create, read, update then delete a file"(iamAuthToken, sdbPath)

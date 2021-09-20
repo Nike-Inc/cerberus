@@ -32,6 +32,7 @@ class CerberusUserApiTests {
     private String otpDeviceId
     private String otpSecret
     private String ownerGroup
+    private String adGroupNamePrefix
     private String cerberusAuthToken
     private Map cerberusAuthData
     
@@ -64,12 +65,12 @@ class CerberusUserApiTests {
 
     @Test (groups = ['deprecated'])
     void "test that an authenticated user can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test
     void "test that an authenticated user can create, read, update then delete a safe deposit box v2"() {
-        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test
@@ -103,5 +104,8 @@ class CerberusUserApiTests {
 
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
+
+        adGroupNamePrefix = PropUtils.getRequiredProperty("AD_GROUP_NAME_PREFIX",
+                "AD group name prefix")
     }
 }
