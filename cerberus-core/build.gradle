@@ -23,7 +23,7 @@ dependencies {
   api 'com.nike.backstopper:backstopper-spring-web-mvc:0.13.0'
 
   // Metrics
-  api 'io.dropwizard.metrics:metrics-core:4.2.0'
+  api 'io.dropwizard.metrics:metrics-core:4.2.3'
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
@@ -32,7 +32,7 @@ dependencies {
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
   api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  api "org.glassfish.jaxb:jaxb-runtime:3.0.1"
+  api "org.glassfish.jaxb:jaxb-runtime:3.0.2"
 
   // Find bugs annotations
   api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
