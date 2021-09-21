@@ -25,5 +25,5 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 
     implementation 'ch.qos.logback:logback-classic:1.2.6'
-    implementation 'ch.qos.logback:logback-core:1.2.3'
+    implementation 'ch.qos.logback:logback-core:1.2.6'
 }
