@@ -23,7 +23,7 @@ dependencies {
   api 'com.nike.backstopper:backstopper-spring-web-mvc:0.13.0'
 
   // Metrics
-  api 'io.dropwizard.metrics:metrics-core:4.2.0'
+  api 'io.dropwizard.metrics:metrics-core:4.2.3'
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
