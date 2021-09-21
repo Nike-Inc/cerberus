@@ -17,12 +17,15 @@
 import React from 'react';
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { touch } from 'redux-form';
+import ReactTooltip from 'react-tooltip';
 import GroupsSelect from '../GroupSelect/GroupsSelect';
 import RoleSelect from '../RoleSelect/RoleSelect';
 import Buttons from '../Buttons/Buttons';
 import AddButton from '../AddButton/AddButton';
-import { touch } from 'redux-form';
+import { validateADGroup } from '../CreateSDBoxForm/validator';
 import './UserGroupPermissionsFieldSet.scss';
+import '../SafeDepositBoxSettings/SafeDepositBoxSettings.scss';
 
 /**
  * Component for displaying User Group Permissions form field set
@@ -46,6 +49,7 @@ export default class UserGroupPermissionsFieldSet extends Component {
 
         return (
             <div className='user-group-permissions'>
+                <ReactTooltip />
                 <div className='user-group-permissions-label ncss-label'>User Group Permissions</div>
                 <div className="user-group-permissions-perms-container">
                     {userGroupPermissions.map((permission, index) =>
@@ -64,6 +68,10 @@ export default class UserGroupPermissionsFieldSet extends Component {
                                     handleBeingTouched={() => {
                                         dispatch(touch(formName, permission.roleId.name));
                                     }} />
+
+                                {(permission.name.value && !validateADGroup(permission.name.value)) && 
+                                    <div className="warning-icon" data-tip={window.env.sdbWarningMessage ? window.env.sdbWarningMessage : ""}></div>
+                                }
 
                                 <Buttons handleRemoveClicked={() => {
                                     userGroupPermissions.removeField(index);

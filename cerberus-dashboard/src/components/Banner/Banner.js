@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-allprojects {
-  apply plugin: "org.owasp.dependencycheck"
+import React from 'react';
+import { Component } from 'react';
+import parse from 'html-react-parser';
+import './Banner.scss';
 
-  dependencyCheck {
-    failOnError = false
-    format = 'ALL'
-    failBuildOnCVSS = 11
+export default class Banner extends Component {
 
-    suppressionFile = "${rootProject.projectDir}/dependency-check-supressions.xml"
-  }
+    render() {
+        const { message } = this.props;
+        return (
+            <div id='banner'>
+                {parse(message)}
+            </div>
+        )
+    }
 }
