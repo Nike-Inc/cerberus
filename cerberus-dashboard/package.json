@@ -37,7 +37,7 @@
     "react-simple-file-input": "2.1.0",
     "react-tooltip": "^4.2.21",
     "redux": "3.7.2",
-    "redux-form": "5.3.6",
+    "redux-form": "8.3.7",
     "redux-logger": "3.0.6",
     "redux-thunk": "2.3.0",
     "worker-timers": "7.0.21"
