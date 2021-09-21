@@ -39,7 +39,7 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'json-path', version: '4.4.0'
   implementation group: 'io.rest-assured', name: 'xml-path', version: '4.4.0'
   implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-  implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.1'
+  implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
   implementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
   implementation "com.google.guava:guava:${versions.guava}"
   implementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
@@ -50,7 +50,7 @@ dependencies {
   implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
   implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
   implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  implementation "org.glassfish.jaxb:jaxb-runtime:3.0.0"
+  implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
   implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
 }
 
