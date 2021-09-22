@@ -142,7 +142,7 @@ class CerberusCompositeApiActions {
         assertTrue(list.contains(path.toString()))
     }
 
-    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
+    static void "v1 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group, String adGroupNamePrefix) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
@@ -167,7 +167,7 @@ class CerberusCompositeApiActions {
         String owner = group
         def userGroupPermissions = [
                 [
-                        "name"   : 'foo',
+                        "name"   : adGroupNamePrefix + "foo",
                         "role_id": roleMap.read
                 ]
         ]
@@ -206,7 +206,7 @@ class CerberusCompositeApiActions {
             // update the sdb
             description = lorem.getWords(60)
             userGroupPermissions.add([
-                    "name"   : 'bar',
+                    "name"   : adGroupNamePrefix + 'bar',
                     "role_id": roleMap.write
             ])
             iamRolePermissions.add([
@@ -236,7 +236,7 @@ class CerberusCompositeApiActions {
         }
     }
 
-    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group) {
+    static void "v2 create, read, list, update and then delete a safe deposit box"(Map cerberusAuthPayloadData, String group, String adGroupNamePrefix) {
         String accountId = PropUtils.getPropWithDefaultValue("TEST_ACCOUNT_ID", "1111111111")
         String roleName = PropUtils.getPropWithDefaultValue("TEST_ROLE_NAME", "fake_role")
         String cerberusAuthToken = cerberusAuthPayloadData.'client_token'
@@ -261,7 +261,7 @@ class CerberusCompositeApiActions {
         String owner = group
         def userGroupPermissions = [
             [
-                "name": 'foo',
+                "name": adGroupNamePrefix + "foo",
                 "role_id": roleMap.read
             ]
         ]
@@ -307,7 +307,7 @@ class CerberusCompositeApiActions {
             String newArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake_role2")
             description = lorem.getWords(60)
             userGroupPermissions.add([
-                    "name"   : 'bar',
+                    "name"   : adGroupNamePrefix + 'bar',
                     "role_id": roleMap.write
             ])
             iamPrincipalPermissions.add([
