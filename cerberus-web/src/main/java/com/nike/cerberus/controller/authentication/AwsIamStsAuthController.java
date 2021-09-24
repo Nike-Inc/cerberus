@@ -26,7 +26,6 @@ import com.nike.cerberus.domain.AuthTokenResponse;
 import com.nike.cerberus.error.DefaultApiError;
 import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.service.AuthenticationService;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -41,8 +40,6 @@ public class AwsIamStsAuthController {
   private static final String HEADER_X_AMZ_DATE = "x-amz-date";
   private static final String HEADER_X_AMZ_SECURITY_TOKEN = "x-amz-security-token";
   private static final String HEADER_AUTHORIZATION = "Authorization";
-  private static final Integer MAX_RETRIES = 5;
-  private Integer waitTime = 30;
 
   private final AuthenticationService authenticationService;
   private final AwsStsClient awsStsClient;
@@ -59,15 +56,6 @@ public class AwsIamStsAuthController {
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
   }
 
-  /**
-   * Sets the wait time method attribute to allow customization during unit testing of sleep
-   *
-   * @param newWaitTime How long to sleep in seconds
-   */
-  protected void setWaitTime(Integer newWaitTime) {
-    waitTime = newWaitTime;
-  }
-
   @RequestMapping(method = POST)
   public AuthTokenResponse authenticate(
       @RequestHeader(value = HEADER_X_AMZ_DATE, required = false)
@@ -79,37 +67,25 @@ public class AwsIamStsAuthController {
     String iamPrincipalArn;
     AuthTokenResponse authResponse;
 
-    for (int count = 0; ; count++) {
-      try {
-        try {
-          int sleepTime = waitTime * count;
-          TimeUnit.SECONDS.sleep(sleepTime);
-        } catch (InterruptedException e) {
-          log.info(e.getMessage());
-        }
-
-        if (headerAuthorization == null || headerXAmzDate == null) {
-          throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
-        }
-        AwsStsHttpHeader header =
-            new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
-
-        GetCallerIdentityResponse getCallerIdentityResponse =
-            awsStsClient.getCallerIdentity(header);
-        iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
-
-        authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
-        auditLoggingFilterDetails.setAction("Successfully authenticated with AWS IAM STS Auth");
-
-        return authResponse;
-      } catch (Exception e) {
-        String auditMessage =
-            String.format("Failed to authenticate with AWS IAM STS Auth: %s", e.getMessage());
-        auditLoggingFilterDetails.setAction(auditMessage);
-        if (count >= MAX_RETRIES) {
-          throw e;
-        }
+    try {
+      if (headerAuthorization == null || headerXAmzDate == null) {
+        throw new ApiException(DefaultApiError.MISSING_AWS_SIGNATURE_HEADERS);
       }
+      AwsStsHttpHeader header =
+          new AwsStsHttpHeader(headerXAmzDate, headerXAmzSecurityToken, headerAuthorization);
+
+      GetCallerIdentityResponse getCallerIdentityResponse = awsStsClient.getCallerIdentity(header);
+      iamPrincipalArn = getCallerIdentityResponse.getGetCallerIdentityResult().getArn();
+
+      authResponse = authenticationService.stsAuthenticate(iamPrincipalArn);
+      auditLoggingFilterDetails.setAction("Successfully authenticated with AWS IAM STS Auth");
+    } catch (Exception e) {
+      String auditMessage =
+          String.format("Failed to authenticate with AWS IAM STS Auth: %s", e.getMessage());
+      auditLoggingFilterDetails.setAction(auditMessage);
+      throw e;
     }
+
+    return authResponse;
   }
 }
