@@ -240,8 +240,12 @@ public class SafeDepositBoxService {
    * @param safeDepositBox Safe deposit box to check
    */
   public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox) {
-    String ownerName = safeDepositBox.getOwner();
-    if (!ownerName.toLowerCase().startsWith(this.adGroupNamePrefix)) {
+    String ownerName = safeDepositBox.getOwner().toLowerCase();
+    if (ownerName.startsWith("arn:aws")) {
+      return;
+    }
+
+    if (!ownerName.startsWith(this.adGroupNamePrefix)) {
       String errorMessage =
           String.format(
               "Owner '%s' is not valid! AD group prefix must start with: '%s'",

@@ -34,6 +34,7 @@ class CerberusIamApiTests {
     private String roleName
     private String region
     private String ownerGroup
+    private String adGroupNamePrefix
     private String cerberusAuthToken
     private def cerberusAuthData
 
@@ -65,6 +66,9 @@ class CerberusIamApiTests {
 
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
+
+        adGroupNamePrefix = PropUtils.getRequiredProperty("AD_GROUP_NAME_PREFIX",
+                "AD group name prefix")
     }
 
     @Test (groups = ['deprecated'])
@@ -84,12 +88,12 @@ class CerberusIamApiTests {
 
     @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v1"() {
-        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v1 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test (groups = ['deprecated'])
     void "test that an authenticated IAM role can create, read, update then delete a safe deposit box v2"() {
-        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup)
+        "v2 create, read, list, update and then delete a safe deposit box"(cerberusAuthData as Map, ownerGroup, adGroupNamePrefix)
     }
 
     @Test (groups = ['deprecated'])
