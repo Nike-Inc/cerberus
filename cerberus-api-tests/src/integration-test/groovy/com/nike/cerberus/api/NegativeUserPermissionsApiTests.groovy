@@ -38,15 +38,19 @@ class NegativeUserPermissionsApiTests {
     private String accountId
     private String roleName
     private String region
-    private String iamAuthToken
 
     private String username
     private String password
+    private String testUserUsername
+    private String testUserPassword
     private String otpDeviceId
     private String otpSecret
-    private String userGroup
+    private String testUserGroup
+    private String ownerGroup
     private String userAuthToken
+    private String testUserAuthToken
     private Map userAuthData
+    private Map testUserAuthData
 
     private Map roleMap
 
@@ -70,8 +74,17 @@ class NegativeUserPermissionsApiTests {
         password = PropUtils.getRequiredProperty("TEST_USER_PASSWORD",
                 "The password for a test user for testing user based endpoints")
 
-        userGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+        ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
+
+        testUserUsername = PropUtils.getRequiredProperty("TEST_INTEGRATION_USER_EMAIL",
+                "The email address for an integration test user")
+
+        testUserPassword = PropUtils.getRequiredProperty("TEST_INTEGRATION_USER_PASSWORD",
+                "The password for an integration test user")
+
+        testUserGroup = PropUtils.getRequiredProperty("TEST_USER_GROUP",
+                    "The test group to use when performing tests")
 
         // todo: make this optional
         otpSecret = PropUtils.getRequiredProperty("TEST_USER_OTP_SECRET",
@@ -86,40 +99,38 @@ class NegativeUserPermissionsApiTests {
         TestUtils.configureRestAssured()
         loadRequiredEnvVars()
         userAuthData = retrieveUserAuthToken(username, password, otpSecret, otpDeviceId)
+        testUserAuthData = retrieveUserAuthToken(testUserUsername, testUserPassword, "", "")
         String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
-        def iamAuthData = retrieveStsToken(region, accountId, roleName)
         userAuthToken = userAuthData."client_token"
-        iamAuthToken = iamAuthData."client_token"
-        String userGroupOfTestUser = userGroup
+        testUserAuthToken = testUserAuthData."client_token"
 
         String sdbCategoryId = getCategoryMap(userAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
 
         roleMap = getRoleMap(userAuthToken)
         def ownerIamPrincipalPermissions = [["iam_principal_arn": iamPrincipalArn, "role_id": roleMap.owner]]
-        def readOnlyUserGroupPermissions = [["name": userGroupOfTestUser, "role_id": roleMap.read]]
-        def writeOnlyUserGroupPermissions = [["name": userGroupOfTestUser, "role_id": roleMap.write]]
+        def readOnlyUserGroupPermissions = [["name": testUserGroup, "role_id": roleMap.read]]
+        def writeOnlyUserGroupPermissions = [["name": testUserGroup, "role_id": roleMap.write]]
 
-        userReadOnlySdb = createSdbV2(userAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, readOnlyUserGroupPermissions, ownerIamPrincipalPermissions)
-        userWriteOnlySdb = createSdbV2(userAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, writeOnlyUserGroupPermissions, ownerIamPrincipalPermissions)
+        userReadOnlySdb = createSdbV2(userAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, readOnlyUserGroupPermissions, ownerIamPrincipalPermissions)
+        userWriteOnlySdb = createSdbV2(userAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, writeOnlyUserGroupPermissions, ownerIamPrincipalPermissions)
     }
 
     @AfterTest
     void afterTest() {
         String readOnlyUserSdbId = userReadOnlySdb.getString("id")
-        deleteSdb(iamAuthToken, readOnlyUserSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+        deleteSdb(userAuthToken, readOnlyUserSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
 
         String writeOnlyUserGroupSdbId = userWriteOnlySdb.getString("id")
-        deleteSdb(iamAuthToken, writeOnlyUserGroupSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
+        deleteSdb(userAuthToken, writeOnlyUserGroupSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
 
         logoutUser(userAuthToken)
-        deleteAuthToken(iamAuthToken)
     }
 
     @Test
     void "test that a read user cannot edit permissions"() {
         def sdbId = userReadOnlySdb.getString("id")
-        def roleMap = getRoleMap(userAuthToken)
+        def roleMap = getRoleMap(testUserAuthToken)
 
         def newUserPermissions = [["name": 'foo', "role_id": roleMap.write]]
         def updateSdbJson = generateSdbJson(
@@ -131,13 +142,13 @@ class NegativeUserPermissionsApiTests {
         String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
 
         // update SDB
-        validatePUTApiResponse(userAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+        validatePUTApiResponse(testUserAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
     }
 
     @Test
     void "test that a read user cannot update the SDB owner"() {
         def sdbId = userReadOnlySdb.getString("id")
-        def newOwner = "new-owner-group"
+        def newOwner = "app.cerberus.sdb.foobar"
 
         def updateSdbJson = generateSdbJson(
                 userReadOnlySdb.getString("description"),
@@ -148,7 +159,7 @@ class NegativeUserPermissionsApiTests {
         String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
 
         // update SDB
-        validatePUTApiResponse(userAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+        validatePUTApiResponse(testUserAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
     }
 
     @Test
@@ -159,7 +170,7 @@ class NegativeUserPermissionsApiTests {
         def writeSecretRequestUri = "$SECRETS_PATH/$sdbPath/${UUID.randomUUID().toString()}"
 
         // create secret
-        validatePOSTApiResponse(userAuthToken, writeSecretRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA, [value: 'value'])
+        validatePOSTApiResponse(testUserAuthToken, writeSecretRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA, [value: 'value'])
     }
 
     @Test
@@ -167,7 +178,7 @@ class NegativeUserPermissionsApiTests {
         def sdbId = userReadOnlySdb.getString("id")
         def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
 
-        validateDELETEApiResponse(userAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        validateDELETEApiResponse(testUserAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
     }
 
     @Test
@@ -175,13 +186,13 @@ class NegativeUserPermissionsApiTests {
         def sdbId = userReadOnlySdb.getString("id")
         def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
 
-        validateDELETEApiResponse(userAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        validateDELETEApiResponse(testUserAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
     }
 
     @Test
     void "test that a write user cannot edit permissions"() {
         def sdbId = userWriteOnlySdb.getString("id")
-        def roleMap = getRoleMap(userAuthToken)
+        def roleMap = getRoleMap(testUserAuthToken)
 
         def newUserPermissions = [["name": 'foo', "role_id": roleMap.read]]
         def updateSdbJson = generateSdbJson(
@@ -193,13 +204,13 @@ class NegativeUserPermissionsApiTests {
         String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
 
         // update SDB
-        validatePUTApiResponse(userAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+        validatePUTApiResponse(testUserAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
     }
 
     @Test
     void "test that a write user cannot update the SDB owner"() {
         def sdbId = userWriteOnlySdb.getString("id")
-        def newOwner = "new-owner-group"
+        def newOwner = "app.cerberus.sdb.foobar"
 
         def updateSdbJson = generateSdbJson(
                 userWriteOnlySdb.getString("description"),
@@ -210,7 +221,7 @@ class NegativeUserPermissionsApiTests {
         String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/ownership-required-permissions-error.json"
 
         // update SDB
-        validatePUTApiResponse(userAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
+        validatePUTApiResponse(testUserAuthToken, updateSdbRequestUri, HttpStatus.SC_FORBIDDEN, schemaFilePath, updateSdbJson)
     }
 
     @Test
@@ -218,7 +229,7 @@ class NegativeUserPermissionsApiTests {
         def sdbId = userWriteOnlySdb.getString("id")
         def deleteSdbRequestUri = "$V1_SAFE_DEPOSIT_BOX_PATH/$sdbId"
 
-        validateDELETEApiResponse(userAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        validateDELETEApiResponse(testUserAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
     }
 
     @Test
@@ -226,7 +237,7 @@ class NegativeUserPermissionsApiTests {
         def sdbId = userWriteOnlySdb.getString("id")
         def deleteSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
 
-        validateDELETEApiResponse(userAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
+        validateDELETEApiResponse(testUserAuthToken, deleteSdbRequestUri, HttpStatus.SC_FORBIDDEN, PERMISSION_DENIED_JSON_SCHEMA)
     }
 
     @Test

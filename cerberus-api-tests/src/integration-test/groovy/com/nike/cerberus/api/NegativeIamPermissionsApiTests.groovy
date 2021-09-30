@@ -118,6 +118,23 @@ class NegativeIamPermissionsApiTests {
     }
 
     @Test
+    void "test that an IAM principal cannot be the owner of a SDB"(){
+        def sdbId = iamPrincipalReadOnlySdb.getString("id")
+        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+
+        def updateSdbJson = generateSdbJson(
+                iamPrincipalReadOnlySdb.getString("description"),
+                iamPrincipalArn,
+                iamPrincipalReadOnlySdb.get("user_group_permissions"),
+                iamPrincipalReadOnlySdb.get("iam_principal_permissions"))
+        def updateSdbRequestUri = "$V2_SAFE_DEPOSIT_BOX_PATH/$sdbId"
+        String schemaFilePath = "$NEGATIVE_JSON_SCHEMA_ROOT_PATH/bad-owner-ad-group.json"
+
+        // update SDB
+        validatePUTApiResponse(userAuthToken, updateSdbRequestUri, HttpStatus.SC_BAD_REQUEST, schemaFilePath, updateSdbJson)
+    }
+
+    @Test
     void "test that a read IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalReadOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)

@@ -463,29 +463,6 @@ public class SafeDepositBoxServiceTest {
     safeDepositBoxService.validateSDBOwnerName(sdbObject);
   }
 
-  @Test
-  public void test_that_validates_owner_arn_name() {
-    String id = "111";
-    String categoryId = "222";
-    String readId = "333";
-    String sdbName = "HEALTH CHECK BUCKET";
-
-    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
-    sdbObject.setId(id);
-    sdbObject.setPath("app/health-check-bucket/");
-    sdbObject.setCategoryId(categoryId);
-    sdbObject.setName(sdbName);
-    sdbObject.setOwner("arn:aws:sts::00000000000:assumed-role/fake-arn");
-    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
-    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
-    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
-    sdbObject.setCreatedBy("foobar@nike.com");
-    sdbObject.setLastUpdatedBy("foobar@nike.com");
-
-    safeDepositBoxService.adGroupNamePrefix = "app.mock";
-    safeDepositBoxService.validateSDBOwnerName(sdbObject);
-  }
-
   @Test(expected = ApiException.class)
   public void test_that_rejects_bad_owner_AD_group_name() {
     String id = "111";
@@ -563,6 +540,29 @@ public class SafeDepositBoxServiceTest {
     sdbObject.setUserGroupPermissions(userPerms);
 
     safeDepositBoxService.validateUserGroupName(sdbObject);
+  }
+
+  @Test(expected = ApiException.class)
+  public void test_that_rejects_arn_owner_name() {
+    String id = "111";
+    String categoryId = "222";
+    String readId = "333";
+    String sdbName = "HEALTH CHECK BUCKET";
+
+    SafeDepositBoxV2 sdbObject = new SafeDepositBoxV2();
+    sdbObject.setId(id);
+    sdbObject.setPath("app/health-check-bucket/");
+    sdbObject.setCategoryId(categoryId);
+    sdbObject.setName(sdbName);
+    sdbObject.setOwner("arn:aws:sts::0000000000:foobar");
+    sdbObject.setDescription("This SDB is read by the Health Check Lambda...");
+    sdbObject.setCreatedTs(OffsetDateTime.parse("2016-09-08T15:39:31Z"));
+    sdbObject.setLastUpdatedTs(OffsetDateTime.parse("2016-12-13T17:28:00Z"));
+    sdbObject.setCreatedBy("foobar@nike.com");
+    sdbObject.setLastUpdatedBy("foobar@nike.com");
+
+    safeDepositBoxService.adGroupNamePrefix = "app.foo";
+    safeDepositBoxService.validateSDBOwnerName(sdbObject);
   }
 
   @Test

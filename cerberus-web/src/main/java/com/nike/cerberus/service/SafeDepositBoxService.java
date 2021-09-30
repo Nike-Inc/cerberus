@@ -241,10 +241,6 @@ public class SafeDepositBoxService {
    */
   public void validateSDBOwnerName(SafeDepositBoxV2 safeDepositBox) {
     String ownerName = safeDepositBox.getOwner().toLowerCase();
-    if (ownerName.startsWith("arn:aws")) {
-      return;
-    }
-
     if (!ownerName.startsWith(this.adGroupNamePrefix)) {
       String errorMessage =
           String.format(
