@@ -18,6 +18,7 @@ import React from 'react'
 import { Component } from 'react'
 import Select from 'react-select'
 import { setSelectedDeviceId } from '../../actions/authenticationActions'
+import './MfaDeviceSelect.scss'
 
 export default class MfaDeviceSelect extends Component {
 
