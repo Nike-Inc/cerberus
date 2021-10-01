@@ -52,7 +52,7 @@ plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.13"
   id "com.github.spotbugs" version "4.7.6"
-  id "com.diffplug.spotless" version "5.15.1"
+  id "com.diffplug.spotless" version "5.15.2"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
