@@ -27,7 +27,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
       - name: Upload coverage report to CodeCov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2.1.0
         with:
           file: build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml # optional
           fail_ci_if_error: true # optional (default = false)
