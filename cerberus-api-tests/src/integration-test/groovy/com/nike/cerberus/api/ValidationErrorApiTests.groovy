@@ -36,6 +36,7 @@ class ValidationErrorApiTests {
     private String accountId
     private String roleName
     private String region
+    private String ownerGroup
     private String iamAuthToken
 
     private def testSdb
@@ -46,6 +47,9 @@ class ValidationErrorApiTests {
 
         roleName = PropUtils.getRequiredProperty("TEST_ROLE_NAME",
                 "The role name to use when authenticating with Cerberus using the IAM Auth endpoint")
+
+        ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
+                "The owner group to use when creating an SDB")
 
         region = PropUtils.getRequiredProperty("TEST_REGION",
                 "The region to use when authenticating with Cerberus using the IAM Auth endpoint")
@@ -64,7 +68,7 @@ class ValidationErrorApiTests {
         String ownerRoleId = getRoleMap(iamAuthToken).owner
         def iamPrincipalPermissions = [["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId]]
 
-        testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, [], iamPrincipalPermissions)
+        testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, [], iamPrincipalPermissions)
 
         // regenerate token to get policy for new SDB
         iamAuthData = retrieveStsToken(region, accountId, roleName)
@@ -139,7 +143,7 @@ class ValidationErrorApiTests {
                 category_id             : sdbCategoryId,
                 name                    : alreadyExistingSdbName,
                 description             : sdbDescription,
-                owner                   : iamPrincipalArn,
+                owner                   : ownerGroup,
                 'user_group_permissions': [],
                 'iam_role_permissions'  : iamPrincipalPermissions
         ]

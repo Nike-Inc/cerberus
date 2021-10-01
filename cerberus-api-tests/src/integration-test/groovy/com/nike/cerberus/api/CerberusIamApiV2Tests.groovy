@@ -114,7 +114,7 @@ class CerberusIamApiV2Tests {
         ]
 
         // create test sdb
-        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, iamPrincipalArn, [], iamPrincipalPermissions)
+        def testSdb = createSdbV2(iamAuthToken, TestUtils.generateRandomSdbName(), sdbDescription, sdbCategoryId, ownerGroup, [], iamPrincipalPermissions)
         // delete test sdb
         String testSdbId = testSdb.getString("id")
         deleteSdb(iamAuthToken, testSdbId, V2_SAFE_DEPOSIT_BOX_PATH)
