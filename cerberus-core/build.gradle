@@ -27,7 +27,7 @@ dependencies {
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
-  api "com.squareup.okhttp3:okhttp:4.9.1"
+  api "com.squareup.okhttp3:okhttp:4.9.2"
   api 'com.github.ben-manes.caffeine:caffeine:3.0.4'
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
