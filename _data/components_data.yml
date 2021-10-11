@@ -16,26 +16,21 @@
   - name: Cerberus Java Client
     description: >
      A Java client for interacting with the Cerberus <a href="../docs/architecture/rest-api">REST API</a>.
-     <a href='https://bintray.com/nike/maven/cerberus-client/_latestVersion'><img src='https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg'></a>
     language: java
     url: https://github.com/Nike-Inc/cerberus-java-client
     public: true
     maintainer: Nike, Inc
     maintainer_url: http://engineering.nike.com/
 
-  - name: Cerberus Archaius Client
-    description: A client for <a href="../docs/user-guide/archaius">Archaius</a>, a
+  - name: Cerberus Archaius Client &mdash; Deprecated
+    description: A deprecated client for Archaius, a
      configuration management library created by Netflix that enables polling and dynamic configuration.
-     <a href='https://bintray.com/nike/maven/cerberus-archaius-client/_latestVersion'><img src='https://api.bintray.com/packages/nike/maven/cerberus-archaius-client/images/download.svg'></a>
     language: java
-    url: https://github.com/Nike-Inc/cerberus-archaius-client
-    public: true
     maintainer: Nike, Inc
     maintainer_url: http://engineering.nike.com/
 
   - name: Cerberus Spring Boot Client
     description: Provides automatic initialization of the Java client for Spring Boot applications.
-     <a href='https://bintray.com/nike/maven/cerberus-spring-boot-client/_latestVersion'><img src='https://api.bintray.com/packages/nike/maven/cerberus-spring-boot-client/images/download.svg'></a>
     language: java
     url: https://github.com/Nike-Inc/cerberus-spring-boot-client
     public: true

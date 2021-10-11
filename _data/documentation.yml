@@ -9,8 +9,6 @@ table_of_contents:
         displayname: Dashboard
       - filename: lambdas
         displayname: Lambdas
-      - filename: archaius
-        displayname: Archaius
       - filename: file-storage
         displayname: File Storage
       - filename: troubleshooting
