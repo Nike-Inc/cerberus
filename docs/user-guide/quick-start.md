@@ -65,8 +65,6 @@ The clients are also listed below:
 
 * <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-java-client')" href="https://github.com/Nike-Inc/cerberus-java-client">Java Client</a>
 * <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-spring-boot-client')" href="https://github.com/Nike-Inc/cerberus-spring-boot-client">Java Spring Boot Client</a>
-* <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-archaius-client')" href="https://github.com/Nike-Inc/cerberus-archaius-client">Java Archaius Polling Client</a> (generally preferred for 
-  companies using [Archaius](archaius))
 * <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-node-client')" href="https://github.com/Nike-Inc/cerberus-node-client">Node Client</a>
 * <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-python-client')" href="https://github.com/Nike-Inc/cerberus-python-client">Python Client</a>
 * <a target="_blank" rel="noopener noreferrer" onclick="trackOutboundLink('https://github.com/Nike-Inc/cerberus-go-client')" href="https://github.com/Nike-Inc/cerberus-go-client">Go Client</a>
