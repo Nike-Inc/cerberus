@@ -16,8 +16,6 @@
 
 package com.nike.cerberus.service;
 
-//import static com.nike.cerberus.service.PermissionValidationService.USER_GROUPS_CASE_SENSITIVE;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
@@ -33,15 +31,12 @@ import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.*;
 
-import java.lang.reflect.Array;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
