@@ -92,7 +92,7 @@ public class PermissionValidationService {
         break;
       case USER:
         principalHasOwnerPermissions =
-            this.userGroupsCaseSensitive
+            userGroupsCaseSensitive
                 ? principal.getUserGroups().contains(sdb.getOwner())
                 : containsIgnoreCase(principal.getUserGroups(), sdb.getOwner());
         break;
@@ -129,7 +129,7 @@ public class PermissionValidationService {
                 .map(UserGroupPermission::getName)
                 .collect(Collectors.toSet());
         principalHasPermissionAssociationWithSdb =
-            this.userGroupsCaseSensitive
+            userGroupsCaseSensitive
                 ? doesHaveIntersection(userGroups, principal.getUserGroups())
                 : doesHaveIntersectionIgnoreCase(userGroups, principal.getUserGroups());
         break;
@@ -146,7 +146,7 @@ public class PermissionValidationService {
         break;
       case USER:
         hasPermission =
-            this.userGroupsCaseSensitive
+            userGroupsCaseSensitive
                 ? permissionsDao.doesUserPrincipalHaveRoleForSdb(
                     sdbId, action.getAllowedRoles(), principal.getUserGroups())
                 : permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(
