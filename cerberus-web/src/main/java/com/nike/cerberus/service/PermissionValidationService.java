@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
@@ -47,9 +46,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Slf4j
 @Component("permissionValidationService")
 public class PermissionValidationService {
-
-  public static final String USER_GROUPS_CASE_SENSITIVE =
-      "${cerberus.auth.user.groups.caseSensitive}";
 
   private final UserGroupPermissionService userGroupPermissionService;
   private final PermissionsDao permissionsDao;
@@ -63,7 +59,7 @@ public class PermissionValidationService {
   public PermissionValidationService(
       UserGroupPermissionService userGroupPermissionService,
       PermissionsDao permissionsDao,
-      @Value(USER_GROUPS_CASE_SENSITIVE) boolean userGroupsCaseSensitive,
+      boolean userGroupsCaseSensitive,
       AwsIamRoleArnParser awsIamRoleArnParser,
       SafeDepositBoxService safeDepositBoxService,
       SdbAccessRequest sdbAccessRequest,
@@ -96,7 +92,7 @@ public class PermissionValidationService {
         break;
       case USER:
         principalHasOwnerPermissions =
-            userGroupsCaseSensitive
+            this.userGroupsCaseSensitive
                 ? principal.getUserGroups().contains(sdb.getOwner())
                 : containsIgnoreCase(principal.getUserGroups(), sdb.getOwner());
         break;
@@ -133,7 +129,7 @@ public class PermissionValidationService {
                 .map(UserGroupPermission::getName)
                 .collect(Collectors.toSet());
         principalHasPermissionAssociationWithSdb =
-            userGroupsCaseSensitive
+            this.userGroupsCaseSensitive
                 ? doesHaveIntersection(userGroups, principal.getUserGroups())
                 : doesHaveIntersectionIgnoreCase(userGroups, principal.getUserGroups());
         break;
@@ -150,7 +146,7 @@ public class PermissionValidationService {
         break;
       case USER:
         hasPermission =
-            userGroupsCaseSensitive
+            this.userGroupsCaseSensitive
                 ? permissionsDao.doesUserPrincipalHaveRoleForSdb(
                     sdbId, action.getAllowedRoles(), principal.getUserGroups())
                 : permissionsDao.doesUserHavePermsForRoleAndSdbCaseInsensitive(
