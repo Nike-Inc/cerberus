@@ -30,7 +30,6 @@ import com.nike.cerberus.record.SafeDepositBoxRecord;
 import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.*;
-
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -295,13 +294,13 @@ public class SafeDepositBoxService {
    *
    * @param safeDepositBox The record of the SDB
    */
-  public void sanitizeUserGroupPermissions(SafeDepositBoxV2 safeDepositBox){
+  public void sanitizeUserGroupPermissions(SafeDepositBoxV2 safeDepositBox) {
     Set<UserGroupPermission> userGroupPermissionsSet = safeDepositBox.getUserGroupPermissions();
     Set<UserGroupPermission> sanitizedUserGroupPermissionsSet = new HashSet<>();
     ArrayList<String> addedPermissions = new ArrayList<>();
 
-    for (UserGroupPermission permission : userGroupPermissionsSet){
-      if (!addedPermissions.contains(permission.getName().toLowerCase())){
+    for (UserGroupPermission permission : userGroupPermissionsSet) {
+      if (!addedPermissions.contains(permission.getName().toLowerCase())) {
         sanitizedUserGroupPermissionsSet.add(permission);
         addedPermissions.add(permission.getName().toLowerCase());
       }
@@ -342,7 +341,7 @@ public class SafeDepositBoxService {
       final SafeDepositBoxV2 safeDepositBox, final String user) {
 
     // Sanitize user group permissions if not case-sensitive
-    if (!this.userGroupsCaseSensitive){
+    if (!this.userGroupsCaseSensitive) {
       sanitizeUserGroupPermissions(safeDepositBox);
     }
 

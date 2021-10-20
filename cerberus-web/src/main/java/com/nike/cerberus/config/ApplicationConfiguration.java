@@ -161,8 +161,8 @@ public class ApplicationConfiguration {
 
   @Bean(name = "userGroupsCaseSensitive")
   public Boolean UserGroupsCaseSensitive(
-          @Value("${cerberus.auth.user.groups.caseSensitive}") String userGroupsCaseSensitive){
-    if (userGroupsCaseSensitive != null && !userGroupsCaseSensitive.equalsIgnoreCase("false")){
+      @Value("${cerberus.auth.user.groups.caseSensitive}") String userGroupsCaseSensitive) {
+    if (userGroupsCaseSensitive != null && !userGroupsCaseSensitive.equalsIgnoreCase("false")) {
       return true;
     }
     return false;

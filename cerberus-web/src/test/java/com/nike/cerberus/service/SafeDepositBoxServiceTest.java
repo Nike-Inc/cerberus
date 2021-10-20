@@ -62,44 +62,31 @@ import org.mockito.Mock;
 
 public class SafeDepositBoxServiceTest {
 
-  @Mock
-  private SafeDepositBoxDao safeDepositBoxDao;
+  @Mock private SafeDepositBoxDao safeDepositBoxDao;
 
-  @Mock
-  private UserGroupDao userGroupDao;
+  @Mock private UserGroupDao userGroupDao;
 
-  @Mock
-  private UuidSupplier uuidSupplier;
+  @Mock private UuidSupplier uuidSupplier;
 
-  @Mock
-  private CategoryService categoryService;
+  @Mock private CategoryService categoryService;
 
-  @Mock
-  private RoleService roleService;
+  @Mock private RoleService roleService;
 
-  @Mock
-  private UserGroupPermissionService userGroupPermissionService;
+  @Mock private UserGroupPermissionService userGroupPermissionService;
 
-  @Mock
-  private IamPrincipalPermissionService iamPrincipalPermissionService;
+  @Mock private IamPrincipalPermissionService iamPrincipalPermissionService;
 
-  @Mock
-  private Slugger slugger;
+  @Mock private Slugger slugger;
 
-  @Mock
-  private DateTimeSupplier dateTimeSupplier;
+  @Mock private DateTimeSupplier dateTimeSupplier;
 
-  @Mock
-  private AwsIamRoleArnParser awsIamRoleArnParser;
+  @Mock private AwsIamRoleArnParser awsIamRoleArnParser;
 
-  @Mock
-  private SecureDataService secureDataService;
+  @Mock private SecureDataService secureDataService;
 
-  @Mock
-  private SecureDataVersionDao secureDataVersionDao;
+  @Mock private SecureDataVersionDao secureDataVersionDao;
 
-  @InjectMocks
-  private SafeDepositBoxService safeDepositBoxService;
+  @InjectMocks private SafeDepositBoxService safeDepositBoxService;
 
   private SafeDepositBoxService safeDepositBoxServiceSpy;
 
@@ -112,7 +99,7 @@ public class SafeDepositBoxServiceTest {
 
   @Test
   public void
-  test_that_restore_safe_deposit_box_creates_with_expected_sdb_record_from_safe_depot_box_object() {
+      test_that_restore_safe_deposit_box_creates_with_expected_sdb_record_from_safe_depot_box_object() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -137,9 +124,9 @@ public class SafeDepositBoxServiceTest {
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
     iamPerms.add(
-            new IamPrincipalPermission()
-                    .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
-                    .withRoleId(readId));
+        new IamPrincipalPermission()
+            .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
+            .withRoleId(readId));
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
     sdbObject.setUserGroupPermissions(userPerms);
@@ -157,7 +144,7 @@ public class SafeDepositBoxServiceTest {
     boxToStore.setLastUpdatedBy(sdbObject.getLastUpdatedBy());
 
     when(safeDepositBoxDao.getSafeDepositBox(sdbObject.getId()))
-            .thenReturn(Optional.ofNullable(null));
+        .thenReturn(Optional.ofNullable(null));
     doNothing().when(safeDepositBoxServiceSpy).addOwnerPermission(any(), any());
 
     safeDepositBoxServiceSpy.restoreSafeDepositBox(sdbObject, "admin-user");
@@ -167,7 +154,7 @@ public class SafeDepositBoxServiceTest {
 
   @Test
   public void
-  test_that_restore_safe_deposit_box_updates_with_expected_sdb_record_from_safe_depot_box_object_when_the_sdb_already_exists() {
+      test_that_restore_safe_deposit_box_updates_with_expected_sdb_record_from_safe_depot_box_object_when_the_sdb_already_exists() {
     String id = "111";
     String categoryId = "222";
     String readId = "333";
@@ -193,9 +180,9 @@ public class SafeDepositBoxServiceTest {
 
     Set<IamPrincipalPermission> iamPerms = new HashSet<>();
     iamPerms.add(
-            new IamPrincipalPermission()
-                    .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
-                    .withRoleId(readId));
+        new IamPrincipalPermission()
+            .withIamPrincipalArn("arn:aws:iam::1111111111:role/lambda_prod_healthcheck")
+            .withRoleId(readId));
     sdbObject.setIamPrincipalPermissions(iamPerms);
 
     sdbObject.setUserGroupPermissions(userPerms);
@@ -215,14 +202,14 @@ public class SafeDepositBoxServiceTest {
     SafeDepositBoxRecord existingRecord = new SafeDepositBoxRecord();
     existingRecord.setId(sdbId);
     when(safeDepositBoxDao.getSafeDepositBox(sdbObject.getId()))
-            .thenReturn(Optional.of(existingRecord));
+        .thenReturn(Optional.of(existingRecord));
     doNothing().when(safeDepositBoxServiceSpy).updateOwner(any(), any(), any(), any());
     doNothing()
-            .when(safeDepositBoxServiceSpy)
-            .modifyUserGroupPermissions(any(), any(), any(), any());
+        .when(safeDepositBoxServiceSpy)
+        .modifyUserGroupPermissions(any(), any(), any(), any());
     doNothing()
-            .when(safeDepositBoxServiceSpy)
-            .modifyIamPrincipalPermissions(any(), any(), any(), any());
+        .when(safeDepositBoxServiceSpy)
+        .modifyIamPrincipalPermissions(any(), any(), any(), any());
     doReturn(sdbObject).when(safeDepositBoxServiceSpy).getSDBFromRecordV2(any());
 
     safeDepositBoxServiceSpy.restoreSafeDepositBox(sdbObject, "admin-user");
@@ -254,7 +241,7 @@ public class SafeDepositBoxServiceTest {
 
     Set<IamPrincipalPermission> iamRolePermissions = Sets.newHashSet();
     IamPrincipalPermission iamRolePermission =
-            new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
+        new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
     iamRolePermissions.add(iamRolePermission);
 
     SafeDepositBoxV2 safeDepositBoxV2 = new SafeDepositBoxV2();
@@ -275,7 +262,7 @@ public class SafeDepositBoxServiceTest {
     when(awsIamRoleArnParser.getRoleName(arn)).thenReturn(roleName);
 
     SafeDepositBoxV1 resultantSDBV1 =
-            safeDepositBoxService.convertSafeDepositBoxV2ToV1(safeDepositBoxV2);
+        safeDepositBoxService.convertSafeDepositBoxV2ToV1(safeDepositBoxV2);
 
     SafeDepositBoxV1 expectedSdbV1 = new SafeDepositBoxV1();
     expectedSdbV1.setId(id);
@@ -291,10 +278,10 @@ public class SafeDepositBoxServiceTest {
     expectedSdbV1.setUserGroupPermissions(userGroupPermissions);
     Set<IamRolePermission> expectedIamRolePermissionsV1 = Sets.newHashSet();
     IamRolePermission expectedIamRolePermission =
-            new IamRolePermission()
-                    .withAccountId(accountId)
-                    .withIamRoleName(roleName)
-                    .withRoleId(roleId);
+        new IamRolePermission()
+            .withAccountId(accountId)
+            .withIamRoleName(roleName)
+            .withRoleId(roleId);
     expectedIamRolePermissionsV1.add(expectedIamRolePermission);
     expectedSdbV1.setIamRolePermissions(expectedIamRolePermissionsV1);
 
@@ -325,10 +312,10 @@ public class SafeDepositBoxServiceTest {
 
     Set<IamRolePermission> iamRolePermissions = Sets.newHashSet();
     IamRolePermission iamRolePermission =
-            new IamRolePermission()
-                    .withAccountId(accountId)
-                    .withIamRoleName(roleName)
-                    .withRoleId(roleId);
+        new IamRolePermission()
+            .withAccountId(accountId)
+            .withIamRoleName(roleName)
+            .withRoleId(roleId);
     iamRolePermissions.add(iamRolePermission);
 
     SafeDepositBoxV1 safeDepositBoxV1 = new SafeDepositBoxV1();
@@ -346,7 +333,7 @@ public class SafeDepositBoxServiceTest {
     safeDepositBoxV1.setIamRolePermissions(iamRolePermissions);
 
     SafeDepositBoxV2 resultantSDBV1 =
-            safeDepositBoxService.convertSafeDepositBoxV1ToV2(safeDepositBoxV1);
+        safeDepositBoxService.convertSafeDepositBoxV1ToV2(safeDepositBoxV1);
 
     SafeDepositBoxV2 expectedSdbV2 = new SafeDepositBoxV2();
     expectedSdbV2.setId(id);
@@ -362,7 +349,7 @@ public class SafeDepositBoxServiceTest {
     expectedSdbV2.setUserGroupPermissions(userGroupPermissions);
     Set<IamPrincipalPermission> expectedIamRolePermissionsV2 = Sets.newHashSet();
     IamPrincipalPermission expectedIamPrincipalPermission =
-            new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
+        new IamPrincipalPermission().withIamPrincipalArn(arn).withRoleId(roleId);
     expectedIamRolePermissionsV2.add(expectedIamPrincipalPermission);
     expectedSdbV2.setIamPrincipalPermissions(expectedIamRolePermissionsV2);
 
@@ -386,7 +373,7 @@ public class SafeDepositBoxServiceTest {
     verify(userGroupPermissionService).deleteUserGroupPermissions(sdbId);
     verify(secureDataVersionDao).deleteAllVersionsThatStartWithPartialPath(sdbPathNoCategory);
     verify(secureDataService)
-            .deleteAllSecretsThatStartWithGivenPartialPath(sdbId, sdbPathNoCategory);
+        .deleteAllSecretsThatStartWithGivenPartialPath(sdbId, sdbPathNoCategory);
   }
 
   @Test
@@ -399,7 +386,7 @@ public class SafeDepositBoxServiceTest {
     doNothing().when(safeDepositBoxServiceSpy).updateOwner(any(), any(), any(), any());
     safeDepositBoxServiceSpy.overrideOwner(sdbName, "new-owner", "admin-user");
     verify(safeDepositBoxServiceSpy, times(1))
-            .updateOwner(id, "new-owner", "admin-user", offsetDateTime);
+        .updateOwner(id, "new-owner", "admin-user", offsetDateTime);
   }
 
   @Test
@@ -420,13 +407,13 @@ public class SafeDepositBoxServiceTest {
     SafeDepositBoxRecord safeDepositBoxRecord1 = new SafeDepositBoxRecord();
     SafeDepositBoxRecord safeDepositBoxRecord2 = new SafeDepositBoxRecord();
     List<SafeDepositBoxRecord> assumedRoleArnRecords =
-            Lists.newArrayList(safeDepositBoxRecord1, safeDepositBoxRecord2);
+        Lists.newArrayList(safeDepositBoxRecord1, safeDepositBoxRecord2);
     when(safeDepositBoxDao.getAssumedRoleAssociatedSafeDepositBoxes(
             assumedRoleArn, iamRoleArn, rootArn))
-            .thenReturn(assumedRoleArnRecords);
+        .thenReturn(assumedRoleArnRecords);
 
     List<SafeDepositBoxSummary> sdbSummaries =
-            safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(AssumedRoleArnPrincipal);
+        safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(AssumedRoleArnPrincipal);
     assertEquals(assumedRoleArnRecords.size(), sdbSummaries.size());
   }
 
@@ -440,7 +427,7 @@ public class SafeDepositBoxServiceTest {
 
     List<SafeDepositBoxRecord> roleArnRecords = Lists.newArrayList(safeDepositBoxRecord1);
     when(safeDepositBoxDao.getIamPrincipalAssociatedSafeDepositBoxes(iamRoleArn, rootArn))
-            .thenReturn(roleArnRecords);
+        .thenReturn(roleArnRecords);
     when(awsIamRoleArnParser.isAssumedRoleArn(iamRoleArn)).thenReturn(false);
     when(awsIamRoleArnParser.convertPrincipalArnToRootArn(iamRoleArn)).thenReturn(rootArn);
 
@@ -449,7 +436,7 @@ public class SafeDepositBoxServiceTest {
     doReturn(iamRoleArn).when(roleArnPrincipal).getName();
 
     List<SafeDepositBoxSummary> roleArnSdbSummaries =
-            safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(roleArnPrincipal);
+        safeDepositBoxServiceSpy.getAssociatedSafeDepositBoxes(roleArnPrincipal);
     assertEquals(roleArnRecords.size(), roleArnSdbSummaries.size());
   }
 
