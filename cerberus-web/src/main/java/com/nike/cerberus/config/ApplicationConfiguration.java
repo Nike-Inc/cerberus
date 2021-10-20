@@ -159,6 +159,12 @@ public class ApplicationConfiguration {
     return adGroupNamePrefix.toLowerCase();
   }
 
+  @Bean(name = "userGroupsCaseSensitive")
+  public Boolean userGroupsCaseSensitive(
+      @Value("${cerberus.auth.user.groups.caseSensitive}") String userGroupsCaseSensitive) {
+    return Boolean.parseBoolean(userGroupsCaseSensitive);
+  }
+
   @Bean(name = "bannerMessage")
   public String bannerMessage(@Value("${cerberus.bannerMessage:}") String bannerMessage) {
     return bannerMessage;

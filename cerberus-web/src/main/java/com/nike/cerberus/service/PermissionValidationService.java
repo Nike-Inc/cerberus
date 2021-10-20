@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
@@ -47,9 +46,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Slf4j
 @Component("permissionValidationService")
 public class PermissionValidationService {
-
-  public static final String USER_GROUPS_CASE_SENSITIVE =
-      "${cerberus.auth.user.groups.caseSensitive}";
 
   private final UserGroupPermissionService userGroupPermissionService;
   private final PermissionsDao permissionsDao;
@@ -63,7 +59,7 @@ public class PermissionValidationService {
   public PermissionValidationService(
       UserGroupPermissionService userGroupPermissionService,
       PermissionsDao permissionsDao,
-      @Value(USER_GROUPS_CASE_SENSITIVE) boolean userGroupsCaseSensitive,
+      boolean userGroupsCaseSensitive,
       AwsIamRoleArnParser awsIamRoleArnParser,
       SafeDepositBoxService safeDepositBoxService,
       SdbAccessRequest sdbAccessRequest,

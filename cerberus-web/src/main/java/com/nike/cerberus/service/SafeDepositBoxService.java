@@ -16,8 +16,6 @@
 
 package com.nike.cerberus.service;
 
-import static com.nike.cerberus.service.PermissionValidationService.USER_GROUPS_CASE_SENSITIVE;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.nike.backstopper.exception.ApiException;
@@ -34,6 +32,7 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +41,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +79,7 @@ public class SafeDepositBoxService {
       AwsIamRoleArnParser awsIamRoleArnParser,
       SecureDataService secureDataService,
       SecureDataVersionDao secureDataVersionDao,
-      @Value(USER_GROUPS_CASE_SENSITIVE) Boolean userGroupsCaseSensitive,
+      Boolean userGroupsCaseSensitive,
       SdbAccessRequest sdbAccessRequest,
       AuditLoggingFilterDetails auditLoggingFilterDetails,
       String adGroupNamePrefix) {
@@ -130,7 +128,7 @@ public class SafeDepositBoxService {
         break;
       case USER:
         sdbRecords =
-            userGroupsCaseSensitive
+            this.userGroupsCaseSensitive
                 ? safeDepositBoxDao.getUserAssociatedSafeDepositBoxes(principal.getUserGroups())
                 : safeDepositBoxDao.getUserAssociatedSafeDepositBoxesIgnoreCase(
                     principal.getUserGroups());
@@ -295,7 +293,25 @@ public class SafeDepositBoxService {
       generateUserGroupPermissionError(invalidUserGroups);
     }
   }
-  ;
+
+  /**
+   * Sanitized user group permissions added to an SDB
+   *
+   * @param safeDepositBox The record of the SDB
+   */
+  public void sanitizeUserGroupPermissions(SafeDepositBoxV2 safeDepositBox) {
+    Set<UserGroupPermission> userGroupPermissionsSet = safeDepositBox.getUserGroupPermissions();
+    Set<UserGroupPermission> sanitizedUserGroupPermissionsSet = new HashSet<>();
+    ArrayList<String> addedPermissions = new ArrayList<>();
+
+    for (UserGroupPermission permission : userGroupPermissionsSet) {
+      if (!addedPermissions.contains(permission.getName().toLowerCase())) {
+        sanitizedUserGroupPermissionsSet.add(permission);
+        addedPermissions.add(permission.getName().toLowerCase());
+      }
+    }
+    safeDepositBox.setUserGroupPermissions(sanitizedUserGroupPermissionsSet);
+  }
 
   /**
    * Generates the error message and throws the error if AD groups do not match specification
@@ -328,6 +344,11 @@ public class SafeDepositBoxService {
   @Transactional
   public SafeDepositBoxV2 createSafeDepositBoxV2(
       final SafeDepositBoxV2 safeDepositBox, final String user) {
+
+    // Sanitize user group permissions if not case-sensitive
+    if (!this.userGroupsCaseSensitive) {
+      sanitizeUserGroupPermissions(safeDepositBox);
+    }
 
     // Validate AD Group names against specification
     validateSDBOwnerName(safeDepositBox);
