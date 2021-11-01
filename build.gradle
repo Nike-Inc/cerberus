@@ -225,7 +225,7 @@ configurations {
 }
 
 dependencies {
-  antJUnit 'org.apache.ant:ant-junit:1.10.11'
+  antJUnit 'org.apache.ant:ant-junit:1.10.12'
 }
 
 // Compile all the test results into a single one.
