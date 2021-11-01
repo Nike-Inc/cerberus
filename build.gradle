@@ -19,7 +19,7 @@ import com.github.spotbugs.snom.SpotBugsReport
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.20',
+      lombok: '1.18.22',
       resilience4j: '1.7.1',
       awsSdkVersion: '1.12.71',
       kork: '7.120.0',
