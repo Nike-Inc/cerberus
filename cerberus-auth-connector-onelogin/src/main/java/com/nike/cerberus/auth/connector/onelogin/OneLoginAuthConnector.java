@@ -134,10 +134,16 @@ public class OneLoginAuthConnector implements AuthConnector {
     for (String canonicalName : canonicalNames) {
       canonicalNameIterable = Splitter.on(",").split(canonicalName);
       String[] pieces = Iterables.toArray(canonicalNameIterable, String.class);
-
-      piecesIterable = Splitter.on("=").split(pieces[0]);
+      try {
+        piecesIterable = Splitter.on("=").split(pieces[0]);
+      } catch (NullPointerException npe) {
+        throw ApiException.newBuilder()
+            .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)
+            .withExceptionMessage("OneLogin user info member-of field is malformed!")
+            .build();
+      }
       String[] parts = Iterables.toArray(piecesIterable, String.class);
-      if (parts.length >= 2) {
+      if (parts != null && parts.length >= 2) {
         groups.add(parts[1]);
       } else {
         throw ApiException.newBuilder()

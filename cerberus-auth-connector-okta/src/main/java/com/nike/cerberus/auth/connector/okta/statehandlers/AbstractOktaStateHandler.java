@@ -128,7 +128,9 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
     final String factorKey = getFactorKey(factor);
 
     if (MFA_FACTOR_TRIGGER_REQUIRED.containsKey(factorKey)) {
-      return MFA_FACTOR_TRIGGER_REQUIRED.get(factorKey);
+      Boolean isRequired = MFA_FACTOR_TRIGGER_REQUIRED.get(factorKey);
+      if (isRequired != null) return isRequired.booleanValue();
+      else return false;
     }
     return false;
   }
