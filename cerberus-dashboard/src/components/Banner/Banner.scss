@@ -17,19 +17,21 @@
 @import '../../assets/styles/common';
 
 #banner {
-  height: 50px;
+  height: auto;
   width: 90%;
+  padding-top: 10px;
+  padding-bottom: 10px;
   margin: 15px 0px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 15px;
-  line-height: 50px;
   border-radius: 8px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   background-color: $snkrs_error;
   color: $snkrs_white;
   font-family: "Nike TG","Helvetica Neue",Helvetica,Arial,sans-serif;
   font-size: large;
+  overflow-wrap: break-word;
 
   a {
     color: $snkrs_white;
