@@ -51,7 +51,7 @@ buildscript {
 plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.13"
-  id "com.github.spotbugs" version "4.7.9"
+  id "com.github.spotbugs" version "4.8.0"
   id "com.diffplug.spotless" version "5.17.1"
 }
 
