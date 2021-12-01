@@ -42,7 +42,7 @@ dependencies {
 
 configurations.all {
   resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.31"
+    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.6.0"
     force "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
   }
 }
