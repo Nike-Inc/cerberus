@@ -16,7 +16,7 @@
 
 dependencies {
   api group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-  api group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.1.Final'
+  api group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.2.Final'
   api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.13.0'
 
   api group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
