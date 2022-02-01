@@ -24,7 +24,7 @@
     "html-react-parser": "^1.4.10",
     "humps": "2.0.1",
     "loglevel": "1.7.1",
-    "prop-types": "^15.7.2",
+    "prop-types": "^15.8.1",
     "react": "^16.14.0",
     "react-copy-to-clipboard": "5.0.3",
     "react-dom": "^16.14.0",
