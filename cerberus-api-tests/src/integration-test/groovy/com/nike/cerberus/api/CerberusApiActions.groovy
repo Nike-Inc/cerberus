@@ -216,8 +216,7 @@ class CerberusApiActions {
         // decrypt the payload
         String base64EncodedKmsEncryptedAuthPayload = response.body().jsonPath().getString("auth_data")
 
-        //TODO: Fix role creation
-        return getDecryptedPayload(String.format("arn:aws-cn:iam::%s:role/%s", accountId, roleName), region, base64EncodedKmsEncryptedAuthPayload, assumeRole)
+        return getDecryptedPayload(String.format("arn:%s:iam::%s:role/%s", testPartition, accountId, roleName), region, base64EncodedKmsEncryptedAuthPayload, assumeRole)
     }
 
     static def retrieveIamAuthToken(String iamPrincipalArn, String region, boolean assumeRole = true) {
