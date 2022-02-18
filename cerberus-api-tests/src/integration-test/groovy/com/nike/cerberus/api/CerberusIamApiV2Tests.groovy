@@ -39,6 +39,7 @@ class CerberusIamApiV2Tests {
     private String ownerGroup
     private String adGroupNamePrefix
     private String cerberusAuthToken
+    private String testPartition
     private def cerberusAuthData
 
 
@@ -73,6 +74,9 @@ class CerberusIamApiV2Tests {
 
         adGroupNamePrefix = PropUtils.getRequiredProperty("AD_GROUP_NAME_PREFIX",
                 "AD group name prefix")
+
+        // AWS partition under test
+        testPartition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
     }
 
     @Test
@@ -106,8 +110,8 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$accountId:role/$roleName")
-        String secondArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake-api-test-role")
+        String iamPrincipalArn = updateArnWithPartition("arn:$testPartition:iam::$accountId:role/$roleName")
+        String secondArn = updateArnWithPartition("arn:$testPartition:iam::1111111111:role/fake-api-test-role")
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": iamPrincipalArn, "role_id": ownerRoleId],
                 ["iam_principal_arn": secondArn, "role_id": ownerRoleId],
@@ -126,7 +130,7 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = updateArnWithPartition("arn:aws:iam::$accountId:root")
+        String accountRootArn = updateArnWithPartition("arn:$testPartition:iam::$accountId:root")
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],
@@ -149,7 +153,7 @@ class CerberusIamApiV2Tests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = updateArnWithPartition("arn:aws:iam::$accountId:root")
+        String accountRootArn = updateArnWithPartition("arn:$testPartition:iam::$accountId:root")
         def userPerms = []
         def iamPrincipalPermissions = [
                 ["iam_principal_arn": accountRootArn, "role_id": ownerRoleId],

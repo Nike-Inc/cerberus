@@ -41,7 +41,7 @@ class NegativeIamPermissionsApiTests {
     private String roleName
     private String region
     private String iamAuthToken
-
+    private String testPartition
     private String username
     private String password
     private String otpDeviceId
@@ -75,6 +75,9 @@ class NegativeIamPermissionsApiTests {
         ownerGroup = PropUtils.getRequiredProperty("TEST_OWNER_GROUP",
                 "The owner group to use when creating an SDB")
 
+        // AWS partition under test
+        testPartition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
+
         // todo: make this optional
         otpSecret = PropUtils.getRequiredProperty("TEST_USER_OTP_SECRET",
                 "The secret for the test users OTP MFA (OTP == Google auth)")
@@ -91,7 +94,7 @@ class NegativeIamPermissionsApiTests {
         userAuthToken = userAuthData."client_token"
         String userGroupOfTestUser = ownerGroup
 
-        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        String iamPrincipalArn = updateArnWithPartition("arn:$testPartition:iam::${accountId}:role/${roleName}")
         def iamAuthData = retrieveStsToken(region, accountId, roleName)
         iamAuthToken = iamAuthData."client_token"
 
@@ -120,7 +123,7 @@ class NegativeIamPermissionsApiTests {
     @Test
     void "test that an IAM principal cannot be the owner of a SDB"(){
         def sdbId = iamPrincipalReadOnlySdb.getString("id")
-        String iamPrincipalArn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        String iamPrincipalArn = updateArnWithPartition("arn:$testPartition:iam::${accountId}:role/${roleName}")
 
         def updateSdbJson = generateSdbJson(
                 iamPrincipalReadOnlySdb.getString("description"),
@@ -138,7 +141,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a read IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalReadOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
+        String fake_arn = updateArnWithPartition("arn:$testPartition:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -202,7 +205,7 @@ class NegativeIamPermissionsApiTests {
     void "test that a write IAM principal cannot edit permissions"() {
         def sdbId = iamPrincipalWriteOnlySdb.getString("id")
         def roleMap = getRoleMap(userAuthToken)
-        String fake_arn = updateArnWithPartition("arn:aws:iam::0011001100:user/obviously-fake-test-user")
+        String fake_arn = updateArnWithPartition("arn:$testPartition:iam::0011001100:user/obviously-fake-test-user")
 
         def newIamPrincipalPermissions = [["iam_principal_arn": fake_arn, "role_id": roleMap.owner]]
         def updateSdbJson = generateSdbJson(
@@ -281,7 +284,7 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootArn = updateArnWithPartition("arn:aws:iam::00000000:root")
+        String accountRootArn = updateArnWithPartition("arn:$testPartition:iam::00000000:root")
         String automationUserGroup = ownerGroup
         def userPerms = []
         def iamPrincipalPermissions = [
@@ -315,8 +318,8 @@ class NegativeIamPermissionsApiTests {
         String sdbCategoryId = getCategoryMap(iamAuthToken).Applications
         String sdbDescription = generateRandomSdbDescription()
         String ownerRoleId = getRoleMap(iamAuthToken).owner
-        String accountRootWithNoAccess = updateArnWithPartition("arn:aws:iam::00000000:root")
-        String accountRootWithAccess = updateArnWithPartition("arn:aws:iam::$accountId:root")
+        String accountRootWithNoAccess = updateArnWithPartition("arn:$testPartition:iam::00000000:root")
+        String accountRootWithAccess = updateArnWithPartition("arn:$testPartition:iam::$accountId:root")
 
         String automationUserGroup = ownerGroup
         def userPerms = []

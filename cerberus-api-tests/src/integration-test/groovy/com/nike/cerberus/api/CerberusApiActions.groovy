@@ -66,6 +66,7 @@ class CerberusApiActions {
     public final static int SLEEP_IN_MILLISECONDS = PropUtils.getPropWithDefaultValue("SLEEP_IN_MILLISECONDS",
             "0").toInteger()
 
+    public final static String testPartition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
     static final List<String> CHINA_REGIONS = new ArrayList<String>(
             Arrays.asList(
                     "cn-north-1",
@@ -133,7 +134,7 @@ class CerberusApiActions {
 
         URI endpoint = null
 
-        def iamPrincipalArn = updateArnWithPartition("arn:aws:iam::$accountId:role/$roleName")
+        def iamPrincipalArn = updateArnWithPartition("arn:$testPartition:iam::$accountId:role/$roleName")
         AWSSecurityTokenService stsClient = AWSSecurityTokenServiceClientBuilder.standard().withRegion(Regions.fromName(region)).build()
         def credentials = new STSAssumeRoleSessionCredentialsProvider.Builder(iamPrincipalArn, UUID.randomUUID().toString())
                         .withStsClient(stsClient)
@@ -214,7 +215,8 @@ class CerberusApiActions {
 
         // decrypt the payload
         String base64EncodedKmsEncryptedAuthPayload = response.body().jsonPath().getString("auth_data")
-        return getDecryptedPayload(String.format("arn:aws:iam::%s:role/%s", accountId, roleName), region, base64EncodedKmsEncryptedAuthPayload, assumeRole)
+
+        return getDecryptedPayload(String.format("arn:%s:iam::%s:role/%s", testPartition, accountId, roleName), region, base64EncodedKmsEncryptedAuthPayload, assumeRole)
     }
 
     static def retrieveIamAuthToken(String iamPrincipalArn, String region, boolean assumeRole = true) {

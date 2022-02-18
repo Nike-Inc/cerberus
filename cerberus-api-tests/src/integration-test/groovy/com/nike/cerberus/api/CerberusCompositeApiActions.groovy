@@ -42,7 +42,7 @@ class CerberusCompositeApiActions {
     static final String NEGATIVE_JSON_SCHEMA_ROOT_PATH = "json-schema/negative"
 
     static final String region = PropUtils.getRequiredProperty("TEST_REGION")
-    static final String partition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
+    static final String testPartition = PropUtils.getPropWithDefaultValue("TEST_PARTITION", "aws")
 
     static void "create, read, update then delete a secret node"(String cerberusAuthToken) {
         "create, read, update then delete a secret node"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
@@ -266,7 +266,7 @@ class CerberusCompositeApiActions {
             ]
         ]
 
-        String arn = updateArnWithPartition("arn:aws:iam::${accountId}:role/${roleName}")
+        String arn = updateArnWithPartition("arn:$testPartition:iam::${accountId}:role/${roleName}")
         def iamPrincipalPermissions = [
             [
                 "iam_principal_arn": arn,
@@ -304,7 +304,7 @@ class CerberusCompositeApiActions {
             assertEquals(listSdb.'category_id', sdb.get('category_id'))
 
             // update the sdb
-            String newArn = updateArnWithPartition("arn:aws:iam::1111111111:role/fake_role2")
+            String newArn = updateArnWithPartition("arn:$testPartition:iam::1111111111:role/fake_role2")
             description = lorem.getWords(60)
             userGroupPermissions.add([
                     "name"   : adGroupNamePrefix + 'bar',
