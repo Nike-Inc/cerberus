@@ -27,7 +27,7 @@ dependencies {
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
-  api "com.squareup.okhttp3:okhttp:4.9.2"
+  api "com.squareup.okhttp3:okhttp:4.9.3"
   api 'com.github.ben-manes.caffeine:caffeine:3.0.4'
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
@@ -42,7 +42,7 @@ dependencies {
 
 configurations.all {
   resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.5.31"
+    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.6.20"
     force "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
   }
 }

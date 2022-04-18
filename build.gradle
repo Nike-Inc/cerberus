@@ -21,13 +21,13 @@ buildscript {
     versions = [
       lombok: '1.18.22',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.99',
-      kork: '7.123.0',
+      awsSdkVersion: '1.12.122',
+      kork: '7.135.0',
       guava: '31.0.1-jre',
-      springBoot: '2.5.6',
+      springBoot: '2.6.6',
       jjwt: '0.11.2',
       okta: '3.1.0',
-      oktaAuthnSdk: '2.0.3'
+      oktaAuthnSdk: '2.0.4'
     ]
   }
   ext['groovy.version'] = '3.0.7'
