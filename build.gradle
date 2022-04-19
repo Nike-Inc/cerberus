@@ -21,7 +21,7 @@ buildscript {
     versions = [
       lombok: '1.18.22',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.122',
+      awsSdkVersion: '1.12.201',
       kork: '7.135.0',
       guava: '31.0.1-jre',
       springBoot: '2.6.6',
