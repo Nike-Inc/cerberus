@@ -19,15 +19,15 @@ import com.github.spotbugs.snom.SpotBugsReport
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.20',
+      lombok: '1.18.22',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.71',
-      kork: '7.120.0',
-      guava: '30.1.1-jre',
-      springBoot: '2.4.5',
+      awsSdkVersion: '1.12.201',
+      kork: '7.137.0',
+      guava: '31.0.1-jre',
+      springBoot: '2.6.6',
       jjwt: '0.11.2',
       okta: '3.1.0',
-      oktaAuthnSdk: '2.0.3'
+      oktaAuthnSdk: '2.0.4'
     ]
   }
   ext['groovy.version'] = '3.0.7'
@@ -43,7 +43,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:6.3.1"
+    classpath "org.owasp:dependency-check-gradle:6.4.1.1"
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
@@ -51,8 +51,8 @@ buildscript {
 plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.13"
-  id "com.github.spotbugs" version "4.7.6"
-  id "com.diffplug.spotless" version "5.15.1"
+  id "com.github.spotbugs" version "4.7.9"
+  id "com.diffplug.spotless" version "5.17.1"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -112,6 +112,9 @@ allprojects {
     jcenter()
     mavenCentral()
     google()
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
   }
 
   jacoco {
@@ -225,7 +228,7 @@ configurations {
 }
 
 dependencies {
-  antJUnit 'org.apache.ant:ant-junit:1.10.11'
+  antJUnit 'org.apache.ant:ant-junit:1.10.12'
 }
 
 // Compile all the test results into a single one.

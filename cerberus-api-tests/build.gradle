@@ -25,14 +25,14 @@ repositories {
 
 configurations.all {
   resolutionStrategy {
-    force 'org.apache.ant:ant:1.10.11'
+    force 'org.apache.ant:ant:1.10.12'
   }
 }
 dependencies {
   implementation project(':cerberus-core').sourceSets.test.output
   implementation group: 'org.testng', name: 'testng', version: '7.4.0'
   implementation 'junit:junit:4.13.2'
-  implementation 'org.slf4j:slf4j-api:1.7.32'
+  implementation 'org.slf4j:slf4j-api:1.7.36'
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
   implementation 'io.rest-assured:rest-assured:4.4.0'
   implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '4.4.0'
