@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "axios": "^0.26.1",
-    "connected-react-router": "^6.9.1",
+    "connected-react-router": "^6.9.2",
     "downloadjs": "1.4.7",
     "history": "^4.10.1",
     "html-react-parser": "^1.4.10",
