@@ -23,7 +23,7 @@
     "history": "^4.10.1",
     "html-react-parser": "^1.4.11",
     "humps": "2.0.1",
-    "loglevel": "1.7.1",
+    "loglevel": "1.8.0",
     "prop-types": "^15.8.1",
     "react": "^16.14.0",
     "react-copy-to-clipboard": "5.1.0",
