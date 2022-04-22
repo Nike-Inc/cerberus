@@ -76,7 +76,7 @@ dependencies {
 
 
   //dist tracing
-  implementation 'com.nike.wingtips:wingtips-spring-boot:0.23.1'
+  implementation 'com.nike.wingtips:wingtips-spring-boot:0.24.2'
 
   // test deps
   testImplementation('org.springframework.boot:spring-boot-starter-test')
