@@ -19,7 +19,7 @@ plugins {
 }
 
 node {
-  version = '14.16.0'
+  version = '16.15.0'
   download = true
 }
 
