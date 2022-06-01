@@ -35,7 +35,7 @@ dependencies {
   implementation 'org.slf4j:slf4j-api:1.7.36'
   implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9'
   implementation 'io.rest-assured:rest-assured:4.4.0'
-  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '4.4.0'
+  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.1.0'
   implementation group: 'io.rest-assured', name: 'json-path', version: '4.4.0'
   implementation group: 'io.rest-assured', name: 'xml-path', version: '4.4.0'
   implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
