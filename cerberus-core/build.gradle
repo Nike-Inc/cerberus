@@ -16,11 +16,11 @@
 
 dependencies {
   api project(":cerberus-domain")
-  api 'org.springframework.boot:spring-boot-starter-web'
-  api 'org.springframework.boot:spring-boot-starter-security'
+  api "org.springframework.boot:spring-boot-starter-web:${versions.springBoot}"
+  api "org.springframework.boot:spring-boot-starter-security:${versions.springBoot}"
 
   // Error management
-  api 'com.nike.backstopper:backstopper-spring-web-mvc:0.13.0'
+  api 'com.nike.backstopper:backstopper-spring-web-mvc:0.15.0'
 
   // Metrics
   api 'io.dropwizard.metrics:metrics-core:4.2.4'

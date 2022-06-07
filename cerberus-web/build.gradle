@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.6.6"
+  id 'org.springframework.boot' version "2.7.0"
 }
 
 sourceCompatibility = '11'
@@ -37,16 +37,16 @@ dependencies {
   implementation project(":cerberus-domain")
 
   // Spring
-  implementation 'org.springframework.boot:spring-boot-starter-actuator'
-  implementation 'org.springframework.boot:spring-boot-starter-web'
-  implementation 'org.springframework.boot:spring-boot-starter-security'
+  implementation "org.springframework.boot:spring-boot-starter-actuator:${versions.springBoot}"
+  implementation "org.springframework.boot:spring-boot-starter-web:${versions.springBoot}"
+  implementation "org.springframework.boot:spring-boot-starter-security:${versions.springBoot}"
 
   // DB: Mybatis, Flyway, C3p0
   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-  implementation 'org.mybatis:mybatis-spring:2.0.6'
+  implementation 'org.mybatis:mybatis-spring:2.0.7'
   implementation 'org.mybatis:mybatis:3.5.9'
   implementation 'com.mchange:c3p0:0.9.5.5'
-  implementation 'mysql:mysql-connector-java:8.0.27'
+  implementation 'mysql:mysql-connector-java:8.0.29'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
@@ -79,7 +79,7 @@ dependencies {
   implementation 'com.nike.wingtips:wingtips-spring-boot:0.24.2'
 
   // test deps
-  testImplementation('org.springframework.boot:spring-boot-starter-test')
+  testImplementation("org.springframework.boot:spring-boot-starter-test:${versions.springBoot}")
   testImplementation "commons-io:commons-io:2.11.0"
   testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.13.0"
 
