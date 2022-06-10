@@ -21,10 +21,10 @@ buildscript {
     versions = [
       lombok: '1.18.22',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.202',
+      awsSdkVersion: '1.12.210',
       kork: '7.137.0',
       guava: '31.0.1-jre',
-      springBoot: '2.6.6',
+      springBoot: '2.7.0',
       jjwt: '0.11.2',
       okta: '3.1.0',
       oktaAuthnSdk: '2.0.7'
@@ -50,7 +50,7 @@ buildscript {
 
 plugins {
   id "io.spring.dependency-management" version "1.0.11.RELEASE"
-  id "com.github.nbaztec.coveralls-jacoco" version "1.2.13"
+  id "com.github.nbaztec.coveralls-jacoco" version "1.2.14"
   id "com.github.spotbugs" version "4.7.9"
   id "com.diffplug.spotless" version "5.17.1"
 }

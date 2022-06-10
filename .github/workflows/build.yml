@@ -27,14 +27,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew check build buildDashboard generateAggregatedReports -x integrationTest --continue
       - name: Upload coverage report to CodeCov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: build/reports/jacoco/aggregatedJacocoReport/aggregatedJacocoReport.xml # optional
           fail_ci_if_error: true # optional (default = false)
           verbose: true
       - name: Slack notification when master build fails
         if: ${{ failure() && github.ref == 'refs/heads/master'}}
-        uses: rtCamp/action-slack-notify@v2.1.3
+        uses: rtCamp/action-slack-notify@v2.2.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: cerberus-alerts
