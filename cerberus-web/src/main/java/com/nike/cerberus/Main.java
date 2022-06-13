@@ -26,7 +26,7 @@ public class Main {
     new SpringApplicationBuilder()
         .properties(
             Map.of(
-                "spring.config.additional-location", "${user.home}/.cerberus/",
+                "spring.config.additional-location", "optional:${user.home}/.cerberus/",
                 "spring.application.name", "cerberus",
                 "spring.config.name", "cerberus",
                 "spring.profiles.active", "${cerberus.environment:local}"))

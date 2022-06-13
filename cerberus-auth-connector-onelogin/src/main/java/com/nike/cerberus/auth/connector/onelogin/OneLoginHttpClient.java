@@ -29,7 +29,13 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
-import okhttp3.*;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -177,8 +183,10 @@ public class OneLoginHttpClient {
    * @return Deserialized object from the response body
    */
   protected <M> M parseResponseBody(final Response response, final Class<M> responseClass) {
+    final ResponseBody body = response.body();
     try {
-      return objectMapper.readValue(response.body().string(), responseClass);
+      final String responseBodyString = body == null ? "" : body.string();
+      return objectMapper.readValue(responseBodyString, responseClass);
     } catch (IOException e) {
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.SERVICE_UNAVAILABLE)

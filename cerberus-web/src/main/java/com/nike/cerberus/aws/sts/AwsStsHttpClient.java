@@ -100,9 +100,10 @@ public class AwsStsHttpClient {
 
         throw builder.withExceptionMessage(msg).build();
       } else if (response.code() >= 500) {
+        final ResponseBody body = response.body();
+        final String bodyString = body == null ? "" : body.string();
         final String msg =
-            String.format(
-                "Something is wrong with AWS, error message: %s", response.body().string());
+            String.format("Something is wrong with AWS, error message: %s", bodyString);
 
         throw ApiException.newBuilder()
             .withApiErrors(
@@ -161,8 +162,11 @@ public class AwsStsHttpClient {
    * @return Deserialized object from the response body
    */
   protected <M> M parseResponseBody(final Response response, final Class<M> responseClass) {
+
+    final ResponseBody body = response.body();
     try {
-      return objectMapper.readValue(response.body().string(), responseClass);
+      final String responseBodyString = body == null ? "" : body.string();
+      return objectMapper.readValue(responseBodyString, responseClass);
     } catch (IOException e) {
       String msg = "Error parsing the response body from AWS STS.";
       throw ApiException.newBuilder()
