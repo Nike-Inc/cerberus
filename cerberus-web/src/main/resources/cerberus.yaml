@@ -8,6 +8,8 @@ management:
     web:
       basePath: /
       pathMapping.health: healthcheck
+      exposure:
+        include: [info, health]
   endpoint:
     info.enabled: true
     health.enabled: true
