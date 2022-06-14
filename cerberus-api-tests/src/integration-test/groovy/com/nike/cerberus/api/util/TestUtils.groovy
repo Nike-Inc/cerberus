@@ -52,6 +52,11 @@ class TestUtils {
             System.out.print("Performing sanity check get on the health check.")
             get(baseURI + "/healthcheck").then().statusCode(200)
             System.out.println(" Success!")
+
+            System.out.print("Ensuring /info path is exposed")
+            get(baseURI + "/info").then().statusCode(200)
+            System.out.println(" Success!")
+
             hasBeenConfigured = true
         }
     }
