@@ -21,6 +21,7 @@ plugins {
 node {
   version = '16.15.0'
   download = true
+  npmInstallCommand = "ci"
 }
 
 task buildDashboard(type: NpmTask, dependsOn: npmInstall) {
