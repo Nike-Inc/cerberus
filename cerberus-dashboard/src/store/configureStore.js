@@ -15,46 +15,52 @@
  */
 
 import rootReducer from '../reducers/rootReducer';
-import { createHashHistory } from 'history'
-import { applyMiddleware, createStore, compose } from 'redux';
-import { routerMiddleware } from 'connected-react-router'
+import {createHashHistory} from 'history';
+import {applyMiddleware, createStore, compose} from 'redux';
+import {routerMiddleware} from 'connected-react-router';
 import thunk from 'redux-thunk';
 import createLogger from 'redux-logger';
 
-export const history = createHashHistory()
+export const history = createHashHistory();
+
+const exposeStore = reduxStore => {
+  if (window.Cypress) window.store = reduxStore;
+}
 
 export default function configureStore() {
 
-    // Apply the middleware to the store
-    const middleware = routerMiddleware(history);
+  // Apply the middleware to the store
+  const middleware = routerMiddleware(history);
 
-    let store;
-    if (localStorage.getItem('redux-logger-enabled') === 'true') {
-        const logger = createLogger();
-        store = createStore(
-            rootReducer(history),
-            compose(
-                applyMiddleware(middleware, thunk, logger),
-                window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
-            )
-        );
-    } else {
-        store = createStore(
-            rootReducer(history),
-            compose(
-                applyMiddleware(middleware, thunk),
-                window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
-            )
-        );
-    }
+  let store;
+  if (localStorage.getItem('redux-logger-enabled') === 'true') {
+    const logger = createLogger();
+    store = createStore(
+      rootReducer(history),
+      compose(
+        applyMiddleware(middleware, thunk, logger),
+        window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
+      )
+    );
+    exposeStore(store);
+  } else {
+    store = createStore(
+      rootReducer(history),
+      compose(
+        applyMiddleware(middleware, thunk),
+        window.devToolsExtension ? window.__REDUX_DEVTOOLS_EXTENSION__() : f => f
+      )
+    );
+    exposeStore(store);
+  }
 
-    if (module.hot) {
-        module.hot
-            .accept('../reducers/rootReducer', () => {
-                const nextRootReducer = require('../reducers/rootReducer');
-                store.replaceReducer(nextRootReducer);
-            });
-    }
+  if (module.hot) {
+    module.hot
+      .accept('../reducers/rootReducer', () => {
+        const nextRootReducer = require('../reducers/rootReducer');
+        store.replaceReducer(nextRootReducer);
+      });
+  }
 
-    return store;
+  return store;
 }
