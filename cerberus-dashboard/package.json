@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "react-scripts": "^4.0.3",
-    "sass": "^1.50.1"
+    "sass": "^1.54.0"
   },
   "browserslist": {
     "production": [
