@@ -65,6 +65,9 @@ class LoginForm extends Component {
     }
 }
 
+
+
+
 const mapStateToProps = state => ({
     isSessionExpired: state.auth.isSessionExpired,
     isMfaRequired: state.auth.isMfaRequired,
