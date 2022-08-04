@@ -29,6 +29,7 @@
   "author": "Justin Field <justin.field@nike.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "@nike/aegis-auth-react": "^0.3.1",
     "axios": "^0.27.2",
     "connected-react-router": "^6.9.3",
     "downloadjs": "1.4.7",
@@ -55,11 +56,11 @@
     "worker-timers": "7.0.51"
   },
   "devDependencies": {
-    "react-scripts": "5.0.1",
-    "sass": "^1.54.0",
     "@cypress/skip-test": "^2.6.1",
     "cypress": "~10.3.1",
-    "npm-check-updates": "~15.3.4"
+    "npm-check-updates": "~15.3.4",
+    "react-scripts": "5.0.1",
+    "sass": "^1.54.0"
   },
   "browserslist": {
     "production": [

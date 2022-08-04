@@ -24,6 +24,9 @@ import './Login.scss';
 import LoginUserForm from '../LoginUserForm/LoginUserForm';
 import LoginMfaForm from '../LoginMfaForm/LoginMfaForm';
 
+import {LoginRequired} from "@nike/aegis-auth-react";
+import client from "../../modules/AegisAuthClient";
+
 class LoginForm extends Component {
     static propTypes = {
         dispatch: PropTypes.func.isRequired,
@@ -43,7 +46,9 @@ class LoginForm extends Component {
                         <div id='logo-container'>
                             <div className='cerberus-logo'></div>
                         </div>
+                      <LoginRequired client={client}>
                         <h1 className='ncss-brand'>CERBERUS MANAGEMENT DASHBOARD</h1>
+                      </LoginRequired>
 
                     </header>
                     {isSessionExpired &&
@@ -59,9 +64,6 @@ class LoginForm extends Component {
         );
     }
 }
-
-
-
 
 const mapStateToProps = state => ({
     isSessionExpired: state.auth.isSessionExpired,
