@@ -43,7 +43,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:6.4.1.1"
+    classpath "org.owasp:dependency-check-gradle:7.1.1"
     classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
   }
 }
@@ -229,6 +229,8 @@ configurations {
 
 dependencies {
   antJUnit 'org.apache.ant:ant-junit:1.10.12'
+  runtimeOnly 'org.apache.ant:ant-antlr:1.10.12'
+
 }
 
 // Compile all the test results into a single one.
