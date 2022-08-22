@@ -21,7 +21,7 @@ buildscript {
     versions = [
       lombok: '1.18.24',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.279',
+      awsSdkVersion: '1.12.286',
       kork: '7.137.0',
       guava: '31.0.1-jre',
       springBoot: '2.7.3',
@@ -169,7 +169,7 @@ subprojects {
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.12'
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
