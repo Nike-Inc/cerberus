@@ -26,7 +26,7 @@ buildscript {
       guava: '31.0.1-jre',
       springBoot: '2.7.3',
       jjwt: '0.11.5',
-      okta: '3.1.0',
+      okta: '8.2.1',
       oktaAuthnSdk: '2.0.7'
     ]
   }
