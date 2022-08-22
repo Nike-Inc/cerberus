@@ -19,13 +19,13 @@ import com.github.spotbugs.snom.SpotBugsReport
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.22',
+      lombok: '1.18.24',
       resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.210',
+      awsSdkVersion: '1.12.279',
       kork: '7.137.0',
       guava: '31.0.1-jre',
-      springBoot: '2.7.0',
-      jjwt: '0.11.2',
+      springBoot: '2.7.3',
+      jjwt: '0.11.5',
       okta: '3.1.0',
       oktaAuthnSdk: '2.0.7'
     ]
@@ -49,7 +49,7 @@ buildscript {
 }
 
 plugins {
-  id "io.spring.dependency-management" version "1.0.11.RELEASE"
+  id "io.spring.dependency-management" version "1.0.13.RELEASE"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.14"
   id "com.github.spotbugs" version "4.7.9"
   id "com.diffplug.spotless" version "5.17.1"
@@ -72,7 +72,7 @@ allprojects {
   }
 
   dependencies {
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
   }
 
   spotbugs {
@@ -169,7 +169,7 @@ subprojects {
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.12'
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
