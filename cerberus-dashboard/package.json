@@ -33,7 +33,7 @@
     "connected-react-router": "^6.9.3",
     "downloadjs": "1.4.7",
     "history": "^4.10.1",
-    "html-react-parser": "^1.4.11",
+    "html-react-parser": "^3.0.4",
     "humps": "2.0.1",
     "loglevel": "1.8.0",
     "prop-types": "^15.8.1",
