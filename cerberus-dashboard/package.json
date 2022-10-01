@@ -59,7 +59,7 @@
     "sass": "^1.54.0",
     "@cypress/skip-test": "^2.6.1",
     "cypress": "~10.3.1",
-    "npm-check-updates": "~15.3.4"
+    "npm-check-updates": "~16.3.4"
   },
   "browserslist": {
     "production": [
