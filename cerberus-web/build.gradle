@@ -88,7 +88,7 @@ dependencies {
   integrationTestImplementation sourceSets.test.output
   integrationTestCompileOnly 'org.projectlombok:lombok'
   integrationTestAnnotationProcessor 'org.projectlombok:lombok'
-  integrationTestImplementation 'io.rest-assured:rest-assured-all:4.4.0'
+  integrationTestImplementation 'io.rest-assured:rest-assured-all:5.2.0'
 }
 configurations{
   integrationTestImplementation.extendsFrom(testImplementation)
