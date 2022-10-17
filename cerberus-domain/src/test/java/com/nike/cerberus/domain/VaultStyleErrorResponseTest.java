@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.domain;
 
-import static groovy.util.GroovyTestCase.assertEquals;
+import static groovy.test.GroovyTestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 import java.util.Set;
