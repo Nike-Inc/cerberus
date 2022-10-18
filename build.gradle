@@ -24,7 +24,7 @@ buildscript {
       awsSdkVersion: '1.12.321',
       kork: '7.149.0',
       guava: '31.0.1-jre',
-      springBoot: '2.7.3',
+      springBoot: '2.7.4',
       jjwt: '0.11.5',
       okta: '3.1.0',
       oktaAuthnSdk: '2.0.7',
