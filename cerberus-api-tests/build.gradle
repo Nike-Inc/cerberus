@@ -32,7 +32,7 @@ dependencies {
   implementation project(':cerberus-core').sourceSets.test.output
   implementation group: 'org.testng', name: 'testng', version: '7.5'
   implementation 'junit:junit:4.13.2'
-  implementation 'org.slf4j:slf4j-api:1.7.36'
+  implementation 'org.slf4j:slf4j-api:2.0.3'
   implementation group: 'org.apache.groovy', name: 'groovy-all', version: versions.groovy
   implementation "io.rest-assured:rest-assured:${versions.restAssured}"
   implementation group: 'io.rest-assured', name: 'json-schema-validator', version: versions.restAssured
