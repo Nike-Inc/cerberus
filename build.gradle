@@ -170,7 +170,7 @@ subprojects {
     annotationProcessor "org.projectlombok:lombok:${versions.lombok}"
 
     // common test deps
-    testImplementation "org.apache.groovy:groovy-all:4.0.6" //${versions.groovy}"
+    testImplementation "org.apache.groovy:groovy-all:${versions.groovy}"
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
