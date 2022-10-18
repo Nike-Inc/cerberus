@@ -37,7 +37,7 @@ dependencies {
   // Find bugs annotations
   api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
 
-  api group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
+  api group: 'com.google.guava', name: 'guava', version: '31.1-jre'
 }
 
 configurations.all {
