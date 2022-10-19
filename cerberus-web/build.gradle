@@ -46,7 +46,7 @@ dependencies {
   implementation 'org.mybatis:mybatis-spring:2.0.7'
   implementation 'org.mybatis:mybatis:3.5.10'
   implementation 'com.mchange:c3p0:0.9.5.5'
-  implementation 'mysql:mysql-connector-java:8.0.29'
+  implementation 'mysql:mysql-connector-java:8.0.31'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
@@ -81,7 +81,7 @@ dependencies {
   // test deps
   testImplementation("org.springframework.boot:spring-boot-starter-test:${versions.springBoot}")
   testImplementation "commons-io:commons-io:2.11.0"
-  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.13.0"
+  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.15.0"
 
   // Integration Test Deps
   integrationTestImplementation sourceSets.main.output
