@@ -449,7 +449,9 @@ public class SecureDataService {
     return secureDataDao.getSumTopLevelKeyValuePairs();
   }
 
-  /** @return True if the secret has ever been updated, false if it has not. */
+  /**
+   * @return True if the secret has ever been updated, false if it has not.
+   */
   boolean secureDataHasBeenUpdated(SecureDataRecord secureDataRecord) {
     boolean createdBySameAsUpdatedBy =
         secureDataRecord.getCreatedBy().equals(secureDataRecord.getLastUpdatedBy());

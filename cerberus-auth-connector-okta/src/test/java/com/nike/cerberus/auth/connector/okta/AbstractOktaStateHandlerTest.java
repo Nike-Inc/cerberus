@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
-import static groovy.util.GroovyTestCase.assertEquals;
+import static groovy.test.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;

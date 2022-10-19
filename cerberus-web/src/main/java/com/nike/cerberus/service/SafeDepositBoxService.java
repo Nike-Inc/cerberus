@@ -779,7 +779,9 @@ public class SafeDepositBoxService {
     return safeDepositBoxV2;
   }
 
-  /** @return The total number of safe deposit boxes. */
+  /**
+   * @return The total number of safe deposit boxes.
+   */
   public int getTotalNumberOfSafeDepositBoxes() {
     return safeDepositBoxDao.getSafeDepositBoxCount();
   }
