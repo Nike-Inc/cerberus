@@ -159,10 +159,9 @@ export function downloadSecureFileVersion(path, versionId, token) {
         return axios(request)
             .then((response) => {
                 let reader = new window.FileReader();
-                reader.readAsText(response.data);
+                reader.readAsArrayBuffer(response.data);
                 reader.onload = function () {
-                    let pathParts = path.split('/');
-                    downloadjs(reader.result, pathParts[pathParts.length - 1]);
+                    downloadjs(reader.result, path.split('/').slice(-1));
                 };
                 // dispatch(updateVersionedSecureDataForPath(versionId, new Uint8Array(response.data), 'FILE'))
             })
