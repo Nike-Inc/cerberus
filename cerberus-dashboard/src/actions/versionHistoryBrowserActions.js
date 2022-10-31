@@ -143,7 +143,6 @@ export function downloadSecureFileVersion(path, versionId, token) {
         url: `/v1/secure-file/${path}`,
         headers: {
             'X-Cerberus-Token': token,
-            'Accept': 'application/octet-stream'
         },
         responseType: 'blob',
         timeout: 60 * 1000 // 1 minute
@@ -161,7 +160,8 @@ export function downloadSecureFileVersion(path, versionId, token) {
                 let reader = new window.FileReader();
                 reader.readAsArrayBuffer(response.data);
                 reader.onload = function () {
-                    downloadjs(reader.result, path.split('/').slice(-1));
+                    let pathParts = path.split('/');
+                    downloadjs(reader.result, pathParts[pathParts.length - 1]);
                 };
                 // dispatch(updateVersionedSecureDataForPath(versionId, new Uint8Array(response.data), 'FILE'))
             })
