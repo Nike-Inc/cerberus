@@ -22,7 +22,7 @@ buildscript {
       lombok: '1.18.24',
       resilience4j: '1.7.1',
       awsSdkVersion: '1.12.323',
-      kork: '7.149.0',
+      kork: '7.150.0',
       guava: '31.1-jre',
       springBoot: '2.7.4',
       jjwt: '0.11.5',
