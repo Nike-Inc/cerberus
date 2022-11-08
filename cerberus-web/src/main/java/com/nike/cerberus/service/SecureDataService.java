@@ -168,7 +168,7 @@ public class SecureDataService {
           secureData.getEncryptedBlob(),
           SecureDataVersionRecord.SecretsAction.UPDATE,
           SecureDataType.FILE,
-          sizeInBytes,
+          secureData.getSizeInBytes(),
           secureData.getLastUpdatedBy(),
           secureData.getLastUpdatedTs(),
           principal,
