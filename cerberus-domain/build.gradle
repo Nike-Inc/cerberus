@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+repositories {
+  mavenCentral()
+}
+
 dependencies {
   api group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
   api group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.4.Final'
@@ -22,5 +26,7 @@ dependencies {
   api group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
   api group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
 
+  integrationTestCompile "org.apache.groovy:groovy-all:${versions.groovy}"
   testImplementation group: 'org.glassfish', name: 'javax.el', version: '3.0.0'
+
 }
