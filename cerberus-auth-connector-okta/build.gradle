@@ -18,8 +18,8 @@ dependencies {
   implementation project(":cerberus-core")
 
   // Okta
-  compile "com.okta.sdk:okta-sdk-api:${versions.okta}"
-  runtime "com.okta.sdk:okta-sdk-impl:${versions.okta}"
+  compileOnly "com.okta.sdk:okta-sdk-api:${versions.okta}"
+  implementation "com.okta.sdk:okta-sdk-impl:${versions.okta}"
   implementation "com.okta.authn.sdk:okta-authn-sdk-api:${versions.oktaAuthnSdk}"
   implementation "com.okta.sdk:okta-sdk-httpclient:${versions.okta}"
   implementation "com.okta.authn.sdk:okta-authn-sdk-impl:${versions.oktaAuthnSdk}"

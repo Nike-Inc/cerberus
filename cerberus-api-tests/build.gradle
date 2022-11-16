@@ -20,7 +20,7 @@ apply plugin: 'groovy'
 apply plugin: 'java'
 
 repositories {
-  jcenter()
+  mavenCentral()
 }
 
 configurations.all {
@@ -29,29 +29,30 @@ configurations.all {
   }
 }
 dependencies {
-  implementation project(':cerberus-core').sourceSets.test.output
-  implementation group: 'org.testng', name: 'testng', version: '7.5'
-  implementation 'junit:junit:4.13.2'
-  implementation 'org.slf4j:slf4j-api:1.7.36'
-  implementation group: 'org.apache.groovy', name: 'groovy-all', version: versions.groovy
-  implementation "io.rest-assured:rest-assured:${versions.restAssured}"
-  implementation group: 'io.rest-assured', name: 'json-schema-validator', version: versions.restAssured
-  implementation group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
-  implementation group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
-  implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-  implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
-  implementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
-  implementation "com.google.guava:guava:${versions.guava}"
-  implementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
-  implementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: "${versions.awsSdkVersion}"
-  implementation group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-  implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
-  implementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
+  integrationTestCompileClasspath project(':cerberus-core').sourceSets.test.output
+  integrationTestCompileClasspath group: 'org.testng', name: 'testng', version: '7.5'
+  integrationTestCompileClasspath 'junit:junit:4.13.2'
+  integrationTestCompileClasspath 'org.slf4j:slf4j-api:1.7.36'
+  integrationTestCompileClasspath group: 'org.apache.groovy', name: 'groovy-all', version: versions.groovy
+  integrationTestCompileClasspath "io.rest-assured:rest-assured:${versions.restAssured}"
+  integrationTestCompileClasspath group: 'io.rest-assured', name: 'json-schema-validator', version: versions.restAssured
+  integrationTestCompileClasspath group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
+  integrationTestCompileClasspath group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
+  integrationTestCompileClasspath group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+  integrationTestCompileClasspath group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
+  integrationTestCompileClasspath group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+  integrationTestCompileClasspath "com.google.guava:guava:${versions.guava}"
+  integrationTestCompileClasspath group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
+  integrationTestCompileClasspath group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: "${versions.awsSdkVersion}"
+  integrationTestCompileClasspath group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
+  integrationTestCompileClasspath group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+  integrationTestCompileClasspath group: 'com.thedeanda', name: 'lorem', version: '2.1'
+  integrationTestCompileClasspath "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+  integrationTestCompileClasspath "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+  integrationTestCompileClasspath "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
+  integrationTestCompileClasspath "org.glassfish.jaxb:jaxb-runtime:3.0.2"
+  integrationTestCompileClasspath group: 'com.thedeanda', name: 'lorem', version: '2.1'
+  integrationTestCompileClasspath "org.apache.groovy:groovy-all:4.0.6"
 }
 
 integrationTest {
