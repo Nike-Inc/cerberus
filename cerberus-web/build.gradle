@@ -44,7 +44,7 @@ dependencies {
   // DB: Mybatis, Flyway, C3p0
   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
   implementation 'org.mybatis:mybatis-spring:2.0.7'
-  implementation 'org.mybatis:mybatis:3.5.10'
+  implementation 'org.mybatis:mybatis:3.5.11'
   implementation 'com.mchange:c3p0:0.9.5.5'
   implementation 'mysql:mysql-connector-java:8.0.31'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
@@ -66,7 +66,7 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
-  implementation 'com.amazonaws:aws-encryption-sdk-java:1.9.1'
+  implementation 'com.amazonaws:aws-encryption-sdk-java:2.4.0'
 
 
   // JWT

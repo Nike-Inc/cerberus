@@ -24,10 +24,7 @@ import com.amazonaws.regions.Region;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.util.CiphertextUtils;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -260,10 +257,9 @@ public class EncryptionService {
    */
   public static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(
       List<String> cmkArns, Region currentRegion) {
-    List<MasterKeyProvider<KmsMasterKey>> providers =
-        getSortedArnListByCurrentRegion(cmkArns, currentRegion).stream()
-            .map(KmsMasterKeyProvider::new)
-            .collect(Collectors.toList());
+    List<MasterKeyProvider<KmsMasterKey>> providers = new ArrayList();
+    List<String> arnList = getSortedArnListByCurrentRegion(cmkArns, currentRegion);
+    providers.add(KmsMasterKeyProvider.builder().buildStrict(arnList));
     return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
   }
 
