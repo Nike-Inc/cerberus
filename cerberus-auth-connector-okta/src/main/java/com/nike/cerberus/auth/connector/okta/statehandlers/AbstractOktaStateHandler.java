@@ -160,6 +160,16 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
   }
 
   /**
+   * Determines whether a trigger is required for a provided MFA factor
+   *
+   * @param factor Okta MFA factor
+   * @return boolean trigger required
+   */
+  public boolean shouldSkip(Factor factor) {
+    return isPush(factor) || isFido(factor);
+  }
+
+  /**
    * Ensure the user has at least one active MFA device set up
    *
    * @param factors - List of user factors
