@@ -58,6 +58,22 @@ public class InitialLoginStateHandlerTest {
         new InitialLoginStateHandler(client, authenticationResponseFuture) {};
   }
 
+  static DefaultFactor getDefaultFactor(
+      FactorProvider provider, FactorType type, String vendorName, String status) {
+
+    DefaultFactor factor = mock(DefaultFactor.class);
+
+    String id = "id";
+    String deviceId = "device id";
+
+    when(factor.getType()).thenReturn(type);
+    when(factor.getProvider()).thenReturn(provider);
+    when(factor.getStatus()).thenReturn(status);
+    when(factor.getId()).thenReturn(deviceId);
+    when(factor.getVendorName()).thenReturn(vendorName);
+    return factor;
+  }
+
   /////////////////////////
   // Test Methods
   /////////////////////////
@@ -81,13 +97,8 @@ public class InitialLoginStateHandlerTest {
     when(user.getLogin()).thenReturn(email);
     when(expectedResponse.getUser()).thenReturn(user);
 
-    DefaultFactor factor = mock(DefaultFactor.class);
+    DefaultFactor factor = getDefaultFactor(provider, type, "okta", status);
 
-    when(factor.getType()).thenReturn(type);
-    when(factor.getProvider()).thenReturn(provider);
-    when(factor.getStatus()).thenReturn(status);
-    when(factor.getId()).thenReturn(deviceId);
-    when(factor.getVendorName()).thenReturn("OKTA");
     when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
     // do the call
@@ -120,15 +131,8 @@ public class InitialLoginStateHandlerTest {
     when(user.getLogin()).thenReturn(email);
     when(expectedResponse.getUser()).thenReturn(user);
 
-    DefaultFactor factor = mock(DefaultFactor.class);
-
-    when(factor.getType()).thenReturn(type);
-    when(factor.getProvider()).thenReturn(provider);
-    when(factor.getStatus()).thenReturn(status);
-    when(factor.getId()).thenReturn(deviceId);
-    when(factor.getVendorName()).thenReturn("OKTA");
+    DefaultFactor factor = getDefaultFactor(provider, type, "okta", status);
     when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
-
     // do the call
     initialLoginStateHandler.handleMfaEnroll(expectedResponse);
 

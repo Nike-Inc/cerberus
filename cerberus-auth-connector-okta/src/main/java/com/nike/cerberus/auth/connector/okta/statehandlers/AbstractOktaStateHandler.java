@@ -139,7 +139,7 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
    * Determines whether the factor is a FIDO type, which the okta.auth.sdk cannot handle
    *
    * @param factor Okta MFA factor
-   * @return boolean trigger required
+   * @return boolean - true if factor is a FIDO type
    */
   public boolean isFido(Factor factor) {
     return factor.getVendorName().equals("FIDO");
@@ -160,13 +160,34 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
   }
 
   /**
-   * Determines whether a trigger is required for a provided MFA factor
+   * Determines whether a factor is not setup
    *
    * @param factor Okta MFA factor
-   * @return boolean trigger required
+   * @return boolean - true if factor is not setup
    */
-  public boolean shouldSkip(Factor factor) {
-    return isPush(factor) || isFido(factor);
+  public boolean isNotSetup(Factor factor) {
+    return StringUtils.equals(factor.getStatus(), MFA_FACTOR_NOT_SETUP_STATUS);
+  }
+
+  /**
+   * Determines whether a factor is unusable
+   *
+   * @param factor Okta MFA factor
+   * @return boolean - true if factor is unusable
+   */
+  public boolean isUnusable(Factor factor) {
+    return isNotSetup(factor) || isPush(factor) || isFido(factor);
+  }
+
+  /**
+   * Removes unusable factors for a list of factors
+   *
+   * @param factors List of Okta MFA factors
+   */
+  public void removeUnusableFactors(List<Factor> factors) {
+    if (factors != null) {
+      factors.removeIf(this::isUnusable);
+    }
   }
 
   /**
@@ -175,16 +196,14 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
    * @param factors - List of user factors
    */
   public void validateUserFactors(final List<Factor> factors) {
+    removeUnusableFactors(factors);
 
-    if (factors == null
-        || factors.isEmpty()
-        || factors.stream()
-            .allMatch(
-                factor -> StringUtils.equals(factor.getStatus(), MFA_FACTOR_NOT_SETUP_STATUS))) {
+    if (factors == null || factors.isEmpty()) {
 
       throw ApiException.newBuilder()
           .withApiErrors(DefaultApiError.MFA_SETUP_REQUIRED)
-          .withExceptionMessage("MFA is required, but user has not set up any devices in Okta.")
+          .withExceptionMessage(
+              "MFA is required, but user has not set up any usable devices in Okta.")
           .build();
     }
   }

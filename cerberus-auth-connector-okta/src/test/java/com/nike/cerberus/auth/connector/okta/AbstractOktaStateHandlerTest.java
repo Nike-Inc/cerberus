@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.auth.connector.okta;
 
+import static com.nike.cerberus.auth.connector.okta.InitialLoginStateHandlerTest.getDefaultFactor;
 import static groovy.test.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -161,12 +162,16 @@ public class AbstractOktaStateHandlerTest {
 
   @Test
   public void validateUserFactorsSuccess() {
+    FactorProvider provider = FactorProvider.OKTA;
+    FactorType type = FactorType.TOKEN_SOFTWARE_TOTP;
+    String deviceId = "device id";
+    String notSetupStatus = AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS;
 
-    DefaultFactor factor1 = mock(DefaultFactor.class);
-    when(factor1.getStatus()).thenReturn(AbstractOktaStateHandler.MFA_FACTOR_NOT_SETUP_STATUS);
-    DefaultFactor factor2 = mock(DefaultFactor.class);
+    DefaultFactor unsetupFactor = getDefaultFactor(provider, type, "okta", notSetupStatus);
+    DefaultFactor usableFactor = getDefaultFactor(provider, type, "okta", "ok");
 
-    this.abstractOktaStateHandler.validateUserFactors(Lists.newArrayList(factor1, factor2));
+    this.abstractOktaStateHandler.validateUserFactors(
+        Lists.newArrayList(unsetupFactor, usableFactor));
   }
 
   @Test(expected = ApiException.class)
