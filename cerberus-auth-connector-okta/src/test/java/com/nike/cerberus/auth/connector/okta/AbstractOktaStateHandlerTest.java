@@ -18,6 +18,8 @@ package com.nike.cerberus.auth.connector.okta;
 
 import static groovy.test.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -294,5 +296,6 @@ public class AbstractOktaStateHandlerTest {
 
     Assert.assertTrue(abstractOktaStateHandler.isFido(fidoFactor));
     Assert.assertTrue(abstractOktaStateHandler.shouldSkip(fidoFactor));
+    verify(fidoFactor, times(0)).getProvider();
   }
 }

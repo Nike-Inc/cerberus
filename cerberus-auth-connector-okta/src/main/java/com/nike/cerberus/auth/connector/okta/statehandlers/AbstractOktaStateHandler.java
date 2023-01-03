@@ -166,7 +166,7 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
    * @return boolean trigger required
    */
   public boolean shouldSkip(Factor factor) {
-    return isPush(factor) || isFido(factor);
+    return isFido(factor) || isPush(factor);
   }
 
   /**
