@@ -58,7 +58,7 @@
     "react-scripts": "^5.0.1",
     "sass": "^1.57.1",
     "@cypress/skip-test": "^2.6.1",
-    "cypress": "~10.11.0",
+    "cypress": "~12.2.0",
     "npm-check-updates": "~15.3.4"
   },
   "browserslist": {
