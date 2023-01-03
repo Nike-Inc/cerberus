@@ -19,6 +19,7 @@ package com.nike.cerberus.config;
 import static com.nike.cerberus.service.EncryptionService.initializeKeyProvider;
 
 import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CommitmentPolicy;
 import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
@@ -242,7 +243,9 @@ public class ApplicationConfiguration {
 
   @Bean
   public AwsCrypto awsCrypto() {
-    return new AwsCrypto();
+    return AwsCrypto.builder()
+        .withCommitmentPolicy(CommitmentPolicy.ForbidEncryptAllowDecrypt)
+        .build();
   }
 
   /** TODO, we can probably delete this, but the API tests from Highlander check for this. */
