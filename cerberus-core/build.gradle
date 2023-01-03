@@ -32,7 +32,7 @@ dependencies {
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
   api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  api "org.glassfish.jaxb:jaxb-runtime:3.0.2"
+  api "org.glassfish.jaxb:jaxb-runtime:4.0.1"
 
   // Find bugs annotations
   api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'

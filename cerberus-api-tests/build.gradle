@@ -39,7 +39,7 @@ dependencies {
   integrationTestImplementation group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
   integrationTestImplementation group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
   integrationTestImplementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-  integrationTestImplementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
+  integrationTestImplementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.1'
   integrationTestImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
   integrationTestImplementation "com.google.guava:guava:${versions.guava}"
   integrationTestImplementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
