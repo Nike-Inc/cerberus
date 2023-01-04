@@ -16,7 +16,11 @@
 
 package com.nike.cerberus.service;
 
-import com.amazonaws.encryptionsdk.*;
+import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.DefaultCryptoMaterialsManager;
+import com.amazonaws.encryptionsdk.MasterKeyProvider;
+import com.amazonaws.encryptionsdk.ParsedCiphertext;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
 import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
@@ -24,6 +28,7 @@ import com.amazonaws.regions.Region;
 import com.google.common.collect.Lists;
 import com.nike.cerberus.util.CiphertextUtils;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -260,10 +265,9 @@ public class EncryptionService {
    */
   public static MasterKeyProvider<KmsMasterKey> initializeKeyProvider(
       List<String> cmkArns, Region currentRegion) {
-    List<MasterKeyProvider<KmsMasterKey>> providers =
-        getSortedArnListByCurrentRegion(cmkArns, currentRegion).stream()
-            .map(KmsMasterKeyProvider::new)
-            .collect(Collectors.toList());
+    List<MasterKeyProvider<KmsMasterKey>> providers = new ArrayList();
+    List<String> arnList = getSortedArnListByCurrentRegion(cmkArns, currentRegion);
+    providers.add(KmsMasterKeyProvider.builder().buildStrict(arnList));
     return (MasterKeyProvider<KmsMasterKey>) MultipleProviderFactory.buildMultiProvider(providers);
   }
 
