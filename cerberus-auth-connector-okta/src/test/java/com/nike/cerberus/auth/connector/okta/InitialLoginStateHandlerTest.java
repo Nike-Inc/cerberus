@@ -87,6 +87,7 @@ public class InitialLoginStateHandlerTest {
     when(factor.getProvider()).thenReturn(provider);
     when(factor.getStatus()).thenReturn(status);
     when(factor.getId()).thenReturn(deviceId);
+    when(factor.getVendorName()).thenReturn("OKTA");
     when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
     // do the call
@@ -125,6 +126,7 @@ public class InitialLoginStateHandlerTest {
     when(factor.getProvider()).thenReturn(provider);
     when(factor.getStatus()).thenReturn(status);
     when(factor.getId()).thenReturn(deviceId);
+    when(factor.getVendorName()).thenReturn("OKTA");
     when(expectedResponse.getFactors()).thenReturn(Lists.newArrayList(factor));
 
     // do the call

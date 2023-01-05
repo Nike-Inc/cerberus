@@ -18,6 +18,8 @@ package com.nike.cerberus.auth.connector.okta;
 
 import static groovy.test.GroovyTestCase.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -240,5 +242,60 @@ public class AbstractOktaStateHandlerTest {
     when(unknownResponse.getStatusString()).thenReturn(status);
 
     abstractOktaStateHandler.handleUnknown(unknownResponse);
+  }
+
+  @Test
+  public void testIsFido() {
+    DefaultFactor nonFidoFactor = mock(DefaultFactor.class);
+    when(nonFidoFactor.getVendorName()).thenReturn("Okta");
+    Assert.assertFalse(abstractOktaStateHandler.isFido(nonFidoFactor));
+
+    DefaultFactor fidoFactor = mock(DefaultFactor.class);
+    when(fidoFactor.getVendorName()).thenReturn("FIDO");
+    Assert.assertTrue(abstractOktaStateHandler.isFido(fidoFactor));
+  }
+
+  @Test
+  public void testIsPush() {
+    DefaultFactor nonPushFactor = mock(DefaultFactor.class);
+    when(nonPushFactor.getVendorName()).thenReturn("Okta");
+    when(nonPushFactor.getProvider()).thenReturn(FactorProvider.OKTA);
+    when(nonPushFactor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
+
+    Assert.assertFalse(abstractOktaStateHandler.isPush(nonPushFactor));
+
+    DefaultFactor pushFactor = mock(DefaultFactor.class);
+    when(pushFactor.getVendorName()).thenReturn("Okta");
+    when(pushFactor.getProvider()).thenReturn(FactorProvider.OKTA);
+    when(pushFactor.getType()).thenReturn(FactorType.PUSH);
+
+    Assert.assertTrue(abstractOktaStateHandler.isPush(pushFactor));
+  }
+
+  @Test
+  public void testShouldSkip() {
+    DefaultFactor nonSkipFactor = mock(DefaultFactor.class);
+    when(nonSkipFactor.getVendorName()).thenReturn("Okta");
+    when(nonSkipFactor.getProvider()).thenReturn(FactorProvider.OKTA);
+    when(nonSkipFactor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
+
+    Assert.assertFalse(abstractOktaStateHandler.shouldSkip(nonSkipFactor));
+
+    DefaultFactor pushFactor = mock(DefaultFactor.class);
+    when(pushFactor.getVendorName()).thenReturn("Okta");
+    when(pushFactor.getProvider()).thenReturn(FactorProvider.OKTA);
+    when(pushFactor.getType()).thenReturn(FactorType.PUSH);
+
+    Assert.assertTrue(abstractOktaStateHandler.isPush(pushFactor));
+    Assert.assertTrue(abstractOktaStateHandler.shouldSkip(pushFactor));
+
+    DefaultFactor fidoFactor = mock(DefaultFactor.class);
+    when(fidoFactor.getVendorName()).thenReturn("FIDO");
+    when(fidoFactor.getProvider()).thenReturn(FactorProvider.OKTA);
+    when(fidoFactor.getType()).thenReturn(FactorType.TOKEN_SOFTWARE_TOTP);
+
+    Assert.assertTrue(abstractOktaStateHandler.isFido(fidoFactor));
+    Assert.assertTrue(abstractOktaStateHandler.shouldSkip(fidoFactor));
+    verify(fidoFactor, times(0)).getProvider();
   }
 }

@@ -72,7 +72,7 @@ public class InitialLoginStateHandler extends AbstractOktaStateHandler {
 
     final List<Factor> factors = new ArrayList<>(mfaResponse.getFactors());
 
-    factors.removeIf(this::isPush);
+    factors.removeIf(this::shouldSkip);
 
     validateUserFactors(factors);
 

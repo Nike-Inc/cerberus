@@ -136,6 +136,16 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
   }
 
   /**
+   * Determines whether the factor is a FIDO type, which the okta.auth.sdk cannot handle
+   *
+   * @param factor Okta MFA factor
+   * @return boolean trigger required
+   */
+  public boolean isFido(Factor factor) {
+    return factor.getVendorName().equals("FIDO");
+  }
+
+  /**
    * Determines whether a trigger is required for a provided MFA factor
    *
    * @param factor Okta MFA factor
@@ -147,6 +157,16 @@ public abstract class AbstractOktaStateHandler extends AuthenticationStateHandle
     final FactorProvider provider = factor.getProvider();
 
     return (provider.equals(FactorProvider.OKTA) && type == FactorType.PUSH);
+  }
+
+  /**
+   * Determines whether a trigger is required for a provided MFA factor
+   *
+   * @param factor Okta MFA factor
+   * @return boolean trigger required
+   */
+  public boolean shouldSkip(Factor factor) {
+    return isFido(factor) || isPush(factor);
   }
 
   /**
