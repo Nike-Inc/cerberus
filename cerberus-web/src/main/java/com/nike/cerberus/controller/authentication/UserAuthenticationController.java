@@ -29,6 +29,7 @@ import com.nike.cerberus.event.filter.AuditLoggingFilterDetails;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.service.AuthenticationService;
 import java.nio.charset.Charset;
+import java.util.Locale;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -47,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v2/auth")
 public class UserAuthenticationController {
 
+  private static final String BEARER_AUTH_PREFIX = "bearer";
   private final AuthenticationService authenticationService;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
 
@@ -73,6 +75,31 @@ public class UserAuthenticationController {
 
     auditLoggingFilterDetails.setAction("Authenticated");
 
+    return authResponse;
+  }
+
+  @RequestMapping(value = "/token", method = GET)
+  public AuthResponse authenticateToken(
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+
+    if (authHeader == null || !authHeader.toLowerCase(Locale.ROOT).startsWith(BEARER_AUTH_PREFIX)) {
+      final String msg = "Wrong authentication header";
+      auditLoggingFilterDetails.setAction(msg);
+      throw ApiException.Builder.newBuilder()
+          .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
+          .withExceptionMessage(msg)
+          .build();
+    }
+
+    AuthResponse authResponse;
+    try {
+      final String jwtString = authHeader.replace(BEARER_AUTH_PREFIX, "").trim();
+      authResponse = authenticationService.authenticateJwtAccessToken(jwtString);
+      auditLoggingFilterDetails.setAction("Authenticated");
+    } catch (ApiException e) {
+      auditLoggingFilterDetails.setAction("Failed to authenticate");
+      throw e;
+    }
     return authResponse;
   }
 

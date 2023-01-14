@@ -58,6 +58,10 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.okta.jwt.AccessTokenVerifier;
+import com.okta.jwt.Jwt;
+import com.okta.jwt.JwtVerificationException;
+import com.okta.jwt.JwtVerifiers;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -92,12 +96,14 @@ public class AuthenticationService {
   private final KmsService kmsService;
   private final KmsClientFactory kmsClientFactory;
   private final ObjectMapper objectMapper;
-  private final String adminGroup;
+  private final List<String> adminGroups;
   private final DateTimeSupplier dateTimeSupplier;
   private final AwsIamRoleArnParser awsIamRoleArnParser;
   private final AuthTokenService authTokenService;
   private final String userTokenTTL;
   private final String iamTokenTTL;
+  private final String jwtIssuer;
+  private final String jwtAudience;
   private final AwsIamRoleService awsIamRoleService;
   private final int maxTokenRefreshCount;
   private final boolean cacheEnabled;
@@ -116,13 +122,15 @@ public class AuthenticationService {
       KmsClientFactory kmsClientFactory,
       ObjectMapper objectMapper,
       @Value("${cerberus.admin.roles:#{null}}") String adminRoleArns,
-      @Value("${cerberus.admin.group}") String adminGroup,
+      @Value("#{'${cerberus.admin.groups}'.split(',')}") List<String> adminGroups,
       @Value("${cerberus.auth.user.token.maxRefreshCount:#{0}}") int maxTokenRefreshCount,
       DateTimeSupplier dateTimeSupplier,
       AwsIamRoleArnParser awsIamRoleArnParser,
       AuthTokenService authTokenService,
       @Value("${cerberus.auth.user.token.ttl}") String userTokenTTL,
       @Value("${cerberus.auth.iam.token.ttl}") String iamTokenTTL,
+      @Value("${cerberus.auth.jwt.issuer}") String jwtIssuer,
+      @Value("${cerberus.auth.jwt.audience}") String jwtAudience,
       AwsIamRoleService awsIamRoleService,
       @Value("${cerberus.auth.iam.kms.cache.enabled:#{false}}") boolean cacheEnabled,
       Cache<AwsIamKmsAuthRequest, EncryptedAuthDataWrapper> kmsAuthCache) {
@@ -133,13 +141,15 @@ public class AuthenticationService {
     this.kmsClientFactory = kmsClientFactory;
     this.objectMapper = objectMapper;
     this.adminRoleArns = adminRoleArns;
-    this.adminGroup = adminGroup;
+    this.adminGroups = adminGroups;
     this.dateTimeSupplier = dateTimeSupplier;
     this.awsIamRoleArnParser = awsIamRoleArnParser;
     this.maxTokenRefreshCount = maxTokenRefreshCount;
     this.authTokenService = authTokenService;
     this.userTokenTTL = userTokenTTL;
     this.iamTokenTTL = iamTokenTTL;
+    this.jwtIssuer = jwtIssuer;
+    this.jwtAudience = jwtAudience;
     this.awsIamRoleService = awsIamRoleService;
     this.cacheEnabled = cacheEnabled;
     this.kmsAuthCache = kmsAuthCache;
@@ -170,6 +180,68 @@ public class AuthenticationService {
     }
 
     return authResponse;
+  }
+
+  /**
+   * Enables a user to authenticate with an okta access token and get back a token with any policies
+   * they are entitled to. If a MFA check is required, the details are contained within the auth
+   * response.
+   *
+   * @param jwtString String jwt access token
+   * @return The auth response
+   */
+  public AuthResponse authenticateJwtAccessToken(String jwtString) {
+
+    Jwt jwt = getValidJwt(jwtString);
+
+    Map<String, Object> claims = jwt.getClaims();
+    String username = (String) claims.get("sub");
+    String userId = (String) claims.get("uid");
+
+    final AuthData authData =
+        AuthData.builder().username(username).factorResult("SUCCESS").userId(userId).build();
+    final AuthResponse authResponse =
+        AuthResponse.builder().data(authData).status(AuthStatus.SUCCESS).build();
+
+    authResponse
+        .getData()
+        .setClientToken(
+            generateToken(username, authServiceConnector.getGroups(authResponse.getData()), 0));
+    return authResponse;
+  }
+
+  /**
+   * Attempts to create and validate JWT from a string
+   *
+   * @param jwtString String jwt access token
+   * @return The auth response
+   */
+  public Jwt getValidJwt(String jwtString) {
+    AccessTokenVerifier jwtVerifier =
+        JwtVerifiers.accessTokenVerifierBuilder()
+            .setIssuer(this.jwtIssuer)
+            .setAudience(this.jwtAudience)
+            .build();
+
+    try {
+      Jwt jwt = jwtVerifier.decode(jwtString);
+
+      Map<String, Object> claims = jwt.getClaims();
+      String username = claims.getOrDefault("sub", "").toString();
+      String userId = claims.getOrDefault("uid", "").toString();
+
+      if (username.isEmpty() || userId.isEmpty()) {
+        throw new JwtVerificationException("sub and uid claims are required");
+      }
+      return jwt;
+    } catch (JwtVerificationException jve) {
+      final String msg = "Failed to verify JWT access token";
+      throw ApiException.Builder.newBuilder()
+          .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
+          .withExceptionMessage(msg)
+          .withExceptionCause(jve)
+          .build();
+    }
   }
 
   /**
@@ -525,8 +597,11 @@ public class AuthenticationService {
     meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, username);
 
     boolean isAdmin = false;
-    if (userGroups.contains(this.adminGroup)) {
-      isAdmin = true;
+    for (String group : this.adminGroups) {
+      if (userGroups.contains(group)) {
+        isAdmin = true;
+        break;
+      }
     }
     meta.put(METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
     meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));

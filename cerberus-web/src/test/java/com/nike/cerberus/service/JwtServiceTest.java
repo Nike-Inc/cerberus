@@ -36,7 +36,7 @@ public class JwtServiceTest {
   @Before
   public void setUp() throws Exception {
     initMocks(this);
-    jwtService = new JwtService(signingKeyResolver, "local", jwtBlocklistDao);
+    jwtService = new JwtService(signingKeyResolver, "local", jwtBlocklistDao, "iss", "aud");
     ReflectionTestUtils.setField(jwtService, "maxTokenLength", 1600);
     cerberusJwtKeySpec = new CerberusJwtKeySpec(new byte[64], "HmacSHA512", "key id");
     cerberusJwtClaims = new CerberusJwtClaims();
