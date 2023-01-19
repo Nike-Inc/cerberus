@@ -57,9 +57,11 @@ cerberus:
   environmentName: TODO
   admin:
     # These are aws principal that you want to allow to use the admin API
+    # comma-separated string
     roles: ~
-    # The user group that the Cerberus operators belong to, this unlocks admin API perms
-    group: ~
+    # The user groups that the Cerberus operators belong to, this unlocks admin API perms
+    # comma-separated string
+    groups: ~
 
   encryption:
     # comma delimited list of the CMKs for a KMS key that the iam role that Cerberus runs as has access to.
