@@ -58,10 +58,6 @@ import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.CustomApiError;
 import com.nike.cerberus.util.DateTimeSupplier;
-import com.okta.jwt.AccessTokenVerifier;
-import com.okta.jwt.Jwt;
-import com.okta.jwt.JwtVerificationException;
-import com.okta.jwt.JwtVerifiers;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -102,8 +98,6 @@ public class AuthenticationService {
   private final AuthTokenService authTokenService;
   private final String userTokenTTL;
   private final String iamTokenTTL;
-  private final String jwtIssuer;
-  private final String jwtAudience;
   private final AwsIamRoleService awsIamRoleService;
   private final int maxTokenRefreshCount;
   private final boolean cacheEnabled;
@@ -129,8 +123,6 @@ public class AuthenticationService {
       AuthTokenService authTokenService,
       @Value("${cerberus.auth.user.token.ttl}") String userTokenTTL,
       @Value("${cerberus.auth.iam.token.ttl}") String iamTokenTTL,
-      @Value("${cerberus.auth.jwt.issuer}") String jwtIssuer,
-      @Value("${cerberus.auth.jwt.audience}") String jwtAudience,
       AwsIamRoleService awsIamRoleService,
       @Value("${cerberus.auth.iam.kms.cache.enabled:#{false}}") boolean cacheEnabled,
       Cache<AwsIamKmsAuthRequest, EncryptedAuthDataWrapper> kmsAuthCache) {
@@ -148,8 +140,6 @@ public class AuthenticationService {
     this.authTokenService = authTokenService;
     this.userTokenTTL = userTokenTTL;
     this.iamTokenTTL = iamTokenTTL;
-    this.jwtIssuer = jwtIssuer;
-    this.jwtAudience = jwtAudience;
     this.awsIamRoleService = awsIamRoleService;
     this.cacheEnabled = cacheEnabled;
     this.kmsAuthCache = kmsAuthCache;
@@ -183,65 +173,29 @@ public class AuthenticationService {
   }
 
   /**
-   * Enables a user to authenticate with an okta access token and get back a token with any policies
-   * they are entitled to. If a MFA check is required, the details are contained within the auth
-   * response.
+   * Attempt to exchange an access token from an IdP for a Cerberus token based on their groups
    *
    * @param jwtString String jwt access token
    * @return The auth response
    */
-  public AuthResponse authenticateJwtAccessToken(String jwtString) {
+  public AuthResponse exchangeJwtAccessToken(String jwtString) {
 
-    Jwt jwt = getValidJwt(jwtString);
+    final Map<String, String> claims =
+        this.authServiceConnector.getValidatedUserPrincipal(jwtString);
 
-    Map<String, Object> claims = jwt.getClaims();
-    String username = (String) claims.get("sub");
-    String userId = (String) claims.get("uid");
+    final String username = claims.get("username");
+    final String userId = claims.get("userId");
 
     final AuthData authData =
         AuthData.builder().username(username).factorResult("SUCCESS").userId(userId).build();
+
+    final Set<String> groups = this.authServiceConnector.getGroups(authData);
+    AuthTokenResponse token = this.generateToken(username, groups, 0);
+    authData.setClientToken(token);
+
     final AuthResponse authResponse =
         AuthResponse.builder().data(authData).status(AuthStatus.SUCCESS).build();
-
-    authResponse
-        .getData()
-        .setClientToken(
-            generateToken(username, authServiceConnector.getGroups(authResponse.getData()), 0));
     return authResponse;
-  }
-
-  /**
-   * Attempts to create and validate JWT from a string
-   *
-   * @param jwtString String jwt access token
-   * @return The auth response
-   */
-  public Jwt getValidJwt(String jwtString) {
-    AccessTokenVerifier jwtVerifier =
-        JwtVerifiers.accessTokenVerifierBuilder()
-            .setIssuer(this.jwtIssuer)
-            .setAudience(this.jwtAudience)
-            .build();
-
-    try {
-      Jwt jwt = jwtVerifier.decode(jwtString);
-
-      Map<String, Object> claims = jwt.getClaims();
-      String username = claims.getOrDefault("sub", "").toString();
-      String userId = claims.getOrDefault("uid", "").toString();
-
-      if (username.isEmpty() || userId.isEmpty()) {
-        throw new JwtVerificationException("sub and uid claims are required");
-      }
-      return jwt;
-    } catch (JwtVerificationException jve) {
-      final String msg = "Failed to verify JWT access token";
-      throw ApiException.Builder.newBuilder()
-          .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
-          .withExceptionMessage(msg)
-          .withExceptionCause(jve)
-          .build();
-    }
   }
 
   /**
@@ -597,6 +551,7 @@ public class AuthenticationService {
     meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, username);
 
     boolean isAdmin = false;
+
     for (String group : this.adminGroups) {
       if (userGroups.contains(group)) {
         isAdmin = true;

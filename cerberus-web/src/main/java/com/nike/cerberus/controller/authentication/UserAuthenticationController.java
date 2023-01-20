@@ -78,8 +78,8 @@ public class UserAuthenticationController {
     return authResponse;
   }
 
-  @RequestMapping(value = "/token", method = GET)
-  public AuthResponse authenticateToken(
+  @RequestMapping(value = "/exchange", method = GET)
+  public AuthResponse exchangeToken(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
 
     if (authHeader == null || !authHeader.toLowerCase(Locale.ROOT).startsWith(BEARER_AUTH_PREFIX)) {
@@ -94,7 +94,7 @@ public class UserAuthenticationController {
     AuthResponse authResponse;
     try {
       final String jwtString = authHeader.replace(BEARER_AUTH_PREFIX, "").trim();
-      authResponse = authenticationService.authenticateJwtAccessToken(jwtString);
+      authResponse = this.authenticationService.exchangeJwtAccessToken(jwtString);
       auditLoggingFilterDetails.setAction("Authenticated");
     } catch (ApiException e) {
       auditLoggingFilterDetails.setAction("Failed to authenticate");

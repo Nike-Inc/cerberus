@@ -19,6 +19,7 @@ package com.nike.cerberus.auth.connector.okta;
 import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
@@ -30,16 +31,22 @@ import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.FactorValidationException;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
+import com.okta.jwt.AccessTokenVerifier;
+import com.okta.jwt.Jwt;
+import com.okta.jwt.JwtVerificationException;
+import com.okta.jwt.JwtVerifiers;
 import com.okta.sdk.authc.credentials.TokenClientCredentials;
 import com.okta.sdk.client.Client;
 import com.okta.sdk.client.Clients;
 import com.okta.sdk.resource.group.GroupList;
 import com.okta.sdk.resource.user.User;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /** Okta version 1 API implementation of the AuthConnector interface. */
@@ -50,18 +57,36 @@ public class OktaAuthConnector implements AuthConnector {
 
   private final Client sdkClient;
 
+  private final String jwtIssuer;
+
+  private final String jwtAudience;
+
+  protected AccessTokenVerifier jwtVerifier;
+
   @Autowired
   public OktaAuthConnector(
       AuthenticationClient oktaAuthenticationClient,
-      OktaConfigurationProperties oktaConfigurationProperties) {
+      OktaConfigurationProperties oktaConfigurationProperties,
+      @Value("${cerberus.auth.jwt.issuer}") String jwtIssuer,
+      @Value("${cerberus.auth.jwt.audience}") String jwtAudience) {
     this.oktaAuthenticationClient = oktaAuthenticationClient;
     this.sdkClient = getSdkClient(oktaConfigurationProperties);
+    this.jwtIssuer = jwtIssuer;
+    this.jwtAudience = jwtAudience;
   }
 
   /** Alternate constructor to facilitate unit testing */
-  public OktaAuthConnector(AuthenticationClient oktaAuthenticationClient, Client sdkClient) {
+  public OktaAuthConnector(
+      AuthenticationClient oktaAuthenticationClient,
+      Client sdkClient,
+      String jwtIssuer,
+      String jwtAudience,
+      AccessTokenVerifier jwtVerifier) {
     this.oktaAuthenticationClient = oktaAuthenticationClient;
     this.sdkClient = sdkClient;
+    this.jwtIssuer = jwtIssuer;
+    this.jwtAudience = jwtAudience;
+    this.jwtVerifier = jwtVerifier;
   }
 
   private Client getSdkClient(OktaConfigurationProperties oktaConfigurationProperties) {
@@ -208,5 +233,66 @@ public class OktaAuthConnector implements AuthConnector {
     userGroups.forEach(group -> groups.add(group.getProfile().getName()));
 
     return groups;
+  }
+
+  /**
+   * Validates a JWT and retunrs the subject and userId in a map
+   *
+   * @param jwtString String jwt access token
+   * @return Map of username and userId
+   * @throws ApiException if JWT cannot be verified
+   */
+  @Override
+  public Map<String, String> getValidatedUserPrincipal(String jwtString) {
+    try {
+      Jwt jwt = this.getAccessTokenVerifier().decode(jwtString);
+      Map<String, Object> claims = jwt.getClaims();
+
+      String username = claims.getOrDefault("sub", "").toString();
+      String userId = claims.getOrDefault("uid", "").toString();
+
+      if (username.isEmpty() || userId.isEmpty()) {
+        throw new JwtVerificationException("sub and uid claims are required");
+      }
+
+      Map<String, String> principalInfoMap =
+          ImmutableMap.of("username", username, "userId", userId);
+      return principalInfoMap;
+    } catch (JwtVerificationException jve) {
+      throw this.buildJwtVerificationApiException(jve, "Failed to verify JWT access token");
+    }
+  }
+
+  /**
+   * Convert JwtVerificationException to ApiException
+   *
+   * @param jve JwtVerificationException
+   * @param msg Message
+   * @return ApiException
+   */
+  private ApiException buildJwtVerificationApiException(JwtVerificationException jve, String msg) {
+    ApiException exc =
+        ApiException.Builder.newBuilder()
+            .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
+            .withExceptionMessage(msg)
+            .withExceptionCause(jve)
+            .build();
+    return exc;
+  }
+
+  /**
+   * Creates an access token verifier with the configured issuer and audience
+   *
+   * @return AccessTokenVerifier
+   */
+  protected AccessTokenVerifier getAccessTokenVerifier() {
+    if (this.jwtVerifier == null) {
+      this.jwtVerifier =
+          JwtVerifiers.accessTokenVerifierBuilder()
+              .setIssuer(this.jwtIssuer)
+              .setAudience(this.jwtAudience)
+              .build();
+    }
+    return this.jwtVerifier;
   }
 }

@@ -26,4 +26,8 @@ dependencies {
 
   // The Okta SDKs pull in an outdated version of guava that the OWASP Dep checker doesn't like
   implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"
+
+  // Okta jwt verfier libraries
+  implementation 'com.okta.jwt:okta-jwt-verifier:0.5.7'
+  implementation 'com.okta.jwt:okta-jwt-verifier-impl:0.5.7'
 }

@@ -22,7 +22,9 @@ import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.*;
 import com.nike.cerberus.error.DefaultApiError;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,5 +256,10 @@ public class OneLoginAuthConnector implements AuthConnector {
     }
 
     return createSessionLoginTokenResponse.getData().get(0);
+  }
+
+  @Override
+  public Map<String, String> getValidatedUserPrincipal(String jwtString) {
+    throw new NotImplementedException("Not implemented for OneLogin");
   }
 }

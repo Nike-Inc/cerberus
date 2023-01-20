@@ -16,6 +16,7 @@
 
 package com.nike.cerberus.auth.connector;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface AuthConnector {
@@ -29,4 +30,6 @@ public interface AuthConnector {
   AuthResponse mfaCheck(final String stateToken, final String deviceId, final String otpToken);
 
   Set<String> getGroups(final AuthData data);
+
+  Map<String, String> getValidatedUserPrincipal(String jwtString);
 }

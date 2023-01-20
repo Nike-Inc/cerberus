@@ -30,11 +30,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
+import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.aws.KmsClientFactory;
 import com.nike.cerberus.config.ApplicationConfiguration;
 import com.nike.cerberus.dao.AwsIamRoleDao;
@@ -48,6 +50,8 @@ import com.nike.cerberus.record.AwsIamRoleRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
+import com.okta.jwt.JwtVerificationException;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -56,6 +60,7 @@ import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /** Tests the AuthenticationService class */
 public class AuthenticationServiceTest {
@@ -96,7 +101,7 @@ public class AuthenticationServiceTest {
             kmsClientFactory,
             objectMapper,
             "foo",
-            "groups",
+            List.of("group"),
             MAX_LIMIT,
             dateTimeSupplier,
             awsIamRoleArnParser,
@@ -128,7 +133,6 @@ public class AuthenticationServiceTest {
     assertEquals(
         expectedResponse.getData().getStateToken(), actualResponse.getData().getStateToken());
   }
-  ;
 
   @Test
   public void tests_that_generateCommonVaultPrincipalAuthMetadata_contains_expected_fields() {
@@ -488,5 +492,87 @@ public class AuthenticationServiceTest {
         ((ApiException) e)
             .getApiErrors()
             .contains(DefaultApiError.MAXIMUM_TOKEN_REFRESH_COUNT_REACHED));
+  }
+
+  @Test
+  public void exchangeJwtAccessTokenOkay() {
+
+    Map<String, String> claims = ImmutableMap.of("username", "someone", "userId", "cataphract");
+    when(authConnector.getGroups(Mockito.any(AuthData.class))).thenReturn(Set.of("cat", "dog"));
+    when(authConnector.getValidatedUserPrincipal(Mockito.anyString())).thenReturn(claims);
+
+    CerberusAuthToken newToken = getNewCerberusAuthToken();
+    when(authTokenService.generateToken(
+            anyString(), any(PrincipalType.class), anyBoolean(), anyObject(), anyInt(), anyInt()))
+        .thenReturn(newToken);
+
+    AuthResponse response = this.authenticationService.exchangeJwtAccessToken("us");
+
+    AuthData data = response.getData();
+    assertEquals(data.getUsername(), "someone");
+    assertEquals(data.getUserId(), "cataphract");
+
+    Duration expectedDuration = Duration.between(newToken.getCreated(), newToken.getExpires());
+    assertEquals(data.getClientToken().getLeaseDuration(), expectedDuration.getSeconds());
+    assertEquals(response.getStatus().toString(), AuthStatus.SUCCESS.toString());
+  }
+
+  @Test
+  public void exchangeJwtAccessTokenBadJwt() {
+
+    JwtVerificationException jve = new JwtVerificationException("oops");
+    ApiException apiException =
+        ApiException.Builder.newBuilder()
+            .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
+            .withExceptionMessage(jve.getMessage())
+            .withExceptionCause(jve)
+            .build();
+    when(authConnector.getValidatedUserPrincipal(Mockito.anyString())).thenThrow(apiException);
+
+    ApiException actualException = null;
+    try {
+      this.authenticationService.exchangeJwtAccessToken("us");
+    } catch (ApiException caught) {
+      actualException = caught;
+    }
+    assertEquals(actualException, apiException);
+  }
+
+  @Test
+  public void exchangeJwtAccessTokenDogs() {
+
+    JwtVerificationException jve = new JwtVerificationException("oops");
+    ApiException apiException =
+        ApiException.Builder.newBuilder()
+            .withApiErrors(DefaultApiError.BEARER_TOKEN_INVALID)
+            .withExceptionMessage(jve.getMessage())
+            .withExceptionCause(jve)
+            .build();
+    when(authConnector.getValidatedUserPrincipal(Mockito.anyString())).thenThrow(apiException);
+
+    ApiException actualException = null;
+    try {
+      this.authenticationService.exchangeJwtAccessToken("us");
+    } catch (ApiException caught) {
+      actualException = caught;
+    }
+    assertEquals(actualException, apiException);
+  }
+
+  CerberusAuthToken getNewCerberusAuthToken() {
+    OffsetDateTime now = OffsetDateTime.now();
+    OffsetDateTime later = now.plusHours(1);
+    return CerberusAuthToken.Builder.create().withCreated(now).withExpires(later).build();
+  }
+
+  AuthTokenResponse getAuthTokenReponse(CerberusAuthToken tokenResult) {
+    OffsetDateTime now = OffsetDateTime.now();
+    OffsetDateTime later = now.plusHours(1);
+    AuthTokenResponse response =
+        new AuthTokenResponse()
+            .setClientToken(tokenResult.getToken())
+            .setPolicies(Collections.emptySet())
+            .setLeaseDuration(Duration.between(now, later).getSeconds());
+    return response;
   }
 }
