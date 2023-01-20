@@ -551,7 +551,6 @@ public class AuthenticationService {
     meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, username);
 
     boolean isAdmin = false;
-
     for (String group : this.adminGroups) {
       if (userGroups.contains(group)) {
         isAdmin = true;

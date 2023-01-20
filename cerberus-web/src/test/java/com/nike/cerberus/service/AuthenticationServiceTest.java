@@ -31,6 +31,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.PrincipalType;
 import com.nike.cerberus.auth.connector.AuthConnector;
@@ -101,7 +102,7 @@ public class AuthenticationServiceTest {
             kmsClientFactory,
             objectMapper,
             "foo",
-            List.of("group"),
+            Lists.newArrayList("group1", "group2", "group3"),
             MAX_LIMIT,
             dateTimeSupplier,
             awsIamRoleArnParser,

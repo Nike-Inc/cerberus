@@ -73,6 +73,10 @@ dependencies {
   implementation "io.jsonwebtoken:jjwt-api:${versions.jjwt}"
   implementation "io.jsonwebtoken:jjwt-impl:${versions.jjwt}"
   implementation "io.jsonwebtoken:jjwt-jackson:${versions.jjwt}"
+  implementation 'com.okta.jwt:okta-jwt-verifier:0.5.7'
+  implementation 'com.okta.jwt:okta-jwt-verifier-impl:0.5.7'
+
+
 
 
   //dist tracing
