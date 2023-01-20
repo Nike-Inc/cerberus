@@ -92,7 +92,7 @@ public class AuthenticationService {
   private final KmsService kmsService;
   private final KmsClientFactory kmsClientFactory;
   private final ObjectMapper objectMapper;
-  private final String adminGroup;
+  private final List<String> adminGroups;
   private final DateTimeSupplier dateTimeSupplier;
   private final AwsIamRoleArnParser awsIamRoleArnParser;
   private final AuthTokenService authTokenService;
@@ -116,7 +116,7 @@ public class AuthenticationService {
       KmsClientFactory kmsClientFactory,
       ObjectMapper objectMapper,
       @Value("${cerberus.admin.roles:#{null}}") String adminRoleArns,
-      @Value("${cerberus.admin.group}") String adminGroup,
+      @Value("#{'${cerberus.admin.groups}'.split(',')}") List<String> adminGroups,
       @Value("${cerberus.auth.user.token.maxRefreshCount:#{0}}") int maxTokenRefreshCount,
       DateTimeSupplier dateTimeSupplier,
       AwsIamRoleArnParser awsIamRoleArnParser,
@@ -133,7 +133,7 @@ public class AuthenticationService {
     this.kmsClientFactory = kmsClientFactory;
     this.objectMapper = objectMapper;
     this.adminRoleArns = adminRoleArns;
-    this.adminGroup = adminGroup;
+    this.adminGroups = adminGroups;
     this.dateTimeSupplier = dateTimeSupplier;
     this.awsIamRoleArnParser = awsIamRoleArnParser;
     this.maxTokenRefreshCount = maxTokenRefreshCount;
@@ -525,8 +525,11 @@ public class AuthenticationService {
     meta.put(CerberusPrincipal.METADATA_KEY_USERNAME, username);
 
     boolean isAdmin = false;
-    if (userGroups.contains(this.adminGroup)) {
-      isAdmin = true;
+    for (String group : this.adminGroups) {
+      if (userGroups.contains(group)) {
+        isAdmin = true;
+        break;
+      }
     }
     meta.put(METADATA_KEY_IS_ADMIN, String.valueOf(isAdmin));
     meta.put(CerberusPrincipal.METADATA_KEY_GROUPS, StringUtils.join(userGroups, ','));
