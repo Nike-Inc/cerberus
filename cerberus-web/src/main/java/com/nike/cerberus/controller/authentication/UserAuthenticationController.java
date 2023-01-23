@@ -36,6 +36,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,13 +52,17 @@ public class UserAuthenticationController {
   private static final String BEARER_AUTH_PREFIX = "bearer";
   private final AuthenticationService authenticationService;
   private final AuditLoggingFilterDetails auditLoggingFilterDetails;
+  private final boolean accessTokenExchangeEnabled;
 
   @Autowired
   public UserAuthenticationController(
       AuthenticationService authenticationService,
-      AuditLoggingFilterDetails auditLoggingFilterDetails) {
+      AuditLoggingFilterDetails auditLoggingFilterDetails,
+      @Value("${cerberus.auth.jwt.accessTokenExchangeEnabled:false")
+          boolean accessTokenExchangeEnabled) {
     this.authenticationService = authenticationService;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
+    this.accessTokenExchangeEnabled = accessTokenExchangeEnabled;
   }
 
   @RequestMapping(value = "/user", method = GET)
@@ -81,6 +86,12 @@ public class UserAuthenticationController {
   @RequestMapping(value = "/exchange", method = GET)
   public AuthResponse exchangeToken(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authHeader) {
+
+    if (!this.accessTokenExchangeEnabled) {
+      throw ApiException.Builder.newBuilder()
+          .withApiErrors(DefaultApiError.ENTITY_NOT_FOUND)
+          .build();
+    }
 
     if (authHeader == null || !authHeader.toLowerCase(Locale.ROOT).startsWith(BEARER_AUTH_PREFIX)) {
       final String msg = "Wrong authentication header";

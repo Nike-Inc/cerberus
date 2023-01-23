@@ -16,7 +16,7 @@ import java.util.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
+// import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -25,12 +25,15 @@ public class UserAuthenticationControllerTest {
 
   @Mock private AuthenticationService authenticationService;
   @Mock private AuditLoggingFilterDetails auditLoggingFilterDetails;
+  private UserAuthenticationController userAuthenticationController;
 
-  @InjectMocks private UserAuthenticationController userAuthenticationController;
+  // @InjectMocks private UserAuthenticationController userAuthenticationController;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
+    this.userAuthenticationController =
+        new UserAuthenticationController(authenticationService, auditLoggingFilterDetails, true);
   }
 
   @Test
@@ -136,6 +139,20 @@ public class UserAuthenticationControllerTest {
     CerberusPrincipal cerberusPrincipal = Mockito.mock(CerberusPrincipal.class);
     userAuthenticationController.refreshToken(cerberusPrincipal);
     Mockito.verify(authenticationService).refreshUserToken(cerberusPrincipal);
+  }
+
+  @Test
+  public void testExchangeTokenDisabled() {
+    ApiException apiException = null;
+    try {
+      UserAuthenticationController uac =
+          new UserAuthenticationController(authenticationService, auditLoggingFilterDetails, false);
+      uac.exchangeToken("bearer foobar");
+    } catch (ApiException exc) {
+      apiException = exc;
+    }
+    Assert.assertNotNull(apiException);
+    Assert.assertEquals(DefaultApiError.ENTITY_NOT_FOUND, apiException.getApiErrors().get(0));
   }
 
   @Test
