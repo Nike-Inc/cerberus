@@ -58,7 +58,7 @@ public class UserAuthenticationController {
   public UserAuthenticationController(
       AuthenticationService authenticationService,
       AuditLoggingFilterDetails auditLoggingFilterDetails,
-      @Value("${cerberus.auth.jwt.accessTokenExchangeEnabled:false")
+      @Value("${cerberus.auth.jwt.accessTokenExchangeEnabled:false}")
           boolean accessTokenExchangeEnabled) {
     this.authenticationService = authenticationService;
     this.auditLoggingFilterDetails = auditLoggingFilterDetails;
