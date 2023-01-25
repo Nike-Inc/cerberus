@@ -51,6 +51,9 @@ public enum DefaultApiError implements ApiError {
   AUTH_TOKEN_INVALID(
       99105, "X-Vault-Token or X-Cerberus-Token header is malformed or invalid.", SC_UNAUTHORIZED),
 
+  /** Authorization Bearer header was blank or invalid. */
+  BEARER_TOKEN_INVALID(99100, "Authorization Bearer header was blank or invalid.", SC_UNAUTHORIZED),
+
   /** Supplied credentials are invalid. */
   AUTH_BAD_CREDENTIALS(99106, "Invalid credentials", SC_UNAUTHORIZED),
 

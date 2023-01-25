@@ -28,6 +28,7 @@ import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.error.DefaultApiError;
 import java.util.Set;
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -368,5 +369,16 @@ public class OneLoginAuthConnectorTest {
       assertEquals(
           MFA_SETUP_REQUIRED.getHttpStatusCode(), ae.getApiErrors().get(0).getHttpStatusCode());
     }
+  }
+
+  @Test
+  public void testgetValidatedUserPrincipalNotImplemented() {
+    NotImplementedException nie = null;
+    try {
+      oneLoginAuthConnector.getValidatedUserPrincipal("this won't work");
+    } catch (NotImplementedException exc) {
+      nie = exc;
+    }
+    assertNotNull(nie);
   }
 }

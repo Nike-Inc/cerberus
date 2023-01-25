@@ -59,6 +59,8 @@ public class JwtService {
   private final CerberusSigningKeyResolver signingKeyResolver;
   private final String environmentName;
   private final JwtBlocklistDao jwtBlocklistDao;
+  private final String jwtIssuer;
+  private final String jwtAudience;
 
   private HashSet<String> blocklist;
 
@@ -66,10 +68,14 @@ public class JwtService {
   public JwtService(
       CerberusSigningKeyResolver signingKeyResolver,
       @Value("${cerberus.environmentName}") String environmentName,
-      JwtBlocklistDao jwtBlocklistDao) {
+      JwtBlocklistDao jwtBlocklistDao,
+      @Value("${cerberus.auth.jwt.issuer}") String jwtIssuer,
+      @Value("${cerberus.auth.jwt.audience}") String jwtAudience) {
     this.signingKeyResolver = signingKeyResolver;
     this.environmentName = environmentName;
     this.jwtBlocklistDao = jwtBlocklistDao;
+    this.jwtIssuer = jwtIssuer;
+    this.jwtAudience = jwtAudience;
     refreshBlocklist();
   }
 

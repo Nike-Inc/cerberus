@@ -52,6 +52,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
           "/dashboard",
           "/dashboard/**",
           "/healthcheck",
+          "/v2/auth/exchange",
           "/v2/auth/sts-identity",
           "/v2/auth/iam-principal",
           "/v1/auth/iam-role",

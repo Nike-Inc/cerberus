@@ -17,7 +17,9 @@
 package com.nike.cerberus.auth.connector.okta;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -29,7 +31,12 @@ import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHand
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
+import com.okta.jwt.AccessTokenVerifier;
+import com.okta.jwt.Jwt;
+import com.okta.jwt.JwtVerificationException;
 import com.okta.sdk.client.Client;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -48,7 +55,9 @@ public class OktaAuthConnectorTest {
 
     initMocks(this);
 
-    oktaAuthConnector = new OktaAuthConnector(client, sdkClient);
+    this.oktaAuthConnector =
+        new OktaAuthConnector(
+            client, sdkClient, "https://foo.bar", "dogs", mock(AccessTokenVerifier.class));
   }
 
   /////////////////////////
@@ -237,5 +246,85 @@ public class OktaAuthConnectorTest {
 
     //  verify results
     assertEquals(expectedResponse, actualResponse);
+  }
+
+  @Test
+  public void testGetValidatedOktaPrincipalOkay() {
+    try {
+      Map<String, Object> claims = new HashMap<String, Object>();
+      claims.put("sub", "tester");
+      claims.put("uid", "freeter");
+
+      Jwt mockJwt = mock(Jwt.class);
+      when(mockJwt.getClaims()).thenReturn(claims);
+      AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+      when(verifier.decode(anyString())).thenReturn(mockJwt);
+      OktaAuthConnector connector =
+          new OktaAuthConnector(
+              client, sdkClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+      Map<String, String> principal = connector.getValidatedUserPrincipal("us");
+
+      assertEquals(principal.get("username"), "tester");
+      assertEquals(principal.get("userId"), "freeter");
+    } catch (JwtVerificationException jve) {
+      assert false;
+    }
+  }
+
+  @Test(expected = ApiException.class)
+  public void testGetValidatedOktaPrincipalMissingUserId() {
+    try {
+      Map<String, Object> claims = new HashMap<String, Object>();
+      claims.put("sub", "tester");
+      // claims.put("uid", "freeter");
+
+      Jwt mockJwt = mock(Jwt.class);
+      when(mockJwt.getClaims()).thenReturn(claims);
+      AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+      when(verifier.decode(anyString())).thenReturn(mockJwt);
+      OktaAuthConnector connector =
+          new OktaAuthConnector(
+              client, sdkClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+      Map<String, String> principal = connector.getValidatedUserPrincipal("us");
+
+      assertEquals(principal.get("username"), "tester");
+      assertEquals(principal.get("userId"), "freeter");
+    } catch (JwtVerificationException jve) {
+      assert false;
+    }
+  }
+
+  @Test(expected = ApiException.class)
+  public void testGetValidatedOktaPrincipalBadClaims() {
+    try {
+      Map<String, Object> claims = new HashMap<String, Object>();
+
+      Jwt mockJwt = mock(Jwt.class);
+      when(mockJwt.getClaims()).thenReturn(claims);
+      AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+      when(verifier.decode(anyString())).thenReturn(mockJwt);
+      OktaAuthConnector connector =
+          new OktaAuthConnector(
+              client, sdkClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+
+      connector.getValidatedUserPrincipal("us");
+    } catch (JwtVerificationException jve) {
+      assert false;
+    }
+  }
+
+  @Test
+  public void testGetAccessTokenVerifierInitialNull() {
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, sdkClient, "https://foo.bar/oauth2/skiddleydee", "dogs", null);
+    AccessTokenVerifier verifier = connector.getAccessTokenVerifier();
+    assertNotNull(verifier);
+  }
+
+  @Test
+  public void testGetAccessTokenVerifier() {
+    AccessTokenVerifier verifier = this.oktaAuthConnector.getAccessTokenVerifier();
+    assertNotNull(verifier);
   }
 }

@@ -173,6 +173,32 @@ public class AuthenticationService {
   }
 
   /**
+   * Attempt to exchange an access token from an IdP for a Cerberus token based on their groups
+   *
+   * @param jwtString String jwt access token
+   * @return The auth response
+   */
+  public AuthResponse exchangeJwtAccessToken(String jwtString) {
+
+    final Map<String, String> claims =
+        this.authServiceConnector.getValidatedUserPrincipal(jwtString);
+
+    final String username = claims.get("username");
+    final String userId = claims.get("userId");
+
+    final AuthData authData =
+        AuthData.builder().username(username).factorResult("SUCCESS").userId(userId).build();
+
+    final Set<String> groups = this.authServiceConnector.getGroups(authData);
+    AuthTokenResponse token = this.generateToken(username, groups, 0);
+    authData.setClientToken(token);
+
+    final AuthResponse authResponse =
+        AuthResponse.builder().data(authData).status(AuthStatus.SUCCESS).build();
+    return authResponse;
+  }
+
+  /**
    * Enables a user to trigger a factor challenge.
    *
    * @param challengeRequest Request containing the MFA token details with no passcode
