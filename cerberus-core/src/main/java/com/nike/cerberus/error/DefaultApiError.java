@@ -291,6 +291,9 @@ public enum DefaultApiError implements ApiError {
   /** Generic bad requests. This is useful because the blueprint error handling sucks. */
   GENERIC_BAD_REQUEST(99999, "Request will not be completed.", SC_BAD_REQUEST),
 
+  /** Bad response from identity provider */
+  IDENTITY_PROVIDER_BAD_GATEWAY(99988, "Bad response from identity provider", SC_BAD_GATEWAY),
+
   /**
    * If we encounter an error where something expected is not setup correctly, meaning the service
    * is not functional.

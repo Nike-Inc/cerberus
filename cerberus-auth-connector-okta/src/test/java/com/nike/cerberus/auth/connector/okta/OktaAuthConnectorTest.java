@@ -23,20 +23,34 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.nike.backstopper.apierror.ApiError;
 import com.nike.backstopper.exception.ApiException;
 import com.nike.cerberus.auth.connector.AuthData;
 import com.nike.cerberus.auth.connector.AuthResponse;
 import com.nike.cerberus.auth.connector.AuthStatus;
 import com.nike.cerberus.auth.connector.okta.statehandlers.InitialLoginStateHandler;
 import com.nike.cerberus.auth.connector.okta.statehandlers.MfaStateHandler;
+import com.nike.cerberus.error.DefaultApiError;
 import com.okta.authn.sdk.client.AuthenticationClient;
 import com.okta.authn.sdk.impl.resource.DefaultVerifyPassCodeFactorRequest;
 import com.okta.jwt.AccessTokenVerifier;
 import com.okta.jwt.Jwt;
 import com.okta.jwt.JwtVerificationException;
 import com.okta.sdk.client.Client;
+import com.okta.sdk.impl.client.DefaultClient;
+import com.okta.sdk.impl.error.DefaultError;
+import com.okta.sdk.resource.ResourceException;
+import com.okta.sdk.resource.group.Group;
+import com.okta.sdk.resource.group.GroupList;
+import com.okta.sdk.resource.group.GroupProfile;
+import com.okta.sdk.resource.user.User;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -326,5 +340,131 @@ public class OktaAuthConnectorTest {
   public void testGetAccessTokenVerifier() {
     AccessTokenVerifier verifier = this.oktaAuthConnector.getAccessTokenVerifier();
     assertNotNull(verifier);
+  }
+
+  @Test
+  public void testGetGroups() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+
+    GroupProfile groupProfile = mock(GroupProfile.class);
+    when(groupProfile.getName()).thenReturn("testGroup");
+
+    Group fakeGroup = mock(Group.class);
+    when(fakeGroup.getProfile()).thenReturn(groupProfile);
+
+    List<Group> groupIteraterList = Lists.newArrayList(fakeGroup);
+    GroupList groupList = mock(GroupList.class);
+    when(groupList.iterator()).thenReturn(groupIteraterList.iterator());
+
+    User mockUser = mock(User.class);
+    when(mockUser.listGroups()).thenReturn(groupList);
+
+    DefaultClient mockClient = mock(DefaultClient.class);
+    when(mockClient.getUser(anyString())).thenReturn(mockUser);
+
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+    AuthData authData = AuthData.builder().userId("deadbeef").build();
+    Set<String> groups = connector.getGroups(authData);
+    assertEquals(groups, Set.of("testGroup"));
+  }
+
+  @Test
+  public void testGetGroupsMissingProfile() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+
+    Group fakeGroup = mock(Group.class);
+    when(fakeGroup.getProfile()).thenReturn(null);
+
+    List<Group> groupIteraterList = Lists.newArrayList(fakeGroup);
+    GroupList groupList = mock(GroupList.class);
+    when(groupList.iterator()).thenReturn(groupIteraterList.iterator());
+
+    User mockUser = mock(User.class);
+    when(mockUser.listGroups()).thenReturn(groupList);
+
+    DefaultClient mockClient = mock(DefaultClient.class);
+    when(mockClient.getUser(anyString())).thenReturn(mockUser);
+
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+    AuthData authData = AuthData.builder().userId("deadbeef").build();
+    Set<String> groups = connector.getGroups(authData);
+    assertEquals(groups, new HashSet<String>());
+  }
+
+  @Test
+  public void testGetGroupsNullGroups() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+
+    User mockUser = mock(User.class);
+    when(mockUser.listGroups()).thenReturn(null);
+
+    DefaultClient mockClient = mock(DefaultClient.class);
+    when(mockClient.getUser(anyString())).thenReturn(mockUser);
+
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+
+    AuthData authData = AuthData.builder().userId("deadbeef").build();
+    Set<String> groups = connector.getGroups(authData);
+    assertEquals(groups, new HashSet<>());
+  }
+
+  @Test(expected = ApiException.class)
+  public void testBadGetUser() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+    Client mockClient = mock(Client.class);
+    when(mockClient.getUser(anyString())).thenThrow(new RuntimeException("it's broke"));
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+    AuthData authData = AuthData.builder().userId("deadbeef").build();
+    connector.getGroups(authData);
+  }
+
+  @Test
+  public void testGetUserFromIdpCompletelyBrokenOkta() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+    Client mockClient = mock(Client.class);
+    String exceptionMessage = "who knows what broke?";
+    when(mockClient.getUser(anyString())).thenThrow(new IllegalStateException(exceptionMessage));
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+    try {
+      connector.getUserFromIDP("fooUser");
+    } catch (ApiException exc) {
+      String actualMessage = exc.getMessage();
+      assertEquals(actualMessage, "Could not communicate properly with identity provider");
+      ApiError apiError = exc.getApiErrors().get(0);
+      assertEquals(apiError, DefaultApiError.IDENTITY_PROVIDER_BAD_GATEWAY);
+      String causeMessage = exc.getCause().getMessage();
+      assertEquals(causeMessage, exceptionMessage);
+    }
+  }
+
+  @Test
+  public void testGetUserFromIdpOktaProblem() {
+    AccessTokenVerifier verifier = mock(AccessTokenVerifier.class);
+    Client mockClient = mock(Client.class);
+    String excMessage = "A specific thing had a problem";
+    String excpetionPrefix = "Got invalid response from identity providers";
+    ResourceException resourceException =
+        new ResourceException(new DefaultError(ImmutableMap.of("message", excMessage)));
+    when(mockClient.getUser(anyString())).thenThrow(resourceException);
+    OktaAuthConnector connector =
+        new OktaAuthConnector(
+            client, mockClient, "https://foo.bar/oauth2/skiddleydee", "dogs", verifier);
+    try {
+      connector.getUserFromIDP("fooUser");
+    } catch (ApiException exc) {
+      String actualMessage = exc.getMessage();
+      assert actualMessage.startsWith(excpetionPrefix);
+      assertEquals(exc.getApiErrors().get(0), DefaultApiError.IDENTITY_PROVIDER_BAD_GATEWAY);
+    }
   }
 }

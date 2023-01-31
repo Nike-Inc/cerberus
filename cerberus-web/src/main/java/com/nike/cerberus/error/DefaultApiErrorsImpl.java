@@ -18,6 +18,7 @@ package com.nike.cerberus.error;
 
 import static com.nike.backstopper.apierror.ApiErrorConstants.*;
 import static com.nike.backstopper.apierror.projectspecificinfo.ProjectSpecificErrorCodeRange.ALLOW_ALL_ERROR_CODES;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_GATEWAY;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_IMPLEMENTED;
 
 import com.nike.backstopper.apierror.ApiError;
@@ -34,6 +35,7 @@ public class DefaultApiErrorsImpl extends SampleProjectApiErrorsBase {
       Arrays.asList(
           HTTP_STATUS_CODE_FORBIDDEN,
           HTTP_STATUS_CODE_UNAUTHORIZED,
+          SC_BAD_GATEWAY,
           HTTP_STATUS_CODE_SERVICE_UNAVAILABLE,
           HTTP_STATUS_CODE_TOO_MANY_REQUESTS,
           HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR,
