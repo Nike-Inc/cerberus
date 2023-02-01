@@ -48,7 +48,7 @@
     "react-select": "4.3.1",
     "react-simple-file-input": "2.1.0",
     "react-tooltip": "^4.5.1",
-    "redux": "3.7.2",
+    "redux": "4.2.1",
     "redux-form": "5.4.0",
     "redux-logger": "3.0.6",
     "redux-thunk": "2.4.2",
