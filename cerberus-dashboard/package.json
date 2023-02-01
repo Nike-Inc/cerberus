@@ -47,7 +47,7 @@
     "react-router-dom": "^5.3.4",
     "react-select": "4.3.1",
     "react-simple-file-input": "2.1.0",
-    "react-tooltip": "^4.5.1",
+    "react-tooltip": "^5.7.3",
     "redux": "3.7.2",
     "redux-form": "5.4.0",
     "redux-logger": "3.0.6",
