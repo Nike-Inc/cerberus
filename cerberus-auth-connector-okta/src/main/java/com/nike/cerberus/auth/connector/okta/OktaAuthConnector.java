@@ -38,7 +38,10 @@ import com.okta.jwt.JwtVerifiers;
 import com.okta.sdk.authc.credentials.TokenClientCredentials;
 import com.okta.sdk.client.Client;
 import com.okta.sdk.client.Clients;
+import com.okta.sdk.resource.ResourceException;
+import com.okta.sdk.resource.group.Group;
 import com.okta.sdk.resource.group.GroupList;
+import com.okta.sdk.resource.group.GroupProfile;
 import com.okta.sdk.resource.user.User;
 import java.util.HashSet;
 import java.util.Map;
@@ -217,20 +220,60 @@ public class OktaAuthConnector implements AuthConnector {
     }
   }
 
+  /**
+   * Get a valid user from the identity provider if possible
+   *
+   * @param userId
+   * @return User corresponding to the id
+   * @throws ApiException if user cannot be resolved
+   */
+  protected User getUserFromIDP(String userId) {
+    try {
+      return sdkClient.getUser(userId);
+    } catch (IllegalStateException ise) {
+      throw ApiException.newBuilder()
+          .withExceptionCause(ise)
+          .withApiErrors(DefaultApiError.IDENTITY_PROVIDER_BAD_GATEWAY)
+          .withExceptionMessage("Could not communicate properly with identity provider")
+          .build();
+    } catch (ResourceException rexc) {
+      String msg =
+          String.format("Got invalid response from identity providers: %s", rexc.getMessage());
+      throw ApiException.newBuilder()
+          .withExceptionCause(rexc)
+          .withApiErrors(DefaultApiError.IDENTITY_PROVIDER_BAD_GATEWAY)
+          .withExceptionMessage(msg)
+          .build();
+    } catch (Exception exc) {
+      throw ApiException.newBuilder()
+          .withExceptionCause(exc)
+          .withApiErrors(DefaultApiError.INTERNAL_SERVER_ERROR)
+          .withExceptionMessage("Unknown error trying to getUser from identity provider")
+          .build();
+    }
+  }
+
   /** Obtains groups user belongs to. */
   @Override
   public Set<String> getGroups(AuthData authData) {
 
     Preconditions.checkNotNull(authData, "auth data cannot be null.");
 
-    User user = sdkClient.getUser(authData.getUserId());
+    String userId = authData.getUserId();
+    User user = getUserFromIDP(userId);
     GroupList userGroups = user.listGroups();
 
     final Set<String> groups = new HashSet<>();
     if (userGroups == null) {
       return groups;
     }
-    userGroups.forEach(group -> groups.add(group.getProfile().getName()));
+
+    for (Group group : userGroups) {
+      GroupProfile profile = group.getProfile();
+      if (profile != null) {
+        groups.add(profile.getName());
+      }
+    }
 
     return groups;
   }
