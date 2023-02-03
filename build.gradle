@@ -229,7 +229,7 @@ configurations {
 
 dependencies {
   antJUnit 'org.apache.ant:ant-junit:1.10.12'
-  runtimeOnly 'org.apache.ant:ant-antlr:1.10.12'
+  runtimeOnly 'org.apache.ant:ant-antlr:1.10.13'
 
 }
 
