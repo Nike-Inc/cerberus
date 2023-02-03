@@ -25,7 +25,7 @@ repositories {
 
 configurations.all {
   resolutionStrategy {
-    force 'org.apache.ant:ant:1.10.12'
+    force 'org.apache.ant:ant:1.10.13'
   }
 }
 dependencies {
