@@ -31,13 +31,13 @@ dependencies {
   api 'com.github.ben-manes.caffeine:caffeine:3.1.1'
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
-  api "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  api "org.glassfish.jaxb:jaxb-runtime:3.0.2"
+  api "jakarta.xml.bind:jakarta.xml.bind-api:${versions.jakartaXmlBindApi}"
+  api "org.glassfish.jaxb:jaxb-runtime:${versions.jaxbRuntime}"
 
   // Find bugs annotations
-  api group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
+  api 'com.google.code.findbugs:annotations:3.0.1u2'
 
-  api group: 'com.google.guava', name: 'guava', version: '31.0.1-jre'
+  api "com.google.guava:guava:${versions.guava}"
 }
 
 configurations.all {

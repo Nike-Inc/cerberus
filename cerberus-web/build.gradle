@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'org.springframework.boot' version "2.7.0"
+  id 'org.springframework.boot' version "2.7.8"
 }
 
 sourceCompatibility = '11'
@@ -40,13 +40,15 @@ dependencies {
   implementation "org.springframework.boot:spring-boot-starter-actuator:${versions.springBoot}"
   implementation "org.springframework.boot:spring-boot-starter-web:${versions.springBoot}"
   implementation "org.springframework.boot:spring-boot-starter-security:${versions.springBoot}"
+  implementation "org.springframework.boot:spring-boot-starter:${versions.springBoot}"
+  implementation "org.springframework.boot:spring-boot:${versions.springBoot}"
 
   // DB: Mybatis, Flyway, C3p0
-  implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.2'
-  implementation 'org.mybatis:mybatis-spring:2.0.7'
+  implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${versions.mybatisSpring}"
+  implementation "org.mybatis:mybatis-spring:${versions.mybatisSpring}"
   implementation 'org.mybatis:mybatis:3.5.11'
   implementation 'com.mchange:c3p0:0.9.5.5'
-  implementation 'mysql:mysql-connector-java:8.0.31'
+  implementation 'mysql:mysql-connector-java:8.0.32'
   implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
@@ -54,11 +56,11 @@ dependencies {
 
   // Misc
   implementation "com.netflix.hystrix:hystrix-core:1.5.18" // TODO remove hystrix and use resilience4j
-  implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
+  implementation "com.google.guava:guava:${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
   implementation 'com.google.code.gson:gson:2.9.1' // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
-  implementation group: 'org.apache.tika', name: 'tika-core', version: '1.26'
+  implementation "org.apache.tika:tika-core:1.28.5"
 
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
@@ -73,8 +75,8 @@ dependencies {
   implementation "io.jsonwebtoken:jjwt-api:${versions.jjwt}"
   implementation "io.jsonwebtoken:jjwt-impl:${versions.jjwt}"
   implementation "io.jsonwebtoken:jjwt-jackson:${versions.jjwt}"
-  implementation 'com.okta.jwt:okta-jwt-verifier:0.5.7'
-  implementation 'com.okta.jwt:okta-jwt-verifier-impl:0.5.7'
+  implementation "com.okta.jwt:okta-jwt-verifier:${versions.oktaJwtVerifier}"
+  implementation "com.okta.jwt:okta-jwt-verifier-impl:${versions.oktaJwtVerifier}"
 
 
 
@@ -84,7 +86,7 @@ dependencies {
 
   // test deps
   testImplementation("org.springframework.boot:spring-boot-starter-test:${versions.springBoot}")
-  testImplementation "commons-io:commons-io:2.11.0"
+  testImplementation "commons-io:commons-io:${versions.commonsIo}"
   testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.15.0"
 
   // Integration Test Deps
