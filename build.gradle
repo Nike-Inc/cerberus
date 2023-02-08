@@ -19,17 +19,25 @@ import com.github.spotbugs.snom.SpotBugsReport
 buildscript {
   ext {
     versions = [
-      lombok: '1.18.24',
-      resilience4j: '1.7.1',
-      awsSdkVersion: '1.12.367',
-      kork: '7.158.0',
+      ant: '1.10.+',
+      awsSdkVersion: '1.12.+',
+      commonsIo: '2.11.0',
+      groovy: '4.0.8',
       guava: '31.1-jre',
-      springBoot: '2.7.5',
+      jakartaXmlBindApi: '3.0.1',
+      jaxbRuntime: '4.0.1',
       jjwt: '0.11.5',
-      okta: '8.2.2',
-      oktaAuthnSdk: '2.0.9',
-      restAssured: '5.2.0',
-      groovy: '4.0.6'
+      kork: '7.160.2',
+      lang3: '3.12.0',
+      logback: '1.2.11',
+      lombok: '1.18.26',
+      mybatisSpring: '2.1.0',
+      okta: '8.2.3',
+      oktaAuthnSdk: '2.0.10',
+      oktaJwtVerifier: '0.5.7',
+      resilience4j: '1.7.1',  // 2 requires java 17
+      restAssured: '5.3.0',
+      springBoot: '2.7.8',
     ]
   }
 
@@ -44,8 +52,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.owasp:dependency-check-gradle:7.3.0"
-    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
+    classpath "org.owasp:dependency-check-gradle:8.0.2"
   }
 }
 
@@ -53,7 +60,7 @@ plugins {
   id "io.spring.dependency-management" version "1.1.0"
   id "com.github.nbaztec.coveralls-jacoco" version "1.2.15"
   id "com.github.spotbugs" version "5.0.13"
-  id "com.diffplug.spotless" version "6.11.0"
+  id "com.diffplug.spotless" version "6.14.1"
 }
 
 apply from: 'gradle/owasp-dependency-check.gradle'
@@ -125,8 +132,6 @@ allprojects {
 subprojects {
   apply plugin: 'io.spring.dependency-management'
 
-  apply from: file("${rootProject.projectDir}/gradle/bintray.gradle")
-
   sourceCompatibility = '11'
 
   sourceSets {
@@ -171,8 +176,8 @@ subprojects {
     // common test deps
     testImplementation "org.apache.groovy:groovy-all:${versions.groovy}"
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation 'com.openpojo:openpojo:0.9.1'
   }
 
@@ -228,8 +233,8 @@ configurations {
 }
 
 dependencies {
-  antJUnit 'org.apache.ant:ant-junit:1.10.12'
-  runtimeOnly 'org.apache.ant:ant-antlr:1.10.12'
+  antJUnit "org.apache.ant:ant-junit:${versions.ant}"
+  runtimeOnly "org.apache.ant:ant-antlr:${versions.ant}"
 
 }
 

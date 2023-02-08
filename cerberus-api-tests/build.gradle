@@ -25,34 +25,31 @@ repositories {
 
 configurations.all {
   resolutionStrategy {
-    force 'org.apache.ant:ant:1.10.12'
+    force "org.apache.ant:ant:${versions.ant}"
   }
 }
 dependencies {
   integrationTestImplementation project(':cerberus-core').sourceSets.test.output
-  integrationTestImplementation group: 'org.testng', name: 'testng', version: '7.5'
-  integrationTestImplementation 'junit:junit:4.13.2'
+  integrationTestImplementation group: 'org.testng', name: 'testng', version: '7.7.1'
+  integrationTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+
   integrationTestImplementation 'org.slf4j:slf4j-api:1.7.36'
-  integrationTestImplementation group: 'org.apache.groovy', name: 'groovy-all', version: versions.groovy
+  integrationTestImplementation "org.apache.groovy:groovy-all:${versions.groovy}"
   integrationTestImplementation "io.rest-assured:rest-assured:${versions.restAssured}"
-  integrationTestImplementation group: 'io.rest-assured', name: 'json-schema-validator', version: versions.restAssured
-  integrationTestImplementation group: 'io.rest-assured', name: 'json-path', version: versions.restAssured
-  integrationTestImplementation group: 'io.rest-assured', name: 'xml-path', version: versions.restAssured
-  integrationTestImplementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-  integrationTestImplementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
-  integrationTestImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+  integrationTestImplementation "io.rest-assured:json-schema-validator:${versions.restAssured}"
+  integrationTestImplementation "io.rest-assured:json-path:${versions.restAssured}"
+  integrationTestImplementation "io.rest-assured:xml-path:${versions.restAssured}"
+  integrationTestImplementation "javax.xml.bind:jaxb-api:2.3.1"
+  integrationTestImplementation "org.glassfish.jaxb:jaxb-runtime:${versions.jaxbRuntime}"
+  integrationTestImplementation "org.hamcrest:hamcrest:2.2"
   integrationTestImplementation "com.google.guava:guava:${versions.guava}"
-  integrationTestImplementation group: 'com.amazonaws', name: 'aws-java-sdk-kms', version: "${versions.awsSdkVersion}"
-  integrationTestImplementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: "${versions.awsSdkVersion}"
-  integrationTestImplementation group: 'org.jboss.aerogear', name: 'aerogear-otp-java', version: '1.0.0'
-  integrationTestImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-  integrationTestImplementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
-  integrationTestImplementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  integrationTestImplementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  integrationTestImplementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
-  integrationTestImplementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
-  integrationTestImplementation group: 'com.thedeanda', name: 'lorem', version: '2.1'
-  integrationTestImplementation "org.apache.groovy:groovy-all:4.0.6"
+  integrationTestImplementation "com.amazonaws:aws-java-sdk-kms:${versions.awsSdkVersion}"
+  integrationTestImplementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
+  integrationTestImplementation "org.jboss.aerogear:aerogear-otp-java:1.0.0"
+  integrationTestImplementation "org.apache.commons:commons-lang3:${versions.lang3}"
+  integrationTestImplementation "com.thedeanda:lorem:2.1"
+  integrationTestImplementation "jakarta.xml.bind:jakarta.xml.bind-api:${versions.jakartaXmlBindApi}"
+  integrationTestImplementation "org.apache.groovy:groovy-all:${versions.groovy}"
 }
 
 integrationTest {

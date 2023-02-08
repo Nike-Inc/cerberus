@@ -28,6 +28,6 @@ dependencies {
   implementation group: 'com.google.guava', name: 'guava', version: "${versions.guava}"
 
   // Okta jwt verfier libraries
-  implementation 'com.okta.jwt:okta-jwt-verifier:0.5.7'
-  implementation 'com.okta.jwt:okta-jwt-verifier-impl:0.5.7'
+  implementation "com.okta.jwt:okta-jwt-verifier:${versions.oktaJwtVerifier}"
+  implementation "com.okta.jwt:okta-jwt-verifier-impl:${versions.oktaJwtVerifier}"
 }
