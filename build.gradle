@@ -31,7 +31,7 @@ buildscript {
       lang3: '3.12.0',
       logback: '1.2.11',
       lombok: '1.18.26',
-      mybatisSpring: '2.1.0',
+      mybatisSpring: '3.0.1',
       okta: '8.2.3',
       oktaAuthnSdk: '2.0.10',
       oktaJwtVerifier: '0.5.7',
