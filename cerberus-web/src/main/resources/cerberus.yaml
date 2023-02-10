@@ -233,11 +233,6 @@ cerberus:
       # Every ten minutes
       cronExpression: "0 */10 * ? * *"
 
-    # Generates drop wizard metrics on the status of Hystrix for monitoring and alerting
-    hystrixMetricsProcessingJob:
-      enabled: true
-      # Every ten seconds
-      cronExpression: "0/10 * * ? * *"
 
     # This job will generate Key Performance Indicator Metrics (KPIs) for the Cerberus environment and use Drop Wizard to report these Metrics
     # By default unless you provide your own reporter impl, these metrics are just logged via an SLF4j Logger.
