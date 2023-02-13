@@ -21,7 +21,7 @@ repositories {
 dependencies {
   api group: 'jakarta.validation', name: 'jakarta.validation-api', version: '2.0.2'
 
-  api group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.5.Final'
+  api group: 'org.hibernate', name: 'hibernate-validator', version: '8.0.0.Final'
   api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.1'
 
   api group: 'org.apache.commons', name: 'commons-lang3', version: versions.lang3
