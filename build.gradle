@@ -24,7 +24,7 @@ buildscript {
       commonsIo: '2.11.0',
       groovy: '4.0.8',
       guava: '31.1-jre',
-      jakartaXmlBindApi: '3.0.1',
+      jakartaXmlBindApi: '4.0.0',
       jaxbRuntime: '4.0.1',
       jjwt: '0.11.5',
       kork: '7.160.2',
