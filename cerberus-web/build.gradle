@@ -56,7 +56,7 @@ dependencies {
 
   // Misc
   implementation "com.google.guava:guava:${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
-  implementation 'com.google.code.gson:gson:2.9.1' // todo delete, should use jackson. see cipher text utils
+  implementation 'com.google.code.gson:gson:2.10.1' // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
   implementation "org.apache.tika:tika-core:1.28.5"
