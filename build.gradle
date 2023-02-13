@@ -29,7 +29,7 @@ buildscript {
       jjwt: '0.11.5',
       kork: '7.160.2',
       lang3: '3.12.0',
-      logback: '1.2.11',
+      logback: '1.4.5',
       lombok: '1.18.26',
       mybatisSpring: '2.1.0',
       okta: '8.2.3',
