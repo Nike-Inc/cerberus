@@ -49,7 +49,7 @@ dependencies {
   implementation 'org.mybatis:mybatis:3.5.11'
   implementation 'com.mchange:c3p0:0.9.5.5'
   implementation 'mysql:mysql-connector-java:8.0.32'
-  implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
+  implementation 'org.flywaydb:flyway-core:9.15.1' // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
   implementation "io.spinnaker.kork:kork-secrets:${versions.kork}"
