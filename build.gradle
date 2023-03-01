@@ -37,7 +37,7 @@ buildscript {
       oktaJwtVerifier: '0.5.7',
       resilience4j: '1.7.1',  // 2 requires java 17
       restAssured: '5.3.0',
-      springBoot: '2.7.8',
+      springBoot: '3.0.3',
     ]
   }
 
