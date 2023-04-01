@@ -33,7 +33,7 @@ dependencies {
   integrationTestImplementation group: 'org.testng', name: 'testng', version: '7.7.1'
   integrationTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
 
-  integrationTestImplementation 'org.slf4j:slf4j-api:1.7.36'
+  integrationTestImplementation 'org.slf4j:slf4j-api:2.0.7'
   integrationTestImplementation "org.apache.groovy:groovy-all:${versions.groovy}"
   integrationTestImplementation "io.rest-assured:rest-assured:${versions.restAssured}"
   integrationTestImplementation "io.rest-assured:json-schema-validator:${versions.restAssured}"
