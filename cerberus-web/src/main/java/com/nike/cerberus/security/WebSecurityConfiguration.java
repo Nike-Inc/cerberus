@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -35,6 +37,9 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Slf4j
 @Configuration
@@ -44,6 +49,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   static final String HEADER_X_CERBERUS_TOKEN = "X-Cerberus-Token";
   static final String LEGACY_AUTH_TOKN_HEADER = "X-Vault-Token";
+
+  @Value("${cerberus.cors.allowedOriginPattern:#{null}}")
+  private String allowedOriginPattern;
 
   private static final List<String> AUTHENTICATION_NOT_REQUIRED_WHITELIST =
       List.of(
@@ -122,5 +130,23 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     http.addFilterBefore(dbTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     http.addFilterBefore(jwtFilter, dbTokenFilter.getClass());
+  }
+
+  @Bean
+  CorsFilter corsFilter() {
+    CorsConfiguration config = new CorsConfiguration();
+
+    config.setAllowCredentials(false);
+    if (null == allowedOriginPattern) {
+      config.addAllowedOriginPattern(CorsConfiguration.ALL);
+    } else {
+      config.addAllowedOriginPattern(allowedOriginPattern);
+    }
+    config.addAllowedHeader("*");
+    config.addAllowedMethod("*");
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/v?/**", config);
+    return new CorsFilter(source);
   }
 }
