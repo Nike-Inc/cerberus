@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -119,6 +120,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     http.authorizeRequests()
         .antMatchers(AUTHENTICATION_NOT_REQUIRED_WHITELIST.toArray(new String[0]))
         .permitAll();
+
+    // ALlow OPTIONS for CORS
+    http.authorizeRequests().antMatchers(HttpMethod.OPTIONS, "**").permitAll();
 
     // Force all other requests to be authenticated
     http.authorizeRequests().anyRequest().authenticated();
