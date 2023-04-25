@@ -20,39 +20,39 @@ buildscript {
   ext {
     versions = [
       ant: '1.10.13',                   // org.apache.ant:ant-junit
-      awsSdkVersion: '1.12.452',        // com.amazonaws:aws-java-sdk-core
+      awsSdkVersion: '1.12.454',        // com.amazonaws:aws-java-sdk-core
       awsEncryptionSdk: '2.4.0',        // com.amazonaws:aws-encryption-sdk-java
       backstopper: '0.15.0',            // com.nike.backstopper:backstopper-spring-web-mvc
       c3p0: '0.9.5.5',                  // com.mchange:c3p0
-      caffeine: '3.1.1',                // com.github.ben-manes.caffeine:caffeine
+      caffeine: '3.1.6',                // com.github.ben-manes.caffeine:caffeine
       commonsIo: '2.11.0',              // commons-io:commons-io
       commonsText: '1.10.0',            // org.apache.commons:commons-text
-      dependencyCheckGradle: '8.0.2',   // org.owasp:dependency-check-gradle
+      dependencyCheckGradle: '8.2.1',   // org.owasp:dependency-check-gradle
       findbugsAnnotations: '3.0.1u2',   // com.google.code.findbugs:annotations
       findSecBugs: '1.12.0',            // com.h3xstream.findsecbugs:findsecbugs-plugin
       flyway: '5.2.4',                  // org.flywaydb:flyway-core
       groovy: '4.0.11',                 // org.apache.groovy:groovy-all
       gson: '2.10.1',                   // com.google.code.gson:gson
       guava: '31.1-jre',                // com.google.guava:guava
-      hibernationValidation: '7.0.5.Final',       // org.hibernate:hibernate-validator
-      jacksonAnnotations: '2.11.1',     // com.fasterxml.jackson.core:jackson-annotations
+      hibernationValidation: '7.0.5.Final',       // org.hibernate:hibernate-validator     // TODO
+      jacksonAnnotations: '2.14.1',     // com.fasterxml.jackson.core:jackson-annotations
       jakartaValidationApi: '2.0.2',    // jakarta.validation:jakarta.validation-api
-      jakartaXmlBindApi: '3.0.1',       // jakarta.xml.bind:jakarta.xml.bind-api
+      jakartaXmlBindApi: '4.0.0',       // jakarta.xml.bind:jakarta.xml.bind-api
       javaxEl: '3.0.0',                 // org.glassfish:javax.el
       jaxbRuntime: '4.0.2',             // org.glassfish.jaxb:jaxb-runtime
       jjwt: '0.11.5',                   // io.jsonwebtoken:jjwt-api
       jupiterApi: '5.9.2',              // org.junit.jupiter:junit-jupiter-api
       kork: '7.172.0',                  // io.spinnaker.kork:kork-secrets
-      kotlinStdlib: '1.7.20',           // org.jetbrains.kotlin:kotlin-stdlib-common
+      kotlinStdlib: '1.8.20',           // org.jetbrains.kotlin:kotlin-stdlib-common
       lang3: '3.12.0',                  // org.apache.commons:commons-lang3
       logback: '1.4.7',                 // ch.qos.logback:logback-core
       lombok: '1.18.26',                // org.projectlombok:lombok
-      metricsCore: '4.2.12',            // io.dropwizard.metrics:metrics-core
+      metricsCore: '4.2.18',            // io.dropwizard.metrics:metrics-core
       mockitoAll: '1.10.19',            // org.mockito:mockito-all
       mybatis: '3.5.13',                // org.mybatis:mybatis
       mybatisSpring: '2.1.0',           // org.mybatis:mybatis-spring
       mysqlConnector: '8.0.33',         // com.mysql:mysql-connector-j
-      okhttp: '4.10.0',                 // com.squareup.okhttp3:okhttp
+      okhttp: '4.11.0',                 // com.squareup.okhttp3:okhttp
       okta: '8.2.3',                    // com.okta.sdk:okta-sdk-api
       oktaAuthnSdk: '2.0.10',           // com.okta.authn.sdk:okta-authn-sdk-api
       oktaJwtVerifier: '0.5.7',         // com.okta.jwt:okta-jwt-verifier
