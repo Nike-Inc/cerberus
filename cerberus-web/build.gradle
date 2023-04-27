@@ -46,20 +46,20 @@ dependencies {
   // DB: Mybatis, Flyway, C3p0
   implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${versions.mybatisSpring}"
   implementation "org.mybatis:mybatis-spring:${versions.mybatisSpring}"
-  implementation 'org.mybatis:mybatis:3.5.11'
-  implementation 'com.mchange:c3p0:0.9.5.5'
-  implementation 'mysql:mysql-connector-java:8.0.32'
-  implementation 'org.flywaydb:flyway-core:5.2.4' // Can't upgrade this past this version until Aurora is upgraded to 5.7
+  implementation "org.mybatis:mybatis:${versions.mybatis}"
+  implementation "com.mchange:c3p0:${versions.c3p0}"
+  implementation "com.mysql:mysql-connector-j:${versions.mysqlConnector}"
+  implementation "org.flywaydb:flyway-core:${versions.flyway}" // Can't upgrade this past this version until Aurora is upgraded to 5.7
 
   // First secrets
   implementation "io.spinnaker.kork:kork-secrets:${versions.kork}"
 
   // Misc
   implementation "com.google.guava:guava:${versions.guava}"  // todo, pretty sure with Java 11, we can get ride of this, we mostly use this for the collection builders.
-  implementation 'com.google.code.gson:gson:2.9.1' // todo delete, should use jackson. see cipher text utils
+  implementation "com.google.code.gson:gson:${versions.gson}" // todo delete, should use jackson. see cipher text utils
 
   // Secure File Mime Type
-  implementation "org.apache.tika:tika-core:1.28.5"
+  implementation "org.apache.tika:tika-core:${versions.tikaCore}"
 
   // AWS
   implementation "com.amazonaws:aws-java-sdk-core:${versions.awsSdkVersion}"
@@ -67,7 +67,7 @@ dependencies {
   implementation "com.amazonaws:aws-java-sdk-sts:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-s3:${versions.awsSdkVersion}"
   implementation "com.amazonaws:aws-java-sdk-secretsmanager:${versions.awsSdkVersion}"
-  implementation 'com.amazonaws:aws-encryption-sdk-java:2.4.0'
+  implementation "com.amazonaws:aws-encryption-sdk-java:${versions.awsEncryptionSdk}"
 
 
   // JWT
@@ -81,12 +81,12 @@ dependencies {
 
 
   //dist tracing
-  implementation 'com.nike.wingtips:wingtips-spring-boot:0.24.2'
+  implementation "com.nike.wingtips:wingtips-spring-boot:${versions.wingtipsSpringBoot}"
 
   // test deps
   testImplementation("org.springframework.boot:spring-boot-starter-test:${versions.springBoot}")
   testImplementation "commons-io:commons-io:${versions.commonsIo}"
-  testImplementation "com.nike.backstopper:backstopper-reusable-tests:0.15.0"
+  testImplementation "com.nike.backstopper:backstopper-reusable-tests:${versions.backstopper}"
 
   // Integration Test Deps
   integrationTestImplementation sourceSets.main.output
