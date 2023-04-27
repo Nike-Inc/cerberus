@@ -20,29 +20,30 @@ dependencies {
   api "org.springframework.boot:spring-boot-starter-security:${versions.springBoot}"
 
   // Error management
-  api 'com.nike.backstopper:backstopper-spring-web-mvc:0.15.0'
+  api "com.nike.backstopper:backstopper-spring-web-mvc:${versions.backstopper}"
 
   // Metrics
-  api 'io.dropwizard.metrics:metrics-core:4.2.12'
+  api "io.dropwizard.metrics:metrics-core:${versions.metricsCore}"
 
   // Misc
   api "io.github.resilience4j:resilience4j-all:${versions.resilience4j}"
-  api "com.squareup.okhttp3:okhttp:4.10.0"
-  api 'com.github.ben-manes.caffeine:caffeine:3.1.1'
+
+  api "com.squareup.okhttp3:okhttp:${versions.okhttp}"
+  api "com.github.ben-manes.caffeine:caffeine:${versions.caffeine}"
 
   // TODO jav 8 -> java 11 error, verify and document why this is required
   api "jakarta.xml.bind:jakarta.xml.bind-api:${versions.jakartaXmlBindApi}"
   api "org.glassfish.jaxb:jaxb-runtime:${versions.jaxbRuntime}"
 
-  // Find bugs annotations
-  api 'com.google.code.findbugs:annotations:3.0.1u2'
 
+  // Find bugs annotations
+  api "com.google.code.findbugs:annotations:${versions.findbugsAnnotations}"
   api "com.google.guava:guava:${versions.guava}"
 }
 
 configurations.all {
   resolutionStrategy {
-    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20"
-    force "org.jetbrains.kotlin:kotlin-stdlib:1.7.20"
+    force "org.jetbrains.kotlin:kotlin-stdlib-common:${versions.kotlinStdlib}"
+    force "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlinStdlib}"
   }
 }

@@ -19,15 +19,15 @@ repositories {
 }
 
 dependencies {
-  api group: 'jakarta.validation', name: 'jakarta.validation-api', version: '2.0.2'
+  api "jakarta.validation:jakarta.validation-api:${versions.jakartaValidationApi}"
 
-  api group: 'org.hibernate', name: 'hibernate-validator', version: '7.0.5.Final'
-  api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.1'
+  api "org.hibernate:hibernate-validator:${versions.hibernationValidation}"
+  api "com.fasterxml.jackson.core:jackson-annotations:${versions.jacksonAnnotations}"
 
-  api group: 'org.apache.commons', name: 'commons-lang3', version: versions.lang3
-  api group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
+  api "org.apache.commons:commons-lang3:${versions.lang3}"
+  api "org.apache.commons:commons-text:${versions.commonsText}"
 
   integrationTestCompile "org.apache.groovy:groovy-all:${versions.groovy}"
-  testImplementation group: 'org.glassfish', name: 'javax.el', version: '3.0.0'
+  testImplementation "org.glassfish:javax.el:${versions.javaxEl}"
 
 }
