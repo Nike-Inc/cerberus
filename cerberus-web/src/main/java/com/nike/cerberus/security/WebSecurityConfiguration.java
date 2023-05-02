@@ -79,6 +79,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Autowired HttpFirewall allowUrlEncodedSlashHttpFirewall;
 
+  void setAllowedOriginPattern(String allowedPattern) {
+    this.allowedOriginPattern = allowedPattern;
+  }
+
   RequestMatcher getDoesRequestsRequireAuthMatcher() {
 
     List<RequestMatcher> whiteListMatchers =
@@ -141,7 +145,11 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Bean
   CorsFilter corsFilter() {
     CorsConfiguration config = new CorsConfiguration();
+    UrlBasedCorsConfigurationSource source = getConfigurationSource(config);
+    return new CorsFilter(source);
+  }
 
+  UrlBasedCorsConfigurationSource getConfigurationSource(CorsConfiguration config) {
     config.setAllowCredentials(false);
 
     if (!isBlank(allowedOriginPattern)) {
@@ -152,6 +160,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
-    return new CorsFilter(source);
+    return source;
   }
 }
