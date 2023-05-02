@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.security;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.nike.cerberus.service.AuthTokenService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
@@ -141,9 +143,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     CorsConfiguration config = new CorsConfiguration();
 
     config.setAllowCredentials(false);
-    if (null == allowedOriginPattern) {
-      config.addAllowedOriginPattern(CorsConfiguration.ALL);
-    } else {
+
+    if (!isBlank(allowedOriginPattern)) {
       config.addAllowedOriginPattern(allowedOriginPattern);
     }
     config.addAllowedHeader("*");
