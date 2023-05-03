@@ -151,13 +151,16 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   UrlBasedCorsConfigurationSource getConfigurationSource(CorsConfiguration config) {
     config.setAllowCredentials(false);
-
+    config.setAllowedOrigins(null);
     if (!isBlank(allowedOriginPattern)) {
       config.addAllowedOriginPattern(allowedOriginPattern);
+      config.addAllowedHeader("*");
+      config.addAllowedMethod("*");
+    } else {
+      config.setAllowedOriginPatterns(null);
+      config.setAllowedHeaders(null);
+      config.setAllowedMethods(null);
     }
-    config.addAllowedHeader("*");
-    config.addAllowedMethod("*");
-
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;

@@ -13,8 +13,9 @@ public class WebSecurityConfigurationTest {
     CorsConfiguration config = new CorsConfiguration();
     wsc.getConfigurationSource(config);
     Assert.assertEquals(config.getAllowedOriginPatterns(), null);
-    Assert.assertEquals(config.getAllowedHeaders(), List.of("*"));
-    Assert.assertEquals(config.getAllowedMethods(), List.of("*"));
+    Assert.assertEquals(config.getAllowedOrigins(), null);
+    Assert.assertEquals(config.getAllowedHeaders(), null);
+    Assert.assertEquals(config.getAllowedMethods(), null);
     Assert.assertFalse(config.getAllowCredentials());
   }
 
@@ -25,5 +26,9 @@ public class WebSecurityConfigurationTest {
     CorsConfiguration config = new CorsConfiguration();
     wsc.getConfigurationSource(config);
     Assert.assertEquals(config.getAllowedOriginPatterns(), List.of("https://*.testdomain.com"));
+    Assert.assertEquals(config.getAllowedOrigins(), null);
+    Assert.assertEquals(config.getAllowedHeaders(), List.of("*"));
+    Assert.assertEquals(config.getAllowedMethods(), List.of("*"));
+    Assert.assertFalse(config.getAllowCredentials());
   }
 }
