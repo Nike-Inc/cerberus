@@ -16,13 +16,18 @@
 
 package com.nike.cerberus.security;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.nike.cerberus.service.AuthTokenService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +40,9 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Slf4j
 @Configuration
@@ -44,6 +52,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   static final String HEADER_X_CERBERUS_TOKEN = "X-Cerberus-Token";
   static final String LEGACY_AUTH_TOKN_HEADER = "X-Vault-Token";
+
+  @Value("${cerberus.cors.allowedOriginPattern:#{null}}")
+  private String allowedOriginPattern;
 
   private static final List<String> AUTHENTICATION_NOT_REQUIRED_WHITELIST =
       List.of(
@@ -67,6 +78,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Autowired private RequestWasNotAuthenticatedEntryPoint requestWasNotAuthenticatedEntryPoint;
 
   @Autowired HttpFirewall allowUrlEncodedSlashHttpFirewall;
+
+  void setAllowedOriginPattern(String allowedPattern) {
+    this.allowedOriginPattern = allowedPattern;
+  }
 
   RequestMatcher getDoesRequestsRequireAuthMatcher() {
 
@@ -112,6 +127,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .antMatchers(AUTHENTICATION_NOT_REQUIRED_WHITELIST.toArray(new String[0]))
         .permitAll();
 
+    // ALlow OPTIONS for CORS
+    http.authorizeRequests().antMatchers(HttpMethod.OPTIONS, "**").permitAll();
+
     // Force all other requests to be authenticated
     http.authorizeRequests().anyRequest().authenticated();
 
@@ -122,5 +140,29 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     http.addFilterBefore(dbTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
     http.addFilterBefore(jwtFilter, dbTokenFilter.getClass());
+  }
+
+  @Bean
+  CorsFilter corsFilter() {
+    CorsConfiguration config = new CorsConfiguration();
+    UrlBasedCorsConfigurationSource source = getConfigurationSource(config);
+    return new CorsFilter(source);
+  }
+
+  UrlBasedCorsConfigurationSource getConfigurationSource(CorsConfiguration config) {
+    config.setAllowCredentials(false);
+    config.setAllowedOrigins(null);
+    if (!isBlank(allowedOriginPattern)) {
+      config.addAllowedOriginPattern(allowedOriginPattern);
+      config.addAllowedHeader("*");
+      config.addAllowedMethod("*");
+    } else {
+      config.setAllowedOriginPatterns(null);
+      config.setAllowedHeaders(null);
+      config.setAllowedMethods(null);
+    }
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
   }
 }
