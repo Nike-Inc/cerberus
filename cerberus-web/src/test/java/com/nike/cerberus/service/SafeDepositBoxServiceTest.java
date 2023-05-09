@@ -42,6 +42,7 @@ import com.nike.cerberus.domain.SafeDepositBoxV2;
 import com.nike.cerberus.domain.UserGroupPermission;
 import com.nike.cerberus.record.RoleRecord;
 import com.nike.cerberus.record.SafeDepositBoxRecord;
+import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.security.CerberusPrincipal;
 import com.nike.cerberus.util.AwsIamRoleArnParser;
 import com.nike.cerberus.util.DateTimeSupplier;
@@ -49,16 +50,20 @@ import com.nike.cerberus.util.Slugger;
 import com.nike.cerberus.util.UuidSupplier;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 public class SafeDepositBoxServiceTest {
 
@@ -387,6 +392,62 @@ public class SafeDepositBoxServiceTest {
     safeDepositBoxServiceSpy.overrideOwner(sdbName, "new-owner", "admin-user");
     verify(safeDepositBoxServiceSpy, times(1))
         .updateOwner(id, "new-owner", "admin-user", offsetDateTime);
+  }
+
+  @Test
+  public void testEnsureUserHasNoSdbPermissionsWhenNoUserGroupPermissionRecordPresent() {
+    final OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+
+    UserGroupPermission notBuddy =
+        new UserGroupPermission().withName("notBuddy").withRoleId("read");
+
+    notBuddy.setCreatedBy("system");
+    notBuddy.setLastUpdatedBy("system");
+    notBuddy.setCreatedTs(now);
+    notBuddy.setLastUpdatedTs(now);
+
+    final UserGroupRecord notBuddyUserGroupRecord =
+        new UserGroupRecord()
+            .setId("notBuddyId")
+            .setName("notBuddy")
+            .setCreatedBy("system")
+            .setLastUpdatedBy("system")
+            .setCreatedTs(now)
+            .setLastUpdatedTs(now);
+
+    UserGroupPermission buddy = new UserGroupPermission().withName("buddy").withRoleId("read");
+
+    buddy.setCreatedBy("system");
+    buddy.setLastUpdatedBy("system");
+    buddy.setCreatedTs(now);
+    buddy.setLastUpdatedTs(now);
+
+    UserGroupPermission buddyCaps = new UserGroupPermission().withName("Buddy").withRoleId("read");
+
+    buddyCaps.setCreatedBy("system");
+    buddyCaps.setLastUpdatedBy("system");
+    buddyCaps.setCreatedTs(now);
+    buddyCaps.setLastUpdatedTs(now);
+
+    Set<UserGroupPermission> buddies = new HashSet<>();
+    buddies.add(buddy);
+    buddies.add(buddyCaps);
+
+    List<UserGroupRecord> ownerGroupRecords = List.of(notBuddyUserGroupRecord);
+    Mockito.when(userGroupDao.getUserGroupsByRole("safeBoxId", "ownerId"))
+        .thenReturn(ownerGroupRecords);
+
+    Optional<Role> ownerRoleOptional = Optional.of(new Role().setName("owner").setId("ownerId"));
+    Mockito.when(roleService.getRoleByName(Matchers.anyString())).thenReturn(ownerRoleOptional);
+
+    Mockito.when(userGroupPermissionService.getUserGroupPermissions("safeBoxId"))
+        .thenReturn(buddies);
+    Set<UserGroupPermission> userGroupPermissions =
+        userGroupPermissionService.getUserGroupPermissions("safeBoxId");
+    Assert.assertFalse(userGroupPermissions.isEmpty());
+    safeDepositBoxService.updateOwner("safeBoxId", "buddy", "system", OffsetDateTime.now());
+    Mockito.verify(userGroupPermissionService, Mockito.atLeastOnce())
+        .ensureUserHasNoSdbPermissions("safeBoxId", "buddy");
   }
 
   @Test

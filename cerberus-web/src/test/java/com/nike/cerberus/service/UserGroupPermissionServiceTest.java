@@ -14,6 +14,7 @@ import com.nike.cerberus.record.UserGroupPermissionRecord;
 import com.nike.cerberus.record.UserGroupRecord;
 import com.nike.cerberus.util.UuidSupplier;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -251,6 +252,72 @@ public class UserGroupPermissionServiceTest {
     Set<UserGroupPermission> userGroupPermissions =
         userGroupPermissionService.getUserGroupPermissions("safeBoxId");
     Assert.assertTrue(userGroupPermissions.isEmpty());
+  }
+
+  @Test
+  public void testEnsureUserHasNoSdbPermissionsWhenNoUserGroupPermissionRecordPresent() {
+    final OffsetDateTime now = OffsetDateTime.now(ZoneId.of("UTC"));
+
+    UserGroupPermissionRecord buddy =
+        new UserGroupPermissionRecord()
+            .setId("buddyId")
+            .setRoleId("read")
+            .setUserGroupId("buddy")
+            .setCreatedBy("system")
+            .setLastUpdatedBy("system")
+            .setCreatedTs(now)
+            .setLastUpdatedTs(now);
+
+    final UserGroupRecord buddyUserGroupRecord =
+        new UserGroupRecord()
+            .setId("buddyId")
+            .setName("buddy")
+            .setCreatedBy("system")
+            .setLastUpdatedBy("system")
+            .setCreatedTs(now)
+            .setLastUpdatedTs(now);
+
+    UserGroupPermissionRecord buddyCaps =
+        new UserGroupPermissionRecord()
+            .setUserGroupId("Buddy")
+            .setCreatedBy("system")
+            .setLastUpdatedBy("system")
+            .setCreatedTs(now)
+            .setLastUpdatedTs(now);
+
+    final UserGroupRecord buddyCapsUserGroupRecord =
+        new UserGroupRecord()
+            .setId("buddyCapsId")
+            .setName("Buddy")
+            .setCreatedBy("system")
+            .setLastUpdatedBy("system")
+            .setCreatedTs(now)
+            .setLastUpdatedTs(now);
+
+    List<UserGroupPermissionRecord> buddies = new ArrayList<>();
+    buddies.add(buddy);
+    buddies.add(buddyCaps);
+
+    Mockito.when(userGroupDao.getUserGroupPermissions("safeBoxId")).thenReturn(buddies);
+
+    Optional<UserGroupRecord> optionalBuddyUgr = Optional.of(buddyUserGroupRecord);
+    Optional<UserGroupRecord> optionalBuddyCapsUgr = Optional.of(buddyCapsUserGroupRecord);
+
+    Mockito.when(userGroupDao.getUserGroup("buddy")).thenReturn(optionalBuddyUgr);
+    Mockito.when(userGroupDao.getUserGroup("Buddy")).thenReturn(optionalBuddyCapsUgr);
+
+    Mockito.when(userGroupDao.getUserGroupByName("buddy")).thenReturn(optionalBuddyUgr);
+    Mockito.when(userGroupDao.getUserGroupByName("Buddy")).thenReturn(optionalBuddyCapsUgr);
+
+    Set<UserGroupPermission> userGroupPermissions =
+        userGroupPermissionService.getUserGroupPermissions("safeBoxId");
+    Assert.assertFalse(userGroupPermissions.isEmpty());
+    userGroupPermissionService.ensureUserHasNoSdbPermissions("safeBoxId", "buddy");
+
+    Mockito.verify(userGroupDao, Mockito.atLeastOnce())
+        .deleteUserGroupPermission("safeBoxId", "buddyId");
+    Mockito.verify(userGroupDao, Mockito.atLeastOnce())
+        .deleteUserGroupPermission("safeBoxId", "buddyCapsId");
   }
 
   @Test

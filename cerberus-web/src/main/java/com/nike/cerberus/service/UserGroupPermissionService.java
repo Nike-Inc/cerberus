@@ -30,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,6 +181,24 @@ public class UserGroupPermissionService {
     record.setLastUpdatedBy(user);
     record.setLastUpdatedTs(dateTime);
     userGroupDao.updateUserGroupPermission(record);
+  }
+
+  /**
+   * Revokes any user permission on the SDB for the user This is case-insensitive, so it will clean
+   * up weird cased duplicates too
+   *
+   * @param safeDepositBoxId The safe deposit box's name
+   * @param userGroupName Name of the user group
+   */
+  public void ensureUserHasNoSdbPermissions(String safeDepositBoxId, String userGroupName) {
+    final String userGroupNameLowered = userGroupName.toLowerCase();
+    final Set<UserGroupPermission> sdbUserGroupPermission =
+        getUserGroupPermissions(safeDepositBoxId);
+    final Set<UserGroupPermission> newOwnerExistingSdbPermissions =
+        sdbUserGroupPermission.stream()
+            .filter(perm -> perm.getName().toLowerCase().equals(userGroupNameLowered))
+            .collect(Collectors.toSet());
+    revokeUserGroupPermissions(safeDepositBoxId, newOwnerExistingSdbPermissions);
   }
 
   /**
