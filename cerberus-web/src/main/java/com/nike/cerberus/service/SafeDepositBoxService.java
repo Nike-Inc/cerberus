@@ -621,6 +621,8 @@ public class SafeDepositBoxService {
     }
 
     if (!StringUtils.equals(userGroupOwnerRecords.get(0).getName(), newOwner)) {
+      userGroupPermissionService.ensureUserHasNoSdbPermissions(safeDepositBoxId, newOwner);
+
       UserGroupPermission oldOwnerPermission = new UserGroupPermission();
       oldOwnerPermission.setName(userGroupOwnerRecords.get(0).getName());
       oldOwnerPermission.setRoleId(ownerRole.get().getId());
