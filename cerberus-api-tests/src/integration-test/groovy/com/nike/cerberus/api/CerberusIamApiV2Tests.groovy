@@ -80,6 +80,11 @@ class CerberusIamApiV2Tests {
     }
 
     @Test
+    void "test that a 404 is returned with mismatched case in path"() {
+        "verify 404 with mismatched case in path"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
+    }
+
+    @Test
     void "test that an authenticated IAM role can create, read, update then delete a secret node"() {
         "create, read, update then delete a secret node"(cerberusAuthToken)
     }

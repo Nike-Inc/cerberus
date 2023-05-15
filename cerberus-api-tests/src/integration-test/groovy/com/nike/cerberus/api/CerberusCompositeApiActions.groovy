@@ -48,6 +48,17 @@ class CerberusCompositeApiActions {
         "create, read, update then delete a secret node"(cerberusAuthToken, ROOT_INTEGRATION_TEST_SDB_PATH)
     }
 
+    static void "verify 404 with mismatched case in path"(String cerberusAuthToken, String sdbPath){
+        def path = sdbPath.toUpperCase()
+
+        try {
+            readSecretNode(path, cerberusAuthToken)
+        }
+        catch(java.lang.AssertionError e){
+            assertTrue(e.getMessage().contains("Expected status code <200> but was <404>"))
+        }
+    }
+
     static void "create, read, update then delete a secret node"(String cerberusAuthToken, String sdbPath) {
         def path = "${sdbPath}/${UUID.randomUUID().toString()}"
         String value1 = 'value1'
