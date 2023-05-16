@@ -32,6 +32,7 @@ import com.amazonaws.encryptionsdk.model.ContentType;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.google.common.collect.Lists;
+import com.nike.backstopper.exception.ApiException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -118,11 +119,32 @@ public class EncryptionServiceTest {
     String exceptionMessage = "";
     try {
       encryptionService.decrypt("encryptedPayload", "sdbPath");
-    } catch (IllegalArgumentException illegalArgumentException) {
-      exceptionMessage = illegalArgumentException.getMessage();
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
     }
     assertEquals(
-        "EncryptionContext did not have expected path, possible tampering: sdbPath",
+        "EncryptionContext did not have expected path: sdbPath (possible tampering)",
+        exceptionMessage);
+  }
+
+  @Test
+  public void testDecryptWhenEncryptionContentDidNotHaveExpectedPathCase() {
+    EncryptionService encryptionService = Mockito.spy(getEncryptionService());
+    ParsedCiphertext parsedCiphertext = getParsedCipherText();
+    Mockito.doReturn(parsedCiphertext)
+        .when(encryptionService)
+        .getParsedCipherText("encryptedPayload");
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put(SDB_PATH_PROPERTY_NAME, "sdbpath");
+    Mockito.when(parsedCiphertext.getEncryptionContextMap()).thenReturn(contextMap);
+    String exceptionMessage = "";
+    try {
+      encryptionService.decrypt("encryptedPayload", "SDBPath");
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
+    }
+    assertEquals(
+        "EncryptionContext did not have expected path: SDBPath (case path change detected)",
         exceptionMessage);
   }
 
@@ -157,11 +179,32 @@ public class EncryptionServiceTest {
     String exceptionMessage = "";
     try {
       encryptionService.decrypt("encryptedPayload".getBytes(StandardCharsets.UTF_8), "sdbPath");
-    } catch (IllegalArgumentException illegalArgumentException) {
-      exceptionMessage = illegalArgumentException.getMessage();
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
     }
     assertEquals(
-        "EncryptionContext did not have expected path, possible tampering: sdbPath",
+        "EncryptionContext did not have expected path: sdbPath (possible tampering)",
+        exceptionMessage);
+  }
+
+  @Test
+  public void testDecryptBytesWhenEncryptionContentDidNotHaveExpectedPathCase() {
+    EncryptionService encryptionService = Mockito.spy(getEncryptionService());
+    ParsedCiphertext parsedCiphertext = getParsedCipherText();
+    Mockito.doReturn(parsedCiphertext)
+        .when(encryptionService)
+        .getParsedCipherText("encryptedPayload".getBytes(StandardCharsets.UTF_8));
+    Map<String, String> contextMap = new HashMap<>();
+    contextMap.put(SDB_PATH_PROPERTY_NAME, "SdBpAtH");
+    Mockito.when(parsedCiphertext.getEncryptionContextMap()).thenReturn(contextMap);
+    String exceptionMessage = "";
+    try {
+      encryptionService.decrypt("encryptedPayload".getBytes(StandardCharsets.UTF_8), "sdbPath");
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
+    }
+    assertEquals(
+        "EncryptionContext did not have expected path: sdbPath (case path change detected)",
         exceptionMessage);
   }
 
@@ -197,11 +240,11 @@ public class EncryptionServiceTest {
     String exceptionMessage = "";
     try {
       encryptionService.reencrypt("encryptedPayload", "sdbPath");
-    } catch (IllegalArgumentException illegalArgumentException) {
-      exceptionMessage = illegalArgumentException.getMessage();
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
     }
     assertEquals(
-        "EncryptionContext did not have expected path, possible tampering: sdbPath",
+        "EncryptionContext did not have expected path: sdbPath (possible tampering)",
         exceptionMessage);
   }
 
@@ -270,11 +313,11 @@ public class EncryptionServiceTest {
     String exceptionMessage = "";
     try {
       encryptionService.reencrypt("encryptedPayload".getBytes(StandardCharsets.UTF_8), "sdbPath");
-    } catch (IllegalArgumentException illegalArgumentException) {
-      exceptionMessage = illegalArgumentException.getMessage();
+    } catch (ApiException apie) {
+      exceptionMessage = apie.getMessage();
     }
     assertEquals(
-        "EncryptionContext did not have expected path, possible tampering: sdbPath",
+        "EncryptionContext did not have expected path: sdbPath (possible tampering)",
         exceptionMessage);
   }
 

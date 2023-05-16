@@ -26,6 +26,8 @@ import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.encryptionsdk.multi.MultipleProviderFactory;
 import com.amazonaws.regions.Region;
 import com.google.common.collect.Lists;
+import com.nike.backstopper.exception.ApiException;
+import com.nike.cerberus.error.InvalidEncryptionContextApiError;
 import com.nike.cerberus.util.CiphertextUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -232,7 +234,10 @@ public class EncryptionService {
    *
    * <p>This step validates that the encrypted payload was created for the SDB that is currently
    * being decrypted. It is an integrity check. If this validation fails then the encrypted payload
-   * may have been tampered with, e.g. copying the encrypted payload between two SDBs.
+   * may have been tampered with, e.g. copying the encrypted payload between two SDBs. However,
+   * another possibility exists: there are times wherein the case of the path differs. In either
+   * case we still consider the validation to have failed, but we want to log the different case
+   * scenario specifically.
    *
    * @param parsedCiphertext the ciphertext to read the encryptionContext from
    * @param sdbPath the path expected in the encryptionContext
@@ -241,9 +246,15 @@ public class EncryptionService {
     Map<String, String> encryptionContext = parsedCiphertext.getEncryptionContextMap();
     String pathFromEncryptionContext = encryptionContext.getOrDefault(SDB_PATH_PROPERTY_NAME, null);
     if (!StringUtils.equals(pathFromEncryptionContext, sdbPath)) {
-      log.error("EncryptionContext did not have expected path, possible tampering: " + sdbPath);
-      throw new IllegalArgumentException(
-          "EncryptionContext did not have expected path, possible tampering: " + sdbPath);
+      String msg = "EncryptionContext did not have expected path: " + sdbPath;
+      if (StringUtils.equalsIgnoreCase(pathFromEncryptionContext, sdbPath)) {
+        msg += " (case path change detected)";
+      } else {
+        msg += " (possible tampering)";
+      }
+      log.error(msg);
+      InvalidEncryptionContextApiError iece = new InvalidEncryptionContextApiError(msg);
+      throw ApiException.newBuilder().withApiErrors(iece).build();
     }
   }
 
